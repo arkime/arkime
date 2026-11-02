@@ -110,10 +110,35 @@ SPDX-License-Identifier: Apache-2.0
           v-else
           :class="{ 'ps-8': row.indent, 'config-current': row.item.id === currentId }"
           @click="loadConfig(row.item)">
-          <v-icon
-            icon="mdi-view-dashboard-outline"
-            class="me-1" />
-          {{ row.item.name }}
+          <div class="d-flex justify-space-between align-center w-100">
+            <span class="config-name">
+              <v-icon
+                v-if="row.item.id === defaultId"
+                icon="mdi-star"
+                class="me-1 text-theme-accent"
+                :title="$t('sessions.summary.config.isDefault')" />
+              <v-icon
+                v-else
+                icon="mdi-view-dashboard-outline"
+                class="me-1" />
+              {{ row.item.name }}
+            </span>
+            <span
+              class="config-actions"
+              @click.stop>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="row.item.id === defaultId ? accentBtnStyle : tertiaryBtnStyle"
+                class="ms-1"
+                :title="row.item.id === defaultId ? $t('sessions.summary.config.unsetDefault') : $t('sessions.summary.config.setDefault')"
+                @click.stop="toggleDefault(row.item)">
+                <v-icon :icon="row.item.id === defaultId ? 'mdi-star' : 'mdi-star-outline'" />
+              </v-btn>
+            </span>
+          </div>
           <v-tooltip
             activator="parent"
             location="end"
@@ -468,7 +493,7 @@ const persistDefault = async (id) => {
   await UserService.saveSettings(settings);
 };
 
-// Toggle a config as the default landing dashboard
+// Toggle a saved or system dashboard as the default landing dashboard
 const toggleDefault = async (config) => {
   try {
     const newId = defaultId.value === config.id ? '' : config.id;

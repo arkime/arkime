@@ -219,6 +219,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           /opt/arkime/share/dashboards (replaced on upgrade); to add or override one, export a dashboard and drop the
           file in /opt/arkime/etc/dashboards (see the new dashboardsDir setting), no restart needed
   - The suricata and zeekintel plugins each ship a dashboard, listed once the plugin's fields exist
+  - A built-in dashboard can be your default dashboard; the dashboards menu and the navigation widget star the default
   - Dashboards can be grouped into folders, saved back into the dashboard they were loaded from, and opened
           by url with ?dashboard=<id>
   - A dashboard can have its own search expression (gear button), applied with the search to every widget
@@ -229,6 +230,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           lengths) and can be ordered by the field's value instead of the metric
   - Bar widgets and SPI Graph bars can be horizontal; map widgets can shade countries by any metric
   - Add a connection tree widget and SPI Graph type: who reached what from one host, hop by hop
+  - Add a time of day widget and SPI Graph type: a week of hours colored by the metric, to spot off hours traffic
+  - Add a matrix widget and SPI Graph type: one field's values down the side, another's across the top
+  - A split timeline can show each value's share of the bucket (percent y axis); SPI Graph's Timeline can stack its
+          values the same way
+  - The metric widget can draw a trend line of the metric under its number
   - #4420 The text dashboard widget is now a Markdown widget: headings, bold, italic, code, lists and links, up to 5000
           characters. Links may only go to http/https sites or Arkime's own pages, never to its API
   - #4420 SPI Graph pies can be split into 3, 5 or 10 small pies, one per value of the first field, and can show Other slices

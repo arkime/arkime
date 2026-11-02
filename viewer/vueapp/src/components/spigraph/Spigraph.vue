@@ -207,10 +207,31 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /table layout -->
 
-              <!-- intensity select (heatmap only) -->
+              <!-- timeline layout (timeline only): one timeline per value, or
+                   the values stacked in one (as counts, or as shares) -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType === 'heatmap'">
+                v-if="spiGraphType === 'default'">
+                <span class="arkime-input-label">
+                  {{ $t('spigraph.timelineMode') }}:
+                </span>
+                <select
+                  class="arkime-input-control"
+                  :value="timelineMode"
+                  @change="changeTimelineMode($event.target.value)">
+                  <option
+                    v-for="m in timelineModes"
+                    :key="m"
+                    :value="m">
+                    {{ $t(`spigraph.timelineMode-${m}`) }}
+                  </option>
+                </select>
+              </div> <!-- /timeline layout -->
+
+              <!-- intensity select (heatmap and time of day) -->
+              <div
+                class="arkime-input-group"
+                v-if="spiGraphType === 'heatmap' || spiGraphType === 'timeofday'">
                 <span class="arkime-input-label">
                   {{ $t('spigraph.intensity') }}:
                 </span>
@@ -230,7 +251,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- sort select (not shown for the pie graph) -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType === 'default' || spiGraphType === 'heatmap'">
+                v-if="isHistoType">
                 <span class="arkime-input-label">
                   {{ $t('spigraph.sortBy') }}:
                 </span>
@@ -250,7 +271,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- refresh input (not shown for pie) -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType === 'default' || spiGraphType === 'heatmap'">
+                v-if="isHistoType">
                 <span class="arkime-input-label">
                   {{ $t('spigraph.refreshEvery') }}:
                 </span>
@@ -273,7 +294,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- page info -->
               <div
                 class="records-display align-self-center"
-                v-if="spiGraphType === 'default' || spiGraphType === 'heatmap'">
+                v-if="isHistoType">
                 <strong
                   class="text-theme-accent"
                   v-if="!error && recordsFiltered !== undefined">
@@ -283,7 +304,7 @@ SPDX-License-Identifier: Apache-2.0
 
               <!-- export button-->
               <v-btn
-                v-if="spiGraphType !== 'default' && spiGraphType !== 'sankey' && !isConnectionsType"
+                v-if="!isHistoType && spiGraphType !== 'sankey' && !isConnectionsType"
                 variant="outlined"
                 size="small"
                 density="comfortable"
@@ -299,7 +320,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- hierarchy "add another field" anchor (own full-width row); a
                    tag cloud draws one field, so it has none -->
               <div
-                v-if="['bar', 'pie', 'table', 'treemap', 'sankey'].includes(spiGraphType)"
+                v-if="['bar', 'pie', 'table', 'treemap', 'sankey', 'matrix'].includes(spiGraphType)"
                 id="spigraph-subfield-anchor"
                 class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1" />
             </div>
@@ -334,6 +355,91 @@ SPDX-License-Identifier: Apache-2.0
           :timeline-data-filters="timelineDataFilters"
           :sort-by="sortBy" />
       </div> <!-- /heatmap graph type -->
+
+      <!-- time of day graph type: the search as a week of hours, then one
+           small week per top value of the field -->
+      <div
+        v-else-if="spiGraphType === 'timeofday'"
+        class="timeofday-page">
+        <div
+          v-if="graphData && fieldObj"
+          class="timeofday-primary">
+          <time-of-day-chart
+            :graph="graphData"
+            :metric="intensity"
+            :metric-label="intensityLabel"
+            :timezone="timezone" />
+        </div>
+        <div
+          v-if="fieldObj"
+          class="timeofday-grid">
+          <div
+            v-for="item in items"
+            :key="item.name"
+            class="timeofday-cell">
+            <div class="spi-bucket">
+              <strong>
+                <arkime-session-field
+                  :field="fieldObj"
+                  :value="item.name"
+                  :expr="fieldObj.exp"
+                  :parse="true"
+                  :pull-left="true"
+                  :session-btn="true" />
+              </strong>
+              <sup>({{ commaString(item[intensity]) }})</sup>
+            </div>
+            <div class="timeofday-chart">
+              <time-of-day-chart
+                :graph="item.graph || {}"
+                :metric="intensity"
+                :metric-label="intensityLabel"
+                :timezone="timezone"
+                compact />
+            </div>
+          </div>
+        </div>
+      </div> <!-- /time of day graph type -->
+
+      <!-- stacked timeline: the field's top values as one stacked timeline,
+           as counts or as each value's share of the bucket -->
+      <div
+        v-else-if="spiGraphType === 'default' && timelineMode !== 'separate'"
+        class="timeline-stacked">
+        <div
+          v-if="stackedSeries.length"
+          class="timeline-stacked__legend">
+          <span
+            v-for="s in stackedSeries"
+            :key="s.key"
+            class="timeline-stacked__item">
+            <span
+              class="timeline-stacked__swatch"
+              :style="{ background: s.color }" />
+            <arkime-session-field
+              :field="fieldObj"
+              :value="s.label"
+              :expr="fieldObj.exp"
+              :parse="true"
+              :pull-left="true"
+              :session-btn="true" />
+          </span>
+        </div>
+        <div class="timeline-stacked__plot">
+          <timeline-graph
+            v-if="stackedGraph && stackedSeries.length"
+            :graph-data="stackedGraph"
+            :graph-type="graphType || 'sessionsHisto'"
+            :series-defs="stackedSeries"
+            :series-type="$store.state.seriesType === 'lines' ? 'lines' : 'bars'"
+            :y-scale="timelineMode === 'percent' ? 'percent' : 'linear'"
+            stacked
+            fit-height
+            :timeline-data-filters="timelineDataFilters"
+            :timezone="timezone"
+            @update-time-range="onStackedTimeRange" />
+        </div>
+      </div> <!-- /stacked timeline -->
 
       <!-- pie graph type -->
       <div v-else-if="spiGraphType !== 'default'">
@@ -463,6 +569,9 @@ import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeNoResults from '../utils/NoResults.vue';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import ArkimeVisualizations from '../visualizations/Visualizations.vue';
+import TimelineGraph from '../visualizations/TimelineGraph.vue';
+import TimeOfDayChart from '../visualizations/TimeOfDayChart.vue';
+import { colorRange } from '../summary/widgets/chartColors';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import ArkimePie from './Hierarchy.vue';
@@ -479,6 +588,7 @@ import Utils from '../utils/utils';
 let refreshInterval;
 let respondedAt; // the time that the last data load successfully responded
 let pendingPromise; // save a pending promise to be able to cancel it
+let d3; // lazy loaded for the stacked timeline's colors
 
 export default {
   name: 'Spigraph',
@@ -489,6 +599,8 @@ export default {
     ArkimeNoResults,
     ArkimeFieldTypeahead,
     ArkimeVisualizations,
+    TimelineGraph,
+    TimeOfDayChart,
     ArkimeCollapsible,
     PageLayout,
     ArkimePie,
@@ -521,7 +633,9 @@ export default {
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
       snackbar: { show: false, text: '', color: 'success', link: '' },
-      graphTypeOptions: ['default', 'heatmap', 'bar', 'pie', 'tagcloud', 'table', 'treemap', 'sankey', 'connections', 'tree']
+      graphTypeOptions: ['default', 'timeofday', 'heatmap', 'bar', 'pie', 'tagcloud', 'table', 'treemap', 'sankey', 'matrix', 'connections', 'tree'],
+      timelineModes: ['separate', 'stacked', 'percent'],
+      stackedColors: [] // one per top value, for the stacked timeline
     };
   },
   computed: {
@@ -555,6 +669,36 @@ export default {
       }
       return 'sessionsHisto';
     },
+    intensityLabel: function () {
+      return this.intensityOptions.find(o => o.value === this.intensity)?.label || '';
+    },
+    timezone: function () {
+      return this.user.settings.timezone || 'local';
+    },
+    // the types drawn from the per value histograms (timeline, time of day,
+    // heatmap): they sort, refresh and count like the timeline does
+    isHistoType: function () {
+      return this.spiGraphType === 'default' || this.spiGraphType === 'heatmap' || this.spiGraphType === 'timeofday';
+    },
+    // timeline: one per value (separate), or one stacked timeline of the
+    // values, as counts (stacked) or shares of each bucket (percent)
+    timelineMode: function () {
+      const mode = this.$route.query.timelineMode;
+      return this.timelineModes.includes(mode) ? mode : 'separate';
+    },
+    // the stacked timeline: the page's graph for the bounds, one series per
+    // value of its metric (the heatmap does the same fold)
+    stackedGraph: function () {
+      if (!this.graphData) { return null; }
+      const key = this.graphType || 'sessionsHisto';
+      const data = { xmin: this.graphData.xmin, xmax: this.graphData.xmax, interval: this.graphData.interval };
+      this.items.forEach((item, i) => { data[`s${i}`] = item.graph?.[key] || []; });
+      return data;
+    },
+    stackedSeries: function () {
+      const colors = this.stackedColors;
+      return this.items.map((item, i) => ({ label: String(item.name), key: `s${i}`, color: colors[i % (colors.length || 1)] || '#888' }));
+    },
     query: function () {
       let sort = 'name';
       if (!this.$route.query.sort || this.$route.query.sort === 'graph') {
@@ -568,7 +712,8 @@ export default {
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
         bounding: this.$route.query.bounding || 'last',
-        interval: this.$route.query.interval || 'auto',
+        // a time of day grid folds hours, so its histogram is never coarser
+        interval: this.spiGraphType === 'timeofday' ? 'hour' : (this.$route.query.interval || 'auto'),
         spanning: this.$route.query.spanning === 'true' ? true : undefined,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
@@ -625,9 +770,9 @@ export default {
         spiGraphType: this.spiGraphType,
         exp: this.query.exp,
         size: this.query.size,
-        // the heatmap draws the store's intensity and the timeline the store's
-        // graph type, which the url may not carry
-        graphType: this.spiGraphType === 'heatmap' ? this.intensity : this.spiGraphType === 'default' ? this.graphType : this.$route.query.graphType,
+        // the heatmap and time of day draw the store's intensity and the
+        // timeline the store's graph type, which the url may not carry
+        graphType: (this.spiGraphType === 'heatmap' || this.spiGraphType === 'timeofday') ? this.intensity : this.spiGraphType === 'default' ? this.graphType : this.$route.query.graphType,
         // connections falls back to the user's own default fields
         srcField: this.$route.query.srcField || settings.connSrcField,
         dstField: this.$route.query.dstField || settings.connDstField
@@ -658,6 +803,15 @@ export default {
     graphType: function (newVal, oldVal) {
       if (newVal && this.sortBy === 'graph') {
         this.query.sort = newVal;
+      }
+    },
+    // one color per value for the stacked timeline (d3 is lazy loaded)
+    'items.length': {
+      immediate: true,
+      handler: async function (n) {
+        if (!n) { this.stackedColors = []; return; }
+        if (!d3) { d3 = await import('d3'); }
+        this.stackedColors = colorRange(d3, 'rainbow', n);
       }
     }
   },
@@ -758,6 +912,7 @@ export default {
         query: {
           ...this.$route.query,
           subFields: undefined,
+          timelineMode: undefined,
           barMode: undefined,
           barOrientation: undefined,
           pieMode: undefined,
@@ -786,6 +941,21 @@ export default {
     },
     onGraphMessage: function ({ msg, type, link }) {
       this.snackbar = { show: true, text: msg, color: type === 'danger' ? 'error' : 'success', link: link || '' };
+    },
+    changeTimelineMode: function (timelineMode) {
+      this.$router.push({
+        query: {
+          ...this.$route.query,
+          timelineMode: timelineMode === 'separate' ? undefined : timelineMode
+        }
+      });
+    },
+    // a drag on the stacked timeline narrows the search's time range
+    onStackedTimeRange: function (times) {
+      if (!times?.startTime || !times?.stopTime) { return; }
+      this.$store.commit('setTimeRange', 0);
+      this.$store.commit('setTime', times);
+      this.$router.push({ query: { ...this.$route.query, date: undefined, startTime: times.startTime, stopTime: times.stopTime } });
     },
     changeBarMode: function (barMode) {
       this.$router.push({
@@ -877,7 +1047,7 @@ export default {
       const leavingConnections = this.isConnectionsType;
       this.spiGraphType = spiGraphType;
       if (this.spiGraphType === 'pie' || this.spiGraphType === 'bar' || this.spiGraphType === 'tagcloud' ||
-        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey') {
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey' || this.spiGraphType === 'matrix') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
         }
@@ -885,7 +1055,7 @@ export default {
         this.query.sort = this.graphType;
         this.refresh = 0;
         this.changeRefreshInterval(0);
-      } else if (this.spiGraphType === 'heatmap') {
+      } else if (this.spiGraphType === 'heatmap' || this.spiGraphType === 'timeofday') {
         if (!this.graphType) { this.$store.commit('updateGraphType', 'sessionsHisto'); }
       } else if (this.isConnectionsType) {
         // connections owns its data; stop spigraph refresh
@@ -1079,5 +1249,57 @@ export default {
 /* stripes */
 .spigraph-page .spigraph-content .spi-graph-item:nth-child(odd) {
   background-color: rgb(var(--v-theme-quaternary-lightest));
+}
+
+/* the stacked timeline: a legend strip, then a plot that takes the height */
+.spigraph-page .timeline-stacked {
+  display: flex;
+  flex-direction: column;
+  height: 460px;
+  padding: 0 0.5rem;
+}
+.spigraph-page .timeline-stacked__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+  font-size: 0.85rem;
+  margin-bottom: 0.25rem;
+}
+.spigraph-page .timeline-stacked__item {
+  display: inline-flex;
+  align-items: center;
+}
+.spigraph-page .timeline-stacked__swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  margin-right: 0.35rem;
+}
+.spigraph-page .timeline-stacked__plot {
+  flex: 1;
+  min-height: 0;
+}
+
+/* time of day: the search's week, then a grid of small weeks per value */
+.spigraph-page .timeofday-primary {
+  height: 260px;
+  padding: 0 0.5rem;
+}
+.spigraph-page .timeofday-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 0.5rem;
+  padding: 0.5rem;
+}
+.spigraph-page .timeofday-cell {
+  display: flex;
+  flex-direction: column;
+  padding: 0.25rem;
+  background-color: rgb(var(--v-theme-quaternary-lightest));
+  border-radius: 4px;
+}
+.spigraph-page .timeofday-chart {
+  height: 170px;
 }
 </style>

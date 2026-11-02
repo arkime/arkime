@@ -345,6 +345,12 @@ export default {
     onDashboardSaved: function (shareable) {
       if (shareable?.id) { this.setDashboardParam(shareable.id); }
     },
+    /** The data of the saved (shareable) or system dashboard with this id, undefined when there is none. */
+    dashboardData: async function (id) {
+      return isSystemId(id)
+        ? (await systemDashboard(id))?.data
+        : (await DashboardService.get(id))?.shareable?.data;
+    },
     /**
      * Loads a saved (shareable) or system dashboard by id into local state.
      * @returns {boolean|null} true when it was applied; false when the viewer
@@ -356,9 +362,7 @@ export default {
       if (typeof id !== 'string' || !id) { return false; }
       const seq = ++this.dashboardLoadSeq;
       try {
-        const data = isSystemId(id)
-          ? (await systemDashboard(id))?.data
-          : (await DashboardService.get(id))?.shareable?.data;
+        const data = await this.dashboardData(id);
         // a later load (the user switched again) wins; this one is dropped
         if (seq !== this.dashboardLoadSeq) { return null; }
         if (!data) { return false; }
@@ -409,13 +413,14 @@ export default {
       }
       if (loaded === false && this.$route.query.dashboard) { this.setDashboardParam(''); }
 
-      // Prefer the user's default dashboard if one is set
+      // Prefer the user's default dashboard if one is set (a saved or a
+      // system one)
       const defaultId = this.user?.settings?.defaultDashboardId;
-      if (defaultId) {
+      if (typeof defaultId === 'string' && defaultId) {
         try {
-          const response = await DashboardService.get(defaultId);
-          if (response?.shareable?.data) {
-            this.applyConfig(response.shareable.data);
+          const data = await this.dashboardData(defaultId);
+          if (data) {
+            this.applyConfig(data);
             this.configLoaded = true;
             return;
           }

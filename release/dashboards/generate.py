@@ -12,10 +12,18 @@ PLUGIN_OUT = sys.argv[2] if len(sys.argv) > 2 else 'capture/plugins'
 
 # ---- widget helpers -------------------------------------------------------
 def nav(): return {'viewMode': 'navigation', 'width': 4, 'height': 1}
-def timeline(split, title, length=5, w=3, h=2, expression=None, lines=False, log=False):
+def timeline(split, title, length=5, w=3, h=2, expression=None, lines=False, log=False, percent=False):
     d = {'viewMode': 'timeline', 'splitField': split, 'splitLength': length, 'barMode': 'stacked', 'width': w, 'height': h, 'title': title}
     if lines: d['seriesType'] = 'lines'
     if log: d['yScale'] = 'log'
+    if percent: d['yScale'] = 'percent'  # each value's share of the bucket
+    if expression: d['expression'] = expression
+    return d
+# a week of hours colored by the metric, or one small week per top value of split
+def timeofday(title, split=None, length=5, w=2, h=3, expression=None, metricType=None):
+    d = {'viewMode': 'timeofday', 'width': w, 'height': h, 'title': title}
+    if split: d['splitField'] = split; d['splitLength'] = length
+    if metricType: d['metricType'] = metricType
     if expression: d['expression'] = expression
     return d
 def timeline_plain(title, w=3, h=2, expression=None, metricType=None, lines=False, log=False):
@@ -25,10 +33,11 @@ def timeline_plain(title, w=3, h=2, expression=None, metricType=None, lines=Fals
     if log: d['yScale'] = 'log'
     if expression: d['expression'] = expression
     return d
-def metric(title, metricType=None, w=1, h=1, expression=None, agg=None):
+def metric(title, metricType=None, w=1, h=1, expression=None, agg=None, sparkline=False):
     d = {'viewMode': 'metric', 'width': w, 'height': h, 'title': title}
     if metricType: d['metricType'] = metricType
     if agg: d['metricAgg'] = agg
+    if sparkline: d['sparkline'] = True  # the metric over time under the number (a sum)
     if expression: d['expression'] = expression
     return d
 def tagcloud(field, length=20, w=2, h=2, title=None, expression=None):
@@ -95,6 +104,12 @@ def treemap(field, w=2, h=3, metricType=None):
     d = {'field': field, 'viewMode': 'treemap', 'width': w, 'height': h}
     if metricType: d['metricType'] = metricType
     return d
+# the first field's values down the side, the second's across the top
+def matrix(fields, length=10, w=2, h=3, title=None, expression=None):
+    d = {'field': fields[0], 'fields': fields, 'viewMode': 'matrix', 'width': w, 'height': h, 'length': length}
+    if title: d['title'] = title
+    if expression: d['expression'] = expression
+    return d
 def intersection(fields, w=4, h=3, title=None, expression=None):
     d = {'field': fields[0], 'fields': fields, 'viewMode': 'intersection', 'width': w, 'height': h}
     if title: d['title'] = title
@@ -142,6 +157,8 @@ PLUGINS = {}
 D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, top talkers, protocols and the session timeline', [
     nav(), stats(), timew(),
     timeline_plain('Sessions over time', w=4),
+    timeofday('Sessions by hour of the week'),
+    timeline('protocols', 'Protocol share over time', length=8, w=2, h=3, percent=True),
     geomap('country.src', title='Source countries'),
     bar('ip', length=15, title='Top IPs'),
     bar('protocols', length=12, title='Protocols'),
@@ -153,6 +170,7 @@ D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, to
 D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol and size, with the connection graph and tree', [
     nav(),
     timeline('protocols', 'Sessions by protocol', length=10, w=4),
+    timeline('protocols', 'Protocol share over time', length=10, w=4, percent=True),
     stats(),
     gauge('Avg bytes/session', 'bytes'),
     gauge('Avg packets/session', 'packets'),
@@ -162,9 +180,10 @@ D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol an
     bar('packets', length=20, bucketInterval=10, title='Sessions by packet count (ranges of 10)'),
     pie('ip.protocol', title='IP protocols'),
     bar('session.length', length=20, bucketInterval=10000, title='Session length in ms (ranges of 10 s)'),
-    metric('SYN with no SYN-ACK', expression='tcpflags.syn > 0 && tcpflags.syn-ack == 0'),
+    matrix(['ip.protocol', 'port.dst'], length=15, title='IP protocols by destination port'),
+    metric('SYN with no SYN-ACK', expression='tcpflags.syn > 0 && tcpflags.syn-ack == 0', sparkline=True),
     gauge('Avg initial RTT, ms', 'initRTT'),
-    metric('Bytes sent', 'bytes.src'), metric('Bytes received', 'bytes.dst'),
+    metric('Bytes sent', 'bytes.src', sparkline=True), metric('Bytes received', 'bytes.dst', sparkline=True),
     table('oui.src', h=2, title='Source MAC vendors'), table('oui.dst', h=2, title='Destination MAC vendors'),
     geomap('country.src', h=2, metricType='bytes', title='Source countries by bytes'),
     geomap('country.dst', h=2, metricType='bytes', title='Destination countries by bytes'),
@@ -178,7 +197,7 @@ D['http'] = protocol('HTTP', 'http', P, [
     tagcloud('host.http'), pie('http.method'),
     pie('http.bodymagic', title='Response content types'), table('http.user', h=2, title='HTTP users'),
     table('http.uri'), table('http.user-agent'),
-    pie('http.version', title='HTTP versions'), intersection(['http.method', 'http.statuscode'], w=2, title='Methods and status codes'),
+    pie('http.version', title='HTTP versions'), matrix(['http.method', 'http.statuscode'], title='Methods by status code'),
 ], ['ip.src', 'ip.dst', 'http.method', 'host.http', 'http.uri', 'http.statuscode'], 'http.statuscode')
 
 D['dns'] = protocol('DNS', 'dns', P, [
@@ -188,6 +207,7 @@ D['dns'] = protocol('DNS', 'dns', P, [
     table('ip.dst', title='Resolvers', metrics=['sessions', 'bytes'], sortMetric='sessions'),
     pie('dns.query.type', title='Query types'), pie('dns.answer.type', title='Answer types'),
     table('dns.puny', h=2, title='Punycode names'), table('dns.opcode', h=2, title='Opcodes'),
+    matrix(['dns.query.type', 'dns.status'], w=4, h=2, title='Query types by status'),
 ], ['ip.src', 'ip.dst', 'dns.query.host', 'dns.query.type', 'dns.status', 'ip.dns'], 'dns.query.type')
 
 D['tls'] = protocol('TLS', 'tls', P, [
@@ -196,6 +216,7 @@ D['tls'] = protocol('TLS', 'tls', P, [
     table('tls.ja4'), table('tls.ja3'),
     table('cert.issuer.on', title='Certificate issuers'),
     bar('cert.remainingDays', length=20, bucketInterval=30, title='Days until certificate expiry (ranges of 30)'),
+    timeline('tls.version', 'TLS version share over time', w=4, percent=True),
 ], ['ip.src', 'ip.dst', 'tls.version', 'tls.cipher', 'cert.subject.cn', 'tls.ja4'], 'tls.version')
 
 D['quic'] = protocol('QUIC', 'quic', P, [
@@ -436,8 +457,9 @@ ICS = 'protocols == [modbus, dnp3, bacnet, enip, cip, s7comm, s7comm-plus, opcua
 D['ot'] = plain('OT', 'Operational technology (ICS) sessions: Modbus, DNP3, BACnet, EtherNet/IP, CIP, S7comm, OPC UA, Synchrophasor, C12.22, Omron FINS and PTP', [
     nav(),
     timeline('protocols', 'ICS sessions by protocol', length=10),
-    metric('ICS sessions'), metric('ICS bytes', 'bytes'),
-    pie('protocols', length=12, title='ICS protocols'), geomap('country.src', h=2, title='Source countries'),
+    metric('ICS sessions', sparkline=True), metric('ICS bytes', 'bytes', sparkline=True),
+    timeofday('ICS sessions by hour of the week', h=2), geomap('country.src', h=2, title='Source countries'),
+    pie('protocols', length=12, title='ICS protocols'),
     table('ip.src', title='ICS clients', metrics=['sessions', 'bytes'], sortMetric='sessions'),
     table('ip.dst:port', title='ICS servers', metrics=['sessions', 'bytes'], sortMetric='sessions'),
     pie('ptp.msgType', h=2, title='PTP message types', expression='protocols == ptp'),
@@ -493,6 +515,7 @@ D['files'] = plain('Files', 'Sessions that carried a file: HTTP bodies, SMB and 
 
 D['software'] = plain('Software', 'Client and server software seen on the wire: user agents, versions and operating systems', [
     nav(),
+    timeline('http.user-agent', 'User agent share over time', w=4, percent=True),
     metric('HTTP user agents', expression='http.user-agent == EXISTS!'),
     metric('SSH versions', expression='ssh.ver == EXISTS!'),
     metric('SMB operating systems', expression='smb.os == EXISTS!'),
@@ -513,9 +536,11 @@ REMOTE = 'protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]'
 D['security'] = plain('Security', 'Weak and legacy protocols, cleartext logins, failed lookups and remote access paths', [
     nav(),
     timeline('protocols', 'Remote access sessions by protocol', length=9, expression=REMOTE),
-    metric('Legacy TLS', expression=LEGACY_TLS), metric('SMBv1', expression=SMB1),
-    metric('Cleartext logins', expression=CLEARTEXT), metric('SSH v1', expression='ssh.ver == "ssh-1.*"'),
-    metric('NXDOMAIN lookups', expression='dns.status == NXDOMAIN'), metric('Remote access sessions', expression=REMOTE),
+    metric('Legacy TLS', expression=LEGACY_TLS, sparkline=True), metric('SMBv1', expression=SMB1, sparkline=True),
+    metric('Cleartext logins', expression=CLEARTEXT, sparkline=True), metric('SSH v1', expression='ssh.ver == "ssh-1.*"', sparkline=True),
+    metric('NXDOMAIN lookups', expression='dns.status == NXDOMAIN', sparkline=True), metric('Remote access sessions', expression=REMOTE, sparkline=True),
+    timeofday('Remote access by hour of the week', split='protocols', length=6, w=4, expression=REMOTE),
+    matrix(['ip.src', 'protocols'], title='Remote access clients by protocol', expression=REMOTE),
     pie('tls.version', title='TLS versions', expression='protocols == tls'), bar('http.authtype', h=2, title='HTTP authentication types'),
     table('ip.src', title='Clients using legacy TLS', expression=LEGACY_TLS),
     table('ip.dst:port', title='Cleartext login servers', metrics=['sessions', 'bytes'], sortMetric='sessions', expression=CLEARTEXT),
@@ -549,6 +574,7 @@ D['multicast'] = plain('Multicast', 'Sessions sent to IPv4 and IPv6 multicast gr
     pie('protocols', length=10, title='Protocols'), table('port.dst', h=2, title='Destination ports'),
     table('dns.query.host', h=2, title='mDNS and LLMNR names', expression='protocols == [mdns, llmnr]'),
     table('ssdp.st', h=2, title='SSDP search targets', expression='protocols == ssdp'),
+    matrix(['ip.src', 'ip.dst'], w=4, title='Senders by group'),
     sankey(['ip.src', 'ip.dst'], title='Senders to groups'),
     sessions(['ip.src', 'ip.dst', 'port.dst', 'protocols', 'bytes', 'packets']),
 ], folder=A, expression=MULTICAST)
@@ -557,7 +583,8 @@ DATABASES = 'protocols == [mysql, postgresql, oracle, tds, mongo, redis, cassand
 D['databases'] = plain('Databases', 'Database sessions: MySQL, PostgreSQL, Oracle, MSSQL (TDS), MongoDB, Redis, Cassandra, Aerospike and Kafka', [
     nav(),
     timeline('protocols', 'Database sessions by protocol', length=9),
-    metric('Database sessions'), metric('Database bytes', 'bytes'),
+    metric('Database sessions', sparkline=True), metric('Database bytes', 'bytes', sparkline=True),
+    timeofday('Database sessions by hour of the week'),
     pie('protocols', length=9, title='Database protocols'),
     table('ip.dst:port', title='Database servers', metrics=['sessions', 'bytes'], sortMetric='sessions'),
     table('ip.src', title='Clients', metrics=['sessions', 'bytes'], sortMetric='sessions'),
@@ -570,6 +597,7 @@ D['databases'] = plain('Databases', 'Database sessions: MySQL, PostgreSQL, Oracl
 D['hosts'] = plain('Hosts', 'The hosts on the wire: how many there are, their MAC vendors, VLANs and networks (ASNs), and the services they reach', [
     nav(),
     timeline('oui.src', 'Sessions by source MAC vendor', length=10, w=4),
+    timeofday('Activity by hour of the week', split='oui.src', length=6, w=4),
     metric('Source hosts', 'ip.src', agg='cardinality'), metric('Destination hosts', 'ip.dst', agg='cardinality'),
     metric('MAC vendors', 'oui.src', agg='cardinality'), metric('VLANs', 'vlan', agg='cardinality'),
     table('oui.src', title='Source MAC vendors', metrics=['sessions', 'bytes'], sortMetric='sessions'),
@@ -579,6 +607,7 @@ D['hosts'] = plain('Hosts', 'The hosts on the wire: how many there are, their MA
     table('asn.src', title='Source networks (ASN)', metrics=['sessions', 'bytes'], sortMetric='sessions'),
     table('asn.dst', title='Destination networks (ASN)', metrics=['sessions', 'bytes'], sortMetric='sessions'),
     table('ip.dst:port', w=4, title='Services', metrics=['sessions', 'bytes'], sortMetric='sessions'),
+    matrix(['oui.src', 'port.dst'], w=4, title='MAC vendors by destination port'),
     sankey(['oui.src', 'port.dst'], title='MAC vendors to destination ports'),
     sessions(['ip.src', 'mac.src', 'oui.src', 'ip.dst', 'port.dst', 'vlan', 'asn.dst']),
 ], folder=A)

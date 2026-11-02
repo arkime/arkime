@@ -107,6 +107,7 @@ import { createShareableService } from '../users/ShareableService';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import { widgetFromGraph, widgetsFromConfig, toV6Shape } from './dashboardConfig';
+import { isSystemId, systemDashboard } from './systemDashboards';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -155,11 +156,16 @@ const targets = computed(() => {
 });
 
 // found the way the Arkime tab loads its dashboard: the default dashboard
-// shareable when one is set and still readable, else the per-user state
+// when one is set and still readable (a system one is read only), else the
+// per-user state
 const resolveCurrent = async () => {
   const defaultId = store.state.user?.settings?.defaultDashboardId;
-  if (!defaultId) { return { id: null }; }
+  if (typeof defaultId !== 'string' || !defaultId) { return { id: null }; }
   try {
+    if (isSystemId(defaultId)) {
+      const system = await systemDashboard(defaultId);
+      return system ? { id: defaultId, name: system.name, canEdit: false } : { id: null };
+    }
     const response = await DashboardService.get(defaultId);
     const shareable = response?.shareable;
     if (shareable?.data) { return { id: defaultId, name: shareable.name || defaultId, canEdit: !!shareable.canEdit }; }

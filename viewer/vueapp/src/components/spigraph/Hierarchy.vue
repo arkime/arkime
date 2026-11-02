@@ -11,11 +11,11 @@ SPDX-License-Identifier: Apache-2.0
       defer
       to="#spigraph-subfield-anchor">
       <div class="d-flex flex-row align-center">
-        <!-- a bar is split by at most one more field (a tag cloud draws one
-             and has no anchor for this) -->
+        <!-- a bar is split by at most one more field, a matrix takes one
+             across the top (a tag cloud draws one and has no anchor for this) -->
         <div
           class="d-inline"
-          v-if="fields && fields.length && !(spiGraphType === 'bar' && fieldTypeaheadList.length >= 1)">
+          v-if="fields && fields.length && !((spiGraphType === 'bar' || spiGraphType === 'matrix') && fieldTypeaheadList.length >= 1)">
           <div class="arkime-input-group subfield-group">
             <span class="arkime-input-label">
               {{ $t('spigraph.addAnotherField') }}:
@@ -91,6 +91,28 @@ SPDX-License-Identifier: Apache-2.0
         :split="barTooltip.split"
         @close="barTooltip.visible = false" />
     </div> <!-- /bar area -->
+
+    <!-- matrix area: the first field's values down the side, the second's
+         across the top, cells colored by their shared session count -->
+    <div
+      v-show="spiGraphType === 'matrix' && vizData && vizData.children && vizData.children.length"
+      class="bar-area">
+      <div
+        v-if="spiGraphType === 'matrix' && !fieldTypeaheadList.length"
+        class="text-medium-emphasis ms-2 mb-1">
+        {{ $t('spigraph.matrixNeedsField') }}
+      </div>
+      <summary-matrix
+        v-if="spiGraphType === 'matrix' && matrixData && baseFieldObj"
+        :data="matrixData"
+        svg-id="spigraph-matrix"
+        :field-config="baseFieldObj"
+        :col-field-config="barSplitField"
+        :width="barWidth"
+        :height="barHeight"
+        @show-tooltip="showBarTooltip"
+        @hide-tooltip="barTooltip.visible = false" />
+    </div> <!-- /matrix area -->
 
     <!-- tag cloud area: the first field's values, sized by session count -->
     <div
@@ -319,6 +341,7 @@ import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
 import SummaryBarChart from '../summary/SummaryBarChart.vue';
 import SummaryTagCloud from '../summary/SummaryTagCloud.vue';
+import SummaryMatrix from '../summary/SummaryMatrix.vue';
 import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 import { OTHER_COLOR } from '../summary/widgets/chartColors';
 import { isUnderOther, splitPieLayout, fitLabel } from '../utils/hierarchyLayout';
@@ -501,6 +524,7 @@ export default {
     DragList,
     SummaryBarChart,
     SummaryTagCloud,
+    SummaryMatrix,
     SummaryChartTooltip
   },
   props: {
@@ -619,7 +643,7 @@ export default {
       if (newVal === 'table') {
         this.initializeColResizable();
       }
-      if (newVal === 'bar' || newVal === 'tagcloud') {
+      if (newVal === 'bar' || newVal === 'tagcloud' || newVal === 'matrix') {
         this.$nextTick(this.sizeBar);
         // sankey keeps its own node/link shape; the bar needs the hierarchy
         if (!this.vizData?.children) { this.loadData(); }
@@ -699,6 +723,10 @@ export default {
     },
     barSplitField: function () {
       return this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : null;
+    },
+    // the hierarchy as the matrix wants it (a sankey's nodes/links are no tree)
+    matrixData: function () {
+      return this.vizData?.children?.length ? withoutOther(this.vizData) : null;
     },
     // only a pie draws "Other": its parts add up to a whole
     wantsOther: function () {
@@ -796,7 +824,7 @@ export default {
     trimBarFields: function () {
       // the url's type: on back/forward the prop catches up a tick later
       const type = this.$route.query.spiGraphType || this.spiGraphType;
-      const keep = type === 'bar' ? 1 : type === 'tagcloud' ? 0 : Infinity;
+      const keep = (type === 'bar' || type === 'matrix') ? 1 : type === 'tagcloud' ? 0 : Infinity;
       if (this.fieldTypeaheadList.length <= keep) { return false; }
       this.fieldTypeaheadList.splice(keep);
       this.applyFieldListToUrl();

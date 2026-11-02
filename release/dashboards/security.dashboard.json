@@ -29,6 +29,7 @@
         "width": 1,
         "height": 1,
         "title": "Legacy TLS",
+        "sparkline": true,
         "expression": "tls.version == [\"SSLv2\", \"SSLv3\", \"TLSv1\", \"TLSv1.1\"]"
       },
       {
@@ -37,6 +38,7 @@
         "width": 1,
         "height": 1,
         "title": "SMBv1",
+        "sparkline": true,
         "expression": "smb.dialect == [\"NT LM 0.12\", \"NT LANMAN 1.0\", \"PC NETWORK PROGRAM 1.0\", \"LANMAN1.0\", \"LM1.2X002\", \"LANMAN2.1\"]"
       },
       {
@@ -45,6 +47,7 @@
         "width": 1,
         "height": 1,
         "title": "Cleartext logins",
+        "sparkline": true,
         "expression": "http.authtype == basic || ftp.command == PASS || protocols == [telnet, pop3, imap]"
       },
       {
@@ -53,6 +56,7 @@
         "width": 1,
         "height": 1,
         "title": "SSH v1",
+        "sparkline": true,
         "expression": "ssh.ver == \"ssh-1.*\""
       },
       {
@@ -61,6 +65,7 @@
         "width": 1,
         "height": 1,
         "title": "NXDOMAIN lookups",
+        "sparkline": true,
         "expression": "dns.status == NXDOMAIN"
       },
       {
@@ -69,10 +74,35 @@
         "width": 1,
         "height": 1,
         "title": "Remote access sessions",
+        "sparkline": true,
         "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
       },
       {
         "id": "w8",
+        "viewMode": "timeofday",
+        "width": 4,
+        "height": 3,
+        "title": "Remote access by hour of the week",
+        "splitField": "protocols",
+        "splitLength": 6,
+        "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
+      },
+      {
+        "id": "w9",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "protocols"
+        ],
+        "viewMode": "matrix",
+        "width": 2,
+        "height": 3,
+        "length": 10,
+        "title": "Remote access clients by protocol",
+        "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
+      },
+      {
+        "id": "w10",
         "field": "tls.version",
         "viewMode": "pie",
         "width": 2,
@@ -83,7 +113,7 @@
         "expression": "protocols == tls"
       },
       {
-        "id": "w9",
+        "id": "w11",
         "field": "http.authtype",
         "viewMode": "bar",
         "width": 2,
@@ -92,7 +122,7 @@
         "title": "HTTP authentication types"
       },
       {
-        "id": "w10",
+        "id": "w12",
         "field": "ip.src",
         "viewMode": "table",
         "width": 2,
@@ -102,7 +132,7 @@
         "expression": "tls.version == [\"SSLv2\", \"SSLv3\", \"TLSv1\", \"TLSv1.1\"]"
       },
       {
-        "id": "w11",
+        "id": "w13",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -118,7 +148,7 @@
         "expression": "http.authtype == basic || ftp.command == PASS || protocols == [telnet, pop3, imap]"
       },
       {
-        "id": "w12",
+        "id": "w14",
         "field": "dns.query.host",
         "viewMode": "table",
         "width": 2,
@@ -128,7 +158,7 @@
         "expression": "dns.status == NXDOMAIN"
       },
       {
-        "id": "w13",
+        "id": "w15",
         "field": "ip.src",
         "viewMode": "table",
         "width": 2,
@@ -144,7 +174,7 @@
         "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
       },
       {
-        "id": "w14",
+        "id": "w16",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -159,7 +189,7 @@
         "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
       },
       {
-        "id": "w15",
+        "id": "w17",
         "field": "ip.src",
         "fields": [
           "ip.src",

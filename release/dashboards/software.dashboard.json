@@ -14,6 +14,17 @@
       },
       {
         "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "http.user-agent",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 4,
+        "height": 2,
+        "title": "User agent share over time",
+        "yScale": "percent"
+      },
+      {
+        "id": "w2",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -21,7 +32,7 @@
         "expression": "http.user-agent == EXISTS!"
       },
       {
-        "id": "w2",
+        "id": "w3",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -29,7 +40,7 @@
         "expression": "ssh.ver == EXISTS!"
       },
       {
-        "id": "w3",
+        "id": "w4",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -37,7 +48,7 @@
         "expression": "smb.os == EXISTS!"
       },
       {
-        "id": "w4",
+        "id": "w5",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -45,7 +56,7 @@
         "expression": "dhcp.classId == EXISTS!"
       },
       {
-        "id": "w5",
+        "id": "w6",
         "field": "http.user-agent",
         "viewMode": "table",
         "width": 2,
@@ -54,7 +65,7 @@
         "title": "HTTP user agents"
       },
       {
-        "id": "w6",
+        "id": "w7",
         "field": "quic.user-agent",
         "viewMode": "table",
         "width": 2,
@@ -63,7 +74,7 @@
         "title": "QUIC user agents"
       },
       {
-        "id": "w7",
+        "id": "w8",
         "field": "ssh.ver.src",
         "viewMode": "table",
         "width": 2,
@@ -72,7 +83,7 @@
         "title": "SSH clients"
       },
       {
-        "id": "w8",
+        "id": "w9",
         "field": "ssh.ver.dst",
         "viewMode": "table",
         "width": 2,
@@ -81,7 +92,7 @@
         "title": "SSH servers"
       },
       {
-        "id": "w9",
+        "id": "w10",
         "field": "smb.os",
         "viewMode": "table",
         "width": 2,
@@ -90,7 +101,7 @@
         "title": "SMB operating systems"
       },
       {
-        "id": "w10",
+        "id": "w11",
         "field": "smb.ver",
         "viewMode": "table",
         "width": 2,
@@ -99,7 +110,7 @@
         "title": "SMB versions"
       },
       {
-        "id": "w11",
+        "id": "w12",
         "field": "dhcp.classId",
         "viewMode": "table",
         "width": 2,
@@ -108,7 +119,7 @@
         "title": "DHCP class IDs"
       },
       {
-        "id": "w12",
+        "id": "w13",
         "field": "rdp.client-build",
         "viewMode": "table",
         "width": 2,
@@ -117,7 +128,7 @@
         "title": "RDP client builds"
       },
       {
-        "id": "w13",
+        "id": "w14",
         "field": "sip.user-agent",
         "viewMode": "table",
         "width": 2,
@@ -126,7 +137,7 @@
         "title": "SIP user agents"
       },
       {
-        "id": "w14",
+        "id": "w15",
         "field": "ssdp.server",
         "viewMode": "table",
         "width": 2,
@@ -135,7 +146,7 @@
         "title": "SSDP servers"
       },
       {
-        "id": "w15",
+        "id": "w16",
         "field": "email.x-mailer",
         "viewMode": "table",
         "width": 2,
@@ -144,7 +155,7 @@
         "title": "Mailers"
       },
       {
-        "id": "w16",
+        "id": "w17",
         "field": "stun.software",
         "viewMode": "table",
         "width": 2,

@@ -110,6 +110,19 @@
           "ip.src",
           "ip.dst"
         ],
+        "viewMode": "matrix",
+        "width": 4,
+        "height": 3,
+        "length": 10,
+        "title": "Senders by group"
+      },
+      {
+        "id": "w11",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
         "viewMode": "sankey",
         "width": 4,
         "height": 3,
@@ -117,7 +130,7 @@
         "title": "Senders to groups"
       },
       {
-        "id": "w11",
+        "id": "w12",
         "field": "ip.src",
         "fields": [
           "ip.src",

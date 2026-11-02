@@ -175,6 +175,19 @@ SPDX-License-Identifier: Apache-2.0
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- one field's values down the side, another's across the top -->
+          <MatrixWidget
+            v-else-if="w.viewMode === 'matrix'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
+            @show-tooltip="showTooltip"
+            @hide-tooltip="hideTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <IntersectionWidget
             v-else-if="w.viewMode === 'intersection'"
             :widget="w"
@@ -203,6 +216,17 @@ SPDX-License-Identifier: Apache-2.0
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
             @time-range="onTimeRange"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
+          <!-- a week of hours, colored by the metric -->
+          <TimeOfDayWidget
+            v-else-if="w.viewMode === 'timeofday'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <MapWidget
@@ -303,6 +327,8 @@ import Sortable from 'sortablejs';
 import setReqHeaders from '@common/setReqHeaders';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
+import MatrixWidget from './widgets/MatrixWidget.vue';
+import TimeOfDayWidget from './widgets/TimeOfDayWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
 import { widgetIsGraph, graphFromWidget, normalizeWidget } from './dashboardConfig';
@@ -589,8 +615,11 @@ const widgetInfo = (w) => {
   if (w.viewMode === 'timeline' && !w.splitField && w.seriesType === 'lines') {
     rows.push({ label: t('sessions.summary.widget.seriesMode'), value: t('sessions.summary.widget.seriesType-lines') });
   }
-  if (w.viewMode === 'timeline' && w.yScale === 'log') {
-    rows.push({ label: t('sessions.summary.widget.yScale'), value: t('sessions.summary.widget.yScale-log') });
+  if (w.viewMode === 'timeline' && w.yScale && w.yScale !== 'linear') {
+    rows.push({ label: t('sessions.summary.widget.yScale'), value: t(`sessions.summary.widget.yScale-${w.yScale}`) });
+  }
+  if (w.viewMode === 'metric' && w.sparkline && !w.field) {
+    rows.push({ label: t('sessions.summary.widget.sparkline'), value: t('common.yes') });
   }
 
   if (allowsBucketInterval(w.viewMode) && w.bucketInterval > 0) {

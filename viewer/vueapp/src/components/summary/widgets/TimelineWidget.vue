@@ -44,7 +44,7 @@ the host.
           :series-defs="seriesDefs"
           :series-type="seriesType"
           :stacked="!!seriesDefs && widget.barMode !== 'grouped'"
-          :y-scale="widget.yScale === 'log' ? 'log' : 'linear'"
+          :y-scale="widget.yScale || 'linear'"
           fit-height
           :timeline-data-filters="timelineDataFilters"
           :timezone="timezone"

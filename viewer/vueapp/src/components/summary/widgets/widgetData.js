@@ -159,9 +159,12 @@ export function widgetFullPageLink (route, store, widget) {
     return !!field && !field.noFacet && !field.regex;
   };
   // a split timeline is SPI Graph's Timeline: one histogram per top value of
-  // the split field (unsplit, it is the Sessions page's own timeline)
-  const splitTimeline = mode === 'timeline' && !!widget.splitField && usable(widget.splitField);
-  if (!['timeline', 'metric', 'gauge', 'sessions'].includes(mode)) {
+  // the split field (unsplit, it is the Sessions page's own timeline); a split
+  // time of day grid is SPI Graph's Time of day the same way (unsplit, it has
+  // no full page)
+  const splitTimeline = (mode === 'timeline' || mode === 'timeofday') && !!widget.splitField && usable(widget.splitField);
+  if (mode === 'timeofday' && !splitTimeline) { return null; }
+  if (!['timeline', 'timeofday', 'metric', 'gauge', 'sessions'].includes(mode)) {
     // a bar's or pie's split field becomes another SPI Graph field
     const linked = ((mode === 'bar' || mode === 'pie') && widget.splitField) ? [...fields, widget.splitField] : fields;
     if (!fields.length || !linked.every(usable)) { return null; }
@@ -264,6 +267,24 @@ export async function fetchSplitGraph (route, store, widget, { signal } = {}) {
     extra.sort = metricHistoKey(widget);
   }
   const data = buildWidgetParams(route, store, widget, extra);
+  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+}
+
+/**
+ * The hour by hour graph a time of day grid folds into its week: the timeline
+ * fetches with the histogram forced to an hour (the server's auto interval is
+ * a day for a long range, too coarse to place in an hour) -- unsplit, the
+ * search's own graph; split, one per top value of the split field.
+ */
+export async function fetchTimeOfDay (route, store, widget, { signal } = {}) {
+  const extra = widget.splitField
+    ? { exp: widget.splitField, size: widget.splitLength || 5 }
+    : { exp: 'node', size: 1 };
+  if (widget.metricType && widget.metricType !== 'sessions') {
+    extra.metric = widget.metricType;
+    if (widget.splitField) { extra.sort = metricHistoKey(widget); }
+  }
+  const data = { ...buildWidgetParams(route, store, widget, extra), interval: 'hour' };
   return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
 }
 
