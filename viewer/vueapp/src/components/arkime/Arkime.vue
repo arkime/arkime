@@ -57,63 +57,6 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('sessions.summary.addWidget') }}
             </v-btn>
 
-            <!-- export all charts as PNG -->
-            <v-btn
-              :aria-label="$t('sessions.summary.exportAllPNG')"
-              size="large"
-              variant="flat"
-              color="secondary"
-              @click="exportAllPNG">
-              <v-icon icon="mdi-download" />
-              <v-tooltip
-                activator="parent"
-                :open-delay="500">
-                {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
-              </v-tooltip>
-            </v-btn>
-
-            <!-- save the dashboard as a PDF (the browser's print dialog) -->
-            <v-btn
-              :aria-label="$t('sessions.summary.savePDF')"
-              size="large"
-              variant="flat"
-              color="secondary"
-              @click="printDashboard">
-              <v-icon icon="mdi-file-pdf-box" />
-              <v-tooltip
-                activator="parent"
-                :open-delay="500">
-                {{ $t('sessions.summary.savePDFTip') }}
-              </v-tooltip>
-            </v-btn>
-
-            <!-- reload every widget on a timer (?refresh=<seconds>), off by default -->
-            <div class="arkime-input-group dashboard-refresh">
-              <span class="arkime-input-label">
-                <v-icon
-                  icon="mdi-refresh-auto"
-                  size="small" />
-                <v-tooltip
-                  activator="parent"
-                  :open-delay="500">
-                  {{ $t('sessions.summary.autoRefreshTip') }}
-                </v-tooltip>
-              </span>
-              <select
-                id="dashboardRefresh"
-                class="arkime-input-control"
-                :aria-label="$t('sessions.summary.autoRefresh')"
-                :value="refreshSeconds"
-                @change="setRefresh(Number($event.target.value))">
-                <option
-                  v-for="opt in refreshOptions"
-                  :key="opt.value"
-                  :value="opt.value">
-                  {{ opt.label }}
-                </option>
-              </select>
-            </div>
-
             <!-- save / load dashboard config -->
             <v-btn-group
               variant="flat"
@@ -129,6 +72,8 @@ SPDX-License-Identifier: Apache-2.0
                   @saved="onDashboardSaved"
                   @changed="dashboardsVersion++"
                   @reset="resetSummaryToDefaults"
+                  @print="printDashboard"
+                  @export-png="exportAllPNG"
                   @message="displayMessage" />
               </v-defaults-provider>
             </v-btn-group>
@@ -171,6 +116,34 @@ SPDX-License-Identifier: Apache-2.0
               <v-icon icon="mdi-cancel" />&nbsp;
               {{ $t('common.cancel') }}
             </v-btn>
+
+            <!-- reload every widget on a timer (?refresh=<seconds>), off by default;
+                 on the far right of the toolbar -->
+            <div class="arkime-input-group dashboard-refresh ms-auto me-2">
+              <span class="arkime-input-label">
+                <v-icon
+                  icon="mdi-refresh-auto"
+                  size="small" />
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="500">
+                  {{ $t('sessions.summary.autoRefreshTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                id="dashboardRefresh"
+                class="arkime-input-control"
+                :aria-label="$t('sessions.summary.autoRefresh')"
+                :value="refreshSeconds"
+                @change="setRefresh(Number($event.target.value))">
+                <option
+                  v-for="opt in refreshOptions"
+                  :key="opt.value"
+                  :value="opt.value">
+                  {{ opt.label }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
       </ArkimeCollapsible>
