@@ -44,7 +44,7 @@ the host.
           :series-defs="seriesDefs"
           :series-type="seriesType"
           :stacked="!!seriesDefs && widget.barMode !== 'grouped'"
-          :y-scale="widget.yScale === 'log' ? 'log' : 'linear'"
+          :y-scale="widget.yScale || 'linear'"
           fit-height
           :timeline-data-filters="timelineDataFilters"
           :timezone="timezone"
@@ -64,6 +64,7 @@ import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
 import { metricHistoKey, fetchGraph, fetchSplitGraph } from './widgetData';
 import { colorRange } from './chartColors';
+import { metricSeries } from '../../visualizations/metrics.js';
 
 const { t } = useI18n();
 const store = useStore();
@@ -110,7 +111,7 @@ const applySplit = async (res, seq) => {
   const data = { xmin: res.graph.xmin, xmax: res.graph.xmax, interval: res.graph.interval };
   const defs = items.map((item, i) => {
     const key = `s${i}`;
-    data[key] = item.graph?.[graphType.value] || [];
+    data[key] = metricSeries(item.graph, graphType.value); // packets/bytes: src + dst summed
     return { label: String(item.name), key, color: colors[i % colors.length] };
   });
   seriesDefs.value = defs;

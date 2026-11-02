@@ -11,11 +11,11 @@ SPDX-License-Identifier: Apache-2.0
       defer
       to="#spigraph-subfield-anchor">
       <div class="d-flex flex-row align-center">
-        <!-- a bar is split by at most one more field (a tag cloud draws one
-             and has no anchor for this) -->
+        <!-- a bar is split by at most one more field, a matrix takes one
+             across the top (a tag cloud draws one and has no anchor for this) -->
         <div
           class="d-inline"
-          v-if="fields && fields.length && !(spiGraphType === 'bar' && fieldTypeaheadList.length >= 1)">
+          v-if="fields && fields.length && !((spiGraphType === 'bar' || spiGraphType === 'matrix') && fieldTypeaheadList.length >= 1)">
           <div class="arkime-input-group subfield-group">
             <span class="arkime-input-label">
               {{ $t('spigraph.addAnotherField') }}:
@@ -91,6 +91,28 @@ SPDX-License-Identifier: Apache-2.0
         :split="barTooltip.split"
         @close="barTooltip.visible = false" />
     </div> <!-- /bar area -->
+
+    <!-- matrix area: the first field's values down the side, the second's
+         across the top, cells colored by their shared session count -->
+    <div
+      v-show="spiGraphType === 'matrix' && vizData && vizData.children && vizData.children.length"
+      class="bar-area">
+      <div
+        v-if="spiGraphType === 'matrix' && !fieldTypeaheadList.length"
+        class="text-medium-emphasis ms-2 mb-1">
+        {{ $t('spigraph.matrixNeedsField') }}
+      </div>
+      <summary-matrix
+        v-if="spiGraphType === 'matrix' && matrixData && baseFieldObj"
+        :data="matrixData"
+        svg-id="spigraph-matrix"
+        :field-config="baseFieldObj"
+        :col-field-config="barSplitField"
+        :width="barWidth"
+        :height="barHeight"
+        @show-tooltip="showBarTooltip"
+        @hide-tooltip="barTooltip.visible = false" />
+    </div> <!-- /matrix area -->
 
     <!-- tag cloud area: the first field's values, sized by session count -->
     <div
@@ -319,6 +341,7 @@ import Popup from './Popup.vue';
 import DragList from '../utils/DragList.vue';
 import SummaryBarChart from '../summary/SummaryBarChart.vue';
 import SummaryTagCloud from '../summary/SummaryTagCloud.vue';
+import SummaryMatrix from '../summary/SummaryMatrix.vue';
 import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 import { OTHER_COLOR } from '../summary/widgets/chartColors';
 import { isUnderOther, splitPieLayout, fitLabel } from '../utils/hierarchyLayout';
@@ -501,6 +524,7 @@ export default {
     DragList,
     SummaryBarChart,
     SummaryTagCloud,
+    SummaryMatrix,
     SummaryChartTooltip
   },
   props: {
@@ -619,14 +643,18 @@ export default {
       if (newVal === 'table') {
         this.initializeColResizable();
       }
-      if (newVal === 'bar' || newVal === 'tagcloud') {
+      // only the pie and the matrix fetch "Other", and a split pie's first
+      // level is cut to its pie count: switching to one, or away from a split,
+      // refetches
+      const otherFetched = oldVal === 'matrix' || (oldVal === 'pie' && this.showOther && !this.splitPie);
+      const refetch = (newVal === 'pie' && (this.showOther || this.splitPie)) || (oldVal === 'pie' && this.splitPie) ||
+        (newVal === 'matrix' && this.fieldTypeaheadList.length > 0 && !otherFetched);
+      if (newVal === 'bar' || newVal === 'tagcloud' || newVal === 'matrix') {
         this.$nextTick(this.sizeBar);
         // sankey keeps its own node/link shape; the bar needs the hierarchy
-        if (!this.vizData?.children) { this.loadData(); }
+        if (!this.vizData?.children && !refetch) { this.loadData(); }
       }
-      // only the pie fetches "Other", and a split pie's first level is cut to
-      // its pie count: switching to one, or away from a split, refetches
-      if ((newVal === 'pie' && (this.showOther || this.splitPie)) || (oldVal === 'pie' && this.splitPie)) { this.loadData(); }
+      if (refetch) { this.loadData(); }
     },
     // trims once the url says bar: trimming on the prop change would push a
     // url built before the graph type change landed and undo it. The fields
@@ -700,9 +728,16 @@ export default {
     barSplitField: function () {
       return this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : null;
     },
-    // only a pie draws "Other": its parts add up to a whole
+    // the hierarchy as the matrix wants it (a sankey's nodes/links are no
+    // tree): a row's "Other" stays, it tells a value outside the row's top
+    // values from one the row doesn't have
+    matrixData: function () {
+      return this.vizData?.children?.length ? { ...this.vizData, children: this.vizData.children.filter(c => !c.other) } : null;
+    },
+    // a pie draws "Other" (its parts add up to a whole), and the matrix reads
+    // it to know which of a row's missing values are really zero
     wantsOther: function () {
-      return this.spiGraphType === 'pie' && this.showOther;
+      return (this.spiGraphType === 'pie' && this.showOther) || (this.spiGraphType === 'matrix' && this.fieldTypeaheadList.length > 0);
     },
     // a split pie: one pie per value of the first field, of the fields after it
     splitPie: function () {
@@ -796,7 +831,7 @@ export default {
     trimBarFields: function () {
       // the url's type: on back/forward the prop catches up a tick later
       const type = this.$route.query.spiGraphType || this.spiGraphType;
-      const keep = type === 'bar' ? 1 : type === 'tagcloud' ? 0 : Infinity;
+      const keep = (type === 'bar' || type === 'matrix') ? 1 : type === 'tagcloud' ? 0 : Infinity;
       if (this.fieldTypeaheadList.length <= keep) { return false; }
       this.fieldTypeaheadList.splice(keep);
       this.applyFieldListToUrl();

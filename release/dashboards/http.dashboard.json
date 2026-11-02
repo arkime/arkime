@@ -107,10 +107,11 @@
           "http.method",
           "http.statuscode"
         ],
-        "viewMode": "intersection",
+        "viewMode": "matrix",
         "width": 2,
         "height": 3,
-        "title": "Methods and status codes"
+        "length": 10,
+        "title": "Methods by status code"
       },
       {
         "id": "w12",

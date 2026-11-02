@@ -159,9 +159,12 @@ export function widgetFullPageLink (route, store, widget) {
     return !!field && !field.noFacet && !field.regex;
   };
   // a split timeline is SPI Graph's Timeline: one histogram per top value of
-  // the split field (unsplit, it is the Sessions page's own timeline)
-  const splitTimeline = mode === 'timeline' && !!widget.splitField && usable(widget.splitField);
-  if (!['timeline', 'metric', 'gauge', 'sessions'].includes(mode)) {
+  // the split field (unsplit, it is the Sessions page's own timeline); a split
+  // time of day grid is SPI Graph's Time of day the same way (unsplit, it has
+  // no full page)
+  const splitTimeline = (mode === 'timeline' || mode === 'timeofday') && !!widget.splitField && usable(widget.splitField);
+  if (mode === 'timeofday' && !splitTimeline) { return null; }
+  if (!['timeline', 'timeofday', 'metric', 'gauge', 'sessions'].includes(mode)) {
     // a bar's or pie's split field becomes another SPI Graph field
     const linked = ((mode === 'bar' || mode === 'pie') && widget.splitField) ? [...fields, widget.splitField] : fields;
     if (!fields.length || !linked.every(usable)) { return null; }
@@ -268,6 +271,41 @@ export async function fetchSplitGraph (route, store, widget, { signal } = {}) {
 }
 
 /**
+ * The IANA zone an hour of week request folds in, from the user's timezone
+ * setting: 'gmt' is UTC, 'local' and 'localtz' are the browser's zone.
+ * @param {string} setting - the user's timezone setting
+ * @returns {string}
+ */
+export function requestTimezone (setting) {
+  if (setting === 'gmt') { return 'UTC'; }
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+}
+
+/**
+ * The week of hours a time of day grid draws: the timeline fetched with
+ * interval=hourOfWeek, which has the viewer fold the hour buckets by weekday
+ * and hour in the user's timezone (168 slots at most per series, whatever the
+ * range) -- unsplit, the search's own graph; split, one per top value of the
+ * split field. Each graph comes back with hourOfWeek: true and
+ * [[slot, value], ...] series, slot 0 being Monday 00:00.
+ */
+export async function fetchTimeOfDay (route, store, widget, { signal } = {}) {
+  const extra = widget.splitField
+    ? { exp: widget.splitField, size: widget.splitLength || 5 }
+    : { exp: 'node', size: 1 };
+  if (widget.metricType && widget.metricType !== 'sessions') {
+    extra.metric = widget.metricType;
+    if (widget.splitField) { extra.sort = metricHistoKey(widget); }
+  }
+  const data = {
+    ...buildWidgetParams(route, store, widget, extra),
+    interval: 'hourOfWeek',
+    timezone: requestTimezone(store.state.user?.settings?.timezone)
+  };
+  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+}
+
+/**
  * The fields a hierarchy widget nests, outermost first: a split pie's split
  * field (one small pie per value) wraps the pie's own fields.
  */
@@ -290,7 +328,8 @@ export async function fetchHierarchy (route, store, widget, { signal } = {}) {
   if (fields.length > widgetFields(widget).length) {
     extra.sizes = [widget.splitLength || 5, ...fields.slice(1).map(() => widget.length)].join(',');
   }
-  if (widget.viewMode === 'pie' && widget.other) { extra.other = true; }
+  // a matrix reads a row's "Other" to know which of its missing values are zero
+  if ((widget.viewMode === 'pie' && widget.other) || widget.viewMode === 'matrix') { extra.other = true; }
   const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal });
 }

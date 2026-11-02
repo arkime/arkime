@@ -28,7 +28,8 @@
         "viewMode": "metric",
         "width": 1,
         "height": 1,
-        "title": "ICS sessions"
+        "title": "ICS sessions",
+        "sparkline": true
       },
       {
         "id": "w3",
@@ -36,17 +37,15 @@
         "width": 1,
         "height": 1,
         "title": "ICS bytes",
-        "metricType": "bytes"
+        "metricType": "bytes",
+        "sparkline": true
       },
       {
         "id": "w4",
-        "field": "protocols",
-        "viewMode": "pie",
+        "viewMode": "timeofday",
         "width": 2,
         "height": 2,
-        "length": 12,
-        "other": true,
-        "title": "ICS protocols"
+        "title": "ICS sessions by hour of the week"
       },
       {
         "id": "w5",
@@ -58,6 +57,16 @@
       },
       {
         "id": "w6",
+        "field": "protocols",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 12,
+        "other": true,
+        "title": "ICS protocols"
+      },
+      {
+        "id": "w7",
         "field": "ip.src",
         "viewMode": "table",
         "width": 2,
@@ -72,7 +81,7 @@
         "title": "ICS clients"
       },
       {
-        "id": "w7",
+        "id": "w8",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -87,7 +96,7 @@
         "title": "ICS servers"
       },
       {
-        "id": "w8",
+        "id": "w9",
         "field": "ptp.msgType",
         "viewMode": "pie",
         "width": 2,
@@ -98,7 +107,7 @@
         "expression": "protocols == ptp"
       },
       {
-        "id": "w9",
+        "id": "w10",
         "field": "ptp.clockId",
         "viewMode": "table",
         "width": 2,
@@ -108,7 +117,7 @@
         "expression": "protocols == ptp"
       },
       {
-        "id": "w10",
+        "id": "w11",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -122,7 +131,7 @@
         "title": "ICS tree: who reached what (click a host to re-root)"
       },
       {
-        "id": "w11",
+        "id": "w12",
         "field": "ip.src",
         "fields": [
           "ip.src",

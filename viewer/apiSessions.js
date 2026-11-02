@@ -1772,6 +1772,9 @@ class SessionAPIs {
    * @param {number} date=1 - Perform the search from a specified number of hours ago until the present moment, where '-1' indicates searching all available data.
    * @param {string} expression - The search expression string, ensure URL encoded
    * @param {number} facets=0 - 1 = include the aggregation information for maps and timeline graphs.
+   * @param {string} interval=auto - The timeline graph's bucket size: 'second', 'minute', 'hour', 'day', 'week', or 'auto' to pick one from the time range.
+     'hourOfWeek' buckets by the hour and folds the buckets into a week, so each <name>Histo series is [[slot, value], ...] with slot 0 = Monday 00:00 .. 167 = Sunday 23:00 in the timezone parameter's zone, and the graph carries hourOfWeek: true.
+   * @param {string} timezone=UTC - With interval=hourOfWeek, the IANA zone name (eg America/New_York) the hours are folded in; an unknown zone is UTC.
    * @param {number} length=100 - The number of items to return, beginning at start parameter, max is 2,000,000
    * @param {number} start=0 - The entry to start at for pagination purposes.
    * @param {number} startTime - If the date parameter is not set, this is the start time of data to return. Format is seconds since Unix EPOCH.

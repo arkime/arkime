@@ -137,6 +137,19 @@
       },
       {
         "id": "w14",
+        "field": "dns.query.type",
+        "fields": [
+          "dns.query.type",
+          "dns.status"
+        ],
+        "viewMode": "matrix",
+        "width": 4,
+        "height": 2,
+        "length": 10,
+        "title": "Query types by status"
+      },
+      {
+        "id": "w15",
         "field": "ip.src",
         "viewMode": "bar",
         "width": 2,
@@ -145,7 +158,7 @@
         "title": "Clients"
       },
       {
-        "id": "w15",
+        "id": "w16",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -160,7 +173,7 @@
         "title": "Servers"
       },
       {
-        "id": "w16",
+        "id": "w17",
         "field": "ip.src",
         "fields": [
           "ip.src",

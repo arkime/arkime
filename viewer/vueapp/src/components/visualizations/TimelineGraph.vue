@@ -38,7 +38,9 @@ export default {
     graphData: { type: Object, required: true },
     graphType: { type: String, default: 'sessionsHisto' },
     seriesType: { type: String, default: 'bars' },
-    yScale: { type: String, default: 'linear' }, // 'linear' | 'log'
+    // 'linear' | 'log' | 'percent' (a stacked split: each series as its
+    // share of the bucket; anything else draws linear)
+    yScale: { type: String, default: 'linear' },
     timelineDataFilters: { type: Array, required: true },
     capStartTimes: { type: Array, default: () => [] },
     showCapStartTimes: { type: Boolean, default: false },
@@ -323,14 +325,23 @@ export default {
       // tooltip reads the raw values kept aside here
       this.stack = null;
       let drawDefs = defs;
+      const percent = this.yScale === 'percent' && this.stacked && defs.length > 1;
       if (this.stacked && defs.length > 1) {
-        const ys = data.slice(1);
+        let ys = data.slice(1);
+        if (percent) {
+          // each bucket's values as shares of its total, so the stack always
+          // reaches 100 and a shift in the mix shows whatever the volume does
+          const totals = ys[0].map((v, j) => ys.reduce((sum, y) => sum + (y[j] || 0), 0));
+          const raw = ys;
+          ys = ys.map(y => y.map((v, j) => (totals[j] > 0 ? (v || 0) * 100 / totals[j] : 0)));
+          this.stack = { ys, raw };
+        }
         const cumulative = ys.map((y, i) => y.map((v, j) => {
           let sum = 0;
           for (let k = 0; k <= i; k++) { sum += ys[k][j] || 0; }
           return sum;
         }));
-        this.stack = { ys };
+        this.stack = { ...this.stack, ys };
         data = [data[0], ...cumulative.slice().reverse()];
         drawDefs = defs.slice().reverse();
       }
@@ -360,7 +371,9 @@ export default {
           // since that matches user expectations from other tools.
           y: this.yScale === 'log'
             ? { distr: 4, range: (u, dmin, dmax) => [0, Math.max(10, (dmax || 1) * 1.5)] }
-            : { auto: true, range: (u, dmin, dmax) => [0, (dmax || 1) * 1.05] }
+            : percent
+              ? { auto: false, range: [0, 100] }
+              : { auto: true, range: (u, dmin, dmax) => [0, (dmax || 1) * 1.05] }
         },
         axes: [
           {
@@ -377,7 +390,7 @@ export default {
             font: monoFont,
             ticks: { stroke: this.gridColor, width: 1 },
             grid: { stroke: this.gridColor, width: 1 },
-            values: (u, vals) => vals.map((v) => this.formatY(v)),
+            values: (u, vals) => vals.map((v) => (percent ? `${v}%` : this.formatY(v))),
             // Force power-of-10 splits in log mode. uPlot's default asinh
             // splits are symmetric around 0 (..., -1, 0, 1, ...), so a -1
             // tick shows up even when the data is non-negative. Generating
@@ -494,11 +507,13 @@ export default {
       const chips = [];
       defs.forEach((def, i) => {
         // a stacked plot holds running totals; the raw values are kept aside
-        const v = this.stack ? this.stack.ys[i]?.[dataIdx] : u.data[i + 1]?.[dataIdx];
+        // (a percent plot keeps the shares in ys and the values in raw)
+        const v = this.stack ? (this.stack.raw || this.stack.ys)[i]?.[dataIdx] : u.data[i + 1]?.[dataIdx];
         if (v == null) return;
         // an empty bucket of a split series would only crowd the tooltip
         if (this.seriesDefs && v === 0) return;
-        const valStr = commaString(Math.round(v * 100) / 100);
+        let valStr = commaString(Math.round(v * 100) / 100);
+        if (this.stack?.raw) { valStr += ` (${Math.round(this.stack.ys[i][dataIdx] * 10) / 10}%)`; }
         if (defs.length > 1) {
           // the composite src/dst labels shorten to their first word; a split
           // value is shown whole

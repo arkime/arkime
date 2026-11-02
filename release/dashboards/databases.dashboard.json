@@ -17,7 +17,7 @@
         "id": "w1",
         "viewMode": "timeline",
         "splitField": "protocols",
-        "splitLength": 9,
+        "splitLength": 10,
         "barMode": "stacked",
         "width": 3,
         "height": 2,
@@ -28,7 +28,8 @@
         "viewMode": "metric",
         "width": 1,
         "height": 1,
-        "title": "Database sessions"
+        "title": "Database sessions",
+        "sparkline": true
       },
       {
         "id": "w3",
@@ -36,10 +37,18 @@
         "width": 1,
         "height": 1,
         "title": "Database bytes",
-        "metricType": "bytes"
+        "metricType": "bytes",
+        "sparkline": true
       },
       {
         "id": "w4",
+        "viewMode": "timeofday",
+        "width": 2,
+        "height": 3,
+        "title": "Database sessions by hour of the week"
+      },
+      {
+        "id": "w5",
         "field": "protocols",
         "viewMode": "pie",
         "width": 2,
@@ -49,7 +58,7 @@
         "title": "Database protocols"
       },
       {
-        "id": "w5",
+        "id": "w6",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -64,7 +73,7 @@
         "title": "Database servers"
       },
       {
-        "id": "w6",
+        "id": "w7",
         "field": "ip.src",
         "viewMode": "table",
         "width": 2,
@@ -79,7 +88,7 @@
         "title": "Clients"
       },
       {
-        "id": "w7",
+        "id": "w8",
         "field": "mysql.user",
         "viewMode": "table",
         "width": 2,
@@ -88,7 +97,7 @@
         "title": "MySQL users"
       },
       {
-        "id": "w8",
+        "id": "w9",
         "field": "postgresql.user",
         "viewMode": "table",
         "width": 2,
@@ -97,7 +106,7 @@
         "title": "PostgreSQL users"
       },
       {
-        "id": "w9",
+        "id": "w10",
         "field": "oracle.user",
         "viewMode": "table",
         "width": 2,
@@ -106,7 +115,7 @@
         "title": "Oracle users"
       },
       {
-        "id": "w10",
+        "id": "w11",
         "field": "postgresql.db",
         "viewMode": "table",
         "width": 2,
@@ -115,7 +124,7 @@
         "title": "PostgreSQL databases"
       },
       {
-        "id": "w11",
+        "id": "w12",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -129,7 +138,7 @@
         "title": "Database tree: clients to servers (click a host to re-root)"
       },
       {
-        "id": "w12",
+        "id": "w13",
         "field": "ip.src",
         "fields": [
           "ip.src",

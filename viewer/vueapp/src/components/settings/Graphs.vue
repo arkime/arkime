@@ -294,18 +294,20 @@ const viewModeLabel = (viewMode) => {
   return key ? t(key) : (viewMode || '');
 };
 const fieldName = (exp) => FieldService.getField(exp, true)?.friendlyName || exp;
-// the fields a graph draws, the bar's (and timeline's) split field included
+// the graphs that are a split of a field rather than an aggregation of one
+const isSplitGraph = (data) => data.viewMode === 'timeline' || data.viewMode === 'timeofday';
+// the fields a graph draws, the bar's (and a split graph's) split field included
 const fieldsLabel = (data) => {
   if (!data) { return ''; }
   const names = data.fields.filter(Boolean).map(fieldName);
-  if ((data.viewMode === 'bar' || data.viewMode === 'timeline') && data.splitField) { names.push(fieldName(data.splitField)); }
+  if ((data.viewMode === 'bar' || isSplitGraph(data)) && data.splitField) { names.push(fieldName(data.splitField)); }
   return names.join(', ');
 };
 const limitLabel = (data) => {
   if (!data) { return ''; }
   const order = data.order === 'asc' ? t('sessions.summary.bottom') : t('sessions.summary.top');
-  // a timeline draws its split field's top values, one series each
-  return `${order} ${data.viewMode === 'timeline' ? data.splitLength : data.length}`;
+  // a timeline or time of day draws its split field's top values, one series each
+  return `${order} ${isSplitGraph(data) ? data.splitLength : data.length}`;
 };
 const viewName = (id) => (store.state.views || []).find(v => v.id === id || v.name === id)?.name || id;
 
