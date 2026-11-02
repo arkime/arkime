@@ -271,10 +271,23 @@ export async function fetchSplitGraph (route, store, widget, { signal } = {}) {
 }
 
 /**
- * The hour by hour graph a time of day grid folds into its week: the timeline
- * fetches with the histogram forced to an hour (the server's auto interval is
- * a day for a long range, too coarse to place in an hour) -- unsplit, the
- * search's own graph; split, one per top value of the split field.
+ * The IANA zone an hour of week request folds in, from the user's timezone
+ * setting: 'gmt' is UTC, 'local' and 'localtz' are the browser's zone.
+ * @param {string} setting - the user's timezone setting
+ * @returns {string}
+ */
+export function requestTimezone (setting) {
+  if (setting === 'gmt') { return 'UTC'; }
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+}
+
+/**
+ * The week of hours a time of day grid draws: the timeline fetched with
+ * interval=hourOfWeek, which has the viewer fold the hour buckets by weekday
+ * and hour in the user's timezone (168 slots at most per series, whatever the
+ * range) -- unsplit, the search's own graph; split, one per top value of the
+ * split field. Each graph comes back with hourOfWeek: true and
+ * [[slot, value], ...] series, slot 0 being Monday 00:00.
  */
 export async function fetchTimeOfDay (route, store, widget, { signal } = {}) {
   const extra = widget.splitField
@@ -284,7 +297,11 @@ export async function fetchTimeOfDay (route, store, widget, { signal } = {}) {
     extra.metric = widget.metricType;
     if (widget.splitField) { extra.sort = metricHistoKey(widget); }
   }
-  const data = { ...buildWidgetParams(route, store, widget, extra), interval: 'hour' };
+  const data = {
+    ...buildWidgetParams(route, store, widget, extra),
+    interval: 'hourOfWeek',
+    timezone: requestTimezone(store.state.user?.settings?.timezone)
+  };
   return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
 }
 

@@ -668,6 +668,10 @@ class BuildQuery {
     case 'week':
       interval = 60 * 60 * 24 * 7;
       break;
+    case 'hourOfWeek':
+      // hour buckets, folded by weekday and hour into a week by graphMerge
+      interval = 60 * 60;
+      break;
     }
 
     if (Config.debug) {

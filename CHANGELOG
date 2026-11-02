@@ -231,6 +231,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Bar widgets and SPI Graph bars can be horizontal; map widgets can shade countries by any metric
   - Add a connection tree widget and SPI Graph type: who reached what from one host, hop by hop
   - Add a time of day widget and SPI Graph type: a week of hours colored by the metric, to spot off hours traffic
+          (the sessions and spigraph APIs take interval=hourOfWeek and a timezone to fold the hours server side)
+  - The Arkime page's search bar no longer offers the pin and hide graph/map options, which it has no graph or map for
   - Add a matrix widget and SPI Graph type: one field's values down the side, another's across the top
   - A split timeline can show each value's share of the bucket (percent y axis); SPI Graph's Timeline can stack its
           values the same way

@@ -126,6 +126,66 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // the hour of week fold (interval=hourOfWeek): a weekday and hour reader per
+  // timezone, made once and kept
+  static #hourOfWeekFormats = new Map();
+  static #WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  /**
+   * The timezone an hour of week fold places buckets in: the request's IANA
+   * zone name when it is one the runtime knows, else UTC.
+   * @param {string} timezone - the request's timezone parameter
+   * @returns {string}
+   */
+  static hourOfWeekTimezone (timezone) {
+    if (!ArkimeUtil.isString(timezone)) { return 'UTC'; }
+    if (/^(utc|gmt|etc\/utc|etc\/gmt)$/i.test(timezone)) { return 'UTC'; }
+    return Intl.supportedValuesOf('timeZone').includes(timezone) ? timezone : 'UTC';
+  }
+
+  /**
+   * The hour of week slot (0 = Monday 00:00 .. 167 = Sunday 23:00) a time
+   * falls in, in a timezone.
+   * @param {number} ms - the time
+   * @param {string} timezone - a zone hourOfWeekTimezone returned
+   * @returns {number}
+   */
+  static hourOfWeekSlot (ms, timezone) {
+    let fmt = ViewerUtils.#hourOfWeekFormats.get(timezone);
+    if (!fmt) {
+      fmt = new Intl.DateTimeFormat('en-US', { timeZone: timezone, weekday: 'short', hour: 'numeric', hourCycle: 'h23' });
+      ViewerUtils.#hourOfWeekFormats.set(timezone, fmt);
+    }
+    const parts = fmt.formatToParts(new Date(ms));
+    const day = ViewerUtils.#WEEKDAYS.indexOf(parts.find(p => p.type === 'weekday')?.value);
+    const hour = parseInt(parts.find(p => p.type === 'hour')?.value, 10) % 24;
+    return Math.max(0, day) * 24 + hour;
+  }
+
+  /**
+   * Folds a graph's hour buckets into a week: every <name>Histo series
+   * becomes [[slot, value], ...] by slot (0 = Monday 00:00 .. 167 = Sunday
+   * 23:00) in the timezone, values summed, and the graph is marked
+   * hourOfWeek. The totals and bounds are left as they are.
+   * @param {object} graph - a graphMerge graph (hour interval)
+   * @param {string} timezone - the request's timezone parameter
+   */
+  static foldHourOfWeek (graph, timezone) {
+    const tz = ViewerUtils.hourOfWeekTimezone(timezone);
+    for (const key of Object.keys(graph)) {
+      if (!key.endsWith('Histo') || !Array.isArray(graph[key])) { continue; }
+      const slots = new Map();
+      for (const [ms, value] of graph[key]) {
+        const slot = ViewerUtils.hourOfWeekSlot(ms, tz);
+        slots.set(slot, (slots.get(slot) || 0) + value);
+      }
+      graph[key] = [...slots.entries()].sort((a, b) => a[0] - b[0]);
+    }
+    graph.hourOfWeek = true;
+    graph.timezone = tz;
+  }
+
+  // ----------------------------------------------------------------------------
   static graphMerge (req, query, aggregations) {
     const filterNameMap = { totPackets: 'network.packets', totBytes: 'network.bytes' };
     let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
@@ -164,7 +224,11 @@ class ViewerUtils {
       graph[filter + 'Total'] = 0;
     }
 
+    // the hour of week fold: hour buckets become a week of slots
+    const hourOfWeek = req.query.interval === 'hourOfWeek';
+
     if (!aggregations || !aggregations.dbHisto) {
+      if (hourOfWeek) { ViewerUtils.foldHourOfWeek(graph, req.query.timezone); }
       return graph;
     }
 
@@ -202,6 +266,7 @@ class ViewerUtils {
       }
     }
 
+    if (hourOfWeek) { ViewerUtils.foldHourOfWeek(graph, req.query.timezone); }
     return graph;
   }
 

@@ -4,10 +4,12 @@ SPDX-License-Identifier: Apache-2.0
 
 Time of day grid: a week of hours, Monday to Sunday down the side and the 24
 hours across, each cell colored by how much of the metric fell in that hour of
-that weekday over the whole time range. It folds a timeline's hour buckets by
-weekday and hour in the user's timezone, so it needs no data of its own: the
-same <metric>Histo series the timeline draws. The classic baselining view:
-off hours traffic stands out as color where the grid should be dark.
+that weekday over the whole time range. It draws the same <metric>Histo
+series the timeline does: folded by the viewer already when the graph is
+marked hourOfWeek (interval=hourOfWeek, [[slot, value]] with slot 0 Monday
+00:00), else folded here from hour buckets in the user's timezone. The classic
+baselining view: off hours traffic stands out as color where the grid should
+be dark.
 Fills its container (a ResizeObserver resizes it), compact for a small
 multiple (a time of day split by a field).
 -->
@@ -142,11 +144,20 @@ const inZone = (ts) => {
 // metric's series, placed by the bucket's start in the user's timezone
 const grid = computed(() => {
   const out = Array.from({ length: DAYS }, () => Array.from({ length: HOURS }, () => ({ value: 0, count: 0 })));
+  const folded = !!props.graph?.hourOfWeek;
   for (const key of metricHistoKeys(props.metric)) {
     for (const [ts, val] of (props.graph?.[key] || [])) {
-      const m = inZone(ts);
-      const d = (m.day() + 6) % 7; // Monday first
-      const cell = out[d][m.hour()];
+      let d, h;
+      if (folded) { // the viewer's slot: weekday * 24 + hour
+        const slot = Math.max(0, Math.min(DAYS * HOURS - 1, Number(ts) || 0));
+        d = Math.floor(slot / HOURS);
+        h = slot % HOURS;
+      } else {
+        const m = inZone(ts);
+        d = (m.day() + 6) % 7; // Monday first
+        h = m.hour();
+      }
+      const cell = out[d][h];
       cell.value += val || 0;
       cell.count++;
     }

@@ -572,6 +572,7 @@ import ArkimeVisualizations from '../visualizations/Visualizations.vue';
 import TimelineGraph from '../visualizations/TimelineGraph.vue';
 import TimeOfDayChart from '../visualizations/TimeOfDayChart.vue';
 import { colorRange } from '../summary/widgets/chartColors';
+import { requestTimezone } from '../summary/widgets/widgetData';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import ArkimePie from './Hierarchy.vue';
@@ -712,8 +713,10 @@ export default {
         startTime: this.$store.state.time.startTime,
         stopTime: this.$store.state.time.stopTime,
         bounding: this.$route.query.bounding || 'last',
-        // a time of day grid folds hours, so its histogram is never coarser
-        interval: this.spiGraphType === 'timeofday' ? 'hour' : (this.$route.query.interval || 'auto'),
+        // a time of day grid is the viewer's fold of hour buckets into a week
+        // in the user's timezone (interval=hourOfWeek)
+        interval: this.spiGraphType === 'timeofday' ? 'hourOfWeek' : (this.$route.query.interval || 'auto'),
+        timezone: this.spiGraphType === 'timeofday' ? requestTimezone(this.user.settings.timezone) : undefined,
         spanning: this.$route.query.spanning === 'true' ? true : undefined,
         view: this.$route.query.view || undefined,
         expression: this.$store.state.expression || undefined,
