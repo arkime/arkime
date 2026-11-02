@@ -1248,13 +1248,13 @@ class DbCHImpl {
   }
 
   // An ES histogram over a numeric field (the summary's bucketInterval ranges)
-  // rather than over time: the time ones are on a date field, packetRange or
-  // @timestamp, and go through runHistogramAgg
+  // rather than over time. The viewer's time graphs are date_histogram aggs,
+  // so a histogram is numeric unless it is on a date field, packetRange or
+  // @timestamp; it can't lean on the field map, multies doesn't load one
   isNumericHistogram (histo) {
     const field = histo.field;
     if (!field || field === 'packetRange' || field === '@timestamp' || DATE_FIELDS.has(field)) { return false; }
-    const type = dbFieldsMap()[field]?.type;
-    return type === 'integer' || type === 'float';
+    return dbFieldsMap()[field]?.type !== 'date';
   }
 
   // Fixed width ranges of a numeric field, like ES: a bucket's key is the
