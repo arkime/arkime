@@ -268,7 +268,14 @@ describe('spigraphQueryFromGraph', () => {
       graph({ viewMode: 'table', fields: ['ip.src', 'ip.dst', 'port.dst', 'protocols', 'bytes', 'packets', 'ip.src'], length: 50 }),
       graph({ viewMode: 'intersection', fields: ['ip.src', 'ip.dst'] }),
       graph({ viewMode: 'heatmap', field: 'ip.dst', metricType: 'packets', length: 30 }),
-      graph({ viewMode: 'connections', fields: ['ip.src', 'ip.dst:port'], length: 500 })
+      graph({ viewMode: 'connections', fields: ['ip.src', 'ip.dst:port'], length: 500 }),
+      graph({ viewMode: 'area', splitField: 'protocols', splitLength: 10 }),
+      graph({ viewMode: 'area', splitField: 'ip.dst', splitLength: 5, metricType: 'bytes', barMode: 'grouped' }),
+      graph({ viewMode: 'area', splitField: 'protocols', splitLength: 5, yScale: 'percent' }),
+      graph({ viewMode: 'combo', field: 'ip.src', metrics: ['sessions', 'bytes'], length: 20 }),
+      graph({ viewMode: 'combo', field: 'ip.dst', metrics: ['packets', 'bytes'], metricType: 'packets', sortMetric: 'packets', length: 10, view: 'v1' }),
+      graph({ viewMode: 'scatter', field: 'ip.src', metrics: ['sessions', 'bytes', ''], length: 50 }),
+      graph({ viewMode: 'scatter', field: 'ip.src', metrics: ['bytes', 'packets', 'sessions'], metricType: 'bytes', sortMetric: 'bytes', yScale: 'log' })
     ];
     for (const g of graphs) {
       const query = spigraphQueryFromGraph(g);
@@ -299,6 +306,28 @@ describe('spigraphQueryFromGraph', () => {
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'pie', field: 'ip.dst', other: true })).other, 'true');
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'pie', field: 'ip.dst' })).other, undefined);
     assert.equal(graphFromSpigraphQuery({ spiGraphType: 'bar', exp: 'ip.dst', other: 'true' }).other, false);
+  });
+
+  test('a combo and a scatter name every metric, a scatter its scale', () => {
+    assert.deepEqual(spigraphQueryFromGraph(graph({ viewMode: 'combo', field: 'ip.src', metrics: ['sessions', 'bytes'] })),
+      { exp: 'ip.src', size: 20, view: undefined, graphType: 'sessionsHisto', spiGraphType: 'combo', lineMetric: 'totBytesHisto' });
+    const q = spigraphQueryFromGraph(graph({ viewMode: 'scatter', field: 'ip.src', metrics: ['bytes', 'packets', ''], yScale: 'log' }));
+    assert.equal(q.graphType, 'totBytesHisto');
+    assert.equal(q.yMetric, 'totPacketsHisto');
+    assert.equal(q.sizeMetric, undefined);
+    assert.equal(q.yScale, 'log');
+    // a slot left unset gets its default: a combo's line is bytes
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'combo', field: 'ip.src' })).lineMetric, 'totBytesHisto');
+  });
+
+  test('an area opens SPI Graph\'s Area, stacked unless percent or overlaid', () => {
+    const q = (o) => spigraphQueryFromGraph(graph({ viewMode: 'area', splitField: 'protocols', ...o }));
+    assert.equal(q({}).spiGraphType, 'area');
+    assert.equal(q({}).timelineMode, undefined);
+    assert.equal(q({ yScale: 'percent' }).timelineMode, 'percent');
+    assert.equal(q({ barMode: 'grouped' }).timelineMode, 'overlaid');
+    // unsplit it has no field to split: no graph
+    assert.equal(q({ splitField: '' }), null);
   });
 
   test('graphs SPI Graph has no type for give null', () => {

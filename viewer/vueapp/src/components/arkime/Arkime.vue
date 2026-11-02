@@ -72,6 +72,48 @@ SPDX-License-Identifier: Apache-2.0
               </v-tooltip>
             </v-btn>
 
+            <!-- save the dashboard as a PDF (the browser's print dialog) -->
+            <v-btn
+              :aria-label="$t('sessions.summary.savePDF')"
+              size="large"
+              variant="flat"
+              color="secondary"
+              @click="printDashboard">
+              <v-icon icon="mdi-file-pdf-box" />
+              <v-tooltip
+                activator="parent"
+                :open-delay="500">
+                {{ $t('sessions.summary.savePDFTip') }}
+              </v-tooltip>
+            </v-btn>
+
+            <!-- reload every widget on a timer (?refresh=<seconds>), off by default -->
+            <div class="arkime-input-group dashboard-refresh">
+              <span class="arkime-input-label">
+                <v-icon
+                  icon="mdi-refresh-auto"
+                  size="small" />
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="500">
+                  {{ $t('sessions.summary.autoRefreshTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                id="dashboardRefresh"
+                class="arkime-input-control"
+                :aria-label="$t('sessions.summary.autoRefresh')"
+                :value="refreshSeconds"
+                @change="setRefresh(Number($event.target.value))">
+                <option
+                  v-for="opt in refreshOptions"
+                  :key="opt.value"
+                  :value="opt.value">
+                  {{ opt.label }}
+                </option>
+              </select>
+            </div>
+
             <!-- save / load dashboard config -->
             <v-btn-group
               variant="flat"
@@ -208,6 +250,10 @@ import { ArkimeError } from '@common/fetchWrapper.js';
 
 const DashboardService = createShareableService('summaryConfig');
 
+// the auto refresh choices, in seconds (0 is off)
+const REFRESH_SECONDS = [0, 30, 60, 300, 900, 1800, 3600];
+let refreshTimer;
+
 export default {
   name: 'Arkime',
   components: {
@@ -242,9 +288,27 @@ export default {
       summaryCanceled: false
     };
   },
+  beforeUnmount: function () {
+    this.stopRefreshTimer();
+    window.removeEventListener('afterprint', this.endPrint);
+  },
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    // the auto refresh period, kept in the url so a wall display's link
+    // keeps refreshing; anything but a listed choice is off
+    refreshSeconds: function () {
+      const n = parseInt(this.$route.query.refresh, 10);
+      return REFRESH_SECONDS.includes(n) ? n : 0;
+    },
+    refreshOptions: function () {
+      return REFRESH_SECONDS.map(n => ({
+        value: n,
+        label: !n
+          ? this.$t('sessions.summary.autoRefreshOff')
+          : n < 60 ? this.$t('sessions.summary.everySeconds', { count: n }) : n < 3600 ? this.$t('sessions.summary.everyMinutes', { count: n / 60 }) : this.$t('sessions.summary.everyHours', { count: n / 3600 })
+      }));
     },
     // Current dashboard configuration for saving (layout + widgets). Also
     // dual-writes the v6 summaryConfig shape (fields[]/resultsLimit/order) so a
@@ -263,6 +327,10 @@ export default {
     }
   },
   watch: {
+    refreshSeconds: {
+      immediate: true,
+      handler: function (seconds) { this.startRefreshTimer(seconds); }
+    },
     // Handle fetch viz data button click (re-fetch visualizations)
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.reloadSummaryView(); }
@@ -493,6 +561,37 @@ export default {
     },
     exportAllPNG: function () {
       this.$refs.summaryView?.exportAllPNG?.();
+    },
+    setRefresh: function (seconds) {
+      const query = { ...this.$route.query, refresh: seconds ? String(seconds) : undefined };
+      this.$router.replace({ query });
+    },
+    stopRefreshTimer: function () {
+      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = undefined; }
+    },
+    // each tick reissues the search, so a relative time range (the last hour)
+    // moves forward; a tick is skipped while the page is hidden or still loading
+    startRefreshTimer: function (seconds) {
+      this.stopRefreshTimer();
+      if (!seconds) { return; }
+      refreshTimer = setInterval(() => {
+        if (document.hidden || this.summaryStreaming) { return; }
+        this.$store.commit('setIssueSearch', true);
+      }, seconds * 1000);
+    },
+    // the browser's print dialog, whose Save as PDF keeps the charts as
+    // drawn; the print styles below show only the widgets while it is open
+    printDashboard: function () {
+      document.body.classList.add('arkime-print');
+      window.addEventListener('afterprint', this.endPrint);
+      // the charts reflow to the printed width before the dialog snapshots them
+      window.dispatchEvent(new Event('resize'));
+      setTimeout(() => window.print(), 300);
+    },
+    endPrint: function () {
+      document.body.classList.remove('arkime-print');
+      window.removeEventListener('afterprint', this.endPrint);
+      window.dispatchEvent(new Event('resize'));
     }
   }
 };
@@ -512,6 +611,10 @@ export default {
   text-overflow: ellipsis;
 }
 
+.dashboard-refresh .arkime-input-control {
+  width: auto;
+}
+
 /* The sibling toolbar buttons are density-compact + size-large = 32px tall.
    v-btn-group's density sets its own (taller) height and its children get an
    inline height:auto, so pin the group to 32px and force the child buttons to
@@ -521,5 +624,31 @@ export default {
 }
 .dashboard-btn-group :deep(.v-btn) {
   height: 100% !important;
+}
+</style>
+
+<style>
+/* Save as PDF: only the dashboard's widgets, the page's own scroll box opened
+   up so every widget prints, not just the ones on screen */
+@media print {
+  body.arkime-print nav.arkime-navbar,
+  body.arkime-print .navbarOffset,
+  body.arkime-print .page-chrome,
+  body.arkime-print .app-info-error,
+  body.arkime-print .help-notes,
+  body.arkime-print .footer,
+  body.arkime-print .widget-resize,
+  body.arkime-print .v-snackbar {
+    display: none !important;
+  }
+  body.arkime-print .page-shell,
+  body.arkime-print .page-body,
+  body.arkime-print .page-scroll {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  body.arkime-print .widget-wrapper {
+    break-inside: avoid;
+  }
 }
 </style>

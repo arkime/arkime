@@ -85,17 +85,17 @@
       {
         "id": "w9",
         "field": "ip.dst",
-        "viewMode": "table",
+        "viewMode": "combo",
         "width": 2,
         "height": 3,
-        "length": 20,
+        "length": 10,
         "metrics": [
           "sessions",
           "bytes"
         ],
-        "sortMetric": "sessions",
         "metricType": "sessions",
-        "title": "Resolvers"
+        "sortMetric": "sessions",
+        "title": "Resolvers: queries and bytes"
       },
       {
         "id": "w10",

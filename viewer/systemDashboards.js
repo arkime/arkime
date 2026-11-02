@@ -98,6 +98,29 @@ class SystemDashboards {
   }
 
   // --------------------------------------------------------------------------
+  /**
+   * The file's contents, checked and read through one descriptor so a file
+   * swapped after the stat can't be a FIFO, a device or larger than
+   * MAX_FILE_BYTES. Throws when it is.
+   */
+  static #readBounded (file) {
+    // non blocking so a FIFO swapped in doesn't hang the open
+    /* eslint-disable-next-line no-bitwise */
+    const fd = fs.openSync(file, fs.constants.O_RDONLY | fs.constants.O_NONBLOCK);
+    try {
+      if (!fs.fstatSync(fd).isFile()) { throw new Error('not a regular file'); }
+      const buf = Buffer.alloc(MAX_FILE_BYTES + 1);
+      let len = 0;
+      let n;
+      while (len < buf.length && (n = fs.readSync(fd, buf, len, buf.length - len, null)) > 0) { len += n; }
+      if (len > MAX_FILE_BYTES) { throw new Error(`larger than ${MAX_FILE_BYTES} bytes`); }
+      return buf.toString('utf8', 0, len);
+    } finally {
+      fs.closeSync(fd);
+    }
+  }
+
+  // --------------------------------------------------------------------------
   /** The dashboard in this file, parsed again only when the file changed. */
   static #load (file) {
     let st;
@@ -116,11 +139,13 @@ class SystemDashboards {
     let dashboard = null;
     if (!KEY_RE.test(key)) {
       console.log(`DASHBOARDS - skipping ${file}, the name before ${SUFFIX} must be letters, numbers, - or _`);
+    } else if (!st.isFile()) {
+      console.log(`DASHBOARDS - skipping ${file}, not a regular file`);
     } else if (size > MAX_FILE_BYTES) {
       console.log(`DASHBOARDS - skipping ${file}, larger than ${MAX_FILE_BYTES} bytes`);
     } else {
       try {
-        const result = SystemDashboards.#fromFile(key, JSON.parse(fs.readFileSync(file, 'utf8')));
+        const result = SystemDashboards.#fromFile(key, JSON.parse(SystemDashboards.#readBounded(file)));
         if (typeof result === 'string') {
           console.log(`DASHBOARDS - skipping ${file}, ${result}`);
         } else {

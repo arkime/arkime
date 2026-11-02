@@ -295,7 +295,7 @@ const viewModeLabel = (viewMode) => {
 };
 const fieldName = (exp) => FieldService.getField(exp, true)?.friendlyName || exp;
 // the graphs that are a split of a field rather than an aggregation of one
-const isSplitGraph = (data) => data.viewMode === 'timeline' || data.viewMode === 'timeofday';
+const isSplitGraph = (data) => data.viewMode === 'timeline' || data.viewMode === 'area' || data.viewMode === 'timeofday';
 // the fields a graph draws, the bar's (and a split graph's) split field included
 const fieldsLabel = (data) => {
   if (!data) { return ''; }

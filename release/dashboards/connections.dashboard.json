@@ -13,7 +13,7 @@
       },
       {
         "id": "w1",
-        "viewMode": "timeline",
+        "viewMode": "area",
         "splitField": "protocols",
         "splitLength": 10,
         "barMode": "stacked",
@@ -89,7 +89,7 @@
       {
         "id": "w8",
         "field": "port.dst",
-        "viewMode": "table",
+        "viewMode": "combo",
         "width": 2,
         "height": 3,
         "length": 20,
@@ -97,9 +97,9 @@
           "sessions",
           "bytes"
         ],
-        "sortMetric": "sessions",
         "metricType": "sessions",
-        "title": "Top destination ports"
+        "sortMetric": "sessions",
+        "title": "Top destination ports: sessions and bytes"
       },
       {
         "id": "w9",
@@ -219,6 +219,23 @@
       {
         "id": "w21",
         "field": "ip.src",
+        "viewMode": "scatter",
+        "width": 4,
+        "height": 3,
+        "length": 50,
+        "metrics": [
+          "sessions",
+          "bytes",
+          "packets"
+        ],
+        "metricType": "sessions",
+        "sortMetric": "sessions",
+        "yScale": "log",
+        "title": "Sources by sessions and bytes (point size: packets)"
+      },
+      {
+        "id": "w22",
+        "field": "ip.src",
         "fields": [
           "ip.src",
           "port.dst",
@@ -231,7 +248,7 @@
         "title": "Top paths: source, destination port, destination"
       },
       {
-        "id": "w22",
+        "id": "w23",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -244,7 +261,7 @@
         "title": "Connection graph"
       },
       {
-        "id": "w23",
+        "id": "w24",
         "field": "ip.src",
         "fields": [
           "ip.src",

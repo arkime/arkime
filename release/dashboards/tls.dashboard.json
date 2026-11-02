@@ -111,7 +111,7 @@
       },
       {
         "id": "w12",
-        "viewMode": "timeline",
+        "viewMode": "area",
         "splitField": "tls.version",
         "splitLength": 5,
         "barMode": "stacked",

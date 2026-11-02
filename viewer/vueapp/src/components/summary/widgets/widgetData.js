@@ -10,7 +10,7 @@ filter and the global time window.
 import { fetchWrapper } from '@common/fetchWrapper.js';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
-import { defaultLength, fieldCountLimits } from './viewModes';
+import { defaultLength, fieldCountLimits, slotMetrics } from './viewModes';
 import { spigraphQueryFromGraph } from '../dashboardConfig';
 
 /**
@@ -82,7 +82,8 @@ export function fieldIsAggregatable (field) {
 function escapeCSV (value) {
   let s = String(value ?? '');
   if (s.length > 0 && '=+-@\t\r'.includes(s[0])) { s = `'${s}`; }
-  if (s.includes('"') || s.includes(',') || s.includes('\n')) { return `"${s.replace(/"/g, '""')}"`; }
+  // ; too, since some locales' spreadsheets split on it
+  if (/[",;\r\n]/.test(s)) { return `"${s.replace(/"/g, '""')}"`; }
   return s;
 }
 
@@ -162,9 +163,9 @@ export function widgetFullPageLink (route, store, widget) {
   // the split field (unsplit, it is the Sessions page's own timeline); a split
   // time of day grid is SPI Graph's Time of day the same way (unsplit, it has
   // no full page)
-  const splitTimeline = (mode === 'timeline' || mode === 'timeofday') && !!widget.splitField && usable(widget.splitField);
+  const splitTimeline = (mode === 'timeline' || mode === 'area' || mode === 'timeofday') && !!widget.splitField && usable(widget.splitField);
   if (mode === 'timeofday' && !splitTimeline) { return null; }
-  if (!['timeline', 'timeofday', 'metric', 'gauge', 'sessions'].includes(mode)) {
+  if (!['timeline', 'area', 'timeofday', 'metric', 'gauge', 'sessions'].includes(mode)) {
     // a bar's or pie's split field becomes another SPI Graph field
     const linked = ((mode === 'bar' || mode === 'pie') && widget.splitField) ? [...fields, widget.splitField] : fields;
     if (!fields.length || !linked.every(usable)) { return null; }
@@ -188,7 +189,7 @@ export function widgetFullPageLink (route, store, widget) {
     query.date = store.state.timeRange;
   }
 
-  if ((mode === 'timeline' && !splitTimeline) || mode === 'metric' || mode === 'gauge' || mode === 'sessions') { return { path: '/sessions', query }; }
+  if (((mode === 'timeline' || mode === 'area') && !splitTimeline) || mode === 'metric' || mode === 'gauge' || mode === 'sessions') { return { path: '/sessions', query }; }
   // the same SPI Graph url a saved graph opens with; the widget's own view is
   // already in the combined expression, so the page keeps the global one
   const graphQuery = spigraphQueryFromGraph(widget);
@@ -417,6 +418,31 @@ export async function fetchSummaryFields (route, store, widget, { signal } = {})
       error: chunk?.error || null
     };
   });
+}
+
+/** A summary row's value of one metric: the session count, or the metric's
+ *  aggregate (0 when the row has none). */
+export function metricRowValue (row, metric) {
+  if (!metric || metric === 'sessions') { return row?.sessions || 0; }
+  return row?.metricValues?.[metric] ?? 0;
+}
+
+/**
+ * Fetch a combo or scatter widget's rows: its field's top values, each with
+ * every metric slot's aggregate (metricValues), ranked by the first slot.
+ * Returns the [{ item, sessions, metricValues, ... }] rows.
+ */
+export async function fetchMetricsChart (route, store, widget, { signal } = {}) {
+  const metrics = slotMetrics(widget).filter(Boolean);
+  const [res] = await fetchSummaryFields(route, store, {
+    ...widget,
+    fields: widget.field ? [widget.field] : [],
+    metrics,
+    metricType: metrics[0],
+    sortMetric: metrics[0]
+  }, { signal });
+  if (res?.error) { throw new Error(res.error); }
+  return res?.data || [];
 }
 
 /** POST a widgets body to /api/sessions/summary with the page's search, time
