@@ -10,6 +10,7 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const NodeURL = require('url').URL;
+const async = require('async');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 let Config;
@@ -27,6 +28,9 @@ const MATERIALIZED = {
   'source.ip': { col: '`source.ip`', type: 'String' },
   'destination.ip': { col: '`destination.ip`', type: 'String' }
 };
+
+// Most per-bucket sub-agg queries in flight at once for one agg
+const BUCKET_QUERY_CONCURRENCY = 8;
 
 const ARRAY_FIELDS = new Set(['protocol', 'tags', 'fileId', 'packetPos', 'packetLen', 'huntId', 'huntName']);
 const DATE_FIELDS = new Set(['timestamp', '@timestamp', 'firstPacket', 'lastPacket', 'cert.notBefore', 'cert.notAfter']);
@@ -1158,14 +1162,15 @@ class DbCHImpl {
     await Promise.all([
       ...histoSubs.map(([subName, subAgg]) =>
         this.runTermsHistogramSub(buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where)),
-      ...buckets.map(async (bucket) => {
-        if (otherSubs.length === 0) { return; }
-        const filter = bucketWhereFn ? bucketWhereFn(bucket.key) : this.predicateForFieldValue(field, '=', bucket.key);
-        const bucketWhere = `(${where}) AND (${filter})`;
-        for (const [subName, subAgg] of otherSubs) {
-          bucket[subName] = await this.runAgg(subAgg, bucketWhere);
-        }
-      })
+      otherSubs.length === 0
+        ? undefined
+        : async.eachLimit(buckets, BUCKET_QUERY_CONCURRENCY, async (bucket) => {
+          const filter = bucketWhereFn ? bucketWhereFn(bucket.key) : this.predicateForFieldValue(field, '=', bucket.key);
+          const bucketWhere = `(${where}) AND (${filter})`;
+          for (const [subName, subAgg] of otherSubs) {
+            bucket[subName] = await this.runAgg(subAgg, bucketWhere);
+          }
+        })
     ]);
 
     return { doc_count_error_upper_bound: 0, sum_other_doc_count: sumOther, buckets };
@@ -1310,13 +1315,13 @@ class DbCHImpl {
     });
 
     if (otherSubs.length) {
-      await Promise.all(buckets.map(async (bucket) => {
+      await async.eachLimit(buckets, BUCKET_QUERY_CONCURRENCY, async (bucket) => {
         const inRange = this.rangePredicate(field, [['>=', bucket.key], ['<', bucket.key + interval]]);
         const bucketWhere = `(${where}) AND (${inRange})`;
         for (const [subName, subAgg] of otherSubs) {
           bucket[subName] = await this.runAgg(subAgg, bucketWhere);
         }
-      }));
+      });
     }
     return { buckets };
   }

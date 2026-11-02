@@ -95,6 +95,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           one, so a mixed list like https://localhost:9200,https://es2:9200 is now verified; set insecure to keep skipping it
   - Icons switched from Font Awesome to Material Design Icons
   - #3992 Theme choice is saved per user and follows you between all four apps
+  - #4424 /api/users/min without a roleId now requires usersAdmin, it was listing every user to any logged in user
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
@@ -246,6 +247,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4420 SPI Graph tables with several fields can list each field's own top values (Unique) instead of their combinations (Intersection)
   - #4420 SPI Graph pie labels are cut to fit their ring, and a replaced or abandoned hierarchy request cancels its search
   - #4420 Fix SPI Graph breaking the page when switching from a pie with several fields to a bar
+  - #4424 Add an area widget and SPI Graph type: the timeline drawn as filled areas, a split field's top values stacked,
+          as shares of each bucket (percent) or overlaid
+  - #4424 Add a combo widget and SPI Graph type: a field's top values as bars of one metric with a line of another on its
+          own right axis (sessions and bytes, say)
+  - #4424 Add a scatter widget and SPI Graph type: a field's top values placed by two metrics and sized by an optional
+          third, on linear or log axes, to spot values that stand apart
+  - #4424 The Arkime tab can reload every widget on a timer (?refresh=<seconds>, off by default) and save the dashboard
+          as a PDF through the browser's print dialog
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

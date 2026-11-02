@@ -232,6 +232,14 @@ class DbESImpl {
     return body._source;
   }
 
+  async getShareableVersioned (id) {
+    const { body } = await this.#client.get({
+      index: `${this.#prefix}shareables`,
+      id
+    });
+    return { shareable: body._source, version: { seqNo: body._seq_no, primaryTerm: body._primary_term } };
+  }
+
   async createShareable (doc) {
     const { body } = await this.#client.index({
       index: `${this.#prefix}shareables`,
@@ -259,13 +267,15 @@ class DbESImpl {
     });
   }
 
-  async setShareable (id, doc) {
+  async setShareable (id, doc, version) {
     await this.#client.index({
       index: `${this.#prefix}shareables`,
       body: doc,
       id,
       refresh: true,
-      timeout: '10m'
+      timeout: '10m',
+      // a missing doc or a newer write is a 409 version conflict
+      ...(version ? { if_seq_no: version.seqNo, if_primary_term: version.primaryTerm } : {})
     });
   }
 

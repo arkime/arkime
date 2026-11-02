@@ -141,6 +141,12 @@ class DbSQLiteImpl {
     return JSON.parse(row.json);
   }
 
+  async getShareableVersioned (id) {
+    const row = this.#db.prepare('SELECT json FROM shareables WHERE id = ?').get(id);
+    if (!row) { throw new Error('Shareable not found'); }
+    return { shareable: JSON.parse(row.json), version: row.json };
+  }
+
   async createShareable (doc) {
     const id = uuidv4();
     this.#db.prepare('INSERT INTO shareables (id, json) VALUES (?, ?)').run(id, JSON.stringify(doc));
@@ -155,8 +161,18 @@ class DbSQLiteImpl {
     this.#db.prepare('DELETE FROM shareables').run();
   }
 
-  async setShareable (id, doc) {
-    this.#db.prepare('INSERT OR REPLACE INTO shareables (id, json) VALUES (?, ?)').run(id, JSON.stringify(doc));
+  async setShareable (id, doc, version) {
+    if (version === undefined) {
+      this.#db.prepare('INSERT OR REPLACE INTO shareables (id, json) VALUES (?, ?)').run(id, JSON.stringify(doc));
+      return;
+    }
+    // only replace the row as it was read, like ES if_seq_no
+    const { changes } = this.#db.prepare('UPDATE shareables SET json = ? WHERE id = ? AND json = ?').run(JSON.stringify(doc), id, version);
+    if (changes !== 1) {
+      const err = new Error('Shareable version conflict');
+      err.statusCode = 409;
+      throw err;
+    }
   }
 
   // --------------------------------------------------------------------------

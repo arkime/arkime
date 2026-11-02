@@ -17,11 +17,13 @@ const NAME_MAX_LENGTH = 256;
 // a dashboard's folder (data.folder) and its own filter (data.expression)
 const FOLDER_MAX_LENGTH = 64;
 const EXPRESSION_MAX_LENGTH = 4096;
+// widgets in a dashboard, the same limit /api/sessions/summary enforces
+const MAX_WIDGETS = 100;
 // Cc control, Cf format (bidi overrides, zero width), Zl/Zp separators
 const INVISIBLE_RE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 // the view modes a saved graph can have (GRAPH_VIEW_MODES in dashboardConfig.js)
-const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'connections', 'tree', 'timeline', 'timeofday'];
+const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'connections', 'tree', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
 
 class ShareableAPIs {
   // --------------------------------------------------------------------------
@@ -136,6 +138,7 @@ class ShareableAPIs {
     const missingSortOrder = { text: 'Missing sort order', i18n: 'api.shareables.missingSortOrder' };
     const missingFields = { text: 'Missing fields', i18n: 'api.shareables.missingFields' };
     const missingWidgets = { text: 'Missing widgets or fields', i18n: 'api.shareables.missingWidgets' };
+    const tooManyWidgets = { text: `Dashboards can have at most ${MAX_WIDGETS} widgets`, i18n: 'api.shareables.tooManyWidgets' };
     const missingGraph = { text: 'Missing viewMode or field', i18n: 'api.shareables.missingGraph' };
     const invalidGraph = { text: 'Invalid graph settings', i18n: 'api.shareables.invalidGraph' };
     const invalidVersion = { text: 'Invalid dashboard version', i18n: 'api.shareables.invalidVersion' };
@@ -159,6 +162,7 @@ class ShareableAPIs {
       // handler accepts either, so this has to as well
       const entries = Array.isArray(data.widgets) ? data.widgets : data.fields;
       if (!Array.isArray(entries)) { return missingWidgets; }
+      if (entries.length > MAX_WIDGETS) { return tooManyWidgets; }
       // a null or scalar entry throws in the dashboard loader
       if (entries.some(e => !e || typeof e !== 'object')) { return missingWidgets; }
       // the config format version (DASHBOARD_VERSION in dashboardConfig.js), 1 when missing
@@ -178,10 +182,11 @@ class ShareableAPIs {
       const optString = (v) => v === undefined || typeof v === 'string';
       if (data.fields !== undefined && !ArkimeUtil.isStringArray(data.fields)) { return invalidGraph; }
       if (!optString(data.field)) { return invalidGraph; }
-      // a timeline or time of day graph is split by its field rather than aggregating one
-      const graphField = (data.viewMode === 'timeline' || data.viewMode === 'timeofday') ? data.splitField : (data.fields?.length || data.field);
+      // a timeline, area or time of day graph is split by its field rather than aggregating one
+      const graphField = ['timeline', 'area', 'timeofday'].includes(data.viewMode) ? data.splitField : (data.fields?.length || data.field);
       if (!graphField) { return missingGraph; }
-      if (data.metrics !== undefined && !ArkimeUtil.isStringArray(data.metrics)) { return invalidGraph; }
+      // a scatter with no bubble size leaves its third metric ''
+      if (data.metrics !== undefined && !ArkimeUtil.isStringArray(data.metrics, 0)) { return invalidGraph; }
       for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'orientation', 'seriesType', 'yScale', 'order', 'orderBy', 'treeRoot', 'expression', 'view']) {
         if (!optString(data[key])) { return invalidGraph; }
       }
@@ -197,11 +202,12 @@ class ShareableAPIs {
   /**
    * The stored shareable with this id, or undefined when there is none (the
    * store throws for a missing id: a 404 from Elasticsearch, 'not found' from
-   * sqlite). Any other failure is rethrown.
+   * sqlite). Any other failure is rethrown. With versioned it is
+   * { shareable, version } for a write that must not race another.
    */
-  static async #find (id) {
+  static async #find (id, versioned = false) {
     try {
-      return await Db.getShareable(id);
+      return versioned ? await Db.getShareableVersioned(id) : await Db.getShareable(id);
     } catch (err) {
       const code = err?.meta?.statusCode ?? err?.statusCode;
       if (code === 404 || /not found/i.test(err?.message || '')) { return undefined; }
@@ -346,8 +352,9 @@ class ShareableAPIs {
    */
   static async apiUpdateShareable (req, res) {
     try {
-      const shareable = await ShareableAPIs.#find(req.params.id);
-      if (!shareable) { return res.serverError(404, 'Shareable item not found', 'api.shareables.notFound'); }
+      const found = await ShareableAPIs.#find(req.params.id, true);
+      if (!found) { return res.serverError(404, 'Shareable item not found', 'api.shareables.notFound'); }
+      const { shareable, version } = found;
       const user = req.settingUser;
 
       if (!await ShareableAPIs.canEdit(user, shareable)) {
@@ -424,7 +431,16 @@ class ShareableAPIs {
         data
       };
 
-      await Db.setShareable(req.params.id, doc);
+      // a delete or another edit since the read must not be overwritten (or a
+      // deleted item brought back)
+      try {
+        await Db.setShareable(req.params.id, doc, version);
+      } catch (err) {
+        if ((err?.meta?.statusCode ?? err?.statusCode) === 409) {
+          return res.serverError(409, 'Shareable item was changed or deleted, reload and try again', 'api.shareables.conflict');
+        }
+        throw err;
+      }
       const updated = await Db.getShareable(req.params.id);
 
       updated.id = req.params.id;

@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 294;
+use Test::More tests => 299;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -622,6 +622,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     $json = viewerPost("/api/users", "filter=role:sac-test1");
     eq_or_diff($json->{data}->[0]->{roleAssigners}, from_json('["sac-test1"]'));
 
+    # no roleId - sac-test1 is a usersAdmin so can list every user
     $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test1", "", $test1Token);
     eq_or_diff($json, from_json('{"data":[{"userName":"","userId":"anonymous"},{"userId":"notadmin","userName":""},{"userName":"UserNameUpdated","userId":"sac-test1"},{"userName":"UserNameUpdated3","userId":"sac-test2"},{"userName":"","userId":"superAdmin"},{"userId":"test100","userName":""},{"userName":"","userId":"test101"}],"success":true}'));
 
@@ -630,11 +631,26 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     eq_or_diff($json, from_json('{"data":[{"userName":"","hasRole":false,"userId":"anonymous"},{"userName":"","userId":"notadmin","hasRole":false},{"userId":"sac-test1","hasRole":false,"userName":"UserNameUpdated"},{"hasRole":false,"userId":"sac-test2","userName":"UserNameUpdated3"},{"userName":"","hasRole":false,"userId":"superAdmin"},{"userName":"","hasRole":false,"userId":"test100"},{"userName":"","userId":"test101","hasRole":false}],"success":true}'));
 
     # no - hasRole
+    # no roleId - sac-test2 isn't a usersAdmin so can't list every user
     $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test2", "", $test2Token);
-    eq_or_diff($json, from_json('{"data":[{"userName":"","userId":"anonymous"},{"userName":"","userId":"notadmin"},{"userId":"sac-test1","userName":"UserNameUpdated"},{"userId":"sac-test2","userName":"UserNameUpdated3"},{"userName":"","userId":"superAdmin"},{"userName":"","userId":"test100"},{"userName":"","userId":"test101"}],"success":true}'));
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
 
     $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test2", '{"roleId": "role:sac-test1"}', $test2Token);
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
+
+    # a roleAssigner that isn't a usersAdmin can still list users with their roleId
+    $json = viewerPostToken("/api/user/role:sac-test1", '{"userName": "UserName", "enabled":true, "roleAssigners": ["sac-test1", "sac-test2"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User role:sac-test1 updated successfully", "success": true}'));
+
+    $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test2", '{"roleId": "role:sac-test1"}', $test2Token);
+    is ($json->{success}, 1, "roleAssigner users/min with roleId succeeds");
+    is (scalar(grep { $_->{userId} eq "sac-test1" && exists $_->{hasRole} } @{$json->{data}}), 1, "roleAssigner users/min returns hasRole");
+
+    $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test2", "", $test2Token);
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
+
+    $json = viewerPostToken("/api/user/role:sac-test1", '{"userName": "UserName", "enabled":true, "roleAssigners": ["sac-test1"]}', $token);
+    eq_or_diff($json, from_json('{"text": "User role:sac-test1 updated successfully", "success": true}'));
 
     $json = viewerPostToken("/api/user/sac-test1/assignment?arkimeRegressionUser=sac-test1", '{"roleId": "role:sac-test1", "newRoleState": true}', $test1Token);
     eq_or_diff($json, from_json('{"text": "User sac-test1\'s role role:sac-test1 updated successfully","success":true}'));

@@ -39,7 +39,7 @@
       },
       {
         "id": "w5",
-        "viewMode": "timeline",
+        "viewMode": "area",
         "splitField": "protocols",
         "splitLength": 10,
         "barMode": "stacked",

@@ -2,7 +2,7 @@
 # directories (config.test.ini lists release/dashboards, then tests/dashboards,
 # then capture/plugins, whose plugin dashboards stay hidden until the plugin's
 # fields exist)
-use Test::More tests => 59;
+use Test::More tests => 62;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -78,6 +78,9 @@ for my $key ("routing", "multicast", "databases") {
     is($byId{"system-$key"}->{data}->{folder}, "Analysis", "$key is in the Analysis folder");
 }
 ok((grep { $_->{viewMode} eq "bar" && ($_->{orientation} // "") eq "horizontal" } @{$byId{"system-multicast"}->{data}->{widgets}}) == 1, "multicast has a horizontal bar");
+ok((grep { $_->{viewMode} eq "area" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has an area");
+ok((grep { $_->{viewMode} eq "combo" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has a combo");
+ok((grep { $_->{viewMode} eq "scatter" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has a scatter");
 
 # a dashboard id that isn't stored is a 404 (the page drops it from the url)
 my $missing = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/shareable/does-not-exist");

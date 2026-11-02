@@ -160,17 +160,19 @@
       {
         "id": "w15",
         "field": "ip.src",
-        "viewMode": "table",
+        "viewMode": "scatter",
         "width": 2,
         "height": 3,
-        "length": 20,
+        "length": 50,
         "metrics": [
           "sessions",
-          "bytes"
+          "bytes",
+          ""
         ],
-        "sortMetric": "sessions",
         "metricType": "sessions",
-        "title": "Remote access clients",
+        "sortMetric": "sessions",
+        "yScale": "log",
+        "title": "Remote access clients by sessions and bytes",
         "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
       },
       {

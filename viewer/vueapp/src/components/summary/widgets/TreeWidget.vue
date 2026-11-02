@@ -78,7 +78,8 @@ const depth = computed(() => props.widget.treeDepth || DEFAULT_TREE_DEPTH);
 
 // the root asked for: a clicked host, else the configured one, else the
 // source with the most sessions
-const rootId = computed(() => rootOverride.value || (props.widget.treeRoot || '').trim() ||
+const rootId = computed(() => rootOverride.value ||
+  (typeof props.widget.treeRoot === 'string' ? props.widget.treeRoot.trim() : '') ||
   findTreeRoot(graph.value?.nodes, '')?.id || '');
 
 // the sample as a tree from the root ({ id, node, link, children }), null when

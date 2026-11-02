@@ -8,7 +8,8 @@ per-widget View/expression. The plotted series follows the widget's metric:
 'sessions' -> sessionsHisto, else the field's <dbField>Histo. With a split
 field it draws one series per top value of that field instead (stacked, or
 overlaid lines), from each value's own graph. Bars or lines, on a linear or log
-y axis, per the widget. Drag-select emits a new time range to
+y axis, per the widget; the area widget is the same timeline drawn as filled
+areas (stacked bands, or overlaid). Drag-select emits a new time range to
 the host.
 -->
 <template>
@@ -84,8 +85,12 @@ const graphData = ref(null);
 // [{ label, key, color }] when split by a field, else null (the single series)
 const seriesDefs = ref(null);
 const split = computed(() => !!props.widget.splitField);
+const isArea = computed(() => props.widget.viewMode === 'area');
 // an overlaid (grouped) split is always lines, bars would hide each other
-const seriesType = computed(() => ((split.value && props.widget.barMode === 'grouped') || props.widget.seriesType === 'lines' ? 'lines' : 'bars'));
+const seriesType = computed(() => {
+  if (isArea.value) { return 'area'; }
+  return (split.value && props.widget.barMode === 'grouped') || props.widget.seriesType === 'lines' ? 'lines' : 'bars';
+});
 
 // series to plot follows the widget's metric: sessions -> sessionsHisto, else
 // the numeric field's <dbField>Histo (the graph fetch requests it via `metric`)
@@ -143,8 +148,9 @@ const hasData = computed(() => !!graphData.value && (!split.value || (seriesDefs
 const splitName = computed(() => (props.widget.splitField
   ? (FieldService.getField(props.widget.splitField, true)?.friendlyName || props.widget.splitField)
   : ''));
+const typeLabel = computed(() => t(isArea.value ? 'sessions.summary.areaView' : 'sessions.summary.timelineView'));
 const displayTitle = computed(() => props.widget.title ||
-  (split.value ? `${t('sessions.summary.timelineView')} / ${splitName.value}` : t('sessions.summary.timelineView')));
+  (split.value ? `${typeLabel.value} / ${splitName.value}` : typeLabel.value));
 const timezone = computed(() => store.state.user?.settings?.timezone || 'local');
 </script>
 

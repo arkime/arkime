@@ -14,7 +14,7 @@
       },
       {
         "id": "w1",
-        "viewMode": "timeline",
+        "viewMode": "area",
         "splitField": "oui.src",
         "splitLength": 10,
         "barMode": "stacked",
@@ -167,7 +167,7 @@
         "id": "w15",
         "field": "ip.dst:port",
         "viewMode": "table",
-        "width": 4,
+        "width": 2,
         "height": 3,
         "length": 20,
         "metrics": [
@@ -180,6 +180,23 @@
       },
       {
         "id": "w16",
+        "field": "ip.src",
+        "viewMode": "scatter",
+        "width": 2,
+        "height": 3,
+        "length": 50,
+        "metrics": [
+          "sessions",
+          "bytes",
+          "packets"
+        ],
+        "metricType": "sessions",
+        "sortMetric": "sessions",
+        "yScale": "log",
+        "title": "Hosts by sessions and bytes (point size: packets)"
+      },
+      {
+        "id": "w17",
         "field": "oui.src",
         "fields": [
           "oui.src",
@@ -192,7 +209,7 @@
         "title": "MAC vendors by destination port"
       },
       {
-        "id": "w17",
+        "id": "w18",
         "field": "oui.src",
         "fields": [
           "oui.src",
@@ -205,7 +222,7 @@
         "title": "MAC vendors to destination ports"
       },
       {
-        "id": "w18",
+        "id": "w19",
         "field": "ip.src",
         "fields": [
           "ip.src",

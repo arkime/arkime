@@ -32,11 +32,21 @@ const X_AXIS_SIZE = 28;
 const PADDING = 16;
 const MIN_PX_PER_BAR = 40;
 
+// a color with an alpha, for '#rrggbb' and d3's 'rgb(r, g, b)' (anything
+// else is drawn as is)
+const withAlpha = (color, alpha) => {
+  if (/^#[0-9a-f]{6}$/i.test(color)) { return color + Math.round(alpha * 255).toString(16).padStart(2, '0'); }
+  const rgb = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(color);
+  return rgb ? `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})` : color;
+};
+
 export default {
   name: 'ArkimeTimelineGraph',
   props: {
     graphData: { type: Object, required: true },
     graphType: { type: String, default: 'sessionsHisto' },
+    // 'bars' | 'lines' | 'area' (filled lines: stacked bands, or overlaid
+    // translucent areas)
     seriesType: { type: String, default: 'bars' },
     // 'linear' | 'log' | 'percent' (a stacked split: each series as its
     // share of the bucket; anything else draws linear)
@@ -347,6 +357,8 @@ export default {
       }
 
       const isBars = this.seriesType === 'bars';
+      const isArea = this.seriesType === 'area';
+      const stackedDraw = this.stacked && defs.length > 1;
       const barsPath = isBars ? uPlot.paths.bars() : undefined;
       const linesPath = !isBars
         ? uPlot.paths.linear({ alignGaps: 0 })
@@ -412,8 +424,14 @@ export default {
           ...drawDefs.map((d) => ({
             label: d.label,
             stroke: d.color,
-            // a split graph's overlaid lines stay unfilled so each one can be read
-            fill: isBars ? d.color : (this.seriesDefs?.length > 1 ? undefined : d.color + '33'),
+            // a split graph's overlaid lines stay unfilled so each one can be
+            // read; an area's stacked bands are solid (each covers the one
+            // behind it below its own total), its overlaid ones see-through
+            fill: isBars
+              ? d.color
+              : isArea
+                ? (stackedDraw ? withAlpha(d.color, 0.85) : withAlpha(d.color, 0.25))
+                : (this.seriesDefs?.length > 1 ? undefined : withAlpha(d.color, 0.2)),
             paths: isBars ? barsPath : linesPath,
             width: isBars ? 1 : 1.5,
             points: { show: false }

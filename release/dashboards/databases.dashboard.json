@@ -60,7 +60,7 @@
       {
         "id": "w6",
         "field": "ip.dst:port",
-        "viewMode": "table",
+        "viewMode": "combo",
         "width": 2,
         "height": 3,
         "length": 20,
@@ -68,9 +68,9 @@
           "sessions",
           "bytes"
         ],
-        "sortMetric": "sessions",
         "metricType": "sessions",
-        "title": "Database servers"
+        "sortMetric": "sessions",
+        "title": "Database servers: sessions and bytes"
       },
       {
         "id": "w7",

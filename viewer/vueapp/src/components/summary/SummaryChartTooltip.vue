@@ -45,6 +45,14 @@ SPDX-License-Identifier: Apache-2.0
             <!-- a count that isn't known (a matrix pair outside its row's top values) says why -->
             <span class="stat-value">{{ data.sessions == null && data.note ? data.note : formatNumber(data.sessions) }}</span>
           </div>
+          <!-- a chart of several metrics (combo, scatter) names each one -->
+          <div
+            v-for="(row, i) in metricRows"
+            :key="i"
+            class="stat-row">
+            <span class="stat-label">{{ row.label }}:</span>
+            <span class="stat-value">{{ row.value }}</span>
+          </div>
           <!-- The widget's selected metric (when it isn't the session count) -->
           <div
             v-if="showMetricRow"
@@ -105,6 +113,11 @@ const props = defineProps({
   split: {
     type: Object,
     default: null
+  },
+  // [{ label, value }] of each metric a combo or scatter charts (formatted)
+  rows: {
+    type: Array,
+    default: null
   }
 });
 
@@ -120,7 +133,9 @@ const metricField = computed(() => {
 
 const metricLabel = computed(() => metricLabelFor(props.metricType, props.metricAgg, t));
 
-const showMetricRow = computed(() => metricField.value != null && props.data?.value != null);
+const showMetricRow = computed(() => !props.rows && metricField.value != null && props.data?.value != null);
+// the session count already has its own row
+const metricRows = computed(() => (props.rows || []).filter(r => r.label && r.label !== t('sessions.summary.sessions')));
 
 const formattedMetric = computed(() => formatMetricValue(props.metricType, props.data?.value, props.metricAgg));
 

@@ -207,11 +207,12 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /table layout -->
 
-              <!-- timeline layout (timeline only): one timeline per value, or
-                   the values stacked in one (as counts, or as shares) -->
+              <!-- timeline layout (timeline and area): one timeline per value,
+                   or the values stacked in one (as counts, or as shares); an
+                   area's values can also be overlaid -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType === 'default'">
+                v-if="spiGraphType === 'default' || spiGraphType === 'area'">
                 <span class="arkime-input-label">
                   {{ $t('spigraph.timelineMode') }}:
                 </span>
@@ -220,7 +221,7 @@ SPDX-License-Identifier: Apache-2.0
                   :value="timelineMode"
                   @change="changeTimelineMode($event.target.value)">
                   <option
-                    v-for="m in timelineModes"
+                    v-for="m in layoutModes"
                     :key="m"
                     :value="m">
                     {{ $t(`spigraph.timelineMode-${m}`) }}
@@ -247,6 +248,53 @@ SPDX-License-Identifier: Apache-2.0
                   </option>
                 </select>
               </div> <!-- /intensity select -->
+
+              <!-- combo and scatter: a timeline metric per slot (the first
+                   ranks the values, like the heatmap's intensity) -->
+              <template v-if="isMetricsChartType">
+                <div
+                  v-for="(slot, i) in metricSlotDefs"
+                  :key="slot.key"
+                  class="arkime-input-group">
+                  <span class="arkime-input-label">
+                    {{ $t(`sessions.summary.widget.metricSlot-${slot.key}`) }}:
+                  </span>
+                  <select
+                    class="arkime-input-control"
+                    :value="slotKeys[i]"
+                    @change="changeSlotMetric(i, $event.target.value)">
+                    <option
+                      v-if="slot.optional"
+                      value="">
+                      {{ $t('sessions.summary.widget.metricSlotNone') }}
+                    </option>
+                    <option
+                      v-for="opt in intensityOptions"
+                      :key="opt.value"
+                      :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+                <div
+                  v-if="spiGraphType === 'scatter'"
+                  class="arkime-input-group">
+                  <span class="arkime-input-label">
+                    {{ $t('sessions.summary.widget.scale') }}:
+                  </span>
+                  <select
+                    class="arkime-input-control"
+                    :value="scatterLog ? 'log' : 'linear'"
+                    @change="changeScatterScale($event.target.value)">
+                    <option value="linear">
+                      {{ $t('sessions.summary.widget.yScale-linear') }}
+                    </option>
+                    <option value="log">
+                      {{ $t('sessions.summary.widget.yScale-log') }}
+                    </option>
+                  </select>
+                </div>
+              </template> <!-- /combo and scatter metrics -->
 
               <!-- sort select (not shown for the pie graph) -->
               <div
@@ -404,7 +452,7 @@ SPDX-License-Identifier: Apache-2.0
       <!-- stacked timeline: the field's top values as one stacked timeline,
            as counts or as each value's share of the bucket -->
       <div
-        v-else-if="spiGraphType === 'default' && timelineMode !== 'separate'"
+        v-else-if="(spiGraphType === 'default' && timelineMode !== 'separate') || spiGraphType === 'area'"
         class="timeline-stacked">
         <div
           v-if="stackedSeries.length"
@@ -431,15 +479,24 @@ SPDX-License-Identifier: Apache-2.0
             :graph-data="stackedGraph"
             :graph-type="graphType || 'sessionsHisto'"
             :series-defs="stackedSeries"
-            :series-type="$store.state.seriesType === 'lines' ? 'lines' : 'bars'"
+            :series-type="spiGraphType === 'area' ? 'area' : $store.state.seriesType === 'lines' ? 'lines' : 'bars'"
             :y-scale="timelineMode === 'percent' ? 'percent' : 'linear'"
-            stacked
+            :stacked="timelineMode !== 'overlaid'"
             fit-height
             :timeline-data-filters="timelineDataFilters"
             :timezone="timezone"
             @update-time-range="onStackedTimeRange" />
         </div>
       </div> <!-- /stacked timeline -->
+
+      <!-- combo and scatter: the top values by several timeline metrics -->
+      <spigraph-metrics-chart
+        v-else-if="isMetricsChartType"
+        :type="spiGraphType"
+        :items="fieldObj ? items : []"
+        :field-obj="fieldObj || {}"
+        :metrics="slotDefs"
+        :log="scatterLog" /> <!-- /combo and scatter -->
 
       <!-- pie graph type -->
       <div v-else-if="spiGraphType !== 'default'">
@@ -580,9 +637,10 @@ import ArkimePie from './Hierarchy.vue';
 import ArkimeHeatmap from './Heatmap.vue';
 import ArkimeConnectionsGraph from '../connections/ConnectionsGraph.vue';
 import SpigraphConfigDropdown from './SpigraphConfigDropdown.vue';
+import SpigraphMetricsChart from './SpigraphMetricsChart.vue';
 import { graphFromSpigraphQuery, spigraphQueryFromGraph, graphFromWidget } from '../summary/dashboardConfig';
-import { SPLIT_LENGTHS } from '../summary/widgets/viewModes';
-import { commaString } from '@common/vueFilters.js';
+import { SPLIT_LENGTHS, METRIC_SLOTS } from '../summary/widgets/viewModes';
+import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
 import Utils from '../utils/utils';
@@ -608,7 +666,8 @@ export default {
     ArkimePie,
     ArkimeHeatmap,
     ArkimeConnectionsGraph,
-    SpigraphConfigDropdown
+    SpigraphConfigDropdown,
+    SpigraphMetricsChart
   },
   data: function () {
     return {
@@ -636,8 +695,9 @@ export default {
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
       snackbar: { show: false, text: '', color: 'success', link: '' },
-      graphTypeOptions: ['default', 'timeofday', 'heatmap', 'bar', 'pie', 'tagcloud', 'table', 'treemap', 'sankey', 'matrix', 'connections', 'tree'],
+      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'pie', 'tagcloud', 'table', 'treemap', 'sankey', 'matrix', 'connections', 'tree'],
       timelineModes: ['separate', 'stacked', 'percent'],
+      areaModes: ['stacked', 'percent', 'overlaid'],
       stackedColors: [] // one per top value, for the stacked timeline
     };
   },
@@ -680,14 +740,56 @@ export default {
     },
     // the types drawn from the per value histograms (timeline, time of day,
     // heatmap): they sort, refresh and count like the timeline does
+    // (the area, combo and scatter draw the same items)
     isHistoType: function () {
-      return this.spiGraphType === 'default' || this.spiGraphType === 'heatmap' || this.spiGraphType === 'timeofday';
+      return ['default', 'area', 'heatmap', 'timeofday', 'combo', 'scatter'].includes(this.spiGraphType);
+    },
+    // the layouts of the type's timeline: separate, stacked or percent, and
+    // for an area stacked (its default), percent or overlaid
+    layoutModes: function () {
+      return this.spiGraphType === 'area' ? this.areaModes : this.timelineModes;
     },
     // timeline: one per value (separate), or one stacked timeline of the
     // values, as counts (stacked) or shares of each bucket (percent)
     timelineMode: function () {
       const mode = this.$route.query.timelineMode;
-      return this.timelineModes.includes(mode) ? mode : 'separate';
+      return this.layoutModes.includes(mode) ? mode : this.layoutModes[0];
+    },
+    // combo and scatter: each slot's timeline metric, a <dbField>Histo key;
+    // the first is the page's graph type (it ranks the values), the others
+    // are url params of their own, a combo's line and a scatter's y defaulting
+    // to bytes (or the first metric there is) and its bubble size to none
+    isMetricsChartType: function () {
+      return this.spiGraphType === 'combo' || this.spiGraphType === 'scatter';
+    },
+    metricSlotDefs: function () {
+      return METRIC_SLOTS[this.spiGraphType] || [];
+    },
+    slotParams: function () {
+      return this.spiGraphType === 'combo' ? ['lineMetric'] : ['yMetric', 'sizeMetric'];
+    },
+    slotKeys: function () {
+      if (!this.isMetricsChartType) { return []; }
+      const valid = (k) => this.intensityOptions.some(o => o.value === k);
+      const fallback = valid('network.bytesHisto') ? 'network.bytesHisto' : (this.intensityOptions[1] || this.intensityOptions[0]).value;
+      return this.metricSlotDefs.map((slot, i) => {
+        if (i === 0) { return this.intensity; }
+        const k = this.$route.query[this.slotParams[i - 1]];
+        if (slot.optional) { return valid(k) ? k : ''; }
+        return valid(k) ? k : fallback;
+      });
+    },
+    // [{ key, label, format }] per slot that is set
+    slotDefs: function () {
+      return this.slotKeys.map((key) => {
+        if (!key) { return undefined; }
+        const label = this.intensityOptions.find(o => o.value === key)?.label || key;
+        const format = /bytes/i.test(key) ? (v) => humanReadableBytes(v || 0) : (v) => commaString(v || 0);
+        return { key, label, format };
+      });
+    },
+    scatterLog: function () {
+      return this.spiGraphType === 'scatter' && this.$route.query.yScale === 'log';
     },
     // the stacked timeline: the page's graph for the bounds, one series per
     // value of its metric (the heatmap does the same fold)
@@ -778,7 +880,10 @@ export default {
         size: this.query.size,
         // the heatmap and time of day draw the store's intensity and the
         // timeline the store's graph type, which the url may not carry
-        graphType: (this.spiGraphType === 'heatmap' || this.spiGraphType === 'timeofday') ? this.intensity : this.spiGraphType === 'default' ? this.graphType : this.$route.query.graphType,
+        graphType: (this.spiGraphType === 'heatmap' || this.spiGraphType === 'timeofday' || this.isMetricsChartType) ? this.intensity : (this.spiGraphType === 'default' || this.spiGraphType === 'area') ? this.graphType : this.$route.query.graphType,
+        // a combo's or scatter's other metrics as the page draws them
+        ...(this.spiGraphType === 'combo' ? { lineMetric: this.slotKeys[1] } : {}),
+        ...(this.spiGraphType === 'scatter' ? { yMetric: this.slotKeys[1], sizeMetric: this.slotKeys[2] || undefined } : {}),
         // connections falls back to the user's own default fields
         srcField: this.$route.query.srcField || settings.connSrcField,
         dstField: this.$route.query.dstField || settings.connDstField
@@ -939,6 +1044,10 @@ export default {
             pieCount: undefined,
             other: undefined,
             tableMode: undefined,
+            lineMetric: undefined,
+            yMetric: undefined,
+            sizeMetric: undefined,
+            yScale: undefined,
             srcField: undefined,
             dstField: undefined,
             graphType: undefined,
@@ -979,6 +1088,24 @@ export default {
       this.$store.commit('setTimeRange', 0);
       this.$store.commit('setTime', times);
       this.$router.push({ query: { ...this.$route.query, date: undefined, startTime: times.startTime, stopTime: times.stopTime } });
+    },
+    // a combo's or scatter's metric: the first is the graph type (it ranks the
+    // values), the others url params of their own
+    changeSlotMetric: async function (i, key) {
+      if (i === 0) {
+        // the ranking changes, so the top values are fetched again once the
+        // url (which the fetch's sort reads first) names the new metric
+        this.$store.commit('updateGraphType', key);
+        if (this.$route.query.graphType) {
+          await this.$router.replace({ query: { ...this.$route.query, graphType: key === 'sessionsHisto' ? undefined : key } });
+        }
+        this.cancelAndLoad(true);
+        return;
+      }
+      this.$router.push({ query: { ...this.$route.query, [this.slotParams[i - 1]]: key || undefined } });
+    },
+    changeScatterScale: function (scale) {
+      this.$router.push({ query: { ...this.$route.query, yScale: scale === 'log' ? 'log' : undefined } });
     },
     changeBarMode: function (barMode) {
       this.$router.push({
@@ -1077,7 +1204,7 @@ export default {
         this.query.sort = this.graphType;
         this.refresh = 0;
         this.changeRefreshInterval(0);
-      } else if (this.spiGraphType === 'heatmap' || this.spiGraphType === 'timeofday') {
+      } else if (this.spiGraphType === 'heatmap' || this.spiGraphType === 'timeofday' || this.isMetricsChartType) {
         if (!this.graphType) { this.$store.commit('updateGraphType', 'sessionsHisto'); }
       } else if (this.isConnectionsType) {
         // connections owns its data; stop spigraph refresh
@@ -1286,6 +1413,13 @@ export default {
 .spigraph-page .timeline-stacked__item {
   display: inline-flex;
   align-items: center;
+}
+/* the value's (hidden until hover) menu arrow stays on its line: the field's
+   98% max width of this shrink-to-fit item would wrap it onto a second one,
+   and the swatch would center against both */
+.spigraph-page .timeline-stacked__item :deep(.field) {
+  max-width: none;
+  white-space: nowrap;
 }
 .spigraph-page .timeline-stacked__swatch {
   display: inline-block;

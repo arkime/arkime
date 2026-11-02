@@ -44,6 +44,7 @@ SPDX-License-Identifier: Apache-2.0
         :metric-type="tooltipMetricType"
         :metric-agg="tooltipMetricAgg"
         :split="tooltipSplit"
+        :rows="tooltipRows"
         @close="hideTooltip" />
 
       <!-- empty state when no widgets configured -->
@@ -175,6 +176,19 @@ SPDX-License-Identifier: Apache-2.0
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- each top value's bars and line, or its point placed by two metrics -->
+          <MetricsChartWidget
+            v-else-if="metricSlots(w.viewMode)"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
+            @show-tooltip="showTooltip"
+            @hide-tooltip="hideTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <!-- one field's values down the side, another's across the top -->
           <MatrixWidget
             v-else-if="w.viewMode === 'matrix'"
@@ -208,7 +222,7 @@ SPDX-License-Identifier: Apache-2.0
             @remove="removeWidgetLocal(w)" />
           <!-- session-wide widgets: fed by the host's global stats chunk -->
           <TimelineWidget
-            v-else-if="w.viewMode === 'timeline'"
+            v-else-if="isTimelineMode(w.viewMode)"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
@@ -328,6 +342,7 @@ import setReqHeaders from '@common/setReqHeaders';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import MatrixWidget from './widgets/MatrixWidget.vue';
+import MetricsChartWidget from './widgets/MetricsChartWidget.vue';
 import TimeOfDayWidget from './widgets/TimeOfDayWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
@@ -349,7 +364,7 @@ import MarkdownWidget from './widgets/MarkdownWidget.vue';
 import GaugeWidget from './widgets/GaugeWidget.vue';
 import NavigationWidget from './widgets/NavigationWidget.vue';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode } from './widgets/viewModes';
+import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics } from './widgets/viewModes';
 import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
@@ -511,6 +526,7 @@ const tooltipFieldConfig = ref(null);
 const tooltipMetricType = ref('sessions');
 const tooltipMetricAgg = ref('sum');
 const tooltipSplit = ref(null);
+const tooltipRows = ref(null); // a combo's or scatter's metrics, formatted
 
 // Save SVG as PNG will be loaded lazily (for export functionality)
 let saveSvgAsPng;
@@ -596,12 +612,23 @@ const widgetInfo = (w) => {
       rows.push({ label: t('sessions.summary.widget.sortBy'), value: metricName(w.sortMetric) });
     }
   }
+  // a combo's bars and line, a scatter's x, y and bubble size
+  const slots = metricSlots(w.viewMode);
+  if (slots) {
+    const agg = w.metricAgg || 'sum';
+    slotMetrics(w).forEach((m, i) => {
+      if (!m) { return; }
+      rows.push({ label: t(`sessions.summary.widget.metricSlot-${slots[i].key}`), value: metricLabel(m, m === 'sessions' ? 'sum' : agg, t) });
+    });
+  }
 
   if (allowsSplit(w.viewMode) && w.splitField) {
     const fieldName = FieldService.getField(w.splitField, true)?.friendlyName || w.splitField;
     let layout = '';
     if (w.viewMode === 'bar') { layout = `${t(`sessions.summary.widget.barMode-${w.barMode || 'stacked'}`)}, `; }
-    if (w.viewMode === 'timeline') {
+    if (w.viewMode === 'area') {
+      layout = `${t(`sessions.summary.widget.areaMode-${w.barMode === 'grouped' ? 'grouped' : 'stacked'}`)}, `;
+    } else if (w.viewMode === 'timeline') {
       const mode = w.barMode === 'grouped' ? 'grouped' : w.seriesType === 'lines' ? 'stackedLines' : 'stacked';
       layout = `${t(`sessions.summary.widget.seriesMode-${mode}`)}, `;
     }
@@ -615,7 +642,7 @@ const widgetInfo = (w) => {
   if (w.viewMode === 'timeline' && !w.splitField && w.seriesType === 'lines') {
     rows.push({ label: t('sessions.summary.widget.seriesMode'), value: t('sessions.summary.widget.seriesType-lines') });
   }
-  if (w.viewMode === 'timeline' && w.yScale && w.yScale !== 'linear') {
+  if ((isTimelineMode(w.viewMode) || w.viewMode === 'scatter') && w.yScale && w.yScale !== 'linear') {
     rows.push({ label: t('sessions.summary.widget.yScale'), value: t(`sessions.summary.widget.yScale-${w.yScale}`) });
   }
   if (w.viewMode === 'metric' && w.sparkline && !w.field) {
@@ -992,6 +1019,7 @@ const showTooltip = (evt) => {
   tooltipMetricType.value = evt.metricType || 'sessions';
   tooltipMetricAgg.value = evt.metricAgg || 'sum';
   tooltipSplit.value = evt.split || null;
+  tooltipRows.value = evt.rows || null;
   tooltipVisible.value = true;
 };
 
@@ -1003,6 +1031,7 @@ const hideTooltip = () => {
   tooltipMetricType.value = 'sessions';
   tooltipMetricAgg.value = 'sum';
   tooltipSplit.value = null;
+  tooltipRows.value = null;
 };
 
 // Close tooltip on outside click
