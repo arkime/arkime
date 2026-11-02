@@ -517,6 +517,7 @@
       "top": "上位",
       "bottom": "下位",
       "other": "その他",
+      "notInTopValues": "この行の上位値に含まれません",
       "addToDashboard": {
         "title": "ダッシュボードに追加",
         "dashboard": "ダッシュボード",
@@ -662,6 +663,7 @@
         "isDefault": "デフォルトダッシュボード",
         "defaultSet": "デフォルトダッシュボードを設定しました",
         "defaultUnset": "デフォルトダッシュボードを解除しました",
+        "defaultUnsetOverview": "既定のダッシュボードを解除しました。選択するまでは概要が既定です",
         "currentDashboard": "現在のダッシュボード",
         "imported": "ダッシュボードが正常にインポートされました",
         "importInvalid": "無効なダッシュボードファイル"

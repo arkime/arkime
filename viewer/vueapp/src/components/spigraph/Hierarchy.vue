@@ -643,14 +643,18 @@ export default {
       if (newVal === 'table') {
         this.initializeColResizable();
       }
+      // only the pie and the matrix fetch "Other", and a split pie's first
+      // level is cut to its pie count: switching to one, or away from a split,
+      // refetches
+      const otherFetched = oldVal === 'matrix' || (oldVal === 'pie' && this.showOther && !this.splitPie);
+      const refetch = (newVal === 'pie' && (this.showOther || this.splitPie)) || (oldVal === 'pie' && this.splitPie) ||
+        (newVal === 'matrix' && this.fieldTypeaheadList.length > 0 && !otherFetched);
       if (newVal === 'bar' || newVal === 'tagcloud' || newVal === 'matrix') {
         this.$nextTick(this.sizeBar);
         // sankey keeps its own node/link shape; the bar needs the hierarchy
-        if (!this.vizData?.children) { this.loadData(); }
+        if (!this.vizData?.children && !refetch) { this.loadData(); }
       }
-      // only the pie fetches "Other", and a split pie's first level is cut to
-      // its pie count: switching to one, or away from a split, refetches
-      if ((newVal === 'pie' && (this.showOther || this.splitPie)) || (oldVal === 'pie' && this.splitPie)) { this.loadData(); }
+      if (refetch) { this.loadData(); }
     },
     // trims once the url says bar: trimming on the prop change would push a
     // url built before the graph type change landed and undo it. The fields
@@ -724,13 +728,16 @@ export default {
     barSplitField: function () {
       return this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : null;
     },
-    // the hierarchy as the matrix wants it (a sankey's nodes/links are no tree)
+    // the hierarchy as the matrix wants it (a sankey's nodes/links are no
+    // tree): a row's "Other" stays, it tells a value outside the row's top
+    // values from one the row doesn't have
     matrixData: function () {
-      return this.vizData?.children?.length ? withoutOther(this.vizData) : null;
+      return this.vizData?.children?.length ? { ...this.vizData, children: this.vizData.children.filter(c => !c.other) } : null;
     },
-    // only a pie draws "Other": its parts add up to a whole
+    // a pie draws "Other" (its parts add up to a whole), and the matrix reads
+    // it to know which of a row's missing values are really zero
     wantsOther: function () {
-      return this.spiGraphType === 'pie' && this.showOther;
+      return (this.spiGraphType === 'pie' && this.showOther) || (this.spiGraphType === 'matrix' && this.fieldTypeaheadList.length > 0);
     },
     // a split pie: one pie per value of the first field, of the fields after it
     splitPie: function () {

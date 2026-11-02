@@ -29,7 +29,7 @@
         "height": 3,
         "title": "Activity by hour of the week",
         "splitField": "oui.src",
-        "splitLength": 6
+        "splitLength": 5
       },
       {
         "id": "w3",

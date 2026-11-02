@@ -16,7 +16,7 @@
         "id": "w1",
         "viewMode": "timeline",
         "splitField": "protocols",
-        "splitLength": 9,
+        "splitLength": 10,
         "barMode": "stacked",
         "width": 3,
         "height": 2,
@@ -84,7 +84,7 @@
         "height": 3,
         "title": "Remote access by hour of the week",
         "splitField": "protocols",
-        "splitLength": 6,
+        "splitLength": 5,
         "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
       },
       {

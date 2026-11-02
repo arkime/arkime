@@ -517,6 +517,7 @@
       "top": "顶部",
       "bottom": "底部",
       "other": "其他",
+      "notInTopValues": "不在此行的前几个值中",
       "addToDashboard": {
         "title": "添加到仪表板",
         "dashboard": "仪表板",
@@ -662,6 +663,7 @@
         "isDefault": "默认仪表板",
         "defaultSet": "已设置默认仪表板",
         "defaultUnset": "已清除默认仪表板",
+        "defaultUnsetOverview": "已清除默认仪表板；在您选择之前，概览为默认",
         "currentDashboard": "当前仪表板",
         "imported": "仪表板导入成功",
         "importInvalid": "无效的仪表板文件"

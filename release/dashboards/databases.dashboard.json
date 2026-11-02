@@ -17,7 +17,7 @@
         "id": "w1",
         "viewMode": "timeline",
         "splitField": "protocols",
-        "splitLength": 9,
+        "splitLength": 10,
         "barMode": "stacked",
         "width": 3,
         "height": 2,

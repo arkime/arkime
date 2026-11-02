@@ -328,7 +328,8 @@ export async function fetchHierarchy (route, store, widget, { signal } = {}) {
   if (fields.length > widgetFields(widget).length) {
     extra.sizes = [widget.splitLength || 5, ...fields.slice(1).map(() => widget.length)].join(',');
   }
-  if (widget.viewMode === 'pie' && widget.other) { extra.other = true; }
+  // a matrix reads a row's "Other" to know which of its missing values are zero
+  if ((widget.viewMode === 'pie' && widget.other) || widget.viewMode === 'matrix') { extra.other = true; }
   const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal });
 }

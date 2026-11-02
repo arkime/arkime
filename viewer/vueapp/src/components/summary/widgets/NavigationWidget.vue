@@ -94,7 +94,7 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
 import { createShareableService } from '../../users/ShareableService';
-import { loadSystemDashboards } from '../systemDashboards';
+import { loadSystemDashboards, defaultDashboardId } from '../systemDashboards';
 import { groupDashboards } from '../dashboardFolders';
 
 const DashboardService = createShareableService('summaryConfig');
@@ -126,7 +126,8 @@ const sections = computed(() => [
 
 const currentId = computed(() => (typeof route.query.dashboard === 'string' ? route.query.dashboard : ''));
 // the user's default dashboard (a saved or a system one), starred
-const defaultId = computed(() => store.state.user?.settings?.defaultDashboardId || '');
+// the Overview when the user hasn't picked one
+const defaultId = computed(() => defaultDashboardId(store.state.user?.settings));
 
 // the same search and time, a different dashboard
 const linkTo = (id) => ({ path: '/arkime', query: { ...route.query, dashboard: id } });

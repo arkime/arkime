@@ -517,6 +517,7 @@
       "top": "Superior",
       "bottom": "Inferior",
       "other": "Outros",
+      "notInTopValues": "não está entre os principais valores desta linha",
       "addToDashboard": {
         "title": "Adicionar ao painel",
         "dashboard": "Painel",
@@ -662,6 +663,7 @@
         "isDefault": "Painel padrão",
         "defaultSet": "Painel padrão definido",
         "defaultUnset": "Painel padrão removido",
+        "defaultUnsetOverview": "Painel padrão removido; a Visão geral é o padrão até você escolher um",
         "currentDashboard": "Painel Atual",
         "imported": "Painel importado com sucesso",
         "importInvalid": "Arquivo de painel inválido"

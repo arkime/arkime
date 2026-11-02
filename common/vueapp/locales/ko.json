@@ -517,6 +517,7 @@
       "top": "상위",
       "bottom": "하위",
       "other": "기타",
+      "notInTopValues": "이 행의 상위 값에 없음",
       "addToDashboard": {
         "title": "대시보드에 추가",
         "dashboard": "대시보드",
@@ -662,6 +663,7 @@
         "isDefault": "기본 대시보드",
         "defaultSet": "기본 대시보드가 설정되었습니다",
         "defaultUnset": "기본 대시보드가 해제되었습니다",
+        "defaultUnsetOverview": "기본 대시보드를 해제했습니다. 선택할 때까지 개요가 기본입니다",
         "currentDashboard": "현재 대시보드",
         "imported": "대시보드를 성공적으로 가져왔습니다",
         "importInvalid": "잘못된 대시보드 파일"

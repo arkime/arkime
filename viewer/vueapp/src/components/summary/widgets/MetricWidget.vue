@@ -85,7 +85,7 @@ import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
 import { fetchMetric, fetchGraph, metricHistoKey, formatMetricValue, metricLabel as metricLabelFor } from './widgetData';
-import { metricHistoKeys } from '../../visualizations/metrics.js';
+import { metricSeries } from '../../visualizations/metrics.js';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -122,11 +122,20 @@ const loadSpark = async () => {
   sparkController = new AbortController();
   try {
     const res = await fetchGraph(route, store, props.widget, { signal: sparkController.signal });
-    const byTs = new Map();
-    for (const key of metricHistoKeys(metricHistoKey(props.widget))) {
-      for (const [ts, v] of (res.graph?.[key] || [])) { byTs.set(ts, (byTs.get(ts) || 0) + (v || 0)); }
+    // buckets without sessions aren't returned: drop to zero across a gap
+    // rather than drawing a line over it
+    const pts = metricSeries(res.graph, metricHistoKey(props.widget));
+    const step = (res.graph?.interval || 0) * 1000;
+    const filled = [];
+    for (const p of pts) {
+      const prev = filled[filled.length - 1];
+      if (step > 0 && prev && p[0] - prev[0] > step) {
+        filled.push([prev[0] + step, 0]);
+        if (p[0] - prev[0] > 2 * step) { filled.push([p[0] - step, 0]); }
+      }
+      filled.push(p);
     }
-    spark.value = [...byTs.entries()].sort((a, b) => a[0] - b[0]);
+    spark.value = filled;
   } catch (err) {
     if (err.name !== 'AbortError') { spark.value = null; } // the number still shows
   }

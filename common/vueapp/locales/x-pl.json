@@ -518,6 +518,7 @@
       "top": "Optay",
       "bottom": "Ottombay",
       "other": "Otherway",
+      "notInTopValues": "otnay inway isthay owray's optay aluesvay",
       "addToDashboard": {
         "title": "Addway otay ashboardday",
         "dashboard": "Ashboardday",
@@ -663,6 +664,7 @@
         "isDefault": "Efaultday ashboarday",
         "defaultSet": "Efaultday ashboarday etsay",
         "defaultUnset": "Efaultday ashboarday earedclay",
+        "defaultUnsetOverview": "Efaultday ashboardday earedclay; ethay Overviewway isway ethay efaultday untilway ouyay ickpay oneway",
         "currentDashboard": "Urrentcay Ashboarday",
         "imported": "Ashboarday importedway uccessfullysay",
         "importInvalid": "Invalidway ashboarday ilefay"

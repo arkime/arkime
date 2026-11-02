@@ -107,7 +107,7 @@ import { createShareableService } from '../users/ShareableService';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
 import { widgetFromGraph, widgetsFromConfig, toV6Shape } from './dashboardConfig';
-import { isSystemId, systemDashboard } from './systemDashboards';
+import { isSystemId, systemDashboard, defaultDashboardId } from './systemDashboards';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -156,11 +156,10 @@ const targets = computed(() => {
 });
 
 // found the way the Arkime tab loads its dashboard: the default dashboard
-// when one is set and still readable (a system one is read only), else the
-// per-user state
+// (the Overview when none is picked) when it is still readable (a system one
+// is read only), else the per-user state
 const resolveCurrent = async () => {
-  const defaultId = store.state.user?.settings?.defaultDashboardId;
-  if (typeof defaultId !== 'string' || !defaultId) { return { id: null }; }
+  const defaultId = defaultDashboardId(store.state.user?.settings);
   try {
     if (isSystemId(defaultId)) {
       const system = await systemDashboard(defaultId);

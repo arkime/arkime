@@ -517,6 +517,7 @@
       "top": "Oben",
       "bottom": "Unten",
       "other": "Andere",
+      "notInTopValues": "nicht unter den Top-Werten dieser Zeile",
       "addToDashboard": {
         "title": "Zum Dashboard hinzufügen",
         "dashboard": "Dashboard",
@@ -662,6 +663,7 @@
         "isDefault": "Standard-Dashboard",
         "defaultSet": "Standard-Dashboard festgelegt",
         "defaultUnset": "Standard-Dashboard aufgehoben",
+        "defaultUnsetOverview": "Standard-Dashboard entfernt; bis Sie eines wählen, ist die Übersicht der Standard",
         "currentDashboard": "Aktuelles Dashboard",
         "imported": "Dashboard erfolgreich importiert",
         "importInvalid": "Ungültige Dashboard-Datei"

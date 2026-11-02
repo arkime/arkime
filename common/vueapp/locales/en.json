@@ -517,6 +517,7 @@
       "top": "Top",
       "bottom": "Bottom",
       "other": "Other",
+      "notInTopValues": "not in this row's top values",
       "addToDashboard": {
         "title": "Add to dashboard",
         "dashboard": "Dashboard",
@@ -662,6 +663,7 @@
         "isDefault": "Default dashboard",
         "defaultSet": "Default dashboard set",
         "defaultUnset": "Default dashboard cleared",
+        "defaultUnsetOverview": "Default dashboard cleared; the Overview is the default until you pick one",
         "currentDashboard": "Current Dashboard",
         "imported": "Dashboard imported successfully",
         "importInvalid": "Invalid dashboard file"

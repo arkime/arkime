@@ -11,18 +11,24 @@ OUT = sys.argv[1] if len(sys.argv) > 1 else 'release/dashboards'
 PLUGIN_OUT = sys.argv[2] if len(sys.argv) > 2 else 'capture/plugins'
 
 # ---- widget helpers -------------------------------------------------------
+# the split lengths the widget editor offers (SPLIT_LENGTHS in viewModes.js);
+# any other is shown as 5
+SPLIT_LENGTHS = (3, 5, 10)
+def split_length(length):
+    assert length in SPLIT_LENGTHS, f'split length {length} is not one of {SPLIT_LENGTHS}'
+    return length
 def nav(): return {'viewMode': 'navigation', 'width': 4, 'height': 1}
 def timeline(split, title, length=5, w=3, h=2, expression=None, lines=False, log=False, percent=False):
-    d = {'viewMode': 'timeline', 'splitField': split, 'splitLength': length, 'barMode': 'stacked', 'width': w, 'height': h, 'title': title}
+    d = {'viewMode': 'timeline', 'splitField': split, 'splitLength': split_length(length), 'barMode': 'stacked', 'width': w, 'height': h, 'title': title}
     if lines: d['seriesType'] = 'lines'
     if log: d['yScale'] = 'log'
-    if percent: d['yScale'] = 'percent'  # each value's share of the bucket
+    if percent: d['yScale'] = 'percent'  # each value's share of the plotted values in the bucket
     if expression: d['expression'] = expression
     return d
 # a week of hours colored by the metric, or one small week per top value of split
 def timeofday(title, split=None, length=5, w=2, h=3, expression=None, metricType=None):
     d = {'viewMode': 'timeofday', 'width': w, 'height': h, 'title': title}
-    if split: d['splitField'] = split; d['splitLength'] = length
+    if split: d['splitField'] = split; d['splitLength'] = split_length(length)
     if metricType: d['metricType'] = metricType
     if expression: d['expression'] = expression
     return d
@@ -158,7 +164,7 @@ D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, to
     nav(), stats(), timew(),
     timeline_plain('Sessions over time', w=4),
     timeofday('Sessions by hour of the week'),
-    timeline('protocols', 'Protocol share over time', length=8, w=2, h=3, percent=True),
+    timeline('protocols', 'Protocol share over time', length=10, w=2, h=3, percent=True),
     geomap('country.src', title='Source countries'),
     bar('ip', length=15, title='Top IPs'),
     bar('protocols', length=12, title='Protocols'),
@@ -502,7 +508,7 @@ FILES = 'http.md5 == EXISTS! || email.bodymagic == EXISTS! || smb.fn == EXISTS! 
 EXE = 'http.bodymagic == [application/x-dosexec, application/x-executable, application/x-msdownload, application/vnd.microsoft.portable-executable, application/x-elf, application/x-mach-binary, application/zip, application/x-rar, application/x-7z-compressed, application/gzip, application/x-gzip]'
 D['files'] = plain('Files', 'Sessions that carried a file: HTTP bodies, SMB and FTP files and email attachments', [
     nav(),
-    timeline('protocols', 'Sessions with files by protocol', length=8),
+    timeline('protocols', 'Sessions with files by protocol', length=10),
     metric('Sessions with files'), metric('Executables and archives', expression=EXE),
     tagcloud('http.bodymagic', title='HTTP body types'), pie('email.bodymagic', title='Email attachment types'),
     table('smb.fn', title='SMB files'), table('email.fn', title='Email attachments'),
@@ -535,11 +541,11 @@ REMOTE = 'protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]'
 # only core fields: intel (zeekintel, MISP) fields exist only where that plugin or source runs
 D['security'] = plain('Security', 'Weak and legacy protocols, cleartext logins, failed lookups and remote access paths', [
     nav(),
-    timeline('protocols', 'Remote access sessions by protocol', length=9, expression=REMOTE),
+    timeline('protocols', 'Remote access sessions by protocol', length=10, expression=REMOTE),
     metric('Legacy TLS', expression=LEGACY_TLS, sparkline=True), metric('SMBv1', expression=SMB1, sparkline=True),
     metric('Cleartext logins', expression=CLEARTEXT, sparkline=True), metric('SSH v1', expression='ssh.ver == "ssh-1.*"', sparkline=True),
     metric('NXDOMAIN lookups', expression='dns.status == NXDOMAIN', sparkline=True), metric('Remote access sessions', expression=REMOTE, sparkline=True),
-    timeofday('Remote access by hour of the week', split='protocols', length=6, w=4, expression=REMOTE),
+    timeofday('Remote access by hour of the week', split='protocols', length=5, w=4, expression=REMOTE),
     matrix(['ip.src', 'protocols'], title='Remote access clients by protocol', expression=REMOTE),
     pie('tls.version', title='TLS versions', expression='protocols == tls'), bar('http.authtype', h=2, title='HTTP authentication types'),
     table('ip.src', title='Clients using legacy TLS', expression=LEGACY_TLS),
@@ -582,7 +588,7 @@ D['multicast'] = plain('Multicast', 'Sessions sent to IPv4 and IPv6 multicast gr
 DATABASES = 'protocols == [mysql, postgresql, oracle, tds, mongo, redis, cassandra, aerospike, kafka]'
 D['databases'] = plain('Databases', 'Database sessions: MySQL, PostgreSQL, Oracle, MSSQL (TDS), MongoDB, Redis, Cassandra, Aerospike and Kafka', [
     nav(),
-    timeline('protocols', 'Database sessions by protocol', length=9),
+    timeline('protocols', 'Database sessions by protocol', length=10),
     metric('Database sessions', sparkline=True), metric('Database bytes', 'bytes', sparkline=True),
     timeofday('Database sessions by hour of the week'),
     pie('protocols', length=9, title='Database protocols'),
@@ -597,7 +603,7 @@ D['databases'] = plain('Databases', 'Database sessions: MySQL, PostgreSQL, Oracl
 D['hosts'] = plain('Hosts', 'The hosts on the wire: how many there are, their MAC vendors, VLANs and networks (ASNs), and the services they reach', [
     nav(),
     timeline('oui.src', 'Sessions by source MAC vendor', length=10, w=4),
-    timeofday('Activity by hour of the week', split='oui.src', length=6, w=4),
+    timeofday('Activity by hour of the week', split='oui.src', length=5, w=4),
     metric('Source hosts', 'ip.src', agg='cardinality'), metric('Destination hosts', 'ip.dst', agg='cardinality'),
     metric('MAC vendors', 'oui.src', agg='cardinality'), metric('VLANs', 'vlan', agg='cardinality'),
     table('oui.src', title='Source MAC vendors', metrics=['sessions', 'bytes'], sortMetric='sessions'),

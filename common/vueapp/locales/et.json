@@ -517,6 +517,7 @@
       "top": "Ülemine",
       "bottom": "Alumine",
       "other": "Muu",
+      "notInTopValues": "pole selle rea tippväärtuste hulgas",
       "addToDashboard": {
         "title": "Lisa töölauale",
         "dashboard": "Töölaud",
@@ -662,6 +663,7 @@
         "isDefault": "Vaikimisi töölaud",
         "defaultSet": "Vaikimisi töölaud määratud",
         "defaultUnset": "Vaikimisi töölaud eemaldatud",
+        "defaultUnsetOverview": "Vaikimisi töölaud eemaldatud; kuni valite uue, on vaikimisi Ülevaade",
         "currentDashboard": "Praegune töölaud",
         "imported": "Töölaud edukalt imporditud",
         "importInvalid": "Vigane töölaua fail"

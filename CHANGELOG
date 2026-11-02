@@ -219,7 +219,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           /opt/arkime/share/dashboards (replaced on upgrade); to add or override one, export a dashboard and drop the
           file in /opt/arkime/etc/dashboards (see the new dashboardsDir setting), no restart needed
   - The suricata and zeekintel plugins each ship a dashboard, listed once the plugin's fields exist
-  - A built-in dashboard can be your default dashboard; the dashboards menu and the navigation widget star the default
+  - #4422 A built-in dashboard can be your default dashboard; the dashboards menu and the navigation widget star the default; with no
+          default set the Arkime tab opens the Overview dashboard, shown as the current one (a layout of your own that was
+          never saved as a dashboard stays)
   - Dashboards can be grouped into folders, saved back into the dashboard they were loaded from, and opened
           by url with ?dashboard=<id>
   - A dashboard can have its own search expression (gear button), applied with the search to every widget
@@ -230,13 +232,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           lengths) and can be ordered by the field's value instead of the metric
   - Bar widgets and SPI Graph bars can be horizontal; map widgets can shade countries by any metric
   - Add a connection tree widget and SPI Graph type: who reached what from one host, hop by hop
-  - Add a time of day widget and SPI Graph type: a week of hours colored by the metric, to spot off hours traffic
+  - #4422 Add a time of day widget and SPI Graph type: a week of hours colored by the metric, to spot off hours traffic
           (the sessions and spigraph APIs take interval=hourOfWeek and a timezone to fold the hours server side)
-  - The Arkime page's search bar no longer offers the pin and hide graph/map options, which it has no graph or map for
-  - Add a matrix widget and SPI Graph type: one field's values down the side, another's across the top
-  - A split timeline can show each value's share of the bucket (percent y axis); SPI Graph's Timeline can stack its
-          values the same way
-  - The metric widget can draw a trend line of the metric under its number
+  - #4422 The Arkime page's search bar no longer offers the pin and hide graph/map options, which it has no graph or map for
+  - #4422 Add a matrix widget and SPI Graph type: one field's values down the side, another's across the top, a pair
+          outside its row's top values is hatched rather than shown as zero
+  - #4422 A split timeline can show each value's share of the plotted values in each bucket (percent y axis); SPI Graph's
+          Timeline can stack its values the same way
+  - #4422 The metric widget can draw a trend line of the metric under its number
   - #4420 The text dashboard widget is now a Markdown widget: headings, bold, italic, code, lists and links, up to 5000
           characters. Links may only go to http/https sites or Arkime's own pages, never to its API
   - #4420 SPI Graph pies can be split into 3, 5 or 10 small pies, one per value of the first field, and can show Other slices

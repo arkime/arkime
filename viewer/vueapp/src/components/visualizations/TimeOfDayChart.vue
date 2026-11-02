@@ -141,10 +141,19 @@ const inZone = (ts) => {
 };
 
 // the week: [day][hour] -> { value, count } summed from every bucket of the
-// metric's series, placed by the bucket's start in the user's timezone
+// metric's series, placed by the bucket's start in the user's timezone; count
+// is the hours with sessions in the cell (the viewer's hourOfWeekHours when it
+// folded the buckets, else the bucket times seen)
 const grid = computed(() => {
   const out = Array.from({ length: DAYS }, () => Array.from({ length: HOURS }, () => ({ value: 0, count: 0 })));
   const folded = !!props.graph?.hourOfWeek;
+  if (folded) {
+    for (const [slot, hours] of (props.graph.hourOfWeekHours || [])) {
+      const s = Math.max(0, Math.min(DAYS * HOURS - 1, Number(slot) || 0));
+      out[Math.floor(s / HOURS)][s % HOURS].count = hours;
+    }
+  }
+  const seen = out.map(row => row.map(() => new Set()));
   for (const key of metricHistoKeys(props.metric)) {
     for (const [ts, val] of (props.graph?.[key] || [])) {
       let d, h;
@@ -157,11 +166,11 @@ const grid = computed(() => {
         d = (m.day() + 6) % 7; // Monday first
         h = m.hour();
       }
-      const cell = out[d][h];
-      cell.value += val || 0;
-      cell.count++;
+      out[d][h].value += val || 0;
+      if (!folded) { seen[d][h].add(ts); } // packets and bytes have two series per bucket
     }
   }
+  if (!folded) { out.forEach((row, d) => row.forEach((c, h) => { c.count = seen[d][h].size; })); }
   return out;
 });
 

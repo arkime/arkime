@@ -485,20 +485,31 @@ class BuildQuery {
           }
         }
 
+        let histoField;
         switch (reqQuery.bounding) {
         case 'first':
-          query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
+          histoField = 'firstPacket';
           break;
         case 'database':
-          query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
+          histoField = '@timestamp';
           break;
         default:
-          query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
+          histoField = 'lastPacket';
           break;
         }
 
         if (reqQuery.spanning === 'true' || reqQuery.spanning === true) {
-          query.aggregations.dbHisto.histogram = { field: 'packetRange', interval: interval * 1000, min_doc_count: 1 };
+          histoField = 'packetRange';
+        }
+
+        query.aggregations.dbHisto.histogram = { field: histoField, interval: interval * 1000, min_doc_count: 1 };
+
+        // the hour of week fold places each bucket by its start, so start the
+        // buckets on the timezone's hours (Asia/Kolkata's are on the half hour)
+        if (reqQuery.interval === 'hourOfWeek') {
+          const tz = ViewerUtils.hourOfWeekTimezone(reqQuery.timezone);
+          const offset = ViewerUtils.hourOfWeekOffsetMs(tz, (reqQuery.startTime || Date.now() / 1000) * 1000);
+          if (offset) { query.aggregations.dbHisto.histogram.offset = offset; }
         }
       }
     }

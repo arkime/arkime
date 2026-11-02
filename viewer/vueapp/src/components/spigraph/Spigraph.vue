@@ -573,6 +573,7 @@ import TimelineGraph from '../visualizations/TimelineGraph.vue';
 import TimeOfDayChart from '../visualizations/TimeOfDayChart.vue';
 import { colorRange } from '../summary/widgets/chartColors';
 import { requestTimezone } from '../summary/widgets/widgetData';
+import { metricSeries } from '../visualizations/metrics.js';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
 import ArkimePie from './Hierarchy.vue';
@@ -625,6 +626,7 @@ export default {
       baseField: this.$route.query.exp || this.$route.query.field || this.$store.state.user.settings.spiGraph || 'node',
       sortBy: this.$route.query.sort || 'graph',
       spiGraphType: this.$route.query.spiGraphType || 'default',
+      restoringGraph: false, // a saved graph is being shown: it loads once its url is in place
       tableResults: [],
       fieldTypeaheadList: [],
       baseFieldObj: {},
@@ -693,7 +695,8 @@ export default {
       if (!this.graphData) { return null; }
       const key = this.graphType || 'sessionsHisto';
       const data = { xmin: this.graphData.xmin, xmax: this.graphData.xmax, interval: this.graphData.interval };
-      this.items.forEach((item, i) => { data[`s${i}`] = item.graph?.[key] || []; });
+      // packets and bytes are a src and a dst series, stacked as their sum
+      this.items.forEach((item, i) => { data[`s${i}`] = metricSeries(item.graph, key); });
       return data;
     },
     stackedSeries: function () {
@@ -800,6 +803,16 @@ export default {
           this.refresh = 0;
           this.changeRefreshInterval(0);
         }
+      }
+    },
+    // the data has to be loaded again when leaving connections, which owns its
+    // data, and when going to or from time of day, whose grid asks for hour
+    // buckets folded into a week (interval=hourOfWeek) rather than the timeline
+    spiGraphType: function (newVal, oldVal) {
+      const isConnections = t => t === 'connections' || t === 'tree';
+      if (isConnections(newVal) || this.restoringGraph) { return; }
+      if (isConnections(oldVal) || (newVal === 'timeofday') !== (oldVal === 'timeofday')) {
+        this.cancelAndLoad(true);
       }
     },
     // watch graph type and update sort
@@ -909,31 +922,38 @@ export default {
       // the ranking (a heatmap's intensity) falls back to the store's metric
       // when the url names none, so a sessions graph must not keep the last one
       this.$store.commit('updateGraphType', q.graphType || 'sessionsHisto');
-      this.spiGraphType = q.spiGraphType;
-      // the fetch reads its field, size and view from the url
-      await this.$router.push({
-        query: {
-          ...this.$route.query,
-          subFields: undefined,
-          timelineMode: undefined,
-          barMode: undefined,
-          barOrientation: undefined,
-          pieMode: undefined,
-          pieCount: undefined,
-          other: undefined,
-          tableMode: undefined,
-          srcField: undefined,
-          dstField: undefined,
-          graphType: undefined,
-          connectionsLength: undefined,
-          treeRoot: undefined,
-          treeDepth: undefined,
-          view: undefined,
-          ...q,
-          graphId: saved.id,
-          expression: graph.expression || undefined
-        }
-      });
+      // the type watcher would load against the url before the push below
+      // puts the graph's field and size in it: this load is the one below
+      this.restoringGraph = true;
+      try {
+        this.spiGraphType = q.spiGraphType;
+        // the fetch reads its field, size and view from the url
+        await this.$router.push({
+          query: {
+            ...this.$route.query,
+            subFields: undefined,
+            timelineMode: undefined,
+            barMode: undefined,
+            barOrientation: undefined,
+            pieMode: undefined,
+            pieCount: undefined,
+            other: undefined,
+            tableMode: undefined,
+            srcField: undefined,
+            dstField: undefined,
+            graphType: undefined,
+            connectionsLength: undefined,
+            treeRoot: undefined,
+            treeDepth: undefined,
+            view: undefined,
+            ...q,
+            graphId: saved.id,
+            expression: graph.expression || undefined
+          }
+        });
+      } finally {
+        this.restoringGraph = false;
+      }
       if (q.spiGraphType !== 'connections' && q.spiGraphType !== 'tree') {
         this.cancelAndLoad(true);
       }
@@ -1047,7 +1067,6 @@ export default {
       }
     },
     changeSpiGraphType: function (spiGraphType) {
-      const leavingConnections = this.isConnectionsType;
       this.spiGraphType = spiGraphType;
       if (this.spiGraphType === 'pie' || this.spiGraphType === 'bar' || this.spiGraphType === 'tagcloud' ||
         this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey' || this.spiGraphType === 'matrix') {
@@ -1076,10 +1095,6 @@ export default {
           treeDepth: this.spiGraphType === 'tree' ? this.$route.query.treeDepth : undefined
         }
       });
-      if (leavingConnections && !this.isConnectionsType) {
-        // load spigraph data skipped while connections was active
-        this.cancelAndLoad(true);
-      }
     },
     fetchedResults: function (tableResults, fieldTypeaheadList, baseFieldObj) {
       this.fieldTypeaheadList = fieldTypeaheadList;

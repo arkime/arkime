@@ -517,6 +517,7 @@
       "top": "Haut",
       "bottom": "Bas",
       "other": "Autre",
+      "notInTopValues": "pas parmi les valeurs principales de cette ligne",
       "addToDashboard": {
         "title": "Ajouter au tableau de bord",
         "dashboard": "Tableau de bord",
@@ -662,6 +663,7 @@
         "isDefault": "Tableau de bord par défaut",
         "defaultSet": "Tableau de bord par défaut défini",
         "defaultUnset": "Tableau de bord par défaut effacé",
+        "defaultUnsetOverview": "Tableau de bord par défaut effacé ; la Vue d'ensemble est le défaut jusqu'à ce que vous en choisissiez un",
         "currentDashboard": "Tableau de bord actuel",
         "imported": "Tableau de bord importé avec succès",
         "importInvalid": "Fichier de tableau de bord invalide"

@@ -203,7 +203,7 @@ import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
 import { toV6Shape, makeWidgetDef, defaultWidgets, widgetsFromConfig, migrateDashboard, DASHBOARD_VERSION } from '../summary/dashboardConfig';
-import { systemDashboard, isSystemId } from '../summary/systemDashboards';
+import { systemDashboard, isSystemId, defaultDashboardId, pickedDefaultId } from '../summary/systemDashboards';
 import { ArkimeError } from '@common/fetchWrapper.js';
 
 const DashboardService = createShareableService('summaryConfig');
@@ -413,27 +413,47 @@ export default {
       }
       if (loaded === false && this.$route.query.dashboard) { this.setDashboardParam(''); }
 
-      // Prefer the user's default dashboard if one is set (a saved or a
-      // system one)
-      const defaultId = this.user?.settings?.defaultDashboardId;
-      if (typeof defaultId === 'string' && defaultId) {
+      // Prefer the user's default dashboard (a saved or a system one), the
+      // Overview when they haven't picked one. Without a pick, a layout of
+      // the user's own that was never saved as a dashboard (the state has no
+      // dashboardId) stays theirs rather than being hidden behind the Overview
+      let own; // the per-user state, read once
+      const readOwn = async () => {
+        if (own === undefined) { own = (await UserService.getPageConfig('summary'))?.summaryConfig || null; }
+        return own;
+      };
+      if (!pickedDefaultId(this.user?.settings)) {
         try {
-          const data = await this.dashboardData(defaultId);
-          if (data) {
-            this.applyConfig(data);
+          const state = await readOwn();
+          if (state && !state.dashboardId && Array.isArray(state.widgets) && state.widgets.length) {
+            this.applyConfig(state);
             this.configLoaded = true;
             return;
           }
         } catch (err) {
-          // fall through to per-user state
+          own = null; // fall through to the default dashboard
         }
+      }
+      const defaultId = defaultDashboardId(this.user?.settings);
+      try {
+        const data = await this.dashboardData(defaultId);
+        if (data) {
+          this.applyConfig(data);
+          // in the url too, so the dashboard menu and navigation widget show
+          // it as the current one
+          this.setDashboardParam(defaultId);
+          this.configLoaded = true;
+          return;
+        }
+      } catch (err) {
+        // fall through to per-user state
       }
 
       // Otherwise restore the last per-user dashboard state
       try {
-        const response = await UserService.getPageConfig('summary');
-        if (response?.summaryConfig) {
-          this.applyConfig(response.summaryConfig);
+        const state = await readOwn();
+        if (state) {
+          this.applyConfig(state);
           this.configLoaded = true;
           return;
         }
@@ -445,8 +465,12 @@ export default {
       this.setDashboardExpression('');
       this.configLoaded = true;
     },
+    // the per-user state: what the page shows, with the saved or system
+    // dashboard it is a copy of (none for a layout of the user's own)
     saveDashboardConfig: function () {
-      UserService.saveState(this.currentDashboardConfig, 'summary');
+      const state = { ...this.currentDashboardConfig };
+      if (this.loadedDashboardId) { state.dashboardId = this.loadedDashboardId; }
+      UserService.saveState(state, 'summary');
     },
     reloadSummaryView: function () {
       this.$nextTick(() => {

@@ -6,16 +6,38 @@ cell colored (and labelled, where it fits) by the sessions the two values
 share. Drawn from the hierarchy endpoint's two level tree, so a cell is the
 second field's count under the first field's value. Hovering a cell shows the
 shared chart tooltip (the row value with its field actions, the column value
-as its split).
+as its split). Each row only has its own top values of the second field, so a
+column a row doesn't have is zero when the row has no "Other" (it has no more
+values) and unknown when it does; unknown cells are hatched. Cells keep a
+minimum size, so a big matrix scrolls.
 -->
 <template>
   <div class="chart-wrapper">
     <svg
       :id="svgId"
       class="matrix"
-      :width="width"
-      :height="height"
-      :viewBox="`0 0 ${width} ${height}`">
+      :width="svgW"
+      :height="svgH"
+      :viewBox="`0 0 ${svgW} ${svgH}`">
+      <defs>
+        <pattern
+          :id="`${svgId}-unknown`"
+          width="6"
+          height="6"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)">
+          <rect
+            width="6"
+            height="6"
+            class="matrix-unknown-bg" />
+          <line
+            x1="0"
+            y1="0"
+            x2="0"
+            y2="6"
+            class="matrix-unknown-line" />
+        </pattern>
+      </defs>
       <!-- column labels, turned up so long values fit -->
       <text
         v-for="col in colLabels"
@@ -51,7 +73,7 @@ as its split).
           :width="cell.w"
           :height="cell.h"
           rx="2"
-          :style="{ fill: cell.fill }" />
+          :style="{ fill: cell.value === null ? `url(#${svgId}-unknown)` : cell.fill }" />
         <text
           v-if="cell.text"
           :x="cell.x + cell.w / 2"
@@ -69,6 +91,7 @@ as its split).
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { commaString } from '@common/vueFilters.js';
 import { heatmapInterpolator } from './widgets/chartColors';
 import { fitLabel } from '../utils/hierarchyLayout';
@@ -88,6 +111,7 @@ const props = defineProps({
   maxCols: { type: Number, default: 30 }
 });
 const emit = defineEmits(['show-tooltip', 'hide-tooltip']);
+const { t } = useI18n();
 
 const CHAR_PX = 6; // ~width of a 10px label character
 const COL_LABEL_H = 70;
@@ -117,14 +141,18 @@ const cols = computed(() => {
     .slice(0, props.maxCols);
 });
 
-// values[row][col]
+// values[row][col]; null when the row has an "Other", so a column it doesn't
+// list may still have sessions
 const values = computed(() => rows.value.map((r) => {
   if (!props.colFieldConfig) { return [count(r)]; }
-  const byName = new Map((r.children || []).map(c => [c.name, count(c)]));
-  return cols.value.map(c => byName.get(c.name) || 0);
+  const children = r.children || [];
+  const missing = children.some(c => c.other) ? null : 0;
+  const byName = new Map(children.filter(c => !c.other).map(c => [c.name, count(c)]));
+  return cols.value.map(c => byName.get(c.name) ?? missing);
 }));
 
-const maxVal = computed(() => Math.max(0, ...values.value.flat()));
+const known = computed(() => values.value.flat().filter(v => v !== null));
+const maxVal = computed(() => Math.max(0, ...known.value));
 
 // the row label gutter takes what the longest value needs, up to a third
 const labelW = computed(() => {
@@ -134,6 +162,9 @@ const labelW = computed(() => {
 const colLabelH = computed(() => (props.colFieldConfig ? COL_LABEL_H : 4));
 const cellW = computed(() => (cols.value.length ? Math.max(MIN_CELL, (props.width - labelW.value) / cols.value.length) : 0));
 const cellH = computed(() => (rows.value.length ? Math.max(MIN_CELL, (props.height - colLabelH.value) / rows.value.length) : 0));
+// the cells' minimum size can need more than the space given: the wrapper scrolls
+const svgW = computed(() => Math.max(props.width, Math.ceil(labelW.value + cols.value.length * cellW.value + 1)));
+const svgH = computed(() => Math.max(props.height, Math.ceil(colLabelH.value + rows.value.length * cellH.value + 1)));
 
 const colLabels = computed(() => (props.colFieldConfig
   ? cols.value.map((c, i) => ({ index: i, name: c.name, x: labelW.value + i * cellW.value + cellW.value / 2 + 4, label: fitLabel(c.name, Math.min(COL_LABEL_H * 1.3, 120), CHAR_PX) }))
@@ -142,9 +173,9 @@ const rowLabels = computed(() => rows.value.map((r, i) => ({ index: i, name: r.n
 
 const cellFill = (v) => {
   if (v <= 0) { return 'rgba(128,128,128,0.08)'; }
-  const t = maxVal.value > 0 ? v / maxVal.value : 0;
-  if (interp.value) { return interp.value(0.12 + 0.88 * t); }
-  return `rgba(var(--v-theme-foreground-accent), ${0.15 + 0.85 * t})`;
+  const frac = maxVal.value > 0 ? v / maxVal.value : 0;
+  if (interp.value) { return interp.value(0.12 + 0.88 * frac); }
+  return `rgba(var(--v-theme-foreground-accent), ${0.15 + 0.85 * frac})`;
 };
 
 const cells = computed(() => {
@@ -153,7 +184,7 @@ const cells = computed(() => {
     rowVals.forEach((v, c) => {
       const w = cellW.value - 1;
       const h = cellH.value - 1;
-      const text = commaString(v);
+      const text = v === null ? '' : commaString(v);
       out.push({
         k: `${r}-${c}`,
         r,
@@ -166,7 +197,7 @@ const cells = computed(() => {
         fill: cellFill(v),
         // a count where it fits; it reads dark on a light (low) cell
         text: v > 0 && w >= text.length * CHAR_PX + 4 && h >= 12 ? text : '',
-        dark: maxVal.value > 0 && v / maxVal.value < 0.45
+        dark: maxVal.value > 0 && (v ?? 0) / maxVal.value < 0.45
       });
     });
   });
@@ -175,13 +206,13 @@ const cells = computed(() => {
 
 const onHover = (cell, evt) => {
   const row = rows.value[cell.r];
-  const total = values.value.flat().reduce((a, b) => a + b, 0);
+  const total = known.value.reduce((a, b) => a + b, 0);
   emit('show-tooltip', {
-    data: { item: row.name, sessions: cell.value, value: cell.value },
+    data: { item: row.name, sessions: cell.value, value: cell.value, note: cell.value === null ? t('sessions.summary.notInTopValues') : undefined },
     position: { x: evt.clientX + 1, y: evt.clientY + 1 },
     fieldConfig: props.fieldConfig,
     metricType: 'sessions',
-    percentage: total > 0 ? (cell.value / total) * 100 : null,
+    percentage: total > 0 && cell.value !== null ? (cell.value / total) * 100 : null,
     split: props.colFieldConfig ? { label: props.colFieldConfig.friendlyName, value: cols.value[cell.c].name } : null
   });
 };
@@ -207,5 +238,12 @@ const onHover = (cell, evt) => {
 }
 .matrix-value--dark {
   fill: rgb(var(--v-theme-foreground));
+}
+.matrix-unknown-bg {
+  fill: rgba(128, 128, 128, 0.08);
+}
+.matrix-unknown-line {
+  stroke: rgba(128, 128, 128, 0.35);
+  stroke-width: 1.5;
 }
 </style>

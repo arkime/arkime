@@ -517,6 +517,7 @@
       "top": "Superior",
       "bottom": "Inferior",
       "other": "Otros",
+      "notInTopValues": "no está entre los valores principales de esta fila",
       "addToDashboard": {
         "title": "Agregar al panel",
         "dashboard": "Panel",
@@ -662,6 +663,7 @@
         "isDefault": "Panel predeterminado",
         "defaultSet": "Panel predeterminado establecido",
         "defaultUnset": "Panel predeterminado eliminado",
+        "defaultUnsetOverview": "Panel predeterminado borrado; la Vista general es el predeterminado hasta que elija uno",
         "currentDashboard": "Panel Actual",
         "imported": "Panel importado exitosamente",
         "importInvalid": "Archivo de panel inválido"

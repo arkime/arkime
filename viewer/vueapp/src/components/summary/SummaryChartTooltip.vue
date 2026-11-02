@@ -42,7 +42,8 @@ SPDX-License-Identifier: Apache-2.0
           </div>
           <div class="stat-row">
             <span class="stat-label">{{ $t('sessions.summary.sessions') }}:</span>
-            <span class="stat-value">{{ formatNumber(data.sessions) }}</span>
+            <!-- a count that isn't known (a matrix pair outside its row's top values) says why -->
+            <span class="stat-value">{{ data.sessions == null && data.note ? data.note : formatNumber(data.sessions) }}</span>
           </div>
           <!-- The widget's selected metric (when it isn't the session count) -->
           <div

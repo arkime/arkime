@@ -27,3 +27,15 @@ export function metricHistoKeys (metric) {
   const defs = COMPOSITE_METRICS[metric];
   return defs ? defs.map(d => d.key) : [metric];
 }
+
+// a graph's [[time, value], ...] series for a metric, a composite metric's
+// series summed by time
+export function metricSeries (graph, metric) {
+  const keys = metricHistoKeys(metric);
+  if (keys.length === 1) { return graph?.[keys[0]] || []; }
+  const sums = new Map();
+  for (const key of keys) {
+    for (const [t, v] of (graph?.[key] || [])) { sums.set(t, (sums.get(t) || 0) + (v || 0)); }
+  }
+  return [...sums.entries()].sort((a, b) => a[0] - b[0]);
+}

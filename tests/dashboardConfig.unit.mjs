@@ -424,6 +424,9 @@ describe('widgetFullPageLink', () => {
     assert.equal(link.path, '/spigraph');
     assert.equal(link.query.spiGraphType, 'timeofday');
     assert.equal(link.query.exp, 'protocols');
+    // the metric is always named, so the page doesn't keep the last one it showed
+    assert.equal(link.query.graphType, 'sessionsHisto');
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'timeline', splitField: 'protocols' })).graphType, 'sessionsHisto');
     assert.equal(widgetFullPageLink({ query: {} }, store, { viewMode: 'timeofday' }), null);
     assert.equal(widgetIsGraph({ viewMode: 'timeofday', splitField: 'protocols' }), true);
     assert.equal(widgetIsGraph({ viewMode: 'timeofday' }), false);

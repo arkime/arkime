@@ -349,8 +349,10 @@ export const spigraphQueryFromGraph = (graph) => {
     // SPI Graph's Timeline (or Time of day) of the split field; its smallest
     // Max Elements is 5, so a 3 series split opens with 5. A widget's split
     // timeline stacks its series, so it opens SPI Graph's stacked layout
+    // The metric is always named (as for the heatmap): left out, SPI Graph
+    // would draw whichever one it showed last
     if (!g.splitField) { return null; }
-    const q = { exp: g.splitField, size: Math.max(5, g.splitLength), view: g.view || undefined, graphType, spiGraphType: g.viewMode === 'timeofday' ? 'timeofday' : 'default' };
+    const q = { exp: g.splitField, size: Math.max(5, g.splitLength), view: g.view || undefined, graphType: histo, spiGraphType: g.viewMode === 'timeofday' ? 'timeofday' : 'default' };
     if (g.viewMode === 'timeline') { q.timelineMode = g.yScale === 'percent' ? 'percent' : 'stacked'; }
     return q;
   }
