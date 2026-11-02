@@ -14,6 +14,49 @@
       },
       {
         "id": "w1",
+        "field": "ip.src",
+        "viewMode": "control",
+        "width": 2,
+        "height": 1,
+        "length": 20,
+        "variable": "host",
+        "applyAll": false,
+        "title": "Host"
+      },
+      {
+        "id": "w2",
+        "viewMode": "markdown",
+        "width": 2,
+        "height": 1,
+        "title": "Host picker",
+        "text": "Pick a host to narrow the **${host}** widgets below to what it reached; the rest of the dashboard stays on every host."
+      },
+      {
+        "id": "w3",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Services reached (${host})",
+        "expression": "ip.src == ${host}"
+      },
+      {
+        "id": "w4",
+        "viewMode": "timeline",
+        "width": 2,
+        "height": 3,
+        "title": "Sessions over time (${host})",
+        "expression": "ip.src == ${host}"
+      },
+      {
+        "id": "w5",
         "viewMode": "area",
         "splitField": "oui.src",
         "splitLength": 10,
@@ -23,7 +66,7 @@
         "title": "Sessions by source MAC vendor"
       },
       {
-        "id": "w2",
+        "id": "w6",
         "viewMode": "timeofday",
         "width": 4,
         "height": 3,
@@ -32,7 +75,7 @@
         "splitLength": 5
       },
       {
-        "id": "w3",
+        "id": "w7",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -41,7 +84,7 @@
         "metricAgg": "cardinality"
       },
       {
-        "id": "w4",
+        "id": "w8",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -50,7 +93,7 @@
         "metricAgg": "cardinality"
       },
       {
-        "id": "w5",
+        "id": "w9",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -59,7 +102,7 @@
         "metricAgg": "cardinality"
       },
       {
-        "id": "w6",
+        "id": "w10",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -68,7 +111,7 @@
         "metricAgg": "cardinality"
       },
       {
-        "id": "w7",
+        "id": "w11",
         "field": "oui.src",
         "viewMode": "table",
         "width": 2,
@@ -83,7 +126,7 @@
         "title": "Source MAC vendors"
       },
       {
-        "id": "w8",
+        "id": "w12",
         "field": "oui.dst",
         "viewMode": "table",
         "width": 2,
@@ -98,7 +141,7 @@
         "title": "Destination MAC vendors"
       },
       {
-        "id": "w9",
+        "id": "w13",
         "field": "mac.src",
         "viewMode": "table",
         "width": 2,
@@ -107,7 +150,7 @@
         "title": "Source MACs"
       },
       {
-        "id": "w10",
+        "id": "w14",
         "field": "mac.dst",
         "viewMode": "table",
         "width": 2,
@@ -116,7 +159,7 @@
         "title": "Destination MACs"
       },
       {
-        "id": "w11",
+        "id": "w15",
         "field": "vlan",
         "viewMode": "table",
         "width": 2,
@@ -125,7 +168,7 @@
         "title": "VLANs"
       },
       {
-        "id": "w12",
+        "id": "w16",
         "field": "node",
         "viewMode": "table",
         "width": 2,
@@ -134,7 +177,7 @@
         "title": "Capture nodes"
       },
       {
-        "id": "w13",
+        "id": "w17",
         "field": "asn.src",
         "viewMode": "table",
         "width": 2,
@@ -149,7 +192,7 @@
         "title": "Source networks (ASN)"
       },
       {
-        "id": "w14",
+        "id": "w18",
         "field": "asn.dst",
         "viewMode": "table",
         "width": 2,
@@ -164,7 +207,7 @@
         "title": "Destination networks (ASN)"
       },
       {
-        "id": "w15",
+        "id": "w19",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -179,7 +222,7 @@
         "title": "Services"
       },
       {
-        "id": "w16",
+        "id": "w20",
         "field": "ip.src",
         "viewMode": "scatter",
         "width": 2,
@@ -196,7 +239,7 @@
         "title": "Hosts by sessions and bytes (point size: packets)"
       },
       {
-        "id": "w17",
+        "id": "w21",
         "field": "oui.src",
         "fields": [
           "oui.src",
@@ -209,7 +252,7 @@
         "title": "MAC vendors by destination port"
       },
       {
-        "id": "w18",
+        "id": "w22",
         "field": "oui.src",
         "fields": [
           "oui.src",
@@ -222,7 +265,7 @@
         "title": "MAC vendors to destination ports"
       },
       {
-        "id": "w19",
+        "id": "w23",
         "field": "ip.src",
         "fields": [
           "ip.src",

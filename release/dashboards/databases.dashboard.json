@@ -74,6 +74,33 @@
       },
       {
         "id": "w7",
+        "field": "ip.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "session.length"
+        ],
+        "sortMetric": "session.length",
+        "metricType": "session.length",
+        "metricAgg": "p95",
+        "title": "Slowest database servers: p95 session length (ms)"
+      },
+      {
+        "id": "w8",
+        "field": "protocols",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 9,
+        "metricType": "session.length",
+        "metricAgg": "p50",
+        "title": "Median session length by database protocol (ms)"
+      },
+      {
+        "id": "w9",
         "field": "ip.src",
         "viewMode": "table",
         "width": 2,
@@ -88,7 +115,7 @@
         "title": "Clients"
       },
       {
-        "id": "w8",
+        "id": "w10",
         "field": "mysql.user",
         "viewMode": "table",
         "width": 2,
@@ -97,7 +124,7 @@
         "title": "MySQL users"
       },
       {
-        "id": "w9",
+        "id": "w11",
         "field": "postgresql.user",
         "viewMode": "table",
         "width": 2,
@@ -106,7 +133,7 @@
         "title": "PostgreSQL users"
       },
       {
-        "id": "w10",
+        "id": "w12",
         "field": "oracle.user",
         "viewMode": "table",
         "width": 2,
@@ -115,7 +142,7 @@
         "title": "Oracle users"
       },
       {
-        "id": "w11",
+        "id": "w13",
         "field": "postgresql.db",
         "viewMode": "table",
         "width": 2,
@@ -124,7 +151,7 @@
         "title": "PostgreSQL databases"
       },
       {
-        "id": "w12",
+        "id": "w14",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -138,7 +165,7 @@
         "title": "Database tree: clients to servers (click a host to re-root)"
       },
       {
-        "id": "w13",
+        "id": "w15",
         "field": "ip.src",
         "fields": [
           "ip.src",

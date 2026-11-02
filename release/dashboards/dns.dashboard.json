@@ -99,6 +99,28 @@
       },
       {
         "id": "w10",
+        "field": "ip.dst",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 10,
+        "metricType": "session.length",
+        "metricAgg": "p50",
+        "title": "Resolvers: median session length (ms)"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 10,
+        "metricType": "session.length",
+        "metricAgg": "p95",
+        "title": "Slowest resolvers: p95 session length (ms)"
+      },
+      {
+        "id": "w12",
         "field": "dns.query.type",
         "viewMode": "pie",
         "width": 2,
@@ -108,7 +130,7 @@
         "title": "Query types"
       },
       {
-        "id": "w11",
+        "id": "w13",
         "field": "dns.answer.type",
         "viewMode": "pie",
         "width": 2,
@@ -118,7 +140,7 @@
         "title": "Answer types"
       },
       {
-        "id": "w12",
+        "id": "w14",
         "field": "dns.puny",
         "viewMode": "table",
         "width": 2,
@@ -127,7 +149,7 @@
         "title": "Punycode names"
       },
       {
-        "id": "w13",
+        "id": "w15",
         "field": "dns.opcode",
         "viewMode": "table",
         "width": 2,
@@ -136,7 +158,7 @@
         "title": "Opcodes"
       },
       {
-        "id": "w14",
+        "id": "w16",
         "field": "dns.query.type",
         "fields": [
           "dns.query.type",
@@ -149,7 +171,7 @@
         "title": "Query types by status"
       },
       {
-        "id": "w15",
+        "id": "w17",
         "field": "ip.src",
         "viewMode": "bar",
         "width": 2,
@@ -158,7 +180,7 @@
         "title": "Clients"
       },
       {
-        "id": "w16",
+        "id": "w18",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -173,7 +195,7 @@
         "title": "Servers"
       },
       {
-        "id": "w17",
+        "id": "w19",
         "field": "ip.src",
         "fields": [
           "ip.src",
