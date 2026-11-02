@@ -23,7 +23,7 @@ import uPlot from 'uplot';
 import { themedColor } from '@common/themes/themedColor.js';
 import 'uplot/dist/uPlot.min.css';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
-import { COMPOSITE_METRICS } from './metrics.js';
+import { COMPOSITE_METRICS, isPercentileKey, parsePercentileKey } from './metrics.js';
 import moment from 'moment-timezone';
 
 const HOST_HEIGHT = 180;
@@ -127,8 +127,12 @@ export default {
     },
     friendlyTypeName (type) {
       if (type === 'sessionsHisto') return 'Sessions';
-      const filter = this.timelineDataFilters?.find((f) => f.dbField === type.slice(0, -5));
-      return filter?.friendlyName || type;
+      // a percentile series reads as "P95 Bytes"
+      const pct = parsePercentileKey(type);
+      const dbField = pct ? pct.dbField : type.slice(0, -5);
+      const filter = this.timelineDataFilters?.find((f) => f.dbField === dbField);
+      const label = filter?.friendlyName || (pct ? dbField : type);
+      return pct ? `${this.$t(`sessions.summary.agg.${pct.agg}`)} ${label}` : label;
     },
     /**
      * Build a uniform time grid using the backend-provided interval so
@@ -198,12 +202,14 @@ export default {
       const factor = Math.ceil(xs.length / maxBars);
       const reXs = [];
       const reYs = ys.map(() => []);
+      // percentiles don't add up, merged buckets show the highest
+      const percentile = isPercentileKey(this.graphType);
       for (let i = 0; i < xs.length; i += factor) {
         reXs.push(xs[i]);
         ys.forEach((y, idx) => {
           let sum = 0;
           for (let j = 0; j < factor && (i + j) < y.length; j++) {
-            sum += y[i + j];
+            sum = percentile ? Math.max(sum, y[i + j] || 0) : sum + y[i + j];
           }
           reYs[idx].push(sum);
         });
@@ -312,7 +318,8 @@ export default {
       if (v == null || !Number.isFinite(v)) return '';
       const isBytes = this.graphType === 'totBytesHisto' ||
                       this.graphType === 'totDataBytesHisto' ||
-                      this.graphType === 'network.bytesHisto';
+                      this.graphType === 'network.bytesHisto' ||
+                      /bytes$/i.test(parsePercentileKey(this.graphType)?.dbField || '');
       return isBytes ? humanReadableBytes(v) : humanReadableNumber(v);
     },
     destroyPlot () {

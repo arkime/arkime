@@ -503,6 +503,11 @@
       "everyMinutes": "{count} min",
       "everyHours": "{count} h",
       "scatterSizedBy": "{metric} (tamaño del punto: {size})",
+      "controlView": "Control de filtro",
+      "controlAll": "Todos",
+      "controlFiltersAll": "filtra todos los widgets",
+      "controlsChip": "Controles del panel",
+      "controlsClear": "Borrar los controles",
       "exportPNGTableWarning": "Solo exporta gráficos, no tablas",
       "resultsPerWidget": "Resultados por widget",
       "canceledSearch": "Cancelaste la búsqueda",
@@ -545,7 +550,11 @@
         "avg": "Promedio",
         "min": "Mín",
         "max": "Máx",
-        "cardinality": "Únicos"
+        "cardinality": "Únicos",
+        "p50": "Mediana",
+        "p90": "P90",
+        "p95": "P95",
+        "p99": "P99"
       },
       "navigation": {
         "system": "Sistema",
@@ -567,7 +576,7 @@
         "columns": "Columnas",
         "rows": "Filas",
         "metricAgg": "Agregación",
-        "metricAggTip": "Cómo se combina el campo de métrica por valor: sumado, promediado, su valor más pequeño o más grande, o el número de valores distintos",
+        "metricAggTip": "Cómo se combina el campo de métrica por valor: sumado, promediado, su valor más pequeño o más grande, el número de valores distintos o un percentil de sus valores (la mediana, P90, P95 o P99)",
         "splitField": "Dividir por",
         "splitFieldTip": "Segundo campo opcional: cada barra se divide en sus valores principales de este campo",
         "splitLength": "Divisiones por barra",
@@ -638,6 +647,12 @@
         "metricSlot-y": "Eje Y",
         "metricSlot-size": "Tamaño del punto",
         "metricSlotNone": "Ninguna",
+        "variable": "Variable",
+        "variableTip": "Los valores elegidos son esta variable: {ref} en el título o filtro de otro widget, o en el filtro del panel, se reemplaza por ellos. Sin selección, un título muestra Todos y se omite la parte de un filtro que la usa.",
+        "variableInvalid": "Un nombre de variable tiene letras, dígitos y _, y no empieza por un dígito",
+        "variableTaken": "Otro control ya define {ref}, elija otro nombre de variable",
+        "applyAll": "Filtrar todos los widgets",
+        "applyAllTip": "Añadir los valores elegidos a la búsqueda de cada widget. Desactivado, solo completan {ref} donde se usa.",
         "orientation": "Orientación",
         "orientation-vertical": "Vertical",
         "orientation-horizontal": "Horizontal"
@@ -1872,6 +1887,7 @@
     "sortBy-graph": "Conteo",
     "refreshEvery": "Actualizar cada",
     "intensity": "Intensidad",
+    "metricAggTip": "La métrica sumada por intervalo de tiempo y valor, o un percentil de sus valores (elija una métrica distinta de Sesiones)",
     "showCount": "Mostrar recuento",
     "sessions": "Sesiones",
     "exportCSV": "Exportar CSV",
@@ -2684,7 +2700,8 @@
       "unknownCluster": "Clúster desconocido",
       "tagsMustBeString": "Las etiquetas, cuando están presentes, deben ser una cadena de texto",
       "missingIds": "Faltan los IDs",
-      "badSaveId": "saveId inválido"
+      "badSaveId": "saveId inválido",
+      "percentilesMultiES": "Los percentiles no se admiten entre clústeres"
     },
     "stats": {
       "noResults": "Sin resultados",

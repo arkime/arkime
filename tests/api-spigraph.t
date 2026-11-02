@@ -1,4 +1,4 @@
-use Test::More tests => 152;
+use Test::More tests => 159;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -208,6 +208,21 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     is ($json->{items}->[0]->{'network.bytesHisto'}, 104190, "metric sort: first item bytes sum");
     is ($json->{items}->[1]->{name}, "10.180.156.185", "metric sort: second highest-bytes ip");
     is ($json->{items}->[1]->{'network.bytesHisto'}, 46190, "metric sort: second item bytes sum");
+
+# percentiles: a <dbField>:p<N>Histo series per value and over the search,
+# each value's total its p95 over the whole range, ranked by it. 10.1.1.234's
+# single session is its own p95; every backend agrees on that one
+    my $pctUrl = "/spigraph.json?date=-1&field=source.ip&size=2&metric=bytes&metricAgg=p95&sort=" . uri_escape("network.bytes:p95Histo") . "&expression=" . uri_escape($sortfiles);
+    my $pct = viewerGet($pctUrl);
+    is ($pct->{items}->[0]->{name}, "10.1.1.234", "percentile sort: the single big session ranks first");
+    is ($pct->{items}->[0]->{'network.bytes:p95Histo'}, 104190, "percentile sort: a single session's p95 is its bytes");
+    cmp_ok ($pct->{items}->[1]->{'network.bytes:p95Histo'}, '<=', 46190, "percentile sort: the second's p95 is at most its sum");
+    is (ref($pct->{graph}->{'network.bytes:p95Histo'}), "ARRAY", "percentile: the search graph has the p95 series");
+    is (scalar @{$pct->{items}->[0]->{graph}->{'network.bytes:p95Histo'}}, scalar @{$pct->{items}->[0]->{graph}->{sessionsHisto}}, "percentile: one p95 per time bucket");
+    my $mpct = multiGet($pctUrl);
+    like ($mpct->{text}, qr/not supported across clusters/, "percentile: multi viewer refuses it");
+    my $how = viewerGet("/spigraph.json?date=-1&field=source.ip&size=2&metric=bytes&metricAgg=p95&interval=hourOfWeek&expression=" . uri_escape($sortfiles));
+    ok (!exists $how->{graph}->{'network.bytes:p95Histo'}, "percentile: an hour of week fold sums instead");
 
 # a fractional size is used as a whole number; it used to hang the multi viewer's
 # nested terms merge (ip.dst:port is the nested branch)

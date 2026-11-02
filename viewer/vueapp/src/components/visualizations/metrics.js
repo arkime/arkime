@@ -39,3 +39,16 @@ export function metricSeries (graph, metric) {
   }
   return [...sums.entries()].sort((a, b) => a[0] - b[0]);
 }
+
+// a percentile series (SPI Graph's metricAgg): <dbField>:p<N>Histo, the
+// percentile of each time bucket, which can't be added up like the sums
+const PERCENTILE_KEY_RE = /^(.+):(p\d+)Histo$/;
+export function isPercentileKey (key) {
+  return typeof key === 'string' && PERCENTILE_KEY_RE.test(key);
+}
+
+// { dbField, agg } of a percentile series key, or null
+export function parsePercentileKey (key) {
+  const m = typeof key === 'string' ? key.match(PERCENTILE_KEY_RE) : null;
+  return m ? { dbField: m[1], agg: m[2] } : null;
+}

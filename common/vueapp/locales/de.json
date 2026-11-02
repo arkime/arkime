@@ -503,6 +503,11 @@
       "everyMinutes": "{count} min",
       "everyHours": "{count} h",
       "scatterSizedBy": "{metric} (Punktgröße: {size})",
+      "controlView": "Filtersteuerung",
+      "controlAll": "Alle",
+      "controlFiltersAll": "filtert alle Widgets",
+      "controlsChip": "Dashboard-Steuerungen",
+      "controlsClear": "Steuerungen zurücksetzen",
       "exportPNGTableWarning": "Exportiert nur Diagramme, keine Tabellen",
       "resultsPerWidget": "Ergebnisse pro Widget",
       "canceledSearch": "Sie haben die Suche abgebrochen",
@@ -545,7 +550,11 @@
         "avg": "Durchschnitt",
         "min": "Min",
         "max": "Max",
-        "cardinality": "Eindeutig"
+        "cardinality": "Eindeutig",
+        "p50": "Median",
+        "p90": "P90",
+        "p95": "P95",
+        "p99": "P99"
       },
       "navigation": {
         "system": "System",
@@ -567,7 +576,7 @@
         "columns": "Spalten",
         "rows": "Zeilen",
         "metricAgg": "Aggregation",
-        "metricAggTip": "Wie das Metrikfeld pro Wert kombiniert wird: summiert, gemittelt, sein kleinster oder größter Wert oder die Anzahl der eindeutigen Werte",
+        "metricAggTip": "Wie das Metrikfeld pro Wert kombiniert wird: summiert, gemittelt, sein kleinster oder größter Wert, die Anzahl der eindeutigen Werte oder ein Perzentil seiner Werte (Median, P90, P95 oder P99)",
         "splitField": "Aufteilen nach",
         "splitFieldTip": "Optionales zweites Feld: Jeder Balken wird in die Top-Werte dieses Feldes unterteilt",
         "splitLength": "Aufteilungen pro Balken",
@@ -638,6 +647,12 @@
         "metricSlot-y": "Y-Achse",
         "metricSlot-size": "Punktgröße",
         "metricSlotNone": "Keine",
+        "variable": "Variable",
+        "variableTip": "Die gewählten Werte bilden diese Variable: {ref} im Titel oder Filter eines anderen Widgets oder im Dashboard-Filter wird durch sie ersetzt. Ohne Auswahl zeigt ein Titel „Alle“ und der Teil eines Filters, der sie verwendet, entfällt.",
+        "variableInvalid": "Ein Variablenname besteht aus Buchstaben, Ziffern und _ und beginnt nicht mit einer Ziffer",
+        "variableTaken": "Eine andere Steuerung setzt bereits {ref}, wähle einen anderen Variablennamen",
+        "applyAll": "Alle Widgets filtern",
+        "applyAllTip": "Die gewählten Werte zur Suche jedes Widgets hinzufügen. Aus, füllen sie nur {ref} dort, wo es verwendet wird.",
         "orientation": "Ausrichtung",
         "orientation-vertical": "Vertikal",
         "orientation-horizontal": "Horizontal"
@@ -1872,6 +1887,7 @@
     "sortBy-graph": "Anzahl",
     "refreshEvery": "Alle aktualisieren",
     "intensity": "Intensität",
+    "metricAggTip": "Die Metrik pro Zeitabschnitt und Wert summiert oder ein Perzentil ihrer Werte (eine andere Metrik als Sitzungen wählen)",
     "showCount": "Anzahl anzeigen",
     "sessions": "Sitzungen",
     "exportCSV": "CSV exportieren",
@@ -2684,7 +2700,8 @@
       "unknownCluster": "Unbekannter Cluster",
       "tagsMustBeString": "Tags müssen, wenn vorhanden, eine Zeichenkette sein",
       "missingIds": "IDs fehlen",
-      "badSaveId": "Ungültige saveId"
+      "badSaveId": "Ungültige saveId",
+      "percentilesMultiES": "Perzentile werden über Cluster hinweg nicht unterstützt"
     },
     "stats": {
       "noResults": "Keine Ergebnisse",

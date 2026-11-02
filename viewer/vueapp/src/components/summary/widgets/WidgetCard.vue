@@ -13,7 +13,7 @@ The widget content is provided via the default slot.
     class="widget-card loading-widget"
     aria-hidden="true">
     <h4 class="loading-title">
-      {{ title }}
+      {{ shownTitle }}
     </h4>
     <div class="bouncing-dots">
       <span class="dot" />
@@ -36,7 +36,7 @@ The widget content is provided via the default slot.
           class="widget-drag"
           :title="$t('sessions.summary.dragToReorder')" />
         <h4 class="widget-title">
-          {{ title }}
+          {{ shownTitle }}
         </h4>
         <span
           v-if="infoItems.length"
@@ -134,7 +134,7 @@ The widget content is provided via the default slot.
           class="widget-drag"
           :title="$t('sessions.summary.dragToReorder')" />
         <h4 class="widget-title">
-          {{ title }}
+          {{ shownTitle }}
         </h4>
         <span
           v-if="infoItems.length"
@@ -228,12 +228,17 @@ The widget content is provided via the default slot.
 </template>
 
 <script setup>
-import { inject } from 'vue';
+import { inject, computed } from 'vue';
+import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n';
+import { substituteTitle } from './dashboardVariables';
 
 // the dashboard provides this; it opens the save-graph dialog for a widget
 const saveWidgetGraph = inject('saveWidgetGraph', null);
+const store = useStore();
+const { t } = useI18n();
 
-defineProps({
+const props = defineProps({
   title: { type: String, required: true },
   loading: { type: Boolean, default: false },
   error: { type: String, default: '' },
@@ -254,6 +259,9 @@ defineProps({
 });
 
 defineEmits(['edit', 'remove', 'export', 'retry']);
+
+// ${name} in a title shows the dashboard variable's picked values
+const shownTitle = computed(() => substituteTitle(props.title, store.state.dashboardVariables, t('sessions.summary.controlAll')));
 </script>
 
 <style scoped>

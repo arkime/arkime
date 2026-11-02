@@ -503,6 +503,11 @@
       "everyMinutes": "{count}分",
       "everyHours": "{count}時間",
       "scatterSizedBy": "{metric}（点のサイズ：{size}）",
+      "controlView": "フィルターコントロール",
+      "controlAll": "すべて",
+      "controlFiltersAll": "すべてのウィジェットを絞り込み",
+      "controlsChip": "ダッシュボードのコントロール",
+      "controlsClear": "コントロールをクリア",
       "exportPNGTableWarning": "グラフのみエクスポートされます（テーブルは除外）",
       "resultsPerWidget": "ウィジェットごとの結果数",
       "canceledSearch": "検索をキャンセルしました",
@@ -545,7 +550,11 @@
         "avg": "平均",
         "min": "最小",
         "max": "最大",
-        "cardinality": "ユニーク"
+        "cardinality": "ユニーク",
+        "p50": "中央値",
+        "p90": "P90",
+        "p95": "P95",
+        "p99": "P99"
       },
       "navigation": {
         "system": "システム",
@@ -567,7 +576,7 @@
         "columns": "列",
         "rows": "行",
         "metricAgg": "集計",
-        "metricAggTip": "メトリックフィールドを値ごとにどのように結合するか: 合計、平均、最小値または最大値、または異なる値の数",
+        "metricAggTip": "メトリックフィールドを値ごとにどのように結合するか: 合計、平均、最小値または最大値、異なる値の数、または値のパーセンタイル（中央値、P90、P95、P99）",
         "splitField": "分割基準",
         "splitFieldTip": "オプションの第2フィールド: 各バーはこのフィールドの上位値で分割されます",
         "splitLength": "バーあたりの分割数",
@@ -638,6 +647,12 @@
         "metricSlot-y": "Y軸",
         "metricSlot-size": "点のサイズ",
         "metricSlotNone": "なし",
+        "variable": "変数",
+        "variableTip": "選択した値がこの変数になります：他のウィジェットのタイトルやフィルター、ダッシュボードのフィルター内の {ref} がこれらの値に置き換えられます。何も選択していない場合、タイトルには「すべて」と表示され、フィルターのうちこの変数を使う部分は省かれます。",
+        "variableInvalid": "変数名は英字、数字、_ で構成し、数字で始めることはできません",
+        "variableTaken": "別のコントロールがすでに {ref} を設定しています。別の変数名を選択してください",
+        "applyAll": "すべてのウィジェットを絞り込む",
+        "applyAllTip": "選択した値をすべてのウィジェットの検索に追加します。オフの場合は、{ref} が使われている箇所を埋めるだけです。",
         "orientation": "向き",
         "orientation-vertical": "縦",
         "orientation-horizontal": "横"
@@ -1872,6 +1887,7 @@
     "sortBy-graph": "カウント順",
     "refreshEvery": "更新間隔",
     "intensity": "強度",
+    "metricAggTip": "時間区間と値ごとのメトリックの合計、またはその値のパーセンタイル（セッション以外のメトリックを選択）",
     "showCount": "件数を表示",
     "sessions": "セッション",
     "exportCSV": "CSV をエクスポート",
@@ -2684,7 +2700,8 @@
       "unknownCluster": "不明なクラスター",
       "tagsMustBeString": "タグは存在する場合、文字列である必要があります",
       "missingIds": "IDが未入力です",
-      "badSaveId": "無効なsaveId"
+      "badSaveId": "無効なsaveId",
+      "percentilesMultiES": "クラスターをまたぐパーセンタイルはサポートされていません"
     },
     "stats": {
       "noResults": "結果がありません",
