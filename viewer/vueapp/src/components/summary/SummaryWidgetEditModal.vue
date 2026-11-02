@@ -220,6 +220,22 @@ SPDX-License-Identifier: Apache-2.0
           </span>
         </div>
 
+        <!-- metric without a field: a trend line of the metric under the number -->
+        <label
+          v-if="sparklineEnabled"
+          class="arkime-input-group cursor-pointer mb-3">
+          <span class="arkime-input-label">
+            <input
+              v-model="form.sparkline"
+              type="checkbox"
+              class="arkime-check-input me-2">
+            {{ $t('sessions.summary.widget.sparkline') }}
+          </span>
+          <v-tooltip activator="parent">
+            {{ $t('sessions.summary.widget.sparklineTip') }}
+          </v-tooltip>
+        </label>
+
         <!-- gauge: the arc's full value and the thresholds that color it -->
         <div
           v-if="gaugeMode"
@@ -270,7 +286,7 @@ SPDX-License-Identifier: Apache-2.0
               class="arkime-input-label cursor-help">
               {{ $t('sessions.summary.widget.splitField') }}
               <v-tooltip activator="#widgetSplitField">
-                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? 'sessions.summary.widget.splitTimelineTip' : 'sessions.summary.widget.splitPieTip') }}
+                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? 'sessions.summary.widget.splitTimelineTip' : timeOfDaySplit ? 'sessions.summary.widget.splitTimeOfDayTip' : 'sessions.summary.widget.splitPieTip') }}
               </v-tooltip>
             </span>
             <ArkimeFieldTypeahead
@@ -290,7 +306,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-select
             v-model="form.splitLength"
             :items="splitLengthItems"
-            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : timelineSplit ? 'sessions.summary.widget.splitSeries' : 'sessions.summary.widget.splitPies')"
+            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : timelineSplit ? 'sessions.summary.widget.splitSeries' : timeOfDaySplit ? 'sessions.summary.widget.splitGrids' : 'sessions.summary.widget.splitPies')"
             :disabled="!form.splitField"
             density="compact"
             variant="outlined"
@@ -620,6 +636,7 @@ const blankForm = () => ({
   orientation: 'vertical',
   seriesType: 'bars',
   yScale: 'linear',
+  sparkline: false,
   bucketInterval: 0,
   gaugeMax: 0,
   gaugeWarn: 0,
@@ -724,6 +741,11 @@ const aggItems = computed(() => METRIC_AGGS.map(a => ({ title: t(`sessions.summa
 const splitEnabled = computed(() => allowsSplit(form.value.viewMode));
 const barSplit = computed(() => form.value.viewMode === 'bar');
 const timelineSplit = computed(() => form.value.viewMode === 'timeline');
+const timeOfDaySplit = computed(() => form.value.viewMode === 'timeofday');
+// a trend line only means something for a summed metric over the whole
+// result set (the timeline the metric widget can fold it from)
+const sparklineEnabled = computed(() => form.value.viewMode === 'metric' && !form.value.field &&
+  (form.value.metricType === 'sessions' || (form.value.metricAgg || 'sum') === 'sum'));
 // a split timeline's "Draw as" is two settings at once: stacked bars, stacked
 // lines, or overlaid (grouped) lines
 const timelineDrawAs = computed({
@@ -739,7 +761,13 @@ const drawAsItems = computed(() => [
   { title: t('sessions.summary.widget.seriesMode-grouped'), value: 'grouped-lines' }
 ]);
 const seriesTypeItems = computed(() => SERIES_TYPES.map(m => ({ title: t(`sessions.summary.widget.seriesType-${m}`), value: m })));
-const yScaleItems = computed(() => Y_SCALES.map(m => ({ title: t(`sessions.summary.widget.yScale-${m}`), value: m })));
+// percent is each series' share of the bucket, so it takes a stacked split
+const yScaleItems = computed(() => Y_SCALES
+  .filter(m => m !== 'percent' || (form.value.splitField && form.value.barMode !== 'grouped'))
+  .map(m => ({ title: t(`sessions.summary.widget.yScale-${m}`), value: m })));
+watch(yScaleItems, (items) => {
+  if (!items.some(i => i.value === form.value.yScale)) { form.value.yScale = 'linear'; }
+});
 const orientationItems = computed(() => BAR_ORIENTATIONS.map(m => ({ title: t(`sessions.summary.widget.orientation-${m}`), value: m })));
 const splitFields = computed(() => fields.value.filter(f => fieldIsAggregatable(f) && f.exp !== 'ip' && f.exp !== 'ip.dst:port' &&
   f.exp !== form.value.field && !(form.value.fields || []).includes(f.exp)));
@@ -881,6 +909,7 @@ const fillForm = (w) => {
     orientation: BAR_ORIENTATIONS.includes(w.orientation) ? w.orientation : 'vertical',
     seriesType: SERIES_TYPES.includes(w.seriesType) ? w.seriesType : 'bars',
     yScale: Y_SCALES.includes(w.yScale) ? w.yScale : 'linear',
+    sparkline: w.sparkline === true,
     other: w.other === true,
     bucketInterval: w.bucketInterval > 0 ? w.bucketInterval : 0,
     gaugeMax: w.gaugeMax > 0 ? w.gaugeMax : 0,
@@ -1032,7 +1061,8 @@ const save = () => {
     barMode: additiveMetric.value ? (form.value.barMode || 'stacked') : 'grouped',
     orientation: barSplit.value && form.value.orientation === 'horizontal' ? 'horizontal' : 'vertical',
     seriesType: timelineSplit.value && form.value.seriesType === 'lines' ? 'lines' : 'bars',
-    yScale: timelineSplit.value && form.value.yScale === 'log' ? 'log' : 'linear',
+    yScale: timelineSplit.value && yScaleItems.value.some(i => i.value === form.value.yScale) ? form.value.yScale : 'linear',
+    sparkline: sparklineEnabled.value && !!form.value.sparkline,
     other: otherEnabled.value && additiveMetric.value && !!form.value.other,
     bucketInterval: bucketEnabled.value ? nonNeg(form.value.bucketInterval) : 0,
     gaugeMax: gaugeMode.value ? nonNeg(form.value.gaugeMax) : 0,

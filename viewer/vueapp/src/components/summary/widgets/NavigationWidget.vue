@@ -35,6 +35,12 @@ inline before its dashboards.
           :class="{ 'nav-chip--current': d.id === currentId }"
           :title="d.description || d.name">
           <v-icon
+            v-if="d.id === defaultId"
+            icon="mdi-star"
+            size="x-small"
+            class="me-1 nav-star"
+            :title="$t('sessions.summary.config.isDefault')" />
+          <v-icon
             v-if="d.shared"
             icon="mdi-share-all"
             size="x-small"
@@ -63,6 +69,12 @@ inline before its dashboards.
             :class="{ 'nav-chip--current': d.id === currentId }"
             :title="d.description || d.name">
             <v-icon
+              v-if="d.id === defaultId"
+              icon="mdi-star"
+              size="x-small"
+              class="me-1 nav-star"
+              :title="$t('sessions.summary.config.isDefault')" />
+            <v-icon
               v-if="d.shared"
               icon="mdi-share-all"
               size="x-small"
@@ -78,15 +90,17 @@ inline before its dashboards.
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
 import { createShareableService } from '../../users/ShareableService';
-import { loadSystemDashboards } from '../systemDashboards';
+import { loadSystemDashboards, defaultDashboardId } from '../systemDashboards';
 import { groupDashboards } from '../dashboardFolders';
 
 const DashboardService = createShareableService('summaryConfig');
 const { t, locale } = useI18n();
 const route = useRoute();
+const store = useStore();
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -111,6 +125,9 @@ const sections = computed(() => [
 ]);
 
 const currentId = computed(() => (typeof route.query.dashboard === 'string' ? route.query.dashboard : ''));
+// the user's default dashboard (a saved or a system one), starred
+// the Overview when the user hasn't picked one
+const defaultId = computed(() => defaultDashboardId(store.state.user?.settings));
 
 // the same search and time, a different dashboard
 const linkTo = (id) => ({ path: '/arkime', query: { ...route.query, dashboard: id } });
@@ -193,6 +210,12 @@ watch(() => props.dashboardsVersion, load);
 .nav-chip--current {
   background: rgb(var(--v-theme-foreground-accent));
   color: rgb(var(--v-theme-button-fg));
+}
+.nav-star {
+  color: rgb(var(--v-theme-foreground-accent));
+}
+.nav-chip--current .nav-star {
+  color: inherit;
 }
 .nav-none {
   font-size: 0.78rem;

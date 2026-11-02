@@ -73,14 +73,17 @@ SPDX-License-Identifier: Apache-2.0
               @click="overrideDisabledAggregations(undefined)">
               {{ $t('search.disableVis') }}
             </v-list-item>
-            <v-divider />
-            <v-list-item @click="toggleStickyViz">
+            <!-- the Arkime dashboard has no graph or map of its own to pin or hide -->
+            <v-divider v-if="basePath !== 'arkime'" />
+            <v-list-item
+              v-if="basePath !== 'arkime'"
+              @click="toggleStickyViz">
               {{ !stickyViz ? 'Pin' : 'Unpin' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
             </v-list-item>
             <v-list-item
               id="hideViz"
               @click="toggleHideViz"
-              v-if="basePath !== 'spigraph'">
+              v-if="basePath !== 'spigraph' && basePath !== 'arkime'">
               {{ $t(!hideViz ? 'search.hideGraphMap' : 'search.showGraphMap') }}
               <v-tooltip
                 activator="#hideViz"
@@ -91,8 +94,10 @@ SPDX-License-Identifier: Apache-2.0
           </v-list>
         </v-menu>
       </v-btn-group>
+      <!-- the Arkime dashboard has no graph or map to pin or hide, so without
+           disabled aggregations to fetch the menu would be empty -->
       <v-menu
-        v-else
+        v-else-if="basePath !== 'arkime'"
         location="bottom end">
         <template #activator="{ props: activatorProps }">
           <v-btn
@@ -113,13 +118,16 @@ SPDX-License-Identifier: Apache-2.0
             @click="overrideDisabledAggregations(undefined)">
             {{ $t('search.disableVis') }}
           </v-list-item>
-          <v-list-item @click="toggleStickyViz">
+          <!-- the Arkime dashboard has no graph or map of its own to pin or hide -->
+          <v-list-item
+            v-if="basePath !== 'arkime'"
+            @click="toggleStickyViz">
             {{ !stickyViz ? 'Pin' : 'Unpin' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
           </v-list-item>
           <v-list-item
             id="hideViz"
             @click="toggleHideViz"
-            v-if="basePath !== 'spigraph'">
+            v-if="basePath !== 'spigraph' && basePath !== 'arkime'">
             {{ $t(!hideViz ? 'search.hideGraphMap' : 'search.showGraphMap') }}
             <v-tooltip
               activator="#hideViz"

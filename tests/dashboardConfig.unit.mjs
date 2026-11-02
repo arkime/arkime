@@ -211,6 +211,29 @@ describe('graphFromSpigraphQuery', () => {
     }
   });
 
+  test('SPI Graph\'s percent layout is the timeline\'s percent y axis', () => {
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'ip.src', timelineMode: 'percent' }).yScale, 'percent');
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'ip.src', timelineMode: 'stacked' }).yScale, 'linear');
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'ip.src' }).yScale, 'linear');
+  });
+
+  test('SPI Graph\'s Time of day is a time of day grid split by its field', () => {
+    const g = graphFromSpigraphQuery({ spiGraphType: 'timeofday', exp: 'ip.src', size: '5', graphType: 'totBytesHisto' }, { fieldsArr });
+    assert.equal(g.viewMode, 'timeofday');
+    assert.equal(g.splitField, 'ip.src');
+    assert.equal(g.splitLength, 5);
+    assert.equal(g.metricType, 'bytes');
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'timeofday' }), null);
+  });
+
+  test('SPI Graph\'s matrix is the first field by the second', () => {
+    const g = graphFromSpigraphQuery({ spiGraphType: 'matrix', exp: 'ip.src', subFields: 'port.dst,protocols', size: '10' });
+    assert.equal(g.viewMode, 'matrix');
+    assert.deepEqual(g.fields, ['ip.src', 'port.dst']);
+    assert.equal(g.length, 10);
+    assert.deepEqual(graphFromSpigraphQuery({ spiGraphType: 'matrix', exp: 'ip.src' }).fields, ['ip.src']);
+  });
+
   test('no field gives no graph', () => {
     assert.equal(graphFromSpigraphQuery({ spiGraphType: 'pie' }), null);
   });
@@ -229,6 +252,10 @@ describe('spigraphQueryFromGraph', () => {
       graph({ viewMode: 'bar', field: 'ip.src', orientation: 'horizontal', length: 20 }),
       graph({ viewMode: 'timeline', splitField: 'protocols', splitLength: 10 }),
       graph({ viewMode: 'timeline', splitField: 'ip.dst', splitLength: 5, metricType: 'bytes', view: 'v1' }),
+      graph({ viewMode: 'timeline', splitField: 'protocols', splitLength: 5, yScale: 'percent' }),
+      graph({ viewMode: 'timeofday', splitField: 'protocols', splitLength: 10 }),
+      graph({ viewMode: 'timeofday', splitField: 'ip.dst', splitLength: 5, metricType: 'bytes', view: 'v1' }),
+      graph({ viewMode: 'matrix', fields: ['ip.src', 'port.dst'], length: 10 }),
       graph({ viewMode: 'pie', fields: ['ip.src', 'port.dst'], length: 10 }),
       graph({ viewMode: 'pie', fields: ['protocols', 'port.dst'], splitField: 'ip.dst', length: 10 }),
       graph({ viewMode: 'pie', fields: ['protocols'], other: true }),
@@ -306,6 +333,17 @@ describe('graphOnSpigraph', () => {
     assert.equal(graphOnSpigraph(saved, page).splitLength, 3);
   });
 
+  test('SPI Graph\'s layout sets or clears a timeline\'s percent axis and leaves a log one alone', () => {
+    const log = graph({ viewMode: 'timeline', splitField: 'protocols', yScale: 'log' });
+    const percent = graph({ viewMode: 'timeline', splitField: 'protocols', yScale: 'percent' });
+    const stackedPage = graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'protocols', timelineMode: 'stacked' });
+    const percentPage = graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'protocols', timelineMode: 'percent' });
+    assert.equal(graphOnSpigraph(log, stackedPage).yScale, 'log');
+    assert.equal(graphOnSpigraph(log, percentPage).yScale, 'percent');
+    assert.equal(graphOnSpigraph(percent, stackedPage).yScale, 'linear');
+    assert.equal(graphOnSpigraph(percent, percentPage).yScale, 'percent');
+  });
+
   test('an unchanged page is the saved graph', () => {
     const page = graphFromSpigraphQuery(spigraphQueryFromGraph(saved), { fieldsArr });
     assert.deepEqual(graphOnSpigraph(saved, page), saved);
@@ -374,6 +412,31 @@ describe('widgetFullPageLink', () => {
     assert.equal(widgetFullPageLink({ query: {} }, store, { viewMode: 'timeline', splitField: 'protocols', splitLength: 3 }).query.size, 5);
     // a split field SPI Graph can't aggregate falls back to Sessions
     assert.equal(widgetFullPageLink({ query: {} }, store, { viewMode: 'timeline', splitField: 'nope' }).path, '/sessions');
+  });
+
+  test('a split timeline opens SPI Graph stacked, a percent one as shares', () => {
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'timeline', splitField: 'protocols' })).timelineMode, 'stacked');
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'timeline', splitField: 'protocols', yScale: 'percent' })).timelineMode, 'percent');
+  });
+
+  test('a split time of day opens SPI Graph\'s Time of day, an unsplit one has no full page', () => {
+    const link = widgetFullPageLink({ query: {} }, store, { viewMode: 'timeofday', splitField: 'protocols', splitLength: 5 });
+    assert.equal(link.path, '/spigraph');
+    assert.equal(link.query.spiGraphType, 'timeofday');
+    assert.equal(link.query.exp, 'protocols');
+    // the metric is always named, so the page doesn't keep the last one it showed
+    assert.equal(link.query.graphType, 'sessionsHisto');
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'timeline', splitField: 'protocols' })).graphType, 'sessionsHisto');
+    assert.equal(widgetFullPageLink({ query: {} }, store, { viewMode: 'timeofday' }), null);
+    assert.equal(widgetIsGraph({ viewMode: 'timeofday', splitField: 'protocols' }), true);
+    assert.equal(widgetIsGraph({ viewMode: 'timeofday' }), false);
+  });
+
+  test('a matrix opens SPI Graph\'s matrix of its two fields', () => {
+    const link = widgetFullPageLink({ query: {} }, store, { ...graph({ viewMode: 'matrix', fields: ['ip.src', 'port.dst'], length: 10 }), id: 'w9' });
+    assert.equal(link.query.spiGraphType, 'matrix');
+    assert.equal(link.query.exp, 'ip.src');
+    assert.equal(link.query.subFields, 'port.dst');
   });
 
   test('a split timeline is a graph, an unsplit one is not', () => {

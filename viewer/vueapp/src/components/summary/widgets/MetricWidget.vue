@@ -57,21 +57,39 @@ top-N value when a split field is chosen. Self-fetches /api/sessions/summary
           class="metric-sublabel">
           {{ metricLabel }}
         </div>
+        <!-- the metric over the time range, bucket by bucket, under the number -->
+        <svg
+          v-else-if="sparkPath"
+          class="metric-spark"
+          viewBox="0 0 100 24"
+          preserveAspectRatio="none">
+          <path
+            :d="sparkPath + ' L100,24 L0,24 Z'"
+            class="metric-spark__fill" />
+          <path
+            :d="sparkPath"
+            class="metric-spark__line" />
+        </svg>
       </div>
     </div>
   </WidgetCard>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onBeforeUnmount } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { useRoute } from 'vue-router';
+import { useStore } from 'vuex';
 import WidgetCard from './WidgetCard.vue';
 import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchMetric, formatMetricValue, metricLabel as metricLabelFor } from './widgetData';
+import { fetchMetric, fetchGraph, metricHistoKey, formatMetricValue, metricLabel as metricLabelFor } from './widgetData';
+import { metricSeries } from '../../visualizations/metrics.js';
 
 const { t } = useI18n();
+const route = useRoute();
+const store = useStore();
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -87,9 +105,53 @@ const rows = ref([]); // [{ item, sessions, value, metricValues }]
 const { loading, error, fetchData } = useSpigraphWidget(
   () => props.widget,
   () => props.reloadNonce,
-  (res) => { rows.value = Array.isArray(res) ? res : []; },
+  (res) => { rows.value = Array.isArray(res) ? res : []; loadSpark(); },
   fetchMetric
 );
+
+// the trend line: the metric's timeline (the same <dbField>Histo series the
+// timeline widget draws) fetched beside the number, for a summed metric over
+// the whole result set
+const spark = ref(null); // [[ms, value], ...] summed over the metric's histo keys
+let sparkController;
+const wantsSpark = computed(() => props.widget.sparkline && !props.widget.field &&
+  ((props.widget.metricType || 'sessions') === 'sessions' || (props.widget.metricAgg || 'sum') === 'sum'));
+const loadSpark = async () => {
+  if (sparkController) { sparkController.abort(); }
+  if (!wantsSpark.value) { spark.value = null; return; }
+  sparkController = new AbortController();
+  try {
+    const res = await fetchGraph(route, store, props.widget, { signal: sparkController.signal });
+    // buckets without sessions aren't returned: drop to zero across a gap
+    // rather than drawing a line over it
+    const pts = metricSeries(res.graph, metricHistoKey(props.widget));
+    const step = (res.graph?.interval || 0) * 1000;
+    const filled = [];
+    for (const p of pts) {
+      const prev = filled[filled.length - 1];
+      if (step > 0 && prev && p[0] - prev[0] > step) {
+        filled.push([prev[0] + step, 0]);
+        if (p[0] - prev[0] > 2 * step) { filled.push([p[0] - step, 0]); }
+      }
+      filled.push(p);
+    }
+    spark.value = filled;
+  } catch (err) {
+    if (err.name !== 'AbortError') { spark.value = null; } // the number still shows
+  }
+};
+watch(wantsSpark, loadSpark);
+onBeforeUnmount(() => { if (sparkController) { sparkController.abort(); } });
+
+// the line in a 100 x 24 box: x by time, y by value, so it scales with the card
+const sparkPath = computed(() => {
+  const pts = spark.value;
+  if (!pts || pts.length < 2) { return ''; }
+  const max = Math.max(...pts.map(p => p[1]), 0) || 1;
+  const t0 = pts[0][0];
+  const span = (pts[pts.length - 1][0] - t0) || 1;
+  return pts.map(([ts, v], i) => `${i ? 'L' : 'M'}${((ts - t0) / span * 100).toFixed(2)},${(24 - (v / max) * 22).toFixed(2)}`).join(' ');
+});
 
 const fieldObj = computed(() => (props.widget.field ? FieldService.getField(props.widget.field, true) : null));
 const hasData = computed(() => rows.value.length > 0);
@@ -146,5 +208,21 @@ const format = (v) => formatMetricValue(metricType.value, v, metricAgg.value);
 .metric-sublabel {
   font-size: 0.7rem;
   opacity: 0.7;
+}
+.metric-spark {
+  display: block;
+  width: 100%;
+  height: 28px;
+  margin-top: 0.25rem;
+}
+.metric-spark__line {
+  fill: none;
+  stroke: rgb(var(--v-theme-foreground-accent));
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.metric-spark__fill {
+  fill: rgb(var(--v-theme-foreground-accent));
+  opacity: 0.15;
 }
 </style>

@@ -21,7 +21,7 @@ const EXPRESSION_MAX_LENGTH = 4096;
 const INVISIBLE_RE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 // the view modes a saved graph can have (GRAPH_VIEW_MODES in dashboardConfig.js)
-const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'connections', 'tree', 'timeline'];
+const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'connections', 'tree', 'timeline', 'timeofday'];
 
 class ShareableAPIs {
   // --------------------------------------------------------------------------
@@ -178,11 +178,11 @@ class ShareableAPIs {
       const optString = (v) => v === undefined || typeof v === 'string';
       if (data.fields !== undefined && !ArkimeUtil.isStringArray(data.fields)) { return invalidGraph; }
       if (!optString(data.field)) { return invalidGraph; }
-      // a timeline graph is split by its field rather than aggregating one
-      const graphField = data.viewMode === 'timeline' ? data.splitField : (data.fields?.length || data.field);
+      // a timeline or time of day graph is split by its field rather than aggregating one
+      const graphField = (data.viewMode === 'timeline' || data.viewMode === 'timeofday') ? data.splitField : (data.fields?.length || data.field);
       if (!graphField) { return missingGraph; }
       if (data.metrics !== undefined && !ArkimeUtil.isStringArray(data.metrics)) { return invalidGraph; }
-      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'orientation', 'order', 'orderBy', 'treeRoot', 'expression', 'view']) {
+      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'orientation', 'seriesType', 'yScale', 'order', 'orderBy', 'treeRoot', 'expression', 'view']) {
         if (!optString(data[key])) { return invalidGraph; }
       }
       for (const key of ['length', 'splitLength', 'treeDepth']) {

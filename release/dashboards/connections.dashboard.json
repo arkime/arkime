@@ -23,12 +23,23 @@
       },
       {
         "id": "w2",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 10,
+        "barMode": "stacked",
+        "width": 4,
+        "height": 2,
+        "title": "Protocol share over time",
+        "yScale": "percent"
+      },
+      {
+        "id": "w3",
         "viewMode": "stats",
         "width": 2,
         "height": 1
       },
       {
-        "id": "w3",
+        "id": "w4",
         "viewMode": "gauge",
         "metricType": "bytes",
         "metricAgg": "avg",
@@ -37,7 +48,7 @@
         "title": "Avg bytes/session"
       },
       {
-        "id": "w4",
+        "id": "w5",
         "viewMode": "gauge",
         "metricType": "packets",
         "metricAgg": "avg",
@@ -46,7 +57,7 @@
         "title": "Avg packets/session"
       },
       {
-        "id": "w5",
+        "id": "w6",
         "field": "ip.src",
         "viewMode": "table",
         "width": 2,
@@ -61,7 +72,7 @@
         "title": "Sources by bytes"
       },
       {
-        "id": "w6",
+        "id": "w7",
         "field": "ip.dst",
         "viewMode": "table",
         "width": 2,
@@ -76,7 +87,7 @@
         "title": "Destinations by bytes"
       },
       {
-        "id": "w7",
+        "id": "w8",
         "field": "port.dst",
         "viewMode": "table",
         "width": 2,
@@ -91,7 +102,7 @@
         "title": "Top destination ports"
       },
       {
-        "id": "w8",
+        "id": "w9",
         "field": "packets",
         "viewMode": "bar",
         "width": 2,
@@ -101,7 +112,7 @@
         "title": "Sessions by packet count (ranges of 10)"
       },
       {
-        "id": "w9",
+        "id": "w10",
         "field": "ip.protocol",
         "viewMode": "pie",
         "width": 2,
@@ -111,7 +122,7 @@
         "title": "IP protocols"
       },
       {
-        "id": "w10",
+        "id": "w11",
         "field": "session.length",
         "viewMode": "bar",
         "width": 2,
@@ -121,15 +132,29 @@
         "title": "Session length in ms (ranges of 10 s)"
       },
       {
-        "id": "w11",
+        "id": "w12",
+        "field": "ip.protocol",
+        "fields": [
+          "ip.protocol",
+          "port.dst"
+        ],
+        "viewMode": "matrix",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "IP protocols by destination port"
+      },
+      {
+        "id": "w13",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
         "title": "SYN with no SYN-ACK",
+        "sparkline": true,
         "expression": "tcpflags.syn > 0 && tcpflags.syn-ack == 0"
       },
       {
-        "id": "w12",
+        "id": "w14",
         "viewMode": "gauge",
         "metricType": "initRTT",
         "metricAgg": "avg",
@@ -138,23 +163,25 @@
         "title": "Avg initial RTT, ms"
       },
       {
-        "id": "w13",
+        "id": "w15",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
         "title": "Bytes sent",
-        "metricType": "bytes.src"
+        "metricType": "bytes.src",
+        "sparkline": true
       },
       {
-        "id": "w14",
+        "id": "w16",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
         "title": "Bytes received",
-        "metricType": "bytes.dst"
+        "metricType": "bytes.dst",
+        "sparkline": true
       },
       {
-        "id": "w15",
+        "id": "w17",
         "field": "oui.src",
         "viewMode": "table",
         "width": 2,
@@ -163,7 +190,7 @@
         "title": "Source MAC vendors"
       },
       {
-        "id": "w16",
+        "id": "w18",
         "field": "oui.dst",
         "viewMode": "table",
         "width": 2,
@@ -172,7 +199,7 @@
         "title": "Destination MAC vendors"
       },
       {
-        "id": "w17",
+        "id": "w19",
         "field": "country.src",
         "viewMode": "map",
         "width": 2,
@@ -181,7 +208,7 @@
         "title": "Source countries by bytes"
       },
       {
-        "id": "w18",
+        "id": "w20",
         "field": "country.dst",
         "viewMode": "map",
         "width": 2,
@@ -190,7 +217,7 @@
         "title": "Destination countries by bytes"
       },
       {
-        "id": "w19",
+        "id": "w21",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -204,7 +231,7 @@
         "title": "Top paths: source, destination port, destination"
       },
       {
-        "id": "w20",
+        "id": "w22",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -217,7 +244,7 @@
         "title": "Connection graph"
       },
       {
-        "id": "w21",
+        "id": "w23",
         "field": "ip.src",
         "fields": [
           "ip.src",

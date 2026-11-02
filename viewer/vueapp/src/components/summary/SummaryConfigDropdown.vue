@@ -110,10 +110,35 @@ SPDX-License-Identifier: Apache-2.0
           v-else
           :class="{ 'ps-8': row.indent, 'config-current': row.item.id === currentId }"
           @click="loadConfig(row.item)">
-          <v-icon
-            icon="mdi-view-dashboard-outline"
-            class="me-1" />
-          {{ row.item.name }}
+          <div class="d-flex justify-space-between align-center w-100">
+            <span class="config-name">
+              <v-icon
+                v-if="row.item.id === defaultId"
+                icon="mdi-star"
+                class="me-1 text-theme-accent"
+                :title="$t('sessions.summary.config.isDefault')" />
+              <v-icon
+                v-else
+                icon="mdi-view-dashboard-outline"
+                class="me-1" />
+              {{ row.item.name }}
+            </span>
+            <span
+              class="config-actions"
+              @click.stop>
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="row.item.id === defaultId ? accentBtnStyle : tertiaryBtnStyle"
+                class="ms-1"
+                :title="row.item.id === defaultId ? $t('sessions.summary.config.unsetDefault') : $t('sessions.summary.config.setDefault')"
+                @click.stop="toggleDefault(row.item)">
+                <v-icon :icon="row.item.id === defaultId ? 'mdi-star' : 'mdi-star-outline'" />
+              </v-btn>
+            </span>
+          </div>
           <v-tooltip
             activator="parent"
             location="end"
@@ -272,7 +297,7 @@ import { useI18n } from 'vue-i18n';
 import { createShareableService } from '../users/ShareableService';
 import UserService from '../users/UserService';
 import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
-import { loadSystemDashboards } from './systemDashboards';
+import { loadSystemDashboards, defaultDashboardId, pickedDefaultId, FALLBACK_DEFAULT_ID } from './systemDashboards';
 import { dashboardRows, folderOf, loadOpenFolders, saveOpenFolders } from './dashboardFolders';
 
 const SummaryConfigService = createShareableService('summaryConfig');
@@ -318,7 +343,8 @@ const accentBtnStyle = {
 const user = computed(() => store.state.user);
 
 // The user's default dashboard id (if any)
-const defaultId = computed(() => store.state.user?.settings?.defaultDashboardId || '');
+// the Overview when the user hasn't picked one
+const defaultId = computed(() => defaultDashboardId(store.state.user?.settings));
 
 // the dashboard the page shows (the ?dashboard url param), highlighted in the lists
 const currentId = computed(() => (typeof route.query.dashboard === 'string' ? route.query.dashboard : ''));
@@ -446,7 +472,7 @@ const deleteConfig = async (config) => {
     // Remove from local list
     configs.value = configs.value.filter(c => c.id !== config.id);
     // Clear the default pointer if it referenced this config
-    if (defaultId.value === config.id) {
+    if (pickedDefaultId(store.state.user?.settings) === config.id) {
       await persistDefault('');
     }
     emit('changed');
@@ -468,15 +494,17 @@ const persistDefault = async (id) => {
   await UserService.saveSettings(settings);
 };
 
-// Toggle a config as the default landing dashboard
+// Toggle a saved or system dashboard as the default landing dashboard
 const toggleDefault = async (config) => {
   try {
     const newId = defaultId.value === config.id ? '' : config.id;
+    // the Overview is the default when none is picked: nothing to unset, and
+    // unpicking it keeps its star
+    if (!newId && !pickedDefaultId(store.state.user?.settings)) { return; }
     await persistDefault(newId);
-    emit('message', {
-      msg: newId ? t('sessions.summary.config.defaultSet') : t('sessions.summary.config.defaultUnset'),
-      type: 'success'
-    });
+    let msg = t('sessions.summary.config.defaultSet');
+    if (!newId) { msg = t(config.id === FALLBACK_DEFAULT_ID ? 'sessions.summary.config.defaultUnsetOverview' : 'sessions.summary.config.defaultUnset'); }
+    emit('message', { msg, type: 'success' });
   } catch (err) {
     emit('message', {
       msg: err.text || String(err),

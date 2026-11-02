@@ -1,4 +1,4 @@
-use Test::More tests => 121;
+use Test::More tests => 152;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -65,6 +65,33 @@ my ($json, $mjson, $pjson);
     $pjson = post("/api/spigraph", '{"map":true, "date":-1, "field": {}, "expression":"file=' . $pwd . '/bigendian.pcap|file=' . $pwd . '/socks-http-example.pcap|file=' . $pwd . '/bt-tcp.pcap"}');
     is($pjson->{success}, 0, "bad field parameter");
     is($pjson->{i18n}, "api.sessions.badFieldParam", "bad field parameter i18n");
+
+# hour of week: the hour buckets folded into a week of slots (Monday 00:00 is 0) in the timezone
+    $json = get("/spigraph.json?date=-1&field=node&interval=hourOfWeek&timezone=UTC&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    is($json->{graph}->{hourOfWeek}, 1, "hourOfWeek graph is marked");
+    is($json->{graph}->{timezone}, "UTC", "hourOfWeek graph names its zone");
+    eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[[17, 3], [59, 1], [124, 1], [164, 1]]'), "sessionsHisto folded by hour of week in UTC");
+    eq_or_diff($json->{graph}->{"source.packetsHisto"}, from_json('[[17, 26], [59, 2], [124, 3], [164, 3]]'), "source.packetsHisto folded by hour of week");
+    eq_or_diff($json->{items}->[0]->{graph}->{sessionsHisto}, from_json('[[17, 3], [59, 1], [124, 1], [164, 1]]'), "an item's graph is folded too");
+    is($json->{items}->[0]->{graph}->{hourOfWeek}, 1, "an item's graph is marked");
+    # the same hours five back in New York; an unknown zone folds in UTC
+    $json = get("/spigraph.json?date=-1&field=node&interval=hourOfWeek&timezone=America/New_York&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[[12, 3], [55, 1], [119, 1], [159, 1]]'), "sessionsHisto folded by hour of week in America/New_York");
+    $json = get("/spigraph.json?date=-1&field=node&interval=hourOfWeek&timezone=Mars/Olympus&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    is($json->{graph}->{timezone}, "UTC", "an unknown timezone folds in UTC");
+    # the hours with sessions in each slot, and an all time search's bounds stay times
+    $json = get("/spigraph.json?date=-1&field=node&interval=hourOfWeek&timezone=UTC&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    eq_or_diff($json->{graph}->{hourOfWeekHours}, from_json('[[17, 1], [59, 1], [124, 1], [164, 1]]'), "hourOfWeekHours counts the hours folded into each slot");
+    is($json->{graph}->{xmin}, 1335956400000, "an all time hourOfWeek graph keeps its xmin a time");
+    # a name browsers send that Intl.supportedValuesOf leaves out (it lists Asia/Calcutta),
+    # and zones whose hours start on the half or quarter hour, each session in its local hour
+    $json = get("/spigraph.json?date=-1&field=node&interval=hourOfWeek&timezone=Asia/Kolkata&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[[1, 1], [22, 3], [65, 1], [129, 1]]'), "sessionsHisto folded by hour of week in Asia/Kolkata");
+    $json = get("/spigraph.json?date=-1&field=node&interval=hourOfWeek&timezone=Asia/Kathmandu&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[[2, 1], [22, 3], [65, 1], [130, 1]]'), "sessionsHisto folded by hour of week in Asia/Kathmandu");
+    # the sessions api folds its timeline the same way
+    $json = get("/api/sessions?date=-1&facets=1&length=1&interval=hourOfWeek&timezone=America/St_Johns&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));
+    eq_or_diff($json->{graph}->{sessionsHisto}, from_json('[[13, 3], [57, 1], [120, 1], [160, 1]]'), "sessions api sessionsHisto folded by hour of week in America/St_Johns");
 
 #node
     $json = get("/spigraph.json?map=true&date=-1&field=node&expression=" . uri_escape("file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap"));

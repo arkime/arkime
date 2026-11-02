@@ -111,6 +111,17 @@
       },
       {
         "id": "w12",
+        "viewMode": "timeline",
+        "splitField": "tls.version",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 4,
+        "height": 2,
+        "title": "TLS version share over time",
+        "yScale": "percent"
+      },
+      {
+        "id": "w13",
         "field": "ip.src",
         "viewMode": "bar",
         "width": 2,
@@ -119,7 +130,7 @@
         "title": "Clients"
       },
       {
-        "id": "w13",
+        "id": "w14",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -134,7 +145,7 @@
         "title": "Servers"
       },
       {
-        "id": "w14",
+        "id": "w15",
         "field": "ip.src",
         "fields": [
           "ip.src",

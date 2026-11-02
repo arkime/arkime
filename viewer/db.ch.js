@@ -1181,7 +1181,7 @@ class DbCHImpl {
     const intervalMs = typeof histo.interval === 'number' ? histo.interval : this.intervalToMs(histo.fixed_interval || histo.calendar_interval || histo.interval);
     const intervalSeconds = Math.max(1, Math.floor(intervalMs / 1000));
     const hfield = histo.field === '@timestamp' ? 'timestamp' : histo.field;
-    const slotExpr = `toUnixTimestamp(toStartOfInterval(${this.columnForField(hfield)}, INTERVAL ${intervalSeconds} second)) * 1000`;
+    const slotExpr = `toUnixTimestamp(${this.histogramKeyExpr(this.columnForField(hfield), intervalSeconds, histo.offset)}) * 1000`;
 
     const keys = buckets.map(b => b.key);
     const keyFilter = bucketWhereFn
@@ -1203,11 +1203,21 @@ class DbCHImpl {
     }
   }
 
+  // The start of the interval a time column falls in, the buckets starting
+  // offsetMs (an ES histogram offset, whole seconds) after the multiples
+  histogramKeyExpr (column, intervalSeconds, offsetMs) {
+    const offsetSeconds = Math.floor((Number(offsetMs) || 0) / 1000);
+    if (!offsetSeconds) { return `toStartOfInterval(${column}, INTERVAL ${intervalSeconds} second)`; }
+    return `(toStartOfInterval(${column} - INTERVAL ${offsetSeconds} second, INTERVAL ${intervalSeconds} second) + INTERVAL ${offsetSeconds} second)`;
+  }
+
   async runHistogramAgg (agg, where) {
     const histo = agg.histogram || agg.date_histogram;
     const intervalMs = typeof histo.interval === 'number' ? histo.interval : this.intervalToMs(histo.fixed_interval || histo.calendar_interval || histo.interval);
     const intervalSeconds = Math.max(1, Math.floor(intervalMs / 1000));
     const field = histo.field === '@timestamp' ? 'timestamp' : histo.field;
+    // ES histogram offset: buckets start that many ms after the interval's multiples
+    const offsetMs = Math.floor(Number(histo.offset) || 0);
     if (histo.field === 'packetRange') {
       // ES packetRange is a date_range field (firstPacket..lastPacket); a
       // histogram over it counts the session in EVERY interval it spans.
@@ -1215,9 +1225,9 @@ class DbCHImpl {
       // Clamp the start so a missing firstPacket can't explode the range.
       const fp = `toUnixTimestamp64Milli(${quoteIdent(this.prefix + this.table)}.firstPacket)`;
       const lp = `toUnixTimestamp64Milli(${this.lastPacketCol()})`;
-      const endSlot = `intDiv(${lp}, ${intervalMs})`;
-      const startSlot = `greatest(least(intDiv(${fp}, ${intervalMs}), ${endSlot}), ${endSlot} - 2000000)`;
-      const spanKeyExpr = `arrayJoin(range(toUInt64(${startSlot}), toUInt64(${endSlot} + 1))) * ${intervalMs}`;
+      const endSlot = `intDiv(${lp} - ${offsetMs}, ${intervalMs})`;
+      const startSlot = `greatest(least(intDiv(${fp} - ${offsetMs}, ${intervalMs}), ${endSlot}), ${endSlot} - 2000000)`;
+      const spanKeyExpr = `arrayJoin(range(toUInt64(${startSlot}), toUInt64(${endSlot} + 1))) * ${intervalMs} + ${offsetMs}`;
       const subAggsSpan = agg.aggregations || agg.aggs || {};
       const metricSelectSpan = Object.entries(subAggsSpan).map(([subName, subAgg]) => `${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
       const spanSelect = [`${spanKeyExpr} AS key`, 'count() AS doc_count', ...metricSelectSpan].join(', ');
@@ -1230,7 +1240,7 @@ class DbCHImpl {
         })
       };
     }
-    const keyExpr = `toStartOfInterval(${this.columnForField(field)}, INTERVAL ${intervalSeconds} second)`;
+    const keyExpr = this.histogramKeyExpr(this.columnForField(field), intervalSeconds, offsetMs);
     const subAggs = agg.aggregations || agg.aggs || {};
     const metricSelect = [];
     for (const [subName, subAgg] of Object.entries(subAggs)) {
