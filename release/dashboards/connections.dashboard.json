@@ -36,6 +36,7 @@
         "width": 1,
         "height": 1,
         "length": 20,
+        "controlType": "range",
         "title": "Destination port"
       },
       {
@@ -152,7 +153,7 @@
         "field": "ip.protocol",
         "viewMode": "pie",
         "width": 2,
-        "height": 2,
+        "height": 3,
         "length": 8,
         "other": true,
         "title": "IP protocols"
@@ -172,7 +173,7 @@
         "id": "w16",
         "viewMode": "timeline",
         "width": 2,
-        "height": 2,
+        "height": 3,
         "title": "p95 session length over time (ms)",
         "metricType": "session.length",
         "metricAgg": "p95",
@@ -203,7 +204,7 @@
         ],
         "viewMode": "matrix",
         "width": 2,
-        "height": 3,
+        "height": 2,
         "length": 15,
         "title": "IP protocols by destination port"
       },

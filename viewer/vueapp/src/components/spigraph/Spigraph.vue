@@ -149,12 +149,13 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /pie layout -->
 
-              <!-- split pie only: how many pies (the first field's top values) -->
+              <!-- split pie and waffle (a waffle with a second field) only: how
+                   many pies or waffles (the first field's top values) -->
               <div
                 class="arkime-input-group"
-                v-if="spiGraphType === 'pie' && pieMode === 'split'">
+                v-if="(spiGraphType === 'pie' && pieMode === 'split') || (spiGraphType === 'waffle' && $route.query.subFields)">
                 <span class="arkime-input-label">
-                  {{ $t('sessions.summary.widget.splitPies') }}:
+                  {{ $t(spiGraphType === 'waffle' ? 'sessions.summary.widget.splitWaffles' : 'sessions.summary.widget.splitPies') }}:
                 </span>
                 <select
                   class="arkime-input-control"
@@ -169,9 +170,10 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /pie count -->
 
-              <!-- pie only: a gray slice for what falls outside the top values -->
+              <!-- pie and waffle: a gray slice (squares) for what falls outside
+                   the top values -->
               <label
-                v-if="spiGraphType === 'pie'"
+                v-if="spiGraphType === 'pie' || spiGraphType === 'waffle'"
                 class="arkime-input-group cursor-pointer">
                 <span class="arkime-input-label">
                   <input
@@ -184,7 +186,7 @@ SPDX-License-Identifier: Apache-2.0
                 <v-tooltip activator="parent">
                   {{ $t('sessions.summary.widget.showOtherTip') }}
                 </v-tooltip>
-              </label> <!-- /pie other -->
+              </label> <!-- /pie and waffle other -->
 
               <!-- table layout (table only): the fields' value combinations
                    (intersection), or each field's own top values (unique) -->
@@ -395,7 +397,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- hierarchy "add another field" anchor (own full-width row); a
                    tag cloud draws one field, so it has none -->
               <div
-                v-if="['bar', 'pie', 'table', 'treemap', 'sankey', 'matrix'].includes(spiGraphType)"
+                v-if="['bar', 'pie', 'waffle', 'table', 'treemap', 'sankey', 'matrix', 'mosaic'].includes(spiGraphType)"
                 id="spigraph-subfield-anchor"
                 class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1" />
             </div>
@@ -724,7 +726,7 @@ export default {
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
       snackbar: { show: false, text: '', color: 'success', link: '' },
-      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'pie', 'tagcloud', 'table', 'treemap', 'sankey', 'matrix', 'connections', 'tree'],
+      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'pie', 'tagcloud', 'waffle', 'table', 'treemap', 'sankey', 'matrix', 'mosaic', 'connections', 'tree'],
       timelineModes: ['separate', 'stacked', 'percent'],
       areaModes: ['stacked', 'percent', 'overlaid'],
       // the types that can draw a percentile of their metric (?metricAgg=p95)
@@ -1266,8 +1268,8 @@ export default {
     },
     changeSpiGraphType: function (spiGraphType) {
       this.spiGraphType = spiGraphType;
-      if (this.spiGraphType === 'pie' || this.spiGraphType === 'bar' || this.spiGraphType === 'tagcloud' ||
-        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey' || this.spiGraphType === 'matrix') {
+      if (this.spiGraphType === 'pie' || this.spiGraphType === 'bar' || this.spiGraphType === 'tagcloud' || this.spiGraphType === 'waffle' ||
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey' || this.spiGraphType === 'matrix' || this.spiGraphType === 'mosaic') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
         }

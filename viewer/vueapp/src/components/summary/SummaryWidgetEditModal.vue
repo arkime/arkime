@@ -160,10 +160,19 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="titlePlaceholder">
         </div>
 
-        <!-- control: the variable its picks set, and whether they filter every widget -->
+        <!-- control: how it picks, the variable its picks set, and whether
+             they filter every widget -->
         <div
           v-if="controlMode"
           class="d-flex flex-wrap align-center gap-3 mb-3">
+          <v-select
+            v-model="form.controlType"
+            :items="controlTypeItems"
+            :label="$t('sessions.summary.widget.controlType')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 160px" />
           <div
             class="arkime-input-group"
             style="min-width: 240px">
@@ -294,10 +303,11 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- gauge: the arc's full value and the thresholds that color it -->
         <div
-          v-if="gaugeMode"
+          v-if="gaugeMode || levelsMode"
           id="widgetGauge"
           class="d-flex flex-wrap gap-3 mb-3">
           <v-text-field
+            v-if="gaugeMode"
             v-model.number="form.gaugeMax"
             type="number"
             min="0"
@@ -325,7 +335,26 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             style="min-width: 140px" />
           <v-tooltip activator="#widgetGauge">
-            {{ $t('sessions.summary.widget.gaugeTip') }}
+            {{ $t(gaugeMode ? 'sessions.summary.widget.gaugeTip' : 'sessions.summary.widget.levelsTip') }}
+          </v-tooltip>
+        </div>
+
+        <!-- an unsplit timeline or a metric's number beside the same window
+             a day or a week earlier -->
+        <div
+          v-if="compareEnabled"
+          id="widgetCompare"
+          class="d-flex flex-wrap gap-3 mb-3">
+          <v-select
+            v-model="form.compare"
+            :items="compareItems"
+            :label="$t('sessions.summary.widget.compare')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 200px" />
+          <v-tooltip activator="#widgetCompare">
+            {{ $t('sessions.summary.widget.compareTip') }}
           </v-tooltip>
         </div>
 
@@ -342,7 +371,7 @@ SPDX-License-Identifier: Apache-2.0
               class="arkime-input-label cursor-help">
               {{ $t('sessions.summary.widget.splitField') }}
               <v-tooltip activator="#widgetSplitField">
-                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? (areaMode ? 'sessions.summary.widget.splitAreaTip' : 'sessions.summary.widget.splitTimelineTip') : timeOfDaySplit ? 'sessions.summary.widget.splitTimeOfDayTip' : 'sessions.summary.widget.splitPieTip') }}
+                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? (areaMode ? 'sessions.summary.widget.splitAreaTip' : 'sessions.summary.widget.splitTimelineTip') : timeOfDaySplit ? 'sessions.summary.widget.splitTimeOfDayTip' : waffleSplit ? 'sessions.summary.widget.splitWaffleTip' : 'sessions.summary.widget.splitPieTip') }}
               </v-tooltip>
             </span>
             <ArkimeFieldTypeahead
@@ -362,7 +391,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-select
             v-model="form.splitLength"
             :items="splitLengthItems"
-            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : timelineSplit ? 'sessions.summary.widget.splitSeries' : timeOfDaySplit ? 'sessions.summary.widget.splitGrids' : 'sessions.summary.widget.splitPies')"
+            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : timelineSplit ? 'sessions.summary.widget.splitSeries' : timeOfDaySplit ? 'sessions.summary.widget.splitGrids' : waffleSplit ? 'sessions.summary.widget.splitWaffles' : 'sessions.summary.widget.splitPies')"
             :disabled="!form.splitField"
             density="compact"
             variant="outlined"
@@ -646,8 +675,8 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
 import { createShareableService } from '../users/ShareableService';
 import { metricIsAdditive, fieldIsAggregatable } from './widgets/widgetData';
-import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH, isTimelineMode, metricSlots, slotMetrics, metricAggsFor, isControlMode } from './widgets/viewModes';
-import { defaultVariableName, VARIABLE_NAME_RE } from './widgets/dashboardVariables';
+import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH, isTimelineMode, metricSlots, slotMetrics, metricAggsFor, isControlMode, allowsCompare, hasLevels, COMPARES } from './widgets/viewModes';
+import { defaultVariableName, VARIABLE_NAME_RE, CONTROL_TYPES } from './widgets/dashboardVariables';
 import { GRAPH_VIEW_MODES, graphFromWidget, nonNeg } from './dashboardConfig';
 import { columnSortDbField, fieldHasColumn } from './widgets/sessionsWidgetData';
 import { MAX_TEXT } from './widgets/miniMarkdown';
@@ -703,6 +732,7 @@ const blankForm = () => ({
   gaugeMax: 0,
   gaugeWarn: 0,
   gaugeCrit: 0,
+  compare: '',
   other: false,
   text: '',
   treeRoot: '',
@@ -713,6 +743,7 @@ const blankForm = () => ({
   sortField: '',
   variable: '',
   applyAll: true,
+  controlType: 'list',
   width: 2,
   height: 3,
   expression: '',
@@ -787,6 +818,15 @@ const staticMode = computed(() => isStaticMode(form.value.viewMode));
 const navMode = computed(() => isNavMode(form.value.viewMode));
 // gauge: one metric over the result set, no field, plus a maximum and thresholds
 const gaugeMode = computed(() => isGaugeMode(form.value.viewMode));
+// the other types with warning / critical levels (colors, reference lines)
+const levelsMode = computed(() => !gaugeMode.value && hasLevels(form.value.viewMode));
+// an unsplit timeline or a metric's single number can show an earlier window
+const compareEnabled = computed(() => allowsCompare({ viewMode: form.value.viewMode, field: form.value.field, splitField: form.value.splitField }));
+const controlTypeItems = computed(() => CONTROL_TYPES.map(c => ({ title: t(`sessions.summary.widget.controlType-${c}`), value: c })));
+const compareItems = computed(() => [
+  { title: t('sessions.summary.widget.compareNone'), value: '' },
+  ...COMPARES.map(c => ({ title: t(`sessions.summary.widget.compare-${c}`), value: c }))
+]);
 // control: a variable name (from its field when blank) and whether it filters every widget
 const controlMode = computed(() => isControlMode(form.value.viewMode));
 const variablePlaceholder = computed(() => defaultVariableName(form.value.field) || 'name');
@@ -798,10 +838,15 @@ watch(() => form.value.viewMode, (vm) => {
 // connection tree: a root value and a depth on top of the connections pair
 const treeMode = computed(() => isTreeMode(form.value.viewMode));
 const treeDepthItems = TREE_DEPTHS.map(n => ({ title: String(n), value: n }));
+// a split or nested pie and a split waffle are drawn from the hierarchy
+// endpoint, which only counts sessions and has no order or bucket interval
+const hierarchyFed = computed(() => (form.value.viewMode === 'pie' && (!!form.value.splitField || (form.value.fields || []).length > 1)) ||
+  (form.value.viewMode === 'waffle' && !!form.value.splitField));
+watch(hierarchyFed, (fed) => { if (fed) { form.value.metricType = 'sessions'; } });
 // a numeric single field can be bucketed into ranges of a fixed width
-const bucketEnabled = computed(() => allowsBucketInterval(form.value.viewMode) &&
+const bucketEnabled = computed(() => allowsBucketInterval(form.value.viewMode) && !hierarchyFed.value &&
   FieldService.getField(form.value.field, true)?.type === 'integer');
-const metricEnabled = computed(() => hasMetric(form.value.viewMode));
+const metricEnabled = computed(() => hasMetric(form.value.viewMode) && !hierarchyFed.value);
 // aggregation choice: only the summary-endpoint modes, and only once a metric
 // field (not the session count) is chosen
 const aggEnabled = computed(() => hasMetricAgg(form.value.viewMode));
@@ -834,6 +879,7 @@ const barSplit = computed(() => form.value.viewMode === 'bar');
 const timelineSplit = computed(() => isTimelineMode(form.value.viewMode));
 const areaMode = computed(() => form.value.viewMode === 'area');
 const timeOfDaySplit = computed(() => form.value.viewMode === 'timeofday');
+const waffleSplit = computed(() => form.value.viewMode === 'waffle');
 // a trend line only means something for a summed metric over the whole
 // result set (the timeline the metric widget can fold it from)
 const sparklineEnabled = computed(() => form.value.viewMode === 'metric' && !form.value.field &&
@@ -887,7 +933,7 @@ const multiMetric = computed(() => allowsMultiMetric(form.value.viewMode));
 const lengthEnabled = computed(() => hasLength(form.value.viewMode));
 // only the summary-endpoint modes pass an order through; showing the control
 // for the others would silently do nothing
-const orderEnabled = computed(() => hasOrder(form.value.viewMode));
+const orderEnabled = computed(() => hasOrder(form.value.viewMode) && !hierarchyFed.value);
 // connections' limit is a session sample, so it gets its own label + scale
 const sampleSize = computed(() => isSampleSize(form.value.viewMode));
 // field-bound, geo (map) and timeline widgets all support a local filter; only
@@ -1024,10 +1070,12 @@ const fillForm = (w) => {
     gaugeMax: w.gaugeMax > 0 ? w.gaugeMax : 0,
     gaugeWarn: w.gaugeWarn > 0 ? w.gaugeWarn : 0,
     gaugeCrit: w.gaugeCrit > 0 ? w.gaugeCrit : 0,
+    compare: w.compare || '',
     text: w.text || '',
     sortField: w.sortField || '',
     variable: w.variable || '',
     applyAll: w.applyAll !== false,
+    controlType: CONTROL_TYPES.includes(w.controlType) ? w.controlType : 'list',
     expression: w.expression || '',
     view: w.view || '',
     title: w.title || ''
@@ -1143,6 +1191,11 @@ const save = () => {
     error.value = t('sessions.summary.widget.variableInvalid');
     return;
   }
+  // a range slider spans a number
+  if (controlMode.value && form.value.controlType === 'range' && FieldService.getField(fieldList[0], true)?.type !== 'integer') {
+    error.value = t('sessions.summary.widget.controlRangeNumeric');
+    return;
+  }
   const varName = variable || defaultVariableName(fieldList[0]);
   if (controlMode.value && props.takenVariables.includes(varName)) {
     error.value = t('sessions.summary.widget.variableTaken', { ref: `\${${varName}}` });
@@ -1195,8 +1248,9 @@ const save = () => {
     other: otherEnabled.value && additiveMetric.value && !!form.value.other,
     bucketInterval: bucketEnabled.value ? nonNeg(form.value.bucketInterval) : 0,
     gaugeMax: gaugeMode.value ? nonNeg(form.value.gaugeMax) : 0,
-    gaugeWarn: gaugeMode.value ? nonNeg(form.value.gaugeWarn) : 0,
-    gaugeCrit: gaugeMode.value ? nonNeg(form.value.gaugeCrit) : 0,
+    gaugeWarn: gaugeMode.value || levelsMode.value ? nonNeg(form.value.gaugeWarn) : 0,
+    gaugeCrit: gaugeMode.value || levelsMode.value ? nonNeg(form.value.gaugeCrit) : 0,
+    compare: compareEnabled.value && COMPARES.includes(form.value.compare) ? form.value.compare : '',
     text: staticMode.value ? (form.value.text || '') : '',
     treeRoot: treeMode.value ? (form.value.treeRoot?.trim() || '') : '',
     treeDepth: treeMode.value && TREE_DEPTHS.includes(form.value.treeDepth) ? form.value.treeDepth : DEFAULT_TREE_DEPTH,
@@ -1205,6 +1259,7 @@ const save = () => {
     orderBy: orderEnabled.value && !listMode.value && form.value.orderBy === 'key' ? 'key' : 'value',
     sortField: listMode.value ? (form.value.sortField || '') : '',
     variable: controlMode.value ? variable : '',
+    controlType: controlMode.value ? form.value.controlType : 'list',
     applyAll: !controlMode.value || form.value.applyAll !== false,
     width: form.value.width,
     height: form.value.height,

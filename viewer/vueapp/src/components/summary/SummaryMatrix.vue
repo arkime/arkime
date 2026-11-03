@@ -94,7 +94,7 @@ import { ref, computed, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { commaString } from '@common/vueFilters.js';
 import { heatmapInterpolator } from './widgets/chartColors';
-import { fitLabel } from '../utils/hierarchyLayout';
+import { fitLabel, nodeCount as count } from '../utils/hierarchyLayout';
 
 const props = defineProps({
   // the hierarchy: { children: [{ name, size | sizeValue, children: [{ name, size }] }] }
@@ -119,8 +119,6 @@ const MIN_CELL = 14;
 
 const interp = ref(null);
 watch(() => props.colorScheme, async (scheme) => { interp.value = await heatmapInterpolator(scheme); }, { immediate: true });
-
-const count = (node) => node?.sizeValue ?? node?.size ?? 0;
 
 // the rows in the order fetched (the first field's top values); without a
 // second field each row is one cell of its own count

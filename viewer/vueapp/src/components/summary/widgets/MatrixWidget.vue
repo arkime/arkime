@@ -2,10 +2,13 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Matrix widget: the first field's top values down the side, the second's
-across the top, each cell colored by the sessions the two values share.
-Self-fetches /api/spigraphhierarchy (global search AND the widget's local
-filter) like the intersection table, and draws it as a colored grid.
+Matrix and mosaic widget: the first field's top values down the side and the
+second's across the top, each cell colored by the sessions the two values
+share (matrix), or the first field's values as columns as wide as their
+sessions, each split by the second field's (mosaic), or one waffle of the
+field's values per value of the split field (a split waffle). Self-fetches
+/api/spigraphhierarchy (global search AND the widget's local filter) like the
+intersection table.
 -->
 <template>
   <WidgetCard
@@ -22,8 +25,29 @@ filter) like the intersection table, and draws it as a colored grid.
     <div
       ref="container"
       class="matrix-container">
+      <SummaryWaffle
+        v-if="hasData && width > 0 && widget.viewMode === 'waffle'"
+        :groups="groups"
+        :svg-id="`waffle-${widget.id}`"
+        :field-config="fieldObjs[0]"
+        :split-field-config="splitFieldObj"
+        :width="width"
+        :height="height"
+        :color-scheme="colorScheme"
+        @show-tooltip="$emit('show-tooltip', $event)" />
+      <SummaryMosaic
+        v-else-if="hasData && width > 0 && widget.viewMode === 'mosaic'"
+        :data="hierarchy"
+        :svg-id="`mosaic-${widget.id}`"
+        :field-config="fieldObjs[0]"
+        :col-field-config="fieldObjs[1] || null"
+        :width="width"
+        :height="height"
+        :color-scheme="colorScheme"
+        @show-tooltip="$emit('show-tooltip', $event)"
+        @hide-tooltip="$emit('hide-tooltip')" />
       <SummaryMatrix
-        v-if="hasData && width > 0"
+        v-else-if="hasData && width > 0"
         :data="hierarchy"
         :svg-id="`matrix-${widget.id}`"
         :field-config="fieldObjs[0]"
@@ -41,9 +65,12 @@ filter) like the intersection table, and draws it as a colored grid.
 import { ref, computed, nextTick, onBeforeUnmount } from 'vue';
 import WidgetCard from './WidgetCard.vue';
 import SummaryMatrix from '../SummaryMatrix.vue';
+import SummaryMosaic from '../SummaryMosaic.vue';
+import SummaryWaffle from '../SummaryWaffle.vue';
+import { waffleGroups } from '../../utils/waffleLayout';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchHierarchy, widgetFields } from './widgetData';
+import { fetchHierarchy, widgetFields, defaultWidgetTitle } from './widgetData';
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -70,9 +97,15 @@ const { loading, error, fetchData } = useSpigraphWidget(
 
 const fieldExps = computed(() => widgetFields(props.widget));
 const fieldObjs = computed(() => fieldExps.value.map(exp => FieldService.getField(exp, true)));
-const title = computed(() => props.widget.title ||
-  fieldObjs.value.map((f, i) => f?.friendlyName || fieldExps.value[i]).join(' × '));
-const hasData = computed(() => !!hierarchy.value?.children?.length && !!fieldObjs.value[0]);
+// a split waffle's groups, built once per result
+const groups = computed(() => (props.widget.viewMode === 'waffle' ? waffleGroups(hierarchy.value) : null));
+const splitFieldObj = computed(() => (props.widget.splitField ? FieldService.getField(props.widget.splitField, true) : null));
+// "A × B" for a matrix or mosaic; a split waffle is "Split / Field", as a split pie is
+const title = computed(() => props.widget.title || defaultWidgetTitle(props.widget));
+// a split waffle needs a split value with something to draw
+const hasData = computed(() => !!fieldObjs.value[0] && (groups.value
+  ? groups.value.some(g => g.items.some(i => i.value > 0) || g.other?.value > 0)
+  : !!hierarchy.value?.children?.length));
 
 const measure = () => {
   if (!container.value) { return; }

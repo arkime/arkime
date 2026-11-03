@@ -54,9 +54,28 @@ const {
   GRAPH_KEYS, widgetsFromConfig, defaultWidgets, graphFromWidget, widgetFromGraph, normalizeWidget, widgetIsGraph,
   graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph, migrateDashboard, DASHBOARD_VERSION
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
-const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
-const { widgetFullPageLink, widgetFields, hierarchyFields, pageExpression, combinedExpression, metricHistoKey } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
+const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor, allowsCompare, hasLevels } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
+const { widgetFullPageLink, widgetFields, hierarchyFields, defaultWidgetTitle, pageExpression, combinedExpression, metricHistoKey, compareOffset, widgetThresholds, thresholdColor } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 const { findTreeRoot, buildConnectionTree, MAX_TREE_CHILDREN, MAX_TREE_NODES } = await import('../viewer/vueapp/src/components/summary/widgets/connectionTree.js');
+const { showsOwnLayout, defaultDashboardId, FALLBACK_DEFAULT_ID } = await import('../viewer/vueapp/src/components/summary/systemDashboards.js');
+
+describe('the dashboard the Arkime tab shows', () => {
+  test('the own layout only with no pick and a state of its own widgets', () => {
+    const own = { widgets: [{ viewMode: 'bar', field: 'ip.src' }] };
+    assert.equal(showsOwnLayout({}, own), true);
+    assert.equal(showsOwnLayout(undefined, own), true);
+    assert.equal(showsOwnLayout({ defaultDashboardId: 'abc' }, own), false, 'a picked default comes first');
+    assert.equal(showsOwnLayout({}, { ...own, dashboardId: 'abc' }), false, 'a copy of a saved dashboard is not its own');
+    assert.equal(showsOwnLayout({}, { widgets: [] }), false);
+    assert.equal(showsOwnLayout({}, { fields: [{ field: 'ip.src' }] }), false, 'a v6 state has no widgets');
+    assert.equal(showsOwnLayout({}, null), false);
+  });
+
+  test('the default is the pick, else the Overview', () => {
+    assert.equal(defaultDashboardId({ defaultDashboardId: 'abc' }), 'abc');
+    assert.equal(defaultDashboardId({}), FALLBACK_DEFAULT_ID);
+  });
+});
 
 const graph = (overrides) => graphFromWidget(overrides);
 
@@ -237,6 +256,38 @@ describe('graphFromSpigraphQuery', () => {
     assert.deepEqual(graphFromSpigraphQuery({ spiGraphType: 'matrix', exp: 'ip.src' }).fields, ['ip.src']);
   });
 
+  test('SPI Graph\'s waffle is one field, with its Other', () => {
+    const g = graphFromSpigraphQuery({ spiGraphType: 'waffle', exp: 'protocols', size: '10', other: 'true' });
+    assert.equal(g.viewMode, 'waffle');
+    assert.deepEqual(g.fields, ['protocols']);
+    assert.equal(g.other, true);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'waffle', exp: 'protocols' }).other, false);
+  });
+
+  test('SPI Graph\'s waffle with a second field is split by its first', () => {
+    const g = graphFromSpigraphQuery({ spiGraphType: 'waffle', exp: 'node', subFields: 'protocols,port.dst', pieCount: '3' });
+    assert.equal(g.viewMode, 'waffle');
+    assert.deepEqual(g.fields, ['protocols']);
+    assert.equal(g.splitField, 'node');
+    assert.equal(g.splitLength, 3);
+    // a pie count that isn't a split length, or none, is the default
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'waffle', exp: 'node', subFields: 'protocols', pieCount: '7' }).splitLength, 5);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'waffle', exp: 'node', subFields: 'protocols' }).splitLength, 5);
+    // the waffle's url: split first, its count and Other
+    const pick = (q) => (({ exp, spiGraphType, subFields, pieCount, other }) => ({ exp, spiGraphType, subFields, pieCount, other }))(q);
+    assert.deepEqual(pick(spigraphQueryFromGraph(graph({ viewMode: 'waffle', field: 'protocols', splitField: 'node', splitLength: 3, other: true }))),
+      { exp: 'node', spiGraphType: 'waffle', subFields: 'protocols', pieCount: 3, other: 'true' });
+    assert.deepEqual(pick(spigraphQueryFromGraph(graph({ viewMode: 'waffle', field: 'protocols', other: true }))),
+      { exp: 'protocols', spiGraphType: 'waffle', subFields: undefined, pieCount: undefined, other: 'true' });
+  });
+
+  test('SPI Graph\'s mosaic is the first field split by the second', () => {
+    const g = graphFromSpigraphQuery({ spiGraphType: 'mosaic', exp: 'country.dst', subFields: 'protocols,port.dst', size: '10' });
+    assert.equal(g.viewMode, 'mosaic');
+    assert.deepEqual(g.fields, ['country.dst', 'protocols']);
+    assert.equal(g.length, 10);
+  });
+
   test('no field gives no graph', () => {
     assert.equal(graphFromSpigraphQuery({ spiGraphType: 'pie' }), null);
   });
@@ -259,6 +310,10 @@ describe('spigraphQueryFromGraph', () => {
       graph({ viewMode: 'timeofday', splitField: 'protocols', splitLength: 10 }),
       graph({ viewMode: 'timeofday', splitField: 'ip.dst', splitLength: 5, metricType: 'bytes', view: 'v1' }),
       graph({ viewMode: 'matrix', fields: ['ip.src', 'port.dst'], length: 10 }),
+      graph({ viewMode: 'mosaic', fields: ['country.dst', 'protocols'], length: 10 }),
+      graph({ viewMode: 'waffle', field: 'protocols', length: 10 }),
+      graph({ viewMode: 'waffle', field: 'protocols', other: true }),
+      graph({ viewMode: 'waffle', field: 'protocols', splitField: 'ip.dst', splitLength: 10, other: true }),
       graph({ viewMode: 'pie', fields: ['ip.src', 'port.dst'], length: 10 }),
       graph({ viewMode: 'pie', fields: ['protocols', 'port.dst'], splitField: 'ip.dst', length: 10 }),
       graph({ viewMode: 'pie', fields: ['protocols'], other: true }),
@@ -471,6 +526,13 @@ describe('widgetFullPageLink', () => {
     assert.equal(link.query.subFields, 'port.dst');
   });
 
+  test('a mosaic opens SPI Graph\'s mosaic of its two fields', () => {
+    const link = widgetFullPageLink({ query: {} }, store, { ...graph({ viewMode: 'mosaic', fields: ['ip.dst', 'protocols'], length: 10 }), id: 'w9' });
+    assert.equal(link.query.spiGraphType, 'mosaic');
+    assert.equal(link.query.exp, 'ip.dst');
+    assert.equal(link.query.subFields, 'protocols');
+  });
+
   test('a split timeline is a graph, an unsplit one is not', () => {
     assert.equal(widgetIsGraph({ viewMode: 'timeline', splitField: 'protocols' }), true);
     assert.equal(widgetIsGraph({ viewMode: 'timeline' }), false);
@@ -510,6 +572,17 @@ describe('widget fields', () => {
     assert.deepEqual(hierarchyFields({ viewMode: 'pie', fields: ['f1'] }), ['f1']);
     // only a pie draws small multiples
     assert.deepEqual(hierarchyFields({ viewMode: 'treemap', fields: ['f1'], splitField: 's' }), ['f1']);
+  });
+
+  test('an untitled widget is named by its fields, outermost first', () => {
+    // the stub fields have no friendly names, so a field is its expression
+    assert.equal(defaultWidgetTitle({ viewMode: 'bar', field: 'ip.src', fields: ['ip.src'] }), 'ip.src');
+    assert.equal(defaultWidgetTitle({ viewMode: 'waffle', field: 'protocols', fields: ['protocols'] }), 'protocols');
+    assert.equal(defaultWidgetTitle({ viewMode: 'waffle', field: 'protocols', fields: ['protocols'], splitField: 'ip.dst' }), 'ip.dst / protocols');
+    assert.equal(defaultWidgetTitle({ viewMode: 'pie', field: 'protocols', fields: ['protocols'], splitField: 'ip.dst' }), 'ip.dst / protocols');
+    assert.equal(defaultWidgetTitle({ viewMode: 'treemap', field: 'ip.src', fields: ['ip.src', 'ip.dst'] }), 'ip.src / ip.dst');
+    assert.equal(defaultWidgetTitle({ viewMode: 'mosaic', field: 'ip.dst', fields: ['ip.dst', 'protocols'] }), 'ip.dst × protocols');
+    assert.equal(defaultWidgetTitle({ viewMode: 'matrix', field: 'ip.src', fields: ['ip.src', 'port.dst'] }), 'ip.src × port.dst');
   });
 });
 
@@ -701,5 +774,44 @@ describe('percentiles', () => {
     const saved = graph({ viewMode: 'heatmap', field: 'ip.src', metricType: 'bytes', metricAgg: 'p95' });
     const page = graphFromSpigraphQuery({ spiGraphType: 'heatmap', exp: 'ip.src', graphType: 'totBytesHisto' }, { fieldsArr });
     assert.equal(graphOnSpigraph(saved, page).metricAgg, 'sum');
+  });
+});
+
+describe('compare and levels', () => {
+  test('an unsplit timeline or area and a metric without a field can compare', () => {
+    assert.ok(allowsCompare({ viewMode: 'timeline' }));
+    assert.ok(allowsCompare({ viewMode: 'area' }));
+    assert.ok(!allowsCompare({ viewMode: 'timeline', splitField: 'ip.src' }));
+    assert.ok(allowsCompare({ viewMode: 'metric' }));
+    assert.ok(!allowsCompare({ viewMode: 'metric', field: 'ip.src' }));
+    assert.ok(!allowsCompare({ viewMode: 'bar' }));
+  });
+
+  test('a compare reaches back a day or a week, not from an all time search', () => {
+    const store = (timeRange) => ({ state: { timeRange, time: { startTime: 1000000, stopTime: 1003600 } } });
+    assert.equal(compareOffset({ compare: 'day' }, store(1)), 86400);
+    assert.equal(compareOffset({ compare: 'week' }, store(0)), 604800);
+    assert.equal(compareOffset({ compare: 'week' }, store(-1)), 0);
+    assert.equal(compareOffset({ compare: '' }, store(1)), 0);
+    assert.equal(compareOffset({ compare: 'year' }, store(1)), 0);
+  });
+
+  test('levels give reference lines and colors at or above them', () => {
+    const w = { gaugeWarn: 10, gaugeCrit: 20 };
+    assert.deepEqual(widgetThresholds(w).map(t => t.value), [10, 20]);
+    assert.deepEqual(widgetThresholds({ gaugeCrit: 5 }).map(t => t.value), [5]);
+    assert.equal(thresholdColor(w, 9), '');
+    assert.notEqual(thresholdColor(w, 10), '');
+    assert.notEqual(thresholdColor(w, 20), thresholdColor(w, 10));
+    assert.ok(hasLevels('table') && hasLevels('bar') && hasLevels('metric') && !hasLevels('pie'));
+  });
+
+  test('compare and control type are kept only when valid', () => {
+    assert.equal(normalizeWidget({ viewMode: 'timeline', compare: 'week' }).compare, 'week');
+    assert.equal(normalizeWidget({ viewMode: 'timeline', compare: 'month' }).compare, '');
+    assert.equal(normalizeWidget({ viewMode: 'control', field: 'port.dst', controlType: 'range' }).controlType, 'range');
+    assert.equal(normalizeWidget({ viewMode: 'control', field: 'port.dst', controlType: 'slider' }).controlType, 'list');
+    // a saved graph carries both
+    assert.equal(graphFromWidget({ viewMode: 'timeline', splitField: 'ip.src', compare: 'day', gaugeWarn: 3 }).gaugeWarn, 3);
   });
 });

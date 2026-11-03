@@ -1,4 +1,4 @@
-use Test::More tests => 197;
+use Test::More tests => 203;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -314,6 +314,19 @@ foreach my $item (@{$bChunk->{data}}) {
 }
 ok($sorted, "bottom-N metric data is ranked ascending");
 
+# the default order of widgets without one comes from the query, like the
+# default length (a GET's, or a POST url's: the body is merged into the query)
+my $qOrder = viewerPost("/api/sessions/summary?date=-1&order=asc&length=3", to_json({ fields => 'ip.src' }));
+my $qChunk = getChunk($qOrder, 'w0');
+ok(defined $qChunk && @{$qChunk->{data}} > 0 && @{$qChunk->{data}} <= 3, "query order: the legacy fields widget takes the query length");
+is($qChunk->{order}, 'asc', "query order: order=asc in the url is the widget's order");
+($sorted, $prev) = (1, undef);
+foreach my $item (@{$qChunk->{data}}) {
+    $sorted = 0 if defined $prev && $item->{sessions} < $prev;
+    $prev = $item->{sessions};
+}
+ok($sorted, "query order: order=asc in the url ranks ascending");
+
 # metricAgg - max/avg/cardinality replace the per-bucket sum
 $chunks = postSummary("/api/sessions/summary?date=-1", {
     widgets => [
@@ -356,6 +369,21 @@ foreach my $item (@{$cardChunk->{data}}) {
 }
 ok($cardOk, "unique destination count per source is between 1 and its session count");
 is($sumByIp{$sumChunk->{data}->[0]->{item}}->{value}, $sumChunk->{data}->[0]->{metricValues}->{bytes}, "sum value matches metricValues");
+
+# a range control's bounds: a numeric field's smallest and largest value over
+# the whole result set, and narrowed by a range filter
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    widgets => [
+        { id => 'wLo', total => JSON::true, metricType => 'port.dst', metricAgg => 'min' },
+        { id => 'wHi', total => JSON::true, metricType => 'port.dst', metricAgg => 'max' },
+        { id => 'wInLo', total => JSON::true, metricType => 'port.dst', metricAgg => 'min', expression => 'port.dst >= 80 && port.dst <= 443' },
+        { id => 'wInHi', total => JSON::true, metricType => 'port.dst', metricAgg => 'max', expression => 'port.dst >= 80 && port.dst <= 443' }
+    ]
+});
+my ($lo, $hi) = map { getChunk($chunks, $_)->{data}->[0]->{value} } qw(wLo wHi);
+ok(defined $lo && defined $hi && $lo <= $hi && $hi > 443, "port.dst min and max bound the range slider");
+my ($inLo, $inHi) = map { getChunk($chunks, $_)->{data}->[0]->{value} } qw(wInLo wInHi);
+ok($inLo >= 80 && $inHi <= 443 && $inLo <= $inHi, "a range filter keeps the bounds inside it");
 
 # percentiles - p50/p95 of each value's bytes ranks and fills the values;
 # every backend agrees on a single session's (it is that session's bytes)

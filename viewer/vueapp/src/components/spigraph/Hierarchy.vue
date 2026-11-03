@@ -12,10 +12,12 @@ SPDX-License-Identifier: Apache-2.0
       to="#spigraph-subfield-anchor">
       <div class="d-flex flex-row align-center">
         <!-- a bar is split by at most one more field, a matrix takes one
-             across the top (a tag cloud draws one and has no anchor for this) -->
+             across the top, a mosaic one to split its columns by and a
+             waffle one to draw a waffle of per value of the first (a tag
+             cloud draws one and has no anchor for this) -->
         <div
           class="d-inline"
-          v-if="fields && fields.length && !((spiGraphType === 'bar' || spiGraphType === 'matrix') && fieldTypeaheadList.length >= 1)">
+          v-if="fields && fields.length && !(takesOneSubfield && fieldTypeaheadList.length >= 1)">
           <div class="arkime-input-group subfield-group">
             <span class="arkime-input-label">
               {{ $t('spigraph.addAnotherField') }}:
@@ -84,7 +86,7 @@ SPDX-License-Identifier: Apache-2.0
       <summary-chart-tooltip
         :visible="barTooltip.visible"
         :data="barTooltip.data"
-        :field-config="baseFieldObj"
+        :field-config="barTooltip.fieldConfig || baseFieldObj"
         :position="barTooltip.position"
         :percentage="barTooltip.percentage"
         metric-type="sessions"
@@ -113,6 +115,48 @@ SPDX-License-Identifier: Apache-2.0
         @show-tooltip="showBarTooltip"
         @hide-tooltip="barTooltip.visible = false" />
     </div> <!-- /matrix area -->
+
+    <!-- mosaic area: the first field's values as columns as wide as their
+         sessions, each split by the second field's values -->
+    <div
+      v-show="spiGraphType === 'mosaic' && vizData && vizData.children && vizData.children.length"
+      class="bar-area">
+      <div
+        v-if="spiGraphType === 'mosaic' && !fieldTypeaheadList.length"
+        class="text-medium-emphasis ms-2 mb-1">
+        {{ $t('spigraph.mosaicNeedsField') }}
+      </div>
+      <summary-mosaic
+        v-if="spiGraphType === 'mosaic' && vizData && vizData.children && baseFieldObj"
+        :data="vizData"
+        svg-id="spigraph-mosaic"
+        :field-config="baseFieldObj"
+        :col-field-config="barSplitField"
+        :width="barWidth"
+        :height="barHeight"
+        @show-tooltip="showBarTooltip"
+        @hide-tooltip="barTooltip.visible = false" />
+    </div> <!-- /mosaic area -->
+
+    <!-- waffle area: the first field's values as 100 squares, each 1% of
+         the sessions (and a gray "Other" for the rest when shown), or with a
+         second field one waffle of it per value of the first -->
+    <div
+      v-show="spiGraphType === 'waffle' && barData.length"
+      class="bar-area">
+      <summary-waffle
+        v-if="spiGraphType === 'waffle' && barData.length && baseFieldObj"
+        :data="splitWaffle ? [] : barData"
+        :other="splitWaffle ? null : waffleOther"
+        :groups="splitWaffle ? waffleGroupsData : null"
+        :split-field-config="splitWaffle ? baseFieldObj : null"
+        svg-id="spigraph-waffle"
+        :field-config="splitWaffle ? barSplitField : baseFieldObj"
+        :width="barWidth"
+        :height="barHeight"
+        metric-type="sessions"
+        @show-tooltip="showBarTooltip" />
+    </div> <!-- /waffle area -->
 
     <!-- tag cloud area: the first field's values, sized by session count -->
     <div
@@ -342,9 +386,12 @@ import DragList from '../utils/DragList.vue';
 import SummaryBarChart from '../summary/SummaryBarChart.vue';
 import SummaryTagCloud from '../summary/SummaryTagCloud.vue';
 import SummaryMatrix from '../summary/SummaryMatrix.vue';
+import SummaryMosaic from '../summary/SummaryMosaic.vue';
+import SummaryWaffle from '../summary/SummaryWaffle.vue';
+import { waffleGroups } from '../utils/waffleLayout';
 import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 import { OTHER_COLOR } from '../summary/widgets/chartColors';
-import { isUnderOther, splitPieLayout, fitLabel } from '../utils/hierarchyLayout';
+import { isUnderOther, splitPieLayout, fitLabel, nodeCount } from '../utils/hierarchyLayout';
 // import utils
 import Utils from '../utils/utils';
 import ConfigService from '../utils/ConfigService';
@@ -357,6 +404,11 @@ let d3; // lazy load d3
 let sankey, sankeyLinkHorizontal; // lazy load d3-sankey
 
 let init = true;
+// the graph types split by exactly one more field (a bar's segments, a
+// matrix's columns, a mosaic's cells, a waffle per value), and with the tag
+// cloud the types the bar area draws from the hierarchy (sized to the window)
+const ONE_SUBFIELD_TYPES = ['bar', 'matrix', 'mosaic', 'waffle'];
+const BAR_AREA_TYPES = [...ONE_SUBFIELD_TYPES, 'tagcloud'];
 
 // common page variables --------------------------------------------------- //
 let pendingPromise; // save a pending promise to be able to cancel it
@@ -525,6 +577,8 @@ export default {
     SummaryBarChart,
     SummaryTagCloud,
     SummaryMatrix,
+    SummaryMosaic,
+    SummaryWaffle,
     SummaryChartTooltip
   },
   props: {
@@ -596,7 +650,9 @@ export default {
       popupInfo: undefined,
       barWidth: 800,
       barHeight: 500,
-      barTooltip: { visible: false, data: null, position: { x: 0, y: 0 }, percentage: null, split: null }
+      barTooltip: { visible: false, data: null, fieldConfig: null, position: { x: 0, y: 0 }, percentage: null, split: null },
+      // what the hierarchy drawn was fetched with (hierarchyShape), null before one
+      fetchedShape: null
     };
   },
   async mounted () {
@@ -630,6 +686,7 @@ export default {
       if (this.fieldTypeaheadList.length || this.wantsOther) {
         this.loadData();
       } else {
+        this.fetchedShape = { other: false, sizes: '' }; // the top values alone
         const data = this.formatDataFromSpigraph(newVal);
         this.applyGraphData(data);
       }
@@ -643,13 +700,15 @@ export default {
       if (newVal === 'table') {
         this.initializeColResizable();
       }
-      // only the pie and the matrix fetch "Other", and a split pie's first
-      // level is cut to its pie count: switching to one, or away from a split,
-      // refetches
-      const otherFetched = oldVal === 'matrix' || (oldVal === 'pie' && this.showOther && !this.splitPie);
-      const refetch = (newVal === 'pie' && (this.showOther || this.splitPie)) || (oldVal === 'pie' && this.splitPie) ||
-        (newVal === 'matrix' && this.fieldTypeaheadList.length > 0 && !otherFetched);
-      if (newVal === 'bar' || newVal === 'tagcloud' || newVal === 'matrix') {
+      // the data drawn was fetched with or without "Other" and with per level
+      // sizes (a split pie's or waffle's first level is cut to its count): a
+      // type wanting an "Other" it lacks, or other sizes, refetches; one that
+      // doesn't draw "Other" leaves it out of what was fetched
+      const wanted = this.hierarchyShape();
+      const fetched = this.fetchedShape;
+      const refetch = (this.fieldTypeaheadList.length > 0 || wanted.other) &&
+        (!fetched || (wanted.other && !fetched.other) || wanted.sizes !== fetched.sizes);
+      if (BAR_AREA_TYPES.includes(newVal)) {
         this.$nextTick(this.sizeBar);
         // sankey keeps its own node/link shape; the bar needs the hierarchy
         if (!this.vizData?.children && !refetch) { this.loadData(); }
@@ -679,13 +738,14 @@ export default {
       }
     },
     pieCount: function () {
-      if (this.spiGraphType === 'pie' && this.splitPie) { this.loadData(); }
+      if ((this.spiGraphType === 'pie' && this.splitPie) || this.splitWaffle) { this.loadData(); }
     },
     showOther: function (show) {
       this.closeInfo();
       // turning it off on a single-field pie needs no fetch: the spigraph
       // data already holds the top values (the graphData watcher's own path)
       if (!show && !this.fieldTypeaheadList.length && this.graphData && !init) {
+        this.fetchedShape = { other: false, sizes: '' }; // what is drawn now
         this.applyGraphData(this.formatDataFromSpigraph(this.graphData));
       } else {
         this.loadData();
@@ -716,14 +776,21 @@ export default {
     barData: function () {
       const children = (this.vizData ? withoutOther(this.vizData).children : null) || [];
       const split = this.fieldTypeaheadList.length > 0;
-      // a value with children has its count in sizeValue (size is cleared)
-      const count = (node) => node.sizeValue ?? node.size;
       return children.map(c => ({
         item: c.name,
-        sessions: count(c),
-        value: count(c),
-        ...(split ? { split: (c.children || []).map(s => ({ item: s.name, sessions: count(s), value: count(s) })) } : {})
+        sessions: nodeCount(c),
+        value: nodeCount(c),
+        ...(split ? { split: (c.children || []).map(s => ({ item: s.name, sessions: nodeCount(s), value: nodeCount(s) })) } : {})
       }));
+    },
+    // a waffle's "Other" squares: the hierarchy's first level "Other", when shown
+    waffleOther: function () {
+      const other = this.showOther ? (this.vizData?.children || []).find(c => c.other) : null;
+      return other ? { sessions: nodeCount(other), value: nodeCount(other) } : null;
+    },
+    // a bar, matrix, mosaic or waffle takes exactly one more field
+    takesOneSubfield: function () {
+      return ONE_SUBFIELD_TYPES.includes(this.spiGraphType);
     },
     barSplitField: function () {
       return this.fieldTypeaheadList.length ? this.fieldTypeaheadList[0] : null;
@@ -734,14 +801,23 @@ export default {
     matrixData: function () {
       return this.vizData?.children?.length ? { ...this.vizData, children: this.vizData.children.filter(c => !c.other) } : null;
     },
-    // a pie draws "Other" (its parts add up to a whole), and the matrix reads
-    // it to know which of a row's missing values are really zero
+    // a pie draws "Other" (its parts add up to a whole), the matrix reads it
+    // to know which of a row's missing values are really zero, and a mosaic's
+    // columns and cells add up to their sessions with it
     wantsOther: function () {
-      return (this.spiGraphType === 'pie' && this.showOther) || (this.spiGraphType === 'matrix' && this.fieldTypeaheadList.length > 0);
+      return ((this.spiGraphType === 'pie' || this.spiGraphType === 'waffle') && this.showOther) || (this.spiGraphType === 'matrix' && this.fieldTypeaheadList.length > 0) ||
+        this.spiGraphType === 'mosaic';
     },
     // a split pie: one pie per value of the first field, of the fields after it
     splitPie: function () {
       return this.pieMode === 'split' && this.fieldTypeaheadList.length > 0;
+    },
+    // a split waffle: one waffle of the second field per value of the first
+    splitWaffle: function () {
+      return this.spiGraphType === 'waffle' && this.fieldTypeaheadList.length > 0;
+    },
+    waffleGroupsData: function () {
+      return waffleGroups(this.vizData);
     },
     // a unique table: with one field it's the same as the intersection
     uniqueTable: function () {
@@ -824,14 +900,15 @@ export default {
       this.barHeight = Math.max(300, getWindowHeight());
     },
     /**
-     * A bar is split by at most one more field and a tag cloud draws one, so
+     * A bar is split by at most one more field (a matrix, mosaic or waffle
+     * takes one more) and a tag cloud draws one, so
      * drop any others carried over from another graph type
      * @returns {Boolean} true when fields were dropped (the url change reloads)
      */
     trimBarFields: function () {
       // the url's type: on back/forward the prop catches up a tick later
       const type = this.$route.query.spiGraphType || this.spiGraphType;
-      const keep = (type === 'bar' || type === 'matrix') ? 1 : type === 'tagcloud' ? 0 : Infinity;
+      const keep = ONE_SUBFIELD_TYPES.includes(type) ? 1 : type === 'tagcloud' ? 0 : Infinity;
       if (this.fieldTypeaheadList.length <= keep) { return false; }
       this.fieldTypeaheadList.splice(keep);
       this.applyFieldListToUrl();
@@ -853,10 +930,26 @@ export default {
         this.barTooltip.visible = false;
       }
     },
+    /**
+     * What the current graph type needs from the hierarchy endpoint: an
+     * "Other" (a pie showing it, a matrix, a mosaic, a waffle showing it), and
+     * a size per level (a split pie or waffle draws pieCount of the first
+     * field's values, each cut to the page's size)
+     * @returns {Object} { other, sizes } (sizes '' for the page's size at every level)
+     */
+    hierarchyShape: function () {
+      const size = this.query.size;
+      const sizes = (this.spiGraphType === 'pie' && this.splitPie) || this.splitWaffle
+        ? [this.pieCount, ...this.fieldTypeaheadList.map(() => size)].join(',')
+        : '';
+      return { other: !!this.wantsOther, sizes };
+    },
     showBarTooltip: function (evt) {
       this.barTooltip = {
         visible: true,
         data: evt.data,
+        // the chart's own field for the value (a split waffle's is the second)
+        fieldConfig: evt.fieldConfig || null,
         position: evt.position,
         percentage: evt.percentage ?? null,
         split: evt.split || null
@@ -1010,11 +1103,13 @@ export default {
      * @returns {Function} opacity Function to retrieve opacity based on data level
      */
     generateOpacity: function (data) {
+      // a level is a node with children, or a list whose first node has some;
+      // an empty list (no buckets) ends the walk rather than reading its first node
       let levelCount = 0;
-
-      while (data.children || data[0].children) {
+      let level = data;
+      while (level && (level.children || level[0]?.children)) {
         levelCount++;
-        data = data.children || data[0].children;
+        level = level.children || level[0].children;
       }
 
       const lowRange = levelCount > 1 ? 0.3 : 1;
@@ -1092,15 +1187,16 @@ export default {
     applyGraphData: function (data) {
       // save viz data for resize and switching between viz types
       this.vizData = data;
-      // a pie's "Other" was fetched for it alone: the other types never draw
-      // it, and the page's csv export (handed the rows here) leaves it out,
-      // as the server's table rows do
+      // "Other" is fetched for a pie showing it, a matrix or a mosaic: the
+      // other types (and a pie not showing it, the data kept from one of
+      // those) never draw it, and the page's csv export (handed the rows
+      // here) leaves it out, as the server's table rows do
       const shown = data?.children ? withoutOther(data) : data;
       this.$emit('fetchedResults', shown.children, this.fieldTypeaheadList, this.baseFieldObj);
       // the svgs exist once the first hierarchy fetch returns (initializeGraphs
       // draws the saved data then); the parent's spigraph data can land first
       if (!g || !gtree || !gsankey) { return; }
-      if (this.spiGraphType !== 'pie') { data = shown; }
+      if (this.spiGraphType !== 'pie' || !this.showOther) { data = shown; }
       if (this.spiGraphType === 'pie') {
         // a split needs a field to split into pies and one to draw in them
         if (this.splitPie) {
@@ -1507,12 +1603,10 @@ export default {
       }
 
       params.exp = exps.toString(',');
-      params.other = this.wantsOther || undefined;
+      const shape = this.hierarchyShape();
+      params.other = shape.other || undefined;
       params.mode = this.uniqueTable ? 'unique' : undefined;
-      // a split pie draws pieCount pies of size slices: a size per level
-      params.sizes = this.spiGraphType === 'pie' && this.splitPie
-        ? [this.pieCount, ...this.fieldTypeaheadList.map(() => params.size)].join(',')
-        : undefined;
+      params.sizes = shape.sizes || undefined;
 
       let controller;
       try {
@@ -1542,6 +1636,7 @@ export default {
           return;
         }
         this.uniqueColumns = [];
+        this.fetchedShape = shape;
         this.applyGraphData(response.hierarchicalResults);
         this.tableData = response.tableResults;
         this.sortTable();

@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
           class="widget-wrapper"
           :style="spanStyle(w)">
           <SummaryWidget
-            :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
+            :title="w.title || defaultWidgetTitle(w)"
             :data="[]"
             :loading="true"
             :field="w.field" />
@@ -132,8 +132,8 @@ SPDX-License-Identifier: Apache-2.0
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <SummaryWidget
-            v-else-if="isStreamMode(w.viewMode)"
-            :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
+            v-else-if="isStreamMode(w.viewMode) && !isSplitWaffle(w)"
+            :title="w.title || defaultWidgetTitle(w)"
             :data="w.data"
             :loading="w.loading"
             :error="w.error"
@@ -143,6 +143,7 @@ SPDX-License-Identifier: Apache-2.0
             :split-field="w.splitField"
             :bar-mode="w.barMode"
             :orientation="w.orientation"
+            :thresholds="widgetThresholds(w)"
             :other="w.other ? w.otherData : null"
             :field="w.field"
             :color-scheme="colorScheme"
@@ -189,9 +190,11 @@ SPDX-License-Identifier: Apache-2.0
             @hide-tooltip="hideTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
-          <!-- one field's values down the side, another's across the top -->
+          <!-- one field's values down the side, another's across the top, or
+               as columns split by another's (mosaic), or a waffle per value
+               of its split field -->
           <MatrixWidget
-            v-else-if="w.viewMode === 'matrix'"
+            v-else-if="w.viewMode === 'matrix' || w.viewMode === 'mosaic' || isSplitWaffle(w)"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
@@ -373,10 +376,10 @@ import MarkdownWidget from './widgets/MarkdownWidget.vue';
 import GaugeWidget from './widgets/GaugeWidget.vue';
 import NavigationWidget from './widgets/NavigationWidget.vue';
 import ControlWidget from './widgets/ControlWidget.vue';
-import { controlVariable, substituteExpression } from './widgets/dashboardVariables';
+import { controlVariable, substituteExpression, withoutVariableParams } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics } from './widgets/viewModes';
-import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
+import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare } from './widgets/viewModes';
+import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -466,10 +469,12 @@ const spanStyle = (w) => ({
 // True when a widget has 2+ fields and a view mode that nests/compares them
 // (pie/treemap → HierarchyWidget; table → MultiFieldTableWidget).
 const isMultiField = (w) => allowsMultiField(w?.viewMode) && widgetFields(w).length > 1;
-// a split pie draws one small pie per split value from the hierarchy endpoint
+// a split pie (waffle) draws one small pie (waffle) per split value from the
+// hierarchy endpoint
 const isSplitPie = (w) => w?.viewMode === 'pie' && !!w.splitField;
+const isSplitWaffle = (w) => w?.viewMode === 'waffle' && !!w.splitField;
 // stream-mode widgets the host stream doesn't feed: they fetch for themselves
-const selfFetches = (w) => isMultiField(w) || isSplitPie(w);
+const selfFetches = (w) => isMultiField(w) || isSplitPie(w) || isSplitWaffle(w);
 
 // Drag-to-resize: a handle on the right edge changes width (1-4 cols), the bottom
 // edge changes height (1-8 rows), the corner does both. Deltas snap to the grid
@@ -689,6 +694,14 @@ const widgetInfo = (w) => {
     if (w.gaugeWarn > 0) { parts.push(`${t('sessions.summary.widget.gaugeWarn')} ${w.gaugeWarn}`); }
     if (w.gaugeCrit > 0) { parts.push(`${t('sessions.summary.widget.gaugeCrit')} ${w.gaugeCrit}`); }
     if (parts.length) { rows.push({ label: t('sessions.summary.gaugeView'), value: parts.join(', ') }); }
+  } else if (hasLevels(w.viewMode) && (w.gaugeWarn > 0 || w.gaugeCrit > 0)) {
+    const parts = [];
+    if (w.gaugeWarn > 0) { parts.push(`${t('sessions.summary.widget.gaugeWarn')} ${w.gaugeWarn}`); }
+    if (w.gaugeCrit > 0) { parts.push(`${t('sessions.summary.widget.gaugeCrit')} ${w.gaugeCrit}`); }
+    rows.push({ label: t('sessions.summary.widget.levels'), value: parts.join(', ') });
+  }
+  if (w.compare && allowsCompare(w)) {
+    rows.push({ label: t('sessions.summary.widget.compare'), value: t(`sessions.summary.widget.compare-${w.compare}`) });
   }
 
   // The limit row reads as a session sample for connections, a Top/Bottom N for
@@ -817,6 +830,17 @@ const mergeFieldChunk = (chunk) => {
   };
 };
 
+// the widgets still loading from one fetch show its failure, with a retry
+const markErrored = (widgetDefs, message) => {
+  if (!summary.value?.fields) { return; }
+  for (const def of widgetDefs) {
+    const index = summary.value.fields.findIndex(f => f.id === def.id);
+    if (index !== -1 && summary.value.fields[index].loading) {
+      summary.value.fields[index] = { ...summary.value.fields[index], loading: false, error: message };
+    }
+  }
+};
+
 // Fetch a subset of widgets and merge them into the existing summary. These are
 // incremental (add/edit/retry) so the dashboard stats are already loaded — skip
 // recomputing them server-side.
@@ -857,7 +881,11 @@ const fetchWidgets = async (widgetDefs) => {
         line = line.slice(1);
 
         const chunk = parseChunk(line);
-        if (chunk && chunk.id) {
+        if (chunk?.bsqErr) {
+          // the search itself failed (a time limit, a bad expression): the
+          // stream has no widget chunks, so say so on each widget asked for
+          markErrored(widgetDefs, String(chunk.bsqErr));
+        } else if (chunk && chunk.id) {
           // Only process widget chunks — ignore the stats chunk
           mergeFieldChunk(chunk);
         }
@@ -865,19 +893,7 @@ const fetchWidgets = async (widgetDefs) => {
     }
   } catch (err) {
     if (err.name === 'AbortError') return;
-    // Mark retried widgets as errored
-    if (summary.value?.fields) {
-      for (const def of widgetDefs) {
-        const index = summary.value.fields.findIndex(f => f.id === def.id);
-        if (index !== -1 && summary.value.fields[index].loading) {
-          summary.value.fields[index] = {
-            ...summary.value.fields[index],
-            loading: false,
-            error: err.message || String(err)
-          };
-        }
-      }
-    }
+    markErrored(widgetDefs, err.message || String(err));
   }
 };
 
@@ -1437,6 +1453,9 @@ const onEditSave = (updated) => {
 
   summary.value.fields[index] = { ...prev, ...updated };
   emitWidgetConfigChange();
+  // a control renamed (or turned into another widget) leaves its picks in the
+  // url under the old name, filtering nothing but kept in any shared link
+  if (updated.viewMode !== 'control' || controlVariable(updated) !== controlVariable(prev)) { dropVariablePicks(prev); }
 
   if (needsRefetch) {
     summary.value.fields[index] = { ...summary.value.fields[index], data: [], loading: true, error: null };
@@ -1447,11 +1466,21 @@ const onEditSave = (updated) => {
 /**
  * Remove a widget locally (from its own menu) and persist
  */
+// drop a control's picks from the url, unless another control still owns its variable
+const dropVariablePicks = (widget) => {
+  if (widget?.viewMode !== 'control') { return; }
+  const varName = controlVariable(widget);
+  const stillOwned = (summary.value?.fields || []).some(w => w !== widget && w.id !== widget.id && w.viewMode === 'control' && controlVariable(w) === varName);
+  if (stillOwned || route.query[`var.${varName}`] === undefined) { return; }
+  router.replace({ query: withoutVariableParams(route.query, [varName]) });
+};
+
 const removeWidgetLocal = (widget) => {
   if (!summary.value?.fields) return;
   const index = summary.value.fields.findIndex(f => f.id === widget.id);
   if (index !== -1) {
     summary.value.fields.splice(index, 1);
+    dropVariablePicks(widget);
   }
   emitWidgetConfigChange();
 };
