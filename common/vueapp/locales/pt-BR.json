@@ -517,6 +517,7 @@
       "canceledSearch": "Você cancelou a pesquisa",
       "closingCancelsSearchErr": "Fechar a página de Resumo cancelou a pesquisa",
       "staleDataWarning": "Alguns dados podem estar incompletos",
+      "rangeTooWide": "Os painéis podem pesquisar no máximo {days} por vez, escolha um intervalo de tempo menor",
       "toggleFields": "Alternar campos do resumo",
       "searchFields": "Pesquisar campos...",
       "dragToReorder": "Arraste para reordenar",

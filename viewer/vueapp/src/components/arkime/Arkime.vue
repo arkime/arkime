@@ -50,6 +50,7 @@ SPDX-License-Identifier: Apache-2.0
               size="large"
               variant="flat"
               color="secondary"
+              :disabled="rangeTooWide"
               @click="addDashboardWidget">
               <v-icon
                 start
@@ -177,10 +178,20 @@ SPDX-License-Identifier: Apache-2.0
       {{ error }}
     </v-alert>
 
+    <!-- a time range wider than dashboardMaxQueryDays searches nothing -->
+    <v-alert
+      v-if="rangeTooWide"
+      type="warning"
+      variant="tonal"
+      density="compact"
+      class="mx-2">
+      {{ $t('sessions.summary.rangeTooWide', { days: $t('common.dayCount', { count: maxQueryDays }, maxQueryDays === 1 ? 1 : 2) }) }}
+    </v-alert>
+
     <!-- summary content -->
     <div class="arkime-content ms-2">
       <arkime-summary-view
-        v-if="configLoaded"
+        v-if="configLoaded && !rangeTooWide"
         ref="summaryView"
         :widgets="widgets"
         :color-scheme="colorScheme"
@@ -292,6 +303,20 @@ export default {
     refreshSeconds: function () {
       const n = parseInt(this.$route.query.refresh, 10);
       return REFRESH_SECONDS.includes(n) ? n : 0;
+    },
+    // dashboardMaxQueryDays: the most time a dashboard may search, -1 no limit.
+    // Only the page checks it (for now), not the endpoints its widgets call
+    maxQueryDays: function () {
+      const days = parseFloat(this.$constants.DASHBOARD_MAX_QUERY_DAYS);
+      return Number.isFinite(days) && days >= 0 ? days : -1;
+    },
+    // the search's time range is wider than that, All always is
+    rangeTooWide: function () {
+      if (this.maxQueryDays < 0) { return false; }
+      if (parseInt(this.$store.state.timeRange, 10) === -1) { return true; }
+      const { startTime, stopTime } = this.$store.state.time;
+      const span = (Number(stopTime) - Number(startTime)) / 86400;
+      return Number.isFinite(span) && span > this.maxQueryDays;
     },
     refreshOptions: function () {
       return REFRESH_SECONDS.map(n => ({

@@ -264,11 +264,28 @@ function shiftWindow (params, store, shift) {
 }
 
 /**
+ * The dashboard page's own url query (its dashboard, search, time and
+ * variables), url encoded. Every dashboard data call sends it as
+ * dashboardPage, so the history logs the call as the dashboard's, with a
+ * query that reopens the dashboard (the call's own expression ANDs in the
+ * dashboard filter, controls and widget filter, so it can't)
+ */
+export function dashboardPageQuery (route) {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(route.query || {})) {
+    for (const v of (Array.isArray(value) ? value : [value])) {
+      if (v !== null && v !== undefined) { search.append(key, v); }
+    }
+  }
+  return search.toString();
+}
+
+/**
  * Build the shared query params (combined expression + time window + view /
  * bounding / cluster) for a widget's independent fetch, plus endpoint extras.
  */
 export function buildWidgetParams (route, store, widget, extra = {}) {
-  const params = { ...extra };
+  const params = { ...extra, dashboardPage: dashboardPageQuery(route) };
 
   const exp = combinedExpression(route, store, widget);
   if (exp) { params.expression = exp; }
@@ -577,6 +594,7 @@ export async function fetchControlRange (route, store, widget, excludeVariable, 
 async function postSummary (route, store, body, signal, excludeVariable, timeShift) {
   const pageExp = pageExpression(route, store, excludeVariable); // global search + dashboard filter + controls
   if (pageExp) { body.expression = pageExp; }
+  body.dashboardPage = dashboardPageQuery(route);
   for (const p of ['view', 'bounding', 'interval', 'cluster']) {
     if (route.query[p]) { body[p] = route.query[p]; }
   }

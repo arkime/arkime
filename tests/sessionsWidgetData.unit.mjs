@@ -66,6 +66,7 @@ const {
   DEFAULT_SORT_DB_FIELD, fieldHasColumn, columnSortDbField, widgetSortDbField, sessionsColumns,
   sessionsLength, sessionsRequestParams, cellValues, formatCellText, sessionsCSV, fetchSessions
 } = await import('../viewer/vueapp/src/components/summary/widgets/sessionsWidgetData.js');
+const { dashboardPageQuery } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 
 const field = (exp) => globalThis.testFields.find(f => f.exp === exp);
 
@@ -201,7 +202,8 @@ describe('fetchSessions', () => {
       expression: '(port.dst == 80) && ((ip.src == 10.0.0.1) && (tags == x))',
       bounding: 'first',
       interval: 'auto',
-      date: '-1'
+      date: '-1',
+      dashboardPage: 'expression=port.dst+%3D%3D+80&bounding=first&interval=auto'
     });
   });
 
@@ -212,5 +214,21 @@ describe('fetchSessions', () => {
   test('a missing data list is no rows', async () => {
     globalThis.fetchResult = {};
     assert.deepEqual(await fetchSessions(route, store, { viewMode: 'sessions', fields: ['ip.src'] }), { rows: [], total: 0 });
+  });
+});
+
+describe('dashboardPageQuery', () => {
+  test('is the page url query, url encoded, a list param repeated', () => {
+    const route = { query: { dashboard: 'sys:overview', expression: 'a && b', date: '24', 'var.host': ['x.com', 'y&z'], empty: null } };
+    const query = dashboardPageQuery(route);
+    assert.equal(query, 'dashboard=sys%3Aoverview&expression=a+%26%26+b&date=24&var.host=x.com&var.host=y%26z');
+    const back = new URLSearchParams(query);
+    assert.equal(back.get('expression'), 'a && b');
+    assert.deepEqual(back.getAll('var.host'), ['x.com', 'y&z']);
+  });
+
+  test('no query is an empty string (still a dashboard call)', () => {
+    assert.equal(dashboardPageQuery({ query: {} }), '');
+    assert.equal(dashboardPageQuery({}), '');
   });
 });
