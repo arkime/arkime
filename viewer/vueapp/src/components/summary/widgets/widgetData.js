@@ -191,8 +191,8 @@ export function widgetFullPageLink (route, store, widget) {
   const splitTimeline = (mode === 'timeline' || mode === 'area' || mode === 'timeofday') && !!widget.splitField && usable(widget.splitField);
   if (mode === 'timeofday' && !splitTimeline) { return null; }
   if (!['timeline', 'area', 'timeofday', 'metric', 'gauge', 'sessions'].includes(mode)) {
-    // a bar's or pie's split field becomes another SPI Graph field
-    const linked = ((mode === 'bar' || mode === 'pie') && widget.splitField) ? [...fields, widget.splitField] : fields;
+    // a bar's, pie's or waffle's split field becomes another SPI Graph field
+    const linked = ((mode === 'bar' || mode === 'pie' || mode === 'waffle') && widget.splitField) ? [...fields, widget.splitField] : fields;
     if (!fields.length || !linked.every(usable)) { return null; }
   }
   const query = {};
@@ -378,7 +378,24 @@ export async function fetchTimeOfDay (route, store, widget, { signal } = {}) {
  */
 export function hierarchyFields (widget) {
   const fields = widgetFields(widget);
-  return widget?.viewMode === 'pie' && widget.splitField ? [widget.splitField, ...fields] : fields;
+  return (widget?.viewMode === 'pie' || widget?.viewMode === 'waffle') && widget.splitField ? [widget.splitField, ...fields] : fields;
+}
+
+/**
+ * A widget's title when it has none of its own, from its fields' names: a
+ * matrix's or mosaic's "Rows × Columns", a nested or split pie's, a treemap's,
+ * a sankey's and a split waffle's levels outermost first ("Split / Field"),
+ * else its field's. The dashboard's first-load cards use it too, so a card
+ * keeps its title once its data is in.
+ */
+export function defaultWidgetTitle (widget) {
+  const friendly = (exp) => FieldService.getField(exp, true)?.friendlyName || exp;
+  const mode = widget?.viewMode;
+  if (mode === 'matrix' || mode === 'mosaic') { return widgetFields(widget).map(friendly).join(' × '); }
+  if (mode === 'pie' || mode === 'treemap' || mode === 'sankey' || (mode === 'waffle' && widget.splitField)) {
+    return hierarchyFields(widget).map(friendly).join(' / ');
+  }
+  return friendly(widget?.field || '');
 }
 
 /**
@@ -391,12 +408,13 @@ export function hierarchyFields (widget) {
 export async function fetchHierarchy (route, store, widget, { signal } = {}) {
   const fields = hierarchyFields(widget);
   const extra = { exp: fields.join(','), size: widget.length };
-  // a split pie draws splitLength pies, each cut to the widget's limit
+  // a split pie (waffle) draws splitLength pies, each cut to the widget's limit
   if (fields.length > widgetFields(widget).length) {
     extra.sizes = [widget.splitLength || 5, ...fields.slice(1).map(() => widget.length)].join(',');
   }
-  // a matrix reads a row's "Other" to know which of its missing values are zero
-  if ((widget.viewMode === 'pie' && widget.other) || widget.viewMode === 'matrix') { extra.other = true; }
+  // a matrix reads a row's "Other" to know which of its missing values are
+  // zero, and a mosaic's columns and cells add up to their sessions with it
+  if (((widget.viewMode === 'pie' || widget.viewMode === 'waffle') && widget.other) || widget.viewMode === 'matrix' || widget.viewMode === 'mosaic') { extra.other = true; }
   const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal });
 }

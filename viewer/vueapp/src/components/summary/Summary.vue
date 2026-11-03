@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
           class="widget-wrapper"
           :style="spanStyle(w)">
           <SummaryWidget
-            :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
+            :title="w.title || defaultWidgetTitle(w)"
             :data="[]"
             :loading="true"
             :field="w.field" />
@@ -132,8 +132,8 @@ SPDX-License-Identifier: Apache-2.0
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
           <SummaryWidget
-            v-else-if="isStreamMode(w.viewMode)"
-            :title="w.title || FieldService.getField(w.field, true)?.friendlyName || w.field"
+            v-else-if="isStreamMode(w.viewMode) && !isSplitWaffle(w)"
+            :title="w.title || defaultWidgetTitle(w)"
             :data="w.data"
             :loading="w.loading"
             :error="w.error"
@@ -190,9 +190,11 @@ SPDX-License-Identifier: Apache-2.0
             @hide-tooltip="hideTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
-          <!-- one field's values down the side, another's across the top -->
+          <!-- one field's values down the side, another's across the top, or
+               as columns split by another's (mosaic), or a waffle per value
+               of its split field -->
           <MatrixWidget
-            v-else-if="w.viewMode === 'matrix'"
+            v-else-if="w.viewMode === 'matrix' || w.viewMode === 'mosaic' || isSplitWaffle(w)"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
@@ -377,7 +379,7 @@ import ControlWidget from './widgets/ControlWidget.vue';
 import { controlVariable, substituteExpression, withoutVariableParams } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare } from './widgets/viewModes';
-import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds } from './widgets/widgetData';
+import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -467,10 +469,12 @@ const spanStyle = (w) => ({
 // True when a widget has 2+ fields and a view mode that nests/compares them
 // (pie/treemap → HierarchyWidget; table → MultiFieldTableWidget).
 const isMultiField = (w) => allowsMultiField(w?.viewMode) && widgetFields(w).length > 1;
-// a split pie draws one small pie per split value from the hierarchy endpoint
+// a split pie (waffle) draws one small pie (waffle) per split value from the
+// hierarchy endpoint
 const isSplitPie = (w) => w?.viewMode === 'pie' && !!w.splitField;
+const isSplitWaffle = (w) => w?.viewMode === 'waffle' && !!w.splitField;
 // stream-mode widgets the host stream doesn't feed: they fetch for themselves
-const selfFetches = (w) => isMultiField(w) || isSplitPie(w);
+const selfFetches = (w) => isMultiField(w) || isSplitPie(w) || isSplitWaffle(w);
 
 // Drag-to-resize: a handle on the right edge changes width (1-4 cols), the bottom
 // edge changes height (1-8 rows), the corner does both. Deltas snap to the grid

@@ -9,8 +9,26 @@ Run with `npm run test:unit`.
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { isUnderOther, smallMultiplesGrid, splitPieLayout, fitLabel } =
+const { isUnderOther, smallMultiplesGrid, splitPieLayout, fitLabel, mosaicLayout, nodeCount, sharePercent } =
   await import('../viewer/vueapp/src/components/utils/hierarchyLayout.js');
+
+describe('nodeCount', () => {
+  test('a parent\'s count is its sizeValue, a leaf\'s its size', () => {
+    assert.equal(nodeCount({ name: 'a', sizeValue: 9, children: [] }), 9);
+    assert.equal(nodeCount({ name: 'b', size: 4 }), 4);
+    assert.equal(nodeCount({ name: 'c' }), 0);
+    assert.equal(nodeCount(null), 0);
+  });
+});
+
+describe('sharePercent', () => {
+  test('whole percents, one decimal under 10%', () => {
+    assert.equal(sharePercent(0.5), '50%');
+    assert.equal(sharePercent(0.125), '13%');
+    assert.equal(sharePercent(0.0625), '6.3%');
+    assert.equal(sharePercent(0), '0.0%');
+  });
+});
 
 describe('isUnderOther', () => {
   test('an Other node, and anything under it', () => {
@@ -70,5 +88,52 @@ describe('fitLabel', () => {
     assert.equal(fitLabel('abcdefgh', 18, 6), ''); // 3 chars: not worth drawing
     assert.equal(fitLabel(8080, 100, 6), '8080');
     assert.equal(fitLabel(undefined, 100, 6), '');
+  });
+});
+
+describe('mosaicLayout', () => {
+  test('columns sized by sessions, cells by their share of the column', () => {
+    const data = {
+      children: [
+        { name: 'US', sizeValue: 300, children: [{ name: 'tls', size: 200 }, { name: 'dns', size: 100 }] },
+        { name: 'DE', sizeValue: 100, children: [{ name: 'dns', size: 50 }, { name: 'tls', size: 25 }, { name: 'Other', other: true, size: 25 }] }
+      ]
+    };
+    const m = mosaicLayout(data, 402, 202, { gap: 2 });
+    // 400px across the two columns, 3:1
+    assert.deepEqual(m.columns.map(c => [c.name, c.x, c.w, c.share]), [['US', 0, 300, 0.75], ['DE', 302, 100, 0.25]]);
+    // tls has the most sessions overall, so it is on top in every column
+    assert.deepEqual(m.segments, ['tls', 'dns']);
+    const de = m.cells.filter(c => c.col === 1);
+    assert.deepEqual(de.map(c => [c.name, c.other]), [['tls', false], ['dns', false], ['Other', true]]);
+    // 198px of cells (2 gaps) split 25:50:25
+    assert.deepEqual(de.map(c => [c.y, c.h]), [[0, 49.5], [51.5, 99], [152.5, 49.5]]);
+    assert.equal(de[1].share, 0.5);
+    assert.equal(de[1].area, 0.125);
+  });
+
+  test('values past maxSegments join the column Other', () => {
+    const data = {
+      children: [
+        { name: 'a', sizeValue: 10, children: [{ name: 'x', size: 6 }, { name: 'y', size: 3 }, { name: 'z', size: 1 }] }
+      ]
+    };
+    const m = mosaicLayout(data, 100, 100, { gap: 0, maxSegments: 1 });
+    assert.deepEqual(m.segments, ['x']);
+    assert.deepEqual(m.cells.map(c => [c.name, c.value, c.other]), [['x', 6, false], ['Other', 4, true]]);
+  });
+
+  test('a value without children is one cell, and a first level Other is a column', () => {
+    const data = { children: [{ name: 'tls', size: 30 }, { name: 'Other', other: true, size: 10 }] };
+    const m = mosaicLayout(data, 40, 50, { gap: 0 });
+    assert.deepEqual(m.segments, []);
+    assert.deepEqual(m.cells.map(c => [c.col, c.name, c.other, c.w, c.h]), [[0, 'tls', false, 30, 50], [1, 'Other', true, 10, 50]]);
+  });
+
+  test('nothing to draw', () => {
+    assert.equal(mosaicLayout(null, 100, 100), null);
+    assert.equal(mosaicLayout({ children: [] }, 100, 100), null);
+    assert.equal(mosaicLayout({ children: [{ name: 'a', size: 0 }] }, 100, 100), null);
+    assert.equal(mosaicLayout({ children: [{ name: 'a', size: 5 }] }, 0, 100), null);
   });
 });

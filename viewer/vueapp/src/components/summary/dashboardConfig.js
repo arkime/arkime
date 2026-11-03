@@ -226,7 +226,7 @@ export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics
 // view modes a graph can have: the field-bound dashboard types SPI Graph
 // draws, and a timeline, area or time of day grid split by a field (SPI
 // Graph's Timeline, Area and Time of day)
-export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'connections', 'tree', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
+export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
 
 // the session-wide types that are a graph once split by a field
 const SPLIT_GRAPH_VIEW_MODES = ['timeline', 'area', 'timeofday'];
@@ -253,7 +253,7 @@ export const widgetFromGraph = (graph, overrides = {}) => normalizeWidget({ ...(
 
 // SPI Graph's types and the graph each is (its Timeline, one histogram per
 // value, is a timeline split by the field)
-const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', area: 'area', timeofday: 'timeofday', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', matrix: 'matrix', connections: 'connections', tree: 'tree', table: 'table', combo: 'combo', scatter: 'scatter' };
+const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', area: 'area', timeofday: 'timeofday', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', matrix: 'matrix', mosaic: 'mosaic', waffle: 'waffle', connections: 'connections', tree: 'tree', table: 'table', combo: 'combo', scatter: 'scatter' };
 
 /**
  * The graph the SPI Graph page is showing, from its url query and the current
@@ -313,8 +313,21 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
   } else if (type === 'tagcloud') {
     // a tag cloud draws one field
     fields = exp ? [exp] : [];
-  } else if (type === 'matrix') {
-    // a matrix is the first field by the second, the rest are dropped
+  } else if (type === 'waffle') {
+    // a waffle draws one field, with or without its "Other"; with a second
+    // field it is split: one waffle of the second field per value of the
+    // first, as many as SPI Graph's pie count
+    overrides = { other: query.other === 'true' || query.other === true };
+    if (exp && subFields.length) {
+      fields = subFields.slice(0, 1);
+      overrides.splitField = exp;
+      const pieCount = parseInt(query.pieCount, 10);
+      if (SPLIT_LENGTHS.includes(pieCount)) { overrides.splitLength = pieCount; }
+    } else {
+      fields = exp ? [exp] : [];
+    }
+  } else if (type === 'matrix' || type === 'mosaic') {
+    // a matrix (or mosaic) is the first field by the second, the rest are dropped
     fields = exp ? [exp, ...subFields.slice(0, 1)] : [];
   } else if (type === 'pie') {
     overrides = { other: query.other === 'true' || query.other === true };
@@ -410,6 +423,12 @@ export const spigraphQueryFromGraph = (graph) => {
     return { ...base, spiGraphType: 'pie', subFields: fields.slice(1).join(',') || undefined, other: g.other ? 'true' : undefined };
   case 'tagcloud':
     return { ...base, spiGraphType: 'tagcloud' };
+  case 'waffle':
+    // a split waffle's split field is SPI Graph's first field
+    if (g.splitField) {
+      return { ...base, exp: g.splitField, spiGraphType: 'waffle', subFields: fields[0], pieCount: g.splitLength, other: g.other ? 'true' : undefined };
+    }
+    return { ...base, spiGraphType: 'waffle', other: g.other ? 'true' : undefined };
   case 'treemap':
   case 'sankey':
     return { ...base, spiGraphType: g.viewMode, subFields: fields.slice(1).join(',') || undefined };
@@ -422,7 +441,8 @@ export const spigraphQueryFromGraph = (graph) => {
     // always named, so the page doesn't keep its last intensity
     return { ...base, spiGraphType: 'heatmap', graphType: histo, metricAgg };
   case 'matrix':
-    return { ...base, spiGraphType: 'matrix', subFields: fields[1] || undefined };
+  case 'mosaic':
+    return { ...base, spiGraphType: g.viewMode, subFields: fields[1] || undefined };
   case 'combo':
   case 'scatter': {
     // every metric is named, as for the heatmap; SPI Graph draws sums
@@ -472,9 +492,9 @@ export const graphOnSpigraph = (saved, page) => {
   if (page.viewMode === 'combo' || page.viewMode === 'scatter') { keys = [...SPIGRAPH_KEYS, 'metricType', 'metrics', 'sortMetric', 'yScale']; }
   const merged = { ...saved };
   for (const key of keys) { merged[key] = page[key]; }
-  // a split pie's pie count and a timeline's series count are on the page too
-  // (a bar's split length isn't), as is a timeline's percent layout
-  if ((page.viewMode === 'pie' && page.splitField) || SPLIT_GRAPH_VIEW_MODES.includes(page.viewMode)) { merged.splitLength = page.splitLength; }
+  // a split pie's (waffle's) count and a timeline's series count are on the
+  // page too (a bar's split length isn't), as is a timeline's percent layout
+  if (((page.viewMode === 'pie' || page.viewMode === 'waffle') && page.splitField) || SPLIT_GRAPH_VIEW_MODES.includes(page.viewMode)) { merged.splitLength = page.splitLength; }
   // an area's stacked or overlaid layout is on the page
   if (page.viewMode === 'area') { merged.barMode = page.barMode; }
   // SPI Graph can show a percent timeline, not a log one: its layout sets or

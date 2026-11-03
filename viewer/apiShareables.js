@@ -23,7 +23,7 @@ const MAX_WIDGETS = 100;
 const INVISIBLE_RE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 // the view modes a saved graph can have (GRAPH_VIEW_MODES in dashboardConfig.js)
-const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'connections', 'tree', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
+const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
 
 class ShareableAPIs {
   // --------------------------------------------------------------------------

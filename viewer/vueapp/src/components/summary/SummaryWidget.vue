@@ -54,6 +54,20 @@ SPDX-License-Identifier: Apache-2.0
         :color-scheme="colorScheme"
         @show-tooltip="$emit('show-tooltip', $event)" />
 
+      <!-- Waffle: 100 squares, each 1% of the whole -->
+      <SummaryWaffle
+        v-else-if="viewMode === 'waffle'"
+        :data="data"
+        :other="other"
+        :svg-id="svgId"
+        :field-config="fieldConfig"
+        :width="chartWidth"
+        :height="chartHeight"
+        :metric-type="metricType"
+        :metric-agg="metricAgg"
+        :color-scheme="colorScheme"
+        @show-tooltip="$emit('show-tooltip', $event)" />
+
       <!-- Tag cloud -->
       <SummaryTagCloud
         v-else-if="viewMode === 'tagcloud'"
@@ -85,6 +99,7 @@ import WidgetCard from './widgets/WidgetCard.vue';
 import SummaryPieChart from './SummaryPieChart.vue';
 import SummaryBarChart from './SummaryBarChart.vue';
 import SummaryTagCloud from './SummaryTagCloud.vue';
+import SummaryWaffle from './SummaryWaffle.vue';
 import SummaryTable from './SummaryTable.vue';
 import FieldService from '../search/FieldService';
 import Utils from '../utils/utils';
@@ -96,7 +111,7 @@ const { t } = useI18n();
 // needs room for its slice labels, a bar for its axis and rotated value labels
 // (its margins alone take ~130px of height). Below that they clip.
 const MIN_CHART_WIDTH = 120;
-const MIN_CHART_HEIGHT = { pie: 120, bar: 200, tagcloud: 100 };
+const MIN_CHART_HEIGHT = { pie: 120, bar: 200, tagcloud: 100, waffle: 100 };
 const RESIZE_DEBOUNCE_MS = 500;
 
 // Debounce helper for resize events
@@ -135,7 +150,7 @@ const props = defineProps({
   viewMode: {
     type: String,
     default: 'pie',
-    validator: (value) => ['pie', 'bar', 'table', 'tagcloud'].includes(value)
+    validator: (value) => ['pie', 'bar', 'table', 'tagcloud', 'waffle'].includes(value)
   },
   metricType: {
     type: String,
@@ -163,7 +178,7 @@ const props = defineProps({
     type: Array,
     default: () => []
   },
-  // pie: the sessions outside the top N ({ sessions, value }), drawn as one slice
+  // pie / waffle: the sessions outside the top N ({ sessions, value }), drawn as one slice
   other: {
     type: Object,
     default: null

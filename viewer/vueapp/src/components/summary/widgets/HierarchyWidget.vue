@@ -39,7 +39,7 @@ import WidgetCard from './WidgetCard.vue';
 import FieldService from '../../search/FieldService';
 import { colorRange, OTHER_COLOR } from './chartColors';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchHierarchy, hierarchyFields } from './widgetData';
+import { fetchHierarchy, hierarchyFields, defaultWidgetTitle } from './widgetData';
 import { hierarchyToSankey } from '../../utils/sankeyData';
 import { isUnderOther, splitPieLayout, fitLabel } from '../../utils/hierarchyLayout';
 
@@ -74,8 +74,7 @@ const { loading, error, fetchData } = useSpigraphWidget(
 const fieldExps = computed(() => hierarchyFields(props.widget));
 const isSplitPie = computed(() => props.widget.viewMode === 'pie' && !!props.widget.splitField);
 const fieldObjs = computed(() => fieldExps.value.map(exp => FieldService.getField(exp, true)));
-const title = computed(() => props.widget.title ||
-  fieldObjs.value.map((f, i) => f?.friendlyName || fieldExps.value[i]).join(' / '));
+const title = computed(() => props.widget.title || defaultWidgetTitle(props.widget));
 const hasData = computed(() => !!hierarchy.value?.children?.length);
 
 // a node's label: "Other" (sessions outside a level's top values) is translated

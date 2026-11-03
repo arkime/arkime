@@ -271,6 +271,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           of values; a value in a chart's tooltip can be picked into its field's control
   - #4427 Metric, table, bar and timeline widgets take the gauge's warning and critical levels: numbers and table cells
           turn amber or red at them, bars and timelines draw a line at each
+  - #4427 Add a mosaic widget and SPI Graph type: one field's values as columns as wide as their share of the sessions,
+          each split by another field's values
+  - #4427 Add a waffle widget and SPI Graph type: 100 squares, each 1% of the sessions, colored by a field's top values;
+          split by another field it draws one waffle per value
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

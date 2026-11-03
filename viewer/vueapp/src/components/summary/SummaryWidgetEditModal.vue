@@ -371,7 +371,7 @@ SPDX-License-Identifier: Apache-2.0
               class="arkime-input-label cursor-help">
               {{ $t('sessions.summary.widget.splitField') }}
               <v-tooltip activator="#widgetSplitField">
-                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? (areaMode ? 'sessions.summary.widget.splitAreaTip' : 'sessions.summary.widget.splitTimelineTip') : timeOfDaySplit ? 'sessions.summary.widget.splitTimeOfDayTip' : 'sessions.summary.widget.splitPieTip') }}
+                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? (areaMode ? 'sessions.summary.widget.splitAreaTip' : 'sessions.summary.widget.splitTimelineTip') : timeOfDaySplit ? 'sessions.summary.widget.splitTimeOfDayTip' : waffleSplit ? 'sessions.summary.widget.splitWaffleTip' : 'sessions.summary.widget.splitPieTip') }}
               </v-tooltip>
             </span>
             <ArkimeFieldTypeahead
@@ -391,7 +391,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-select
             v-model="form.splitLength"
             :items="splitLengthItems"
-            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : timelineSplit ? 'sessions.summary.widget.splitSeries' : timeOfDaySplit ? 'sessions.summary.widget.splitGrids' : 'sessions.summary.widget.splitPies')"
+            :label="$t(barSplit ? 'sessions.summary.widget.splitLength' : timelineSplit ? 'sessions.summary.widget.splitSeries' : timeOfDaySplit ? 'sessions.summary.widget.splitGrids' : waffleSplit ? 'sessions.summary.widget.splitWaffles' : 'sessions.summary.widget.splitPies')"
             :disabled="!form.splitField"
             density="compact"
             variant="outlined"
@@ -838,10 +838,15 @@ watch(() => form.value.viewMode, (vm) => {
 // connection tree: a root value and a depth on top of the connections pair
 const treeMode = computed(() => isTreeMode(form.value.viewMode));
 const treeDepthItems = TREE_DEPTHS.map(n => ({ title: String(n), value: n }));
+// a split or nested pie and a split waffle are drawn from the hierarchy
+// endpoint, which only counts sessions and has no order or bucket interval
+const hierarchyFed = computed(() => (form.value.viewMode === 'pie' && (!!form.value.splitField || (form.value.fields || []).length > 1)) ||
+  (form.value.viewMode === 'waffle' && !!form.value.splitField));
+watch(hierarchyFed, (fed) => { if (fed) { form.value.metricType = 'sessions'; } });
 // a numeric single field can be bucketed into ranges of a fixed width
-const bucketEnabled = computed(() => allowsBucketInterval(form.value.viewMode) &&
+const bucketEnabled = computed(() => allowsBucketInterval(form.value.viewMode) && !hierarchyFed.value &&
   FieldService.getField(form.value.field, true)?.type === 'integer');
-const metricEnabled = computed(() => hasMetric(form.value.viewMode));
+const metricEnabled = computed(() => hasMetric(form.value.viewMode) && !hierarchyFed.value);
 // aggregation choice: only the summary-endpoint modes, and only once a metric
 // field (not the session count) is chosen
 const aggEnabled = computed(() => hasMetricAgg(form.value.viewMode));
@@ -874,6 +879,7 @@ const barSplit = computed(() => form.value.viewMode === 'bar');
 const timelineSplit = computed(() => isTimelineMode(form.value.viewMode));
 const areaMode = computed(() => form.value.viewMode === 'area');
 const timeOfDaySplit = computed(() => form.value.viewMode === 'timeofday');
+const waffleSplit = computed(() => form.value.viewMode === 'waffle');
 // a trend line only means something for a summed metric over the whole
 // result set (the timeline the metric widget can fold it from)
 const sparklineEnabled = computed(() => form.value.viewMode === 'metric' && !form.value.field &&
@@ -927,7 +933,7 @@ const multiMetric = computed(() => allowsMultiMetric(form.value.viewMode));
 const lengthEnabled = computed(() => hasLength(form.value.viewMode));
 // only the summary-endpoint modes pass an order through; showing the control
 // for the others would silently do nothing
-const orderEnabled = computed(() => hasOrder(form.value.viewMode));
+const orderEnabled = computed(() => hasOrder(form.value.viewMode) && !hierarchyFed.value);
 // connections' limit is a session sample, so it gets its own label + scale
 const sampleSize = computed(() => isSampleSize(form.value.viewMode));
 // field-bound, geo (map) and timeline widgets all support a local filter; only

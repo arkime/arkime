@@ -1,4 +1,4 @@
-use Test::More tests => 260;
+use Test::More tests => 262;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -445,6 +445,12 @@ $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name
 is($info->{i18n}, "api.shareables.missingGraph", "create spigraphConfig with an unsplit time of day view fails");
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph matrix","type":"spigraphConfig","data":{"field":"source.ip","fields":["source.ip","destination.port"],"viewMode":"matrix","length":10}}', $token);
 ok($info->{success}, "create spigraphConfig with the matrix view succeeds");
+viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph mosaic","type":"spigraphConfig","data":{"field":"destination.geo.country_iso_code","fields":["destination.geo.country_iso_code","protocols"],"viewMode":"mosaic","length":10}}', $token);
+ok($info->{success}, "create spigraphConfig with the mosaic view succeeds");
+viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph waffle","type":"spigraphConfig","data":{"field":"protocols","viewMode":"waffle","other":true,"length":10}}', $token);
+ok($info->{success}, "create spigraphConfig with the waffle view succeeds");
 viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph percent","type":"spigraphConfig","data":{"viewMode":"timeline","splitField":"protocols","yScale":"percent","seriesType":"lines"}}', $token);
 ok($info->{success}, "create spigraphConfig with a percent timeline succeeds");

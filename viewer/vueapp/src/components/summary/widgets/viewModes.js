@@ -39,6 +39,8 @@ export const VIEW_MODE_LABEL_KEYS = {
   scatter: 'sessions.summary.scatterView',
   timeofday: 'sessions.summary.timeofdayView',
   matrix: 'sessions.summary.matrixView',
+  mosaic: 'sessions.summary.mosaicView',
+  waffle: 'sessions.summary.waffleView',
   map: 'sessions.summary.mapView',
   stats: 'sessions.summary.statsView',
   time: 'sessions.summary.timeView',
@@ -54,7 +56,7 @@ export const VIEW_MODE_LABEL_KEYS = {
 export const viewModeLabelKey = (viewMode) => (Object.hasOwn(VIEW_MODE_LABEL_KEYS, viewMode) ? VIEW_MODE_LABEL_KEYS[viewMode] : undefined);
 
 // Field-bound types: aggregate one field's top-N values (require a field).
-export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'tagcloud', 'combo', 'scatter', 'control'];
+export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'mosaic', 'tagcloud', 'waffle', 'combo', 'scatter', 'control'];
 
 // Session-wide types: describe the whole result set (no field, fed by the host's
 // global stats chunk). (map is field-bound — it plots a chosen geo field.)
@@ -93,7 +95,7 @@ export const LIST_VIEW_MODES = ['sessions'];
 // Types that visualize a single selectable metric (Sessions or a numeric field).
 // timeline plots the metric's <dbField>Histo series over time; map shades each
 // country by it.
-export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline', 'area', 'timeofday', 'metric', 'gauge', 'tagcloud', 'map'];
+export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline', 'area', 'timeofday', 'metric', 'gauge', 'tagcloud', 'waffle', 'map'];
 
 // Types that chart several metrics of each top value, one per named slot
 // (metrics[i]): a combo's bars and line (on its own right axis), a scatter's
@@ -106,7 +108,8 @@ export const METRIC_SLOTS = {
 
 // Types whose metric can use an aggregation other than sum (avg/min/max/unique
 // count). Only the /api/sessions/summary paths take one; the spigraph-backed
-// modes (heatmap/treemap/timeline) always sum into their histo series.
+// modes (heatmap/treemap/timeline) always sum into their histo series. A
+// waffle's squares are shares of a whole, so it only sums.
 export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'gauge', 'tagcloud', 'map', 'combo', 'scatter'];
 
 // The per-bucket aggregations a metric field can use (server: ViewerUtils.METRIC_AGGS):
@@ -156,10 +159,10 @@ export const metricAggsFor = (viewMode, multiViewer = false) => {
 };
 
 // Types that can split by a second field: a bar divides each value into
-// stacked/grouped segments, a pie draws one small pie per split value, a
-// timeline draws one series per split value (stacked bars or lines), a time
-// of day grid draws one small grid per split value.
-export const SPLIT_VIEW_MODES = ['bar', 'pie', 'timeline', 'area', 'timeofday'];
+// stacked/grouped segments, a pie or a waffle draws one small pie (waffle)
+// per split value, a timeline draws one series per split value (stacked bars
+// or lines), a time of day grid draws one small grid per split value.
+export const SPLIT_VIEW_MODES = ['bar', 'pie', 'waffle', 'timeline', 'area', 'timeofday'];
 export const BAR_MODES = ['stacked', 'grouped'];
 export const SPLIT_LENGTHS = [3, 5, 10];
 
@@ -177,17 +180,17 @@ export const Y_SCALES = ['linear', 'log', 'percent'];
 // Types that honor a result limit. bar/pie/table/heatmap/treemap/sankey/
 // intersection cap their top-N values; connections uses it as a session sample
 // size (see SAMPLE_SIZE_VIEW_MODES).
-export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'metric', 'sessions', 'tagcloud', 'combo', 'scatter', 'control'];
+export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'mosaic', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'control'];
 
 // Types that also honor an order (direction). Only the /api/sessions/summary
 // paths pass one through; /api/spigraph, /api/spigraphhierarchy and
 // /api/connections have no order parameter, so offering the control for those
 // modes would silently do nothing.
-export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 'tagcloud', 'combo', 'scatter'];
+export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter'];
 
 // Types that can show an "Other" share for what falls outside the top N (a
 // share only means something where the parts add up to a whole).
-export const OTHER_VIEW_MODES = ['pie'];
+export const OTHER_VIEW_MODES = ['pie', 'waffle'];
 
 // Types whose limit is a session sample size rather than a top-N cut, so they
 // get their own (much larger) scale.
@@ -214,17 +217,17 @@ export const TREE_DEPTHS = [1, 2, 3, 4, 5, 6];
 export const DEFAULT_TREE_DEPTH = 3;
 
 // Types rendered from the batched /api/sessions/summary stream (vs. self-fetch).
-export const STREAM_VIEW_MODES = ['bar', 'pie', 'tagcloud'];
+export const STREAM_VIEW_MODES = ['bar', 'pie', 'tagcloud', 'waffle'];
 
 // Types whose single numeric field can be bucketed into ranges of a fixed
 // width (the summary endpoint's bucketInterval) instead of one bucket per
 // distinct value: certificate key lengths, byte counts, ports.
-export const BUCKET_INTERVAL_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'tagcloud'];
+export const BUCKET_INTERVAL_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'tagcloud', 'waffle'];
 
 // Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
 // table self-fetches (one summary sub-widget per field) so it can carry multiple
 // fields and multiple metric columns.
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'map', 'table', 'metric', 'combo', 'scatter', 'control'];
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'mosaic', 'map', 'table', 'metric', 'combo', 'scatter', 'control'];
 
 // [min, max] fields each view mode accepts — nested combinations (pie/treemap/
 // sankey/intersection via spigraphhierarchy), side-by-side columns (table via
@@ -240,8 +243,10 @@ export const FIELD_COUNT_LIMITS = {
   sankey: [1, 7],
   table: [1, 7],
   intersection: [1, 7],
-  // a matrix is one field's values down the side, another's across the top
+  // a matrix is one field's values down the side, another's across the top,
+  // a mosaic one field's values as columns, each split by another's
   matrix: [2, 2],
+  mosaic: [2, 2],
   connections: [2, 2],
   tree: [2, 2],
   sessions: [1, 20]
