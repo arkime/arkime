@@ -148,6 +148,17 @@ describe('range and text controls', () => {
     assert.equal(controlFilter('http.uri', ['C:\\temp\\*'], 'text'), 'http.uri == "C:\\temp\\*"');
   });
 
+  test('a backslash before a quote or the end can\'t end the value early', () => {
+    // the lexer reads \ and the next character as one, so a run there is
+    // doubled: C:\ would otherwise take the closing quote, a\" its escape
+    assert.equal(controlFilter('http.uri', ['C:\\'], 'text'), 'http.uri == "C:\\\\"');
+    assert.equal(controlFilter('http.uri', ['end\\\\'], 'text'), 'http.uri == "end\\\\\\\\"');
+    assert.equal(controlFilter('host.http', ['a\\"b'], 'text'), 'host.http == "a\\\\\\"b"');
+    // a crafted pick stays one quoted value, it can't add a condition
+    assert.equal(controlFilter('host.http', ['a\\" || ip.src == "1.2.3.4'], 'text'),
+      'host.http == "a\\\\\\" || ip.src == \\"1.2.3.4"');
+  });
+
   test('the url keeps a range only as two ordered numbers, text as one value', () => {
     const w = [{ id: 'r', viewMode: 'control', field: 'port.dst', controlType: 'range' }, { id: 't', viewMode: 'control', field: 'host.http', controlType: 'text' }];
     assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['80', '443'], 'var.host_http': ['a', 'b'] }).port_dst.values, ['80', '443']);

@@ -43,10 +43,13 @@ const valuesFor = (kind, values) => {
 };
 
 // typed text as an expression value: always quoted (a , or ] is just text),
-// with its * wildcards kept, as the search bar treats them. Only a quote is
-// escaped: the parser's quoted value unescapes \" and nothing else, so an
-// escaped backslash would be searched for as two
-const textValue = (v) => `"${String(v).replace(/"/g, '\\"')}"`;
+// with its * wildcards kept, as the search bar treats them. The lexer reads a
+// backslash and the character after it as one, so a run of backslashes right
+// before a quote (or the closing one) is doubled, and the quote escaped: an
+// odd run would otherwise take the quote and end the value early (C:\ or
+// a\" || ...). The parser's quoted value unescapes \" and nothing else, so
+// any other backslash is left alone, and searched for as typed
+const textValue = (v) => `"${String(v).replace(/(\\*)("|$)/g, (m, run, quote) => `${run}${run}${quote ? '\\"' : ''}`)}"`;
 
 /** A variable name made from a field expression: ip.src -> ip_src. */
 export const defaultVariableName = (fieldExp) => {
