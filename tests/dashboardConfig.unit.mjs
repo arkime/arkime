@@ -22,7 +22,10 @@ const STUBS = {
     let n = 0;
     export default { createRandomString: () => 'rand' + (++n) };`),
   '@common/fetchWrapper.js': stub('export const fetchWrapper = async () => ({});'),
-  '@common/vueFilters.js': stub('export const commaString = String; export const humanReadableBytes = String;')
+  '@common/vueFilters.js': stub(`
+    export const commaString = String;
+    export const humanReadableBytes = String;
+    export const buildListExpression = (f, v, op) => f + ' ' + op + ' [' + v.join(',') + ']';`)
 };
 
 register(stub(`
@@ -51,8 +54,8 @@ const {
   GRAPH_KEYS, widgetsFromConfig, defaultWidgets, graphFromWidget, widgetFromGraph, normalizeWidget, widgetIsGraph,
   graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph, migrateDashboard, DASHBOARD_VERSION
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
-const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
-const { widgetFullPageLink, widgetFields, hierarchyFields, pageExpression, combinedExpression } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
+const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
+const { widgetFullPageLink, widgetFields, hierarchyFields, pageExpression, combinedExpression, metricHistoKey } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 const { findTreeRoot, buildConnectionTree, MAX_TREE_CHILDREN, MAX_TREE_NODES } = await import('../viewer/vueapp/src/components/summary/widgets/connectionTree.js');
 
 const graph = (overrides) => graphFromWidget(overrides);
@@ -581,6 +584,19 @@ describe('dashboard filter', () => {
     assert.equal(pageExpression({ query: { expression: 'ip == 1.1.1.1' } }, { state: { dashboardExpression: 'protocols == dns' } }), '(ip == 1.1.1.1) && (protocols == dns)');
   });
 
+  test('pageExpression fills ${name} and adds the controls, a control\'s own list leaves its picks out', () => {
+    const state = {
+      dashboardExpression: 'node == ${node}',
+      dashboardVariables: {
+        node: { field: 'node', applyAll: false, values: ['a'] },
+        proto: { field: 'protocols', applyAll: true, values: ['tls'] }
+      }
+    };
+    assert.equal(pageExpression({ query: {} }, { state }), '(node == [a]) && (protocols == [tls])');
+    assert.equal(pageExpression({ query: {} }, { state }, 'node'), 'protocols == [tls]');
+    assert.equal(pageExpression({ query: {} }, { state }, 'proto'), 'node == [a]');
+  });
+
   test('combinedExpression puts the widget filter on top of the page search', () => {
     const store = { state: { dashboardExpression: 'protocols == dns', views } };
     assert.equal(combinedExpression({ query: {} }, store, { expression: 'dns.status == NXDOMAIN' }), '(protocols == dns) && (dns.status == NXDOMAIN)');
@@ -645,5 +661,45 @@ describe('connection tree', () => {
       }
     }
     assert.equal(count(buildConnectionTree(deep, deep.nodes[0], 2)), MAX_TREE_NODES);
+  });
+});
+
+describe('percentiles', () => {
+  test('each type offers the aggregations its endpoint has, none of the percentiles in a multi viewer', () => {
+    assert.deepEqual(metricAggsFor('bar'), ['sum', 'avg', 'min', 'max', 'cardinality', 'p50', 'p90', 'p95', 'p99']);
+    assert.deepEqual(metricAggsFor('timeline'), ['sum', 'p50', 'p90', 'p95', 'p99']);
+    assert.deepEqual(metricAggsFor('heatmap', true), ['sum']);
+    assert.deepEqual(metricAggsFor('area'), ['sum']);
+    assert.deepEqual(metricAggsFor('treemap'), ['sum']);
+    assert.ok(!metricAggsFor('table', true).includes('p95'));
+  });
+
+  test('a timeline or heatmap percentile draws its own series, others the sum', () => {
+    assert.equal(metricHistoKey({ viewMode: 'timeline', metricType: 'bytes', metricAgg: 'p95' }), 'totBytes:p95Histo');
+    assert.equal(metricHistoKey({ viewMode: 'heatmap', metricType: 'bytes', metricAgg: 'p50' }), 'totBytes:p50Histo');
+    assert.equal(metricHistoKey({ viewMode: 'treemap', metricType: 'bytes', metricAgg: 'p95' }), 'totBytesHisto');
+    assert.equal(metricHistoKey({ viewMode: 'timeline', metricType: 'sessions', metricAgg: 'p95' }), 'sessionsHisto');
+  });
+
+  test('saved graphs carry a percentile to SPI Graph and back', () => {
+    const tl = graph({ viewMode: 'timeline', splitField: 'ip.src', metricType: 'bytes', metricAgg: 'p95' });
+    const q = spigraphQueryFromGraph(tl);
+    assert.equal(q.metricAgg, 'p95');
+    assert.equal(q.graphType, 'totBytesHisto');
+    assert.equal(graphFromSpigraphQuery({ ...q, size: '5' }, { fieldsArr }).metricAgg, 'p95');
+    const heat = spigraphQueryFromGraph(graph({ viewMode: 'heatmap', field: 'ip.src', metricType: 'bytes', metricAgg: 'p99' }));
+    assert.equal(heat.metricAgg, 'p99');
+    assert.equal(graphFromSpigraphQuery(heat, { fieldsArr }).metricAgg, 'p99');
+    // a bar's percentile has no SPI Graph equivalent, nor a sessions percentile
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'p95' })).metricAgg, undefined);
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'heatmap', field: 'ip.src', metricAgg: 'p95' })).metricAgg, undefined);
+    // the area can't draw one
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'area', exp: 'ip.src', graphType: 'totBytesHisto', metricAgg: 'p95' }, { fieldsArr }).metricAgg, 'sum');
+  });
+
+  test('the page\'s sum or percentile replaces the saved one', () => {
+    const saved = graph({ viewMode: 'heatmap', field: 'ip.src', metricType: 'bytes', metricAgg: 'p95' });
+    const page = graphFromSpigraphQuery({ spiGraphType: 'heatmap', exp: 'ip.src', graphType: 'totBytesHisto' }, { fieldsArr });
+    assert.equal(graphOnSpigraph(saved, page).metricAgg, 'sum');
   });
 });

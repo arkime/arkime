@@ -269,6 +269,14 @@ SPDX-License-Identifier: Apache-2.0
             :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- a filter control: picks values of a field as a dashboard variable -->
+          <ControlWidget
+            v-else-if="w.viewMode === 'control'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <!-- links to the system and saved dashboards -->
           <NavigationWidget
             v-else-if="w.viewMode === 'navigation'"
@@ -310,6 +318,7 @@ SPDX-License-Identifier: Apache-2.0
     <SummaryWidgetEditModal
       :show="editModalShow"
       :widget="editingWidget"
+      :taken-variables="takenVariables"
       @close="onEditClose"
       @save="onEditSave" />
 
@@ -363,6 +372,8 @@ import MetricWidget from './widgets/MetricWidget.vue';
 import MarkdownWidget from './widgets/MarkdownWidget.vue';
 import GaugeWidget from './widgets/GaugeWidget.vue';
 import NavigationWidget from './widgets/NavigationWidget.vue';
+import ControlWidget from './widgets/ControlWidget.vue';
+import { controlVariable, substituteExpression } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics } from './widgets/viewModes';
 import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
@@ -558,16 +569,25 @@ const toRequestWidget = (w) => ({
   ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
   ...(allowsOther(w.viewMode) && w.other ? { other: true } : {}),
   ...(allowsBucketInterval(w.viewMode) && w.bucketInterval > 0 ? { bucketInterval: w.bucketInterval } : {}),
-  expression: widgetLocalExpression(w, store.state.views)
+  expression: widgetLocalExpression(w, store.state.views, store.state.dashboardVariables)
 });
 
 // Each widget as saved-graph data (null for the ones that aren't graphs), so
 // the card can offer "save as graph"; the card opens the dialog through the
 // provided function rather than threading an event through every widget.
-// Built from the definitions, so streamed data chunks don't rebuild it
+// Built from the definitions, so streamed data chunks don't rebuild it.
+// A graph has no controls, so its filter keeps the ${name} values picked now
+// the variables the other controls set, which the one being edited can't reuse
+const takenVariables = computed(() => props.widgets
+  .filter(w => w.viewMode === 'control' && w.field && w.id !== editingWidget.value?.id)
+  .map(controlVariable));
+
 const widgetGraphs = computed(() => {
   const graphs = Object.create(null); // keyed by widget ids from saved/shared configs
-  for (const w of props.widgets) { if (widgetIsGraph(w)) { graphs[w.id] = graphFromWidget(w); } }
+  const vars = store.state.dashboardVariables;
+  for (const w of props.widgets) {
+    if (widgetIsGraph(w)) { graphs[w.id] = graphFromWidget({ ...w, expression: substituteExpression(w.expression, vars) || '' }); }
+  }
   return graphs;
 });
 const graphSaveShow = ref(false);
@@ -651,6 +671,11 @@ const widgetInfo = (w) => {
 
   if (allowsBucketInterval(w.viewMode) && w.bucketInterval > 0) {
     rows.push({ label: t('sessions.summary.widget.bucketInterval'), value: `${w.bucketInterval}` });
+  }
+
+  if (w.viewMode === 'control') {
+    rows.push({ label: t('sessions.summary.widget.variable'), value: `\${${controlVariable(w)}}` });
+    rows.push({ label: t('sessions.summary.widget.applyAll'), value: t(w.applyAll !== false ? 'common.yes' : 'common.no') });
   }
 
   if (isTreeMode(w.viewMode)) {

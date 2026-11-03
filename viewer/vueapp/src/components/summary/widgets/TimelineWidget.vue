@@ -44,8 +44,8 @@ the host.
           :graph-type="graphType"
           :series-defs="seriesDefs"
           :series-type="seriesType"
-          :stacked="!!seriesDefs && widget.barMode !== 'grouped'"
-          :y-scale="widget.yScale || 'linear'"
+          :stacked="!!seriesDefs && widget.barMode !== 'grouped' && !percentile"
+          :y-scale="percentile && widget.yScale === 'percent' ? 'linear' : (widget.yScale || 'linear')"
           fit-height
           :timeline-data-filters="timelineDataFilters"
           :timezone="timezone"
@@ -63,7 +63,7 @@ import WidgetCard from './WidgetCard.vue';
 import TimelineGraph from '../../visualizations/TimelineGraph.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { metricHistoKey, fetchGraph, fetchSplitGraph } from './widgetData';
+import { metricHistoKey, widgetPercentile, fetchGraph, fetchSplitGraph } from './widgetData';
 import { colorRange } from './chartColors';
 import { metricSeries } from '../../visualizations/metrics.js';
 
@@ -86,15 +86,19 @@ const graphData = ref(null);
 const seriesDefs = ref(null);
 const split = computed(() => !!props.widget.splitField);
 const isArea = computed(() => props.widget.viewMode === 'area');
+// a percentile per time bucket (p95, ...): its values don't stack, so a
+// split one is overlaid lines
+const percentile = computed(() => !!widgetPercentile(props.widget));
 // an overlaid (grouped) split is always lines, bars would hide each other
 const seriesType = computed(() => {
   if (isArea.value) { return 'area'; }
-  return (split.value && props.widget.barMode === 'grouped') || props.widget.seriesType === 'lines' ? 'lines' : 'bars';
+  return (split.value && (props.widget.barMode === 'grouped' || percentile.value)) || props.widget.seriesType === 'lines' ? 'lines' : 'bars';
 });
 
 // series to plot follows the widget's metric: sessions -> sessionsHisto, else
-// the numeric field's <dbField>Histo (the graph fetch requests it via `metric`)
-const graphType = computed(() => metricHistoKey({ metricType: props.widget.metricType }));
+// the numeric field's <dbField>Histo (the graph fetch requests it via
+// `metric`), or its <dbField>:p<N>Histo for a percentile
+const graphType = computed(() => metricHistoKey(props.widget));
 
 let d3 = null;
 const seriesColors = async (n) => {

@@ -255,6 +255,16 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           third, on linear or log axes, to spot values that stand apart
   - #4424 The Arkime tab can reload every widget on a timer (?refresh=<seconds>, off by default) and save the dashboard
           as a PDF through the browser's print dialog
+  - #4425 Dashboard widgets that aggregate a metric field can use its median, p90, p95 or p99 and rank their values by it
+          (p95 session length per protocol, say); the summary API takes metricAgg=p50, p90, p95 or p99
+  - #4425 Timeline and heatmap widgets, and SPI Graph's Timeline and Heatmap, can draw a percentile of their metric per
+          time bucket in place of its sum, ranking each value by its percentile over the whole range (the spigraph API
+          takes metricAgg); percentiles are not available in a multi viewer
+  - #4425 Add a filter control dashboard widget: pick some of a field's top values (listed with their session counts) to
+          filter every widget by them; the picks are kept in the url (?var.<name>=...) so a filtered dashboard can be linked
+  - #4425 Dashboard variables: ${name} in a widget's title or filter, or in the dashboard filter, is filled with a control's
+          picked values; with none picked a title shows All and the part of a filter using it is left out. A control can
+          also only set its variable rather than filter every widget
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

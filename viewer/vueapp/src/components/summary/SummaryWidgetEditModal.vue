@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- start from a saved graph: fills everything below from it -->
         <v-select
-          v-if="!staticMode && !navMode && !graphOnly && savedGraphItems.length"
+          v-if="!staticMode && !navMode && !controlMode && !graphOnly && savedGraphItems.length"
           v-model="savedGraphId"
           :items="savedGraphItems"
           :label="$t('sessions.summary.widget.loadGraph')"
@@ -160,8 +160,47 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="titlePlaceholder">
         </div>
 
+        <!-- control: the variable its picks set, and whether they filter every widget -->
         <div
-          v-if="!staticMode && !navMode"
+          v-if="controlMode"
+          class="d-flex flex-wrap align-center gap-3 mb-3">
+          <div
+            class="arkime-input-group"
+            style="min-width: 240px">
+            <span
+              id="widgetVariable"
+              class="arkime-input-label cursor-help">
+              {{ $t('sessions.summary.widget.variable') }}
+              <v-tooltip
+                activator="#widgetVariable"
+                max-width="360">
+                {{ $t('sessions.summary.widget.variableTip', { ref: variableRef }) }}
+              </v-tooltip>
+            </span>
+            <input
+              v-model="form.variable"
+              type="text"
+              class="arkime-input-control"
+              spellcheck="false"
+              maxlength="40"
+              :placeholder="variablePlaceholder">
+          </div>
+          <span id="widgetApplyAll">
+            <v-checkbox
+              v-model="form.applyAll"
+              :label="$t('sessions.summary.widget.applyAll')"
+              density="compact"
+              hide-details />
+            <v-tooltip
+              activator="#widgetApplyAll"
+              max-width="360">
+              {{ $t('sessions.summary.widget.applyAllTip', { ref: variableRef }) }}
+            </v-tooltip>
+          </span>
+        </div>
+
+        <div
+          v-if="!staticMode && !navMode && !controlMode"
           class="d-flex flex-wrap gap-3 mb-3">
           <!-- Metric basis: Sessions count, or numeric field(s) aggregated per
                value. Tables take several metric columns + a sort-by; charts one. -->
@@ -216,8 +255,9 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             auto-select-first
             style="min-width: 200px" />
-          <!-- How the metric field(s) combine per value; only the summary-endpoint
-               modes take one, and it means nothing for the session count -->
+          <!-- How the metric field(s) combine per value: any aggregation on the
+               summary-endpoint modes, a sum or a percentile on the timeline and
+               heatmap; it means nothing for the session count -->
           <span
             v-if="aggEnabled"
             id="widgetMetricAgg"
@@ -606,7 +646,8 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
 import { createShareableService } from '../users/ShareableService';
 import { metricIsAdditive, fieldIsAggregatable } from './widgets/widgetData';
-import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH, isTimelineMode, metricSlots, slotMetrics } from './widgets/viewModes';
+import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH, isTimelineMode, metricSlots, slotMetrics, metricAggsFor, isControlMode } from './widgets/viewModes';
+import { defaultVariableName, VARIABLE_NAME_RE } from './widgets/dashboardVariables';
 import { GRAPH_VIEW_MODES, graphFromWidget, nonNeg } from './dashboardConfig';
 import { columnSortDbField, fieldHasColumn } from './widgets/sessionsWidgetData';
 import { MAX_TEXT } from './widgets/miniMarkdown';
@@ -629,6 +670,11 @@ const props = defineProps({
   graphOnly: {
     type: Boolean,
     default: false
+  },
+  // the variables the dashboard's other controls set (a control can't reuse one)
+  takenVariables: {
+    type: Array,
+    default: () => []
   }
 });
 
@@ -665,6 +711,8 @@ const blankForm = () => ({
   order: 'desc',
   orderBy: 'value',
   sortField: '',
+  variable: '',
+  applyAll: true,
   width: 2,
   height: 3,
   expression: '',
@@ -739,6 +787,14 @@ const staticMode = computed(() => isStaticMode(form.value.viewMode));
 const navMode = computed(() => isNavMode(form.value.viewMode));
 // gauge: one metric over the result set, no field, plus a maximum and thresholds
 const gaugeMode = computed(() => isGaugeMode(form.value.viewMode));
+// control: a variable name (from its field when blank) and whether it filters every widget
+const controlMode = computed(() => isControlMode(form.value.viewMode));
+const variablePlaceholder = computed(() => defaultVariableName(form.value.field) || 'name');
+const variableRef = computed(() => `\${${form.value.variable?.trim() || variablePlaceholder.value}}`);
+// a widget switched to a control starts as one row, a control is a single picker
+watch(() => form.value.viewMode, (vm) => {
+  if (vm === 'control' && props.widget?.viewMode !== 'control' && form.value.height > 2) { form.value.height = 1; }
+});
 // connection tree: a root value and a depth on top of the connections pair
 const treeMode = computed(() => isTreeMode(form.value.viewMode));
 const treeDepthItems = TREE_DEPTHS.map(n => ({ title: String(n), value: n }));
@@ -764,7 +820,14 @@ const setSlot = (i, value) => {
   form.value.metrics = next;
 };
 const scatterMode = computed(() => form.value.viewMode === 'scatter');
-const aggItems = computed(() => METRIC_AGGS.map(a => ({ title: t(`sessions.summary.agg.${a}`), value: a })));
+// a multi viewer can't combine its clusters' percentiles, so it offers none
+const multiViewer = typeof MULTIVIEWER !== 'undefined' && !!MULTIVIEWER;
+// the aggregations the type takes: a spigraph-backed one a sum or a percentile
+const aggChoices = computed(() => metricAggsFor(form.value.viewMode, multiViewer));
+const aggItems = computed(() => aggChoices.value.map(a => ({ title: t(`sessions.summary.agg.${a}`), value: a })));
+watch(aggChoices, (choices) => {
+  if (!choices.includes(form.value.metricAgg)) { form.value.metricAgg = 'sum'; }
+});
 // bar/pie: optional split field (a bar's segments, or one pie per value)
 const splitEnabled = computed(() => allowsSplit(form.value.viewMode));
 const barSplit = computed(() => form.value.viewMode === 'bar');
@@ -963,6 +1026,8 @@ const fillForm = (w) => {
     gaugeCrit: w.gaugeCrit > 0 ? w.gaugeCrit : 0,
     text: w.text || '',
     sortField: w.sortField || '',
+    variable: w.variable || '',
+    applyAll: w.applyAll !== false,
     expression: w.expression || '',
     view: w.view || '',
     title: w.title || ''
@@ -1073,6 +1138,16 @@ const save = () => {
     error.value = t('sessions.summary.widget.exactFieldsRequired', { count: minFields.value });
     return;
   }
+  const variable = form.value.variable?.trim() || '';
+  if (controlMode.value && variable && !VARIABLE_NAME_RE.test(variable)) {
+    error.value = t('sessions.summary.widget.variableInvalid');
+    return;
+  }
+  const varName = variable || defaultVariableName(fieldList[0]);
+  if (controlMode.value && props.takenVariables.includes(varName)) {
+    error.value = t('sessions.summary.widget.variableTaken', { ref: `\${${varName}}` });
+    return;
+  }
   // resolve the metric(s): tables carry a metrics[] list + a sort-by; charts one.
   // metricType stays the primary (sort) metric for charts + back-compat.
   let metrics = multiMetric.value ? (form.value.metrics || []).slice(0, 4) : [];
@@ -1085,7 +1160,8 @@ const save = () => {
   // metric field; anything else would ask for a sum of text
   // a count has no aggregation: an agg picked for an earlier metric field
   // must not stick to it (the select is hidden, so the user can't see it)
-  const metricAgg = aggEnabled.value && aggApplies.value ? (form.value.metricAgg || 'sum') : 'sum';
+  const wanted = aggEnabled.value && aggApplies.value ? (form.value.metricAgg || 'sum') : 'sum';
+  const metricAgg = aggChoices.value.includes(wanted) ? wanted : 'sum';
   if (metricAgg !== 'cardinality') {
     const numeric = (exp) => exp === 'sessions' || FieldService.getField(exp, true)?.type === 'integer';
     if (!numeric(metricType)) { metricType = 'sessions'; }
@@ -1128,6 +1204,8 @@ const save = () => {
     order: form.value.order,
     orderBy: orderEnabled.value && !listMode.value && form.value.orderBy === 'key' ? 'key' : 'value',
     sortField: listMode.value ? (form.value.sortField || '') : '',
+    variable: controlMode.value ? variable : '',
+    applyAll: !controlMode.value || form.value.applyAll !== false,
     width: form.value.width,
     height: form.value.height,
     // local filter only applies to field-bound widgets

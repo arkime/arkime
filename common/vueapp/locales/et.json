@@ -503,6 +503,11 @@
       "everyMinutes": "{count} min",
       "everyHours": "{count} h",
       "scatterSizedBy": "{metric} (punkti suurus: {size})",
+      "controlView": "Filtri juhtelement",
+      "controlAll": "Kõik",
+      "controlFiltersAll": "filtreerib kõiki vidinaid",
+      "controlsChip": "Töölaua juhtelemendid",
+      "controlsClear": "Tühjenda juhtelemendid",
       "exportPNGTableWarning": "Ekspordib ainult diagrammid, mitte tabeleid",
       "resultsPerWidget": "Tulemusi vidina kohta",
       "canceledSearch": "Sa tühistasid otsingu",
@@ -545,7 +550,11 @@
         "avg": "Keskmine",
         "min": "Min",
         "max": "Maks",
-        "cardinality": "Unikaalsed"
+        "cardinality": "Unikaalsed",
+        "p50": "Mediaan",
+        "p90": "P90",
+        "p95": "P95",
+        "p99": "P99"
       },
       "navigation": {
         "system": "Süsteem",
@@ -567,7 +576,7 @@
         "columns": "Veerud",
         "rows": "Read",
         "metricAgg": "Agregeerimine",
-        "metricAggTip": "Kuidas mõõdikuvälja väärtuse kohta kombineeritakse: summeeritakse, keskmistatakse, võetakse väikseim või suurim väärtus või erinevate väärtuste arv",
+        "metricAggTip": "Kuidas mõõdikuvälja väärtuse kohta kombineeritakse: summeeritakse, keskmistatakse, võetakse väikseim või suurim väärtus, erinevate väärtuste arv või väärtuste protsentiil (mediaan, P90, P95 või P99)",
         "splitField": "Jaota välja järgi",
         "splitFieldTip": "Valikuline teine väli: iga tulp jagatakse selle välja populaarseimate väärtuste järgi",
         "splitLength": "Jaotusi tulba kohta",
@@ -638,6 +647,12 @@
         "metricSlot-y": "Y-telg",
         "metricSlot-size": "Punkti suurus",
         "metricSlotNone": "Puudub",
+        "variable": "Muutuja",
+        "variableTip": "Valitud väärtused on see muutuja: {ref} teise vidina pealkirjas või filtris või töölaua filtris asendatakse nendega. Kui midagi pole valitud, näitab pealkiri „Kõik“ ja filtri seda kasutav osa jäetakse välja.",
+        "variableInvalid": "Muutuja nimi koosneb tähtedest, numbritest ja _ ning ei alga numbriga",
+        "variableTaken": "Teine juhtelement määrab juba {ref}, vali muu muutuja nimi",
+        "applyAll": "Filtreeri kõiki vidinaid",
+        "applyAllTip": "Lisa valitud väärtused iga vidina otsingusse. Väljas olles täidavad need ainult {ref} seal, kus seda kasutatakse.",
         "orientation": "Suund",
         "orientation-vertical": "Vertikaalne",
         "orientation-horizontal": "Horisontaalne"
@@ -1872,6 +1887,7 @@
     "sortBy-graph": "Loendus",
     "refreshEvery": "Värskenda iga",
     "intensity": "Intensiivsus",
+    "metricAggTip": "Mõõdik summeerituna ajavahemiku ja väärtuse kohta või selle väärtuste protsentiil (vali muu mõõdik kui seansid)",
     "showCount": "Näita arvu",
     "sessions": "Seansid",
     "exportCSV": "Ekspordi CSV",
@@ -2684,7 +2700,8 @@
       "unknownCluster": "Tundmatu klaster",
       "tagsMustBeString": "Sildid peavad olemasolul olema sõne",
       "missingIds": "ID-d puuduvad",
-      "badSaveId": "Vigane saveId"
+      "badSaveId": "Vigane saveId",
+      "percentilesMultiES": "Protsentiile ei toetata klastrite üleselt"
     },
     "stats": {
       "noResults": "Tulemusi pole",

@@ -503,6 +503,11 @@
       "everyMinutes": "{count}分钟",
       "everyHours": "{count}小时",
       "scatterSizedBy": "{metric}（点大小：{size}）",
+      "controlView": "筛选控件",
+      "controlAll": "全部",
+      "controlFiltersAll": "筛选所有部件",
+      "controlsChip": "仪表板控件",
+      "controlsClear": "清除控件",
       "exportPNGTableWarning": "仅导出图表，不包括表格",
       "resultsPerWidget": "每个小部件的结果",
       "canceledSearch": "您已取消搜索",
@@ -545,7 +550,11 @@
         "avg": "平均值",
         "min": "最小值",
         "max": "最大值",
-        "cardinality": "唯一值"
+        "cardinality": "唯一值",
+        "p50": "中位数",
+        "p90": "P90",
+        "p95": "P95",
+        "p99": "P99"
       },
       "navigation": {
         "system": "系统",
@@ -567,7 +576,7 @@
         "columns": "列",
         "rows": "行",
         "metricAgg": "聚合",
-        "metricAggTip": "指标字段按值的组合方式：求和、平均、最小值或最大值，或不同值的数量",
+        "metricAggTip": "指标字段按值的组合方式：求和、平均、最小值或最大值、不同值的数量，或其值的百分位数（中位数、P90、P95 或 P99）",
         "splitField": "拆分依据",
         "splitFieldTip": "可选的第二个字段：每个条形按此字段的热门值进行拆分",
         "splitLength": "每个条形的拆分数",
@@ -638,6 +647,12 @@
         "metricSlot-y": "Y 轴",
         "metricSlot-size": "点大小",
         "metricSlotNone": "无",
+        "variable": "变量",
+        "variableTip": "所选的值即为此变量：其他部件的标题或筛选条件中，以及仪表板筛选条件中的 {ref} 会被替换为这些值。未选择时，标题显示“全部”，筛选条件中使用它的部分会被省略。",
+        "variableInvalid": "变量名由字母、数字和 _ 组成，且不能以数字开头",
+        "variableTaken": "另一个控件已设置 {ref}，请选择其他变量名",
+        "applyAll": "筛选所有部件",
+        "applyAllTip": "将所选的值加入每个部件的搜索。关闭时，只填入使用 {ref} 的地方。",
         "orientation": "方向",
         "orientation-vertical": "纵向",
         "orientation-horizontal": "横向"
@@ -1872,6 +1887,7 @@
     "sortBy-graph": "按计数",
     "refreshEvery": "每隔多久刷新一次",
     "intensity": "强度",
+    "metricAggTip": "按时间段和值求和的指标，或其值的百分位数（请选择会话以外的指标）",
     "showCount": "显示计数",
     "sessions": "会话",
     "exportCSV": "导出 CSV",
@@ -2684,7 +2700,8 @@
       "unknownCluster": "未知集群",
       "tagsMustBeString": "标签存在时必须是字符串",
       "missingIds": "缺少ID",
-      "badSaveId": "无效的 saveId"
+      "badSaveId": "无效的 saveId",
+      "percentilesMultiES": "不支持跨集群的百分位数"
     },
     "stats": {
       "noResults": "无结果",

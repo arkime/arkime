@@ -503,6 +503,11 @@
       "everyMinutes": "{count}m",
       "everyHours": "{count}h",
       "scatterSizedBy": "{metric} (point size: {size})",
+      "controlView": "Filter control",
+      "controlAll": "All",
+      "controlFiltersAll": "filters every widget",
+      "controlsChip": "Dashboard controls",
+      "controlsClear": "Clear the controls",
       "exportPNGTableWarning": "Only exports charts, not tables",
       "resultsPerWidget": "Results per widget",
       "canceledSearch": "You canceled the search",
@@ -545,7 +550,11 @@
         "avg": "Average",
         "min": "Min",
         "max": "Max",
-        "cardinality": "Unique"
+        "cardinality": "Unique",
+        "p50": "Median",
+        "p90": "P90",
+        "p95": "P95",
+        "p99": "P99"
       },
       "navigation": {
         "system": "System",
@@ -567,7 +576,7 @@
         "columns": "Columns",
         "rows": "Rows",
         "metricAgg": "Aggregation",
-        "metricAggTip": "How the metric field is combined per value: summed, averaged, its smallest or largest value, or the number of distinct values",
+        "metricAggTip": "How the metric field is combined per value: summed, averaged, its smallest or largest value, the number of distinct values, or a percentile of its values (the median, p90, p95 or p99)",
         "splitField": "Split by",
         "splitFieldTip": "Optional second field: each bar is divided into its top values of this field",
         "splitLength": "Splits per bar",
@@ -638,6 +647,12 @@
         "metricSlot-y": "Y axis",
         "metricSlot-size": "Point size",
         "metricSlotNone": "None",
+        "variable": "Variable",
+        "variableTip": "The picked values are this variable: {ref} in another widget's title or filter, or in the dashboard filter, is replaced by them. With nothing picked a title shows All, and the part of a filter that uses it is left out.",
+        "variableInvalid": "A variable name is letters, digits and _, and doesn't start with a digit",
+        "variableTaken": "Another control already sets {ref}, pick another variable name",
+        "applyAll": "Filter every widget",
+        "applyAllTip": "Add the picked values to every widget's search. Off, they only fill in {ref} where it is used.",
         "orientation": "Orientation",
         "orientation-vertical": "Vertical",
         "orientation-horizontal": "Horizontal"
@@ -1872,6 +1887,7 @@
     "sortBy-graph": "Count",
     "refreshEvery": "Refresh every",
     "intensity": "Intensity",
+    "metricAggTip": "The metric summed per time bucket and value, or a percentile of its values (pick a metric other than Sessions)",
     "showCount": "Show count",
     "sessions": "Sessions",
     "exportCSV": "Export CSV",
@@ -2684,7 +2700,8 @@
       "unknownCluster": "Unknown cluster",
       "tagsMustBeString": "When present tags must be a string",
       "missingIds": "Missing ids",
-      "badSaveId": "Bad saveId"
+      "badSaveId": "Bad saveId",
+      "percentilesMultiES": "Percentiles are not supported across clusters"
     },
     "stats": {
       "noResults": "No results",

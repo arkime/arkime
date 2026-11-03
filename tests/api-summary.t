@@ -1,4 +1,4 @@
-use Test::More tests => 188;
+use Test::More tests => 197;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -356,6 +356,48 @@ foreach my $item (@{$cardChunk->{data}}) {
 }
 ok($cardOk, "unique destination count per source is between 1 and its session count");
 is($sumByIp{$sumChunk->{data}->[0]->{item}}->{value}, $sumChunk->{data}->[0]->{metricValues}->{bytes}, "sum value matches metricValues");
+
+# percentiles - p50/p95 of each value's bytes ranks and fills the values;
+# every backend agrees on a single session's (it is that session's bytes)
+my $pctBody = to_json({
+    widgets => [
+        { id => 'wP50', field => 'ip.src', length => 5, metricType => 'bytes', metricAgg => 'p50' },
+        { id => 'wP95', field => 'ip.src', length => 5, metricType => 'bytes', metricAgg => 'p95' },
+        { id => 'wPMax', field => 'ip.src', length => 1000, metricType => 'bytes', metricAgg => 'max' },
+        { id => 'wPTotal', total => JSON::true, metricType => 'bytes', metricAgg => 'p50' }
+    ]
+});
+$chunks = viewerPost("/api/sessions/summary?date=-1", $pctBody);
+my $p50Chunk = getChunk($chunks, 'wP50');
+my $p95Chunk = getChunk($chunks, 'wP95');
+my %maxByIp = map { $_->{item} => $_->{value} } @{getChunk($chunks, 'wPMax')->{data}};
+is($p95Chunk->{metricAgg}, 'p95', "p95 metricAgg is echoed");
+ok(!$p95Chunk->{error} && @{$p95Chunk->{data}} == 5, "p95 widget has 5 values");
+($sorted, $prev) = (1, undef);
+my ($pctOk, $singleOk, $singles) = (1, 1, 0);
+foreach my $item (@{$p95Chunk->{data}}) {
+    $sorted = 0 if defined $prev && $item->{value} > $prev;
+    $prev = $item->{value};
+    my $max = $maxByIp{$item->{item}};
+    $pctOk = 0 if !defined $max || $item->{value} < 0 || $item->{value} > $max * 1.000001 + 0.5;
+    $pctOk = 0 if $item->{metricValues}->{bytes} != $item->{value};
+    if ($item->{sessions} == 1) { $singles++; $singleOk = 0 if abs($item->{value} - $max) > $max * 0.000001 + 0.5; }
+}
+ok($sorted, "p95 widget is ranked by its p95 descending");
+ok($pctOk, "each value's p95 of bytes is between 0 and its max");
+ok($singleOk, "a single session value's p95 is its bytes");
+my %p95ByIp = map { $_->{item} => $_->{value} } @{$p95Chunk->{data}};
+my $orderOk = 1;
+foreach my $item (@{$p50Chunk->{data}}) {
+    next unless defined $p95ByIp{$item->{item}};
+    $orderOk = 0 if $item->{value} > $p95ByIp{$item->{item}} * 1.000001 + 0.5;
+}
+ok($orderOk, "each value's median is at most its p95");
+cmp_ok(getChunk($chunks, 'wPTotal')->{data}->[0]->{value}, '>', 0, "the median bytes over every session is above 0");
+# a multi viewer can't combine the clusters' percentiles
+my $mchunks = multiPost("/api/sessions/summary?date=-1", $pctBody);
+is(getChunk($mchunks, 'wP95')->{error}, 'Percentiles are not supported across clusters', "multi viewer refuses a percentile widget");
+ok(!getChunk($mchunks, 'wPMax')->{error}, "multi viewer still answers the max widget beside it");
 
 # splitField - each value carries its top sub-values with the same metric
 $chunks = postSummary("/api/sessions/summary?date=-1", {

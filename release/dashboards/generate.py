@@ -17,7 +17,23 @@ SPLIT_LENGTHS = (3, 5, 10)
 def split_length(length):
     assert length in SPLIT_LENGTHS, f'split length {length} is not one of {SPLIT_LENGTHS}'
     return length
+# a metric's aggregation: a sum by default, or a percentile of its values
+PERCENTILES = ('p50', 'p90', 'p95', 'p99')
+def metric_agg(d, agg):
+    if agg:
+        assert agg in ('sum', 'avg', 'min', 'max', 'cardinality') + PERCENTILES, f'unknown metric agg {agg}'
+        d['metricAgg'] = agg
+    return d
 def nav(): return {'viewMode': 'navigation', 'width': 4, 'height': 1}
+# a picker of a field's top values (with their session counts): the picks
+# filter every widget, or with applyAll=False only fill ${variable} where the
+# other widgets' titles and filters use it (the variable defaults to the field)
+def control(field, title=None, variable=None, length=20, w=1, h=1, applyAll=True):
+    d = {'field': field, 'viewMode': 'control', 'width': w, 'height': h, 'length': length}
+    if variable: d['variable'] = variable
+    if not applyAll: d['applyAll'] = False
+    if title: d['title'] = title
+    return d
 def timeline(split, title, length=5, w=3, h=2, expression=None, lines=False, log=False, percent=False):
     d = {'viewMode': 'timeline', 'splitField': split, 'splitLength': split_length(length), 'barMode': 'stacked', 'width': w, 'height': h, 'title': title}
     if lines: d['seriesType'] = 'lines'
@@ -56,9 +72,10 @@ def timeofday(title, split=None, length=5, w=2, h=3, expression=None, metricType
     if metricType: d['metricType'] = metricType
     if expression: d['expression'] = expression
     return d
-def timeline_plain(title, w=3, h=2, expression=None, metricType=None, lines=False, log=False):
+def timeline_plain(title, w=3, h=2, expression=None, metricType=None, lines=False, log=False, agg=None):
     d = {'viewMode': 'timeline', 'width': w, 'height': h, 'title': title}
     if metricType: d['metricType'] = metricType
+    metric_agg(d, agg)  # a percentile is drawn per time bucket
     if lines: d['seriesType'] = 'lines'
     if log: d['yScale'] = 'log'
     if expression: d['expression'] = expression
@@ -80,18 +97,20 @@ def pie(field, length=8, w=2, h=2, title=None, expression=None, other=True):
     if title: d['title'] = title
     if expression: d['expression'] = expression
     return d
-def table(field, length=20, w=2, h=3, title=None, metrics=None, sortMetric=None, expression=None):
+def table(field, length=20, w=2, h=3, title=None, metrics=None, sortMetric=None, expression=None, agg=None):
     d = {'field': field, 'viewMode': 'table', 'width': w, 'height': h, 'length': length}
     if metrics: d['metrics'] = metrics
     if sortMetric: d['sortMetric'] = sortMetric; d['metricType'] = sortMetric
+    metric_agg(d, agg)  # every metric column but sessions
     if title: d['title'] = title
     if expression: d['expression'] = expression
     return d
-def bar(field, length=15, w=2, h=3, title=None, bucketInterval=None, split=None, expression=None, metricType=None, horizontal=False):
+def bar(field, length=15, w=2, h=3, title=None, bucketInterval=None, split=None, expression=None, metricType=None, horizontal=False, agg=None):
     d = {'field': field, 'viewMode': 'bar', 'width': w, 'height': h, 'length': length}
     if bucketInterval: d['bucketInterval'] = bucketInterval
     if split: d['splitField'] = split; d['splitLength'] = 5
     if metricType: d['metricType'] = metricType
+    metric_agg(d, agg)
     if horizontal: d['orientation'] = 'horizontal'
     if title: d['title'] = title
     if expression: d['expression'] = expression
@@ -185,7 +204,9 @@ PLUGINS = {}
 
 # ---- top level ------------------------------------------------------------
 D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, top talkers, protocols and the session timeline', [
-    nav(), stats(), timew(),
+    nav(),
+    control('protocols', title='Protocols', w=2), control('node', title='Capture nodes', w=2),
+    stats(), timew(),
     timeline_plain('Sessions over time', w=4),
     timeofday('Sessions by hour of the week'),
     area('protocols', 'Protocol share over time', length=10, w=2, h=3, percent=True),
@@ -199,6 +220,8 @@ D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, to
 
 D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol and size, with the connection graph and tree', [
     nav(),
+    control('ip.protocol', title='IP protocol'), control('protocols', title='Service'),
+    control('port.dst', title='Destination port'), control('node', title='Capture node'),
     area('protocols', 'Sessions by protocol', length=10, w=4),
     timeline('protocols', 'Protocol share over time', length=10, w=4, percent=True),
     stats(),
@@ -209,7 +232,10 @@ D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol an
     combo('port.dst', title='Top destination ports: sessions and bytes'),
     bar('packets', length=20, bucketInterval=10, title='Sessions by packet count (ranges of 10)'),
     pie('ip.protocol', title='IP protocols'),
-    bar('session.length', length=20, bucketInterval=10000, title='Session length in ms (ranges of 10 s)'),
+    bar('protocols', length=15, metricType='session.length', agg='p95', title='p95 session length by protocol (ms)'),
+    timeline_plain('p95 session length over time (ms)', w=2, metricType='session.length', agg='p95', lines=True),
+    table('ip.dst', length=20, metrics=['sessions', 'session.length'], sortMetric='session.length', agg='p95',
+          title='Longest destinations: p95 session length (ms)'),
     matrix(['ip.protocol', 'port.dst'], length=15, title='IP protocols by destination port'),
     metric('SYN with no SYN-ACK', expression='tcpflags.syn > 0 && tcpflags.syn-ack == 0', sparkline=True),
     gauge('Avg initial RTT, ms', 'initRTT'),
@@ -229,6 +255,8 @@ D['http'] = protocol('HTTP', 'http', P, [
     pie('http.bodymagic', title='Response content types'), table('http.user', h=2, title='HTTP users'),
     table('http.uri'), table('http.user-agent'),
     pie('http.version', title='HTTP versions'), matrix(['http.method', 'http.statuscode'], title='Methods by status code'),
+    table('host.http', metrics=['sessions', 'session.length'], sortMetric='session.length', agg='p95', title='Slowest sites: p95 session length (ms)'),
+    timeline_plain('p95 HTTP session length over time (ms)', w=2, h=3, metricType='session.length', agg='p95', lines=True),
 ], ['ip.src', 'ip.dst', 'http.method', 'host.http', 'http.uri', 'http.statuscode'], 'http.statuscode')
 
 D['dns'] = protocol('DNS', 'dns', P, [
@@ -236,6 +264,8 @@ D['dns'] = protocol('DNS', 'dns', P, [
     table('dns.query.host'), table('ip.dns', title='Answer IPs'),
     table('dns.query.host', title='NXDOMAIN queries', expression='dns.status == NXDOMAIN'),
     combo('ip.dst', length=10, title='Resolvers: queries and bytes'),
+    bar('ip.dst', length=10, metricType='session.length', agg='p50', title='Resolvers: median session length (ms)'),
+    bar('ip.dst', length=10, metricType='session.length', agg='p95', title='Slowest resolvers: p95 session length (ms)'),
     pie('dns.query.type', title='Query types'), pie('dns.answer.type', title='Answer types'),
     table('dns.puny', h=2, title='Punycode names'), table('dns.opcode', h=2, title='Opcodes'),
     matrix(['dns.query.type', 'dns.status'], w=4, h=2, title='Query types by status'),
@@ -248,6 +278,7 @@ D['tls'] = protocol('TLS', 'tls', P, [
     table('cert.issuer.on', title='Certificate issuers'),
     bar('cert.remainingDays', length=20, bucketInterval=30, title='Days until certificate expiry (ranges of 30)'),
     area('tls.version', 'TLS version share over time', w=4, percent=True),
+    table('ip.dst', metrics=['sessions', 'session.length'], sortMetric='session.length', agg='p95', title='Slowest TLS servers: p95 session length (ms)'),
 ], ['ip.src', 'ip.dst', 'tls.version', 'tls.cipher', 'cert.subject.cn', 'tls.ja4'], 'tls.version')
 
 D['quic'] = protocol('QUIC', 'quic', P, [
@@ -618,6 +649,8 @@ D['databases'] = plain('Databases', 'Database sessions: MySQL, PostgreSQL, Oracl
     timeofday('Database sessions by hour of the week'),
     pie('protocols', length=9, title='Database protocols'),
     combo('ip.dst:port', title='Database servers: sessions and bytes'),
+    table('ip.dst', metrics=['sessions', 'session.length'], sortMetric='session.length', agg='p95', title='Slowest database servers: p95 session length (ms)'),
+    bar('protocols', length=9, metricType='session.length', agg='p50', title='Median session length by database protocol (ms)'),
     table('ip.src', title='Clients', metrics=['sessions', 'bytes'], sortMetric='sessions'),
     table('mysql.user', h=2, title='MySQL users'), table('postgresql.user', h=2, title='PostgreSQL users'),
     table('oracle.user', h=2, title='Oracle users'), table('postgresql.db', h=2, title='PostgreSQL databases'),
@@ -627,6 +660,10 @@ D['databases'] = plain('Databases', 'Database sessions: MySQL, PostgreSQL, Oracl
 
 D['hosts'] = plain('Hosts', 'The hosts on the wire: how many there are, their MAC vendors, VLANs and networks (ASNs), and the services they reach', [
     nav(),
+    control('ip.src', title='Host', variable='host', w=2, applyAll=False),
+    markdown('Pick a host to narrow the **${host}** widgets below to what it reached; the rest of the dashboard stays on every host.', w=2, title='Host picker'),
+    table('ip.dst:port', title='Services reached (${host})', metrics=['sessions', 'bytes'], sortMetric='sessions', expression='ip.src == ${host}'),
+    timeline_plain('Sessions over time (${host})', w=2, h=3, expression='ip.src == ${host}'),
     area('oui.src', 'Sessions by source MAC vendor', length=10, w=4),
     timeofday('Activity by hour of the week', split='oui.src', length=5, w=4),
     metric('Source hosts', 'ip.src', agg='cardinality'), metric('Destination hosts', 'ip.dst', agg='cardinality'),

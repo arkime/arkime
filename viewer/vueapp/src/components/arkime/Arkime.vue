@@ -106,6 +106,22 @@ SPDX-License-Identifier: Apache-2.0
               {{ dashboardExpression }}
             </v-chip>
 
+            <!-- what the filter controls picked, applied to every widget (or
+                 only filling their variables); the x clears them all -->
+            <v-chip
+              v-if="controlsSummary"
+              size="small"
+              variant="tonal"
+              color="primary"
+              prepend-icon="mdi-tune-variant"
+              closable
+              class="dashboard-filter-chip"
+              :title="`${$t('sessions.summary.controlsChip')}: ${controlsSummary}`"
+              :close-label="$t('sessions.summary.controlsClear')"
+              @click:close="clearControls">
+              {{ controlsSummary }}
+            </v-chip>
+
             <!-- cancel loading button -->
             <v-btn
               v-if="summaryStreaming"
@@ -220,6 +236,7 @@ import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors
 import { toV6Shape, makeWidgetDef, defaultWidgets, widgetsFromConfig, migrateDashboard, DASHBOARD_VERSION } from '../summary/dashboardConfig';
 import { systemDashboard, isSystemId, defaultDashboardId, pickedDefaultId } from '../summary/systemDashboards';
 import { ArkimeError } from '@common/fetchWrapper.js';
+import { dashboardVariables, controlFilter, VARIABLE_PARAM_PREFIX } from '../summary/widgets/dashboardVariables';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -250,6 +267,7 @@ export default {
       // on the page (the navigation widget) reload
       dashboardsVersion: 0,
       dashboardLoadSeq: 0, // the latest loadDashboardById call; earlier ones are dropped
+      reloadQueued: false, // a reloadSummaryView is waiting for the next tick
       palettes: CHART_PALETTES,
       // the saved or built-in dashboard the page shows (the ?dashboard url
       // param), '' for the user's own unsaved state
@@ -289,6 +307,21 @@ export default {
     // a dashboard saved by v7 — v6 reads fields[] and ignores widgets/colorScheme.
     // Session-wide widgets (timeline/map/stats/time) have no v6 equivalent and
     // are omitted from fields[]. See SHAREABLES.md.
+    // the control widgets' variables and the values the url picks for them
+    dashboardVariables: function () {
+      return dashboardVariables(this.widgets, this.$route.query);
+    },
+    // what the picks change in the searches: only variables with values
+    // (adding a control, or renaming it, reloads nothing until it picks)
+    variablesSearchKey: function () {
+      return JSON.stringify(Object.entries(this.dashboardVariables).filter(([, v]) => v.values.length));
+    },
+    controlsSummary: function () {
+      return Object.entries(this.dashboardVariables)
+        .filter(([, v]) => v.values.length)
+        .map(([varName, v]) => (v.applyAll ? controlFilter(v.field, v.values) : `\${${varName}} = ${v.values.join(', ')}`))
+        .join(' && ');
+    },
     currentDashboardConfig: function () {
       return {
         version: DASHBOARD_VERSION,
@@ -300,6 +333,15 @@ export default {
     }
   },
   watch: {
+    // the store holds the variables for the widget fetches and titles; a
+    // changed pick reloads every widget (not the first, the page loads then)
+    dashboardVariables: {
+      immediate: true,
+      handler: function (vars) { this.$store.commit('setDashboardVariables', vars); }
+    },
+    variablesSearchKey: function () {
+      if (this.$refs.summaryView) { this.reloadSummaryView(); }
+    },
     refreshSeconds: {
       immediate: true,
       handler: function (seconds) { this.startRefreshTimer(seconds); }
@@ -513,10 +555,22 @@ export default {
       if (this.loadedDashboardId) { state.dashboardId = this.loadedDashboardId; }
       UserService.saveState(state, 'summary');
     },
+    // several changes in one tick (a dashboard load sets its widgets, filter
+    // and picks at once) reload once
     reloadSummaryView: function () {
+      if (this.reloadQueued) { return; }
+      this.reloadQueued = true;
       this.$nextTick(() => {
+        this.reloadQueued = false;
         this.$refs.summaryView?.reloadSummary?.();
       });
+    },
+    clearControls: function () {
+      const query = { ...this.$route.query };
+      for (const key of Object.keys(query)) {
+        if (key.startsWith(VARIABLE_PARAM_PREFIX)) { delete query[key]; }
+      }
+      this.$router.replace({ query });
     },
     resetSummaryToDefaults: function () {
       this.widgets = this.defaultWidgets();

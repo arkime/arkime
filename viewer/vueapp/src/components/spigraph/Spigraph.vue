@@ -249,6 +249,33 @@ SPDX-License-Identifier: Apache-2.0
                 </select>
               </div> <!-- /intensity select -->
 
+              <!-- aggregation (timeline and heatmap): the metric summed per
+                   time bucket and value, or a percentile of it -->
+              <div
+                class="arkime-input-group"
+                v-if="percentileTypes.includes(spiGraphType) && !$constants.MULTIVIEWER">
+                <span
+                  id="spigraphMetricAgg"
+                  class="arkime-input-label cursor-help">
+                  {{ $t('sessions.summary.widget.metricAgg') }}:
+                </span>
+                <v-tooltip activator="#spigraphMetricAgg">
+                  {{ $t('spigraph.metricAggTip') }}
+                </v-tooltip>
+                <select
+                  class="arkime-input-control"
+                  :value="percentileAgg || 'sum'"
+                  :disabled="baseMetric === 'sessionsHisto'"
+                  @change="changeMetricAgg($event.target.value)">
+                  <option
+                    v-for="a in metricAggOptions"
+                    :key="a"
+                    :value="a">
+                    {{ $t(`sessions.summary.agg.${a}`) }}
+                  </option>
+                </select>
+              </div> <!-- /aggregation -->
+
               <!-- combo and scatter: a timeline metric per slot (the first
                    ranks the values, like the heatmap's intensity) -->
               <template v-if="isMetricsChartType">
@@ -385,6 +412,7 @@ SPDX-License-Identifier: Apache-2.0
         :map-data="mapData"
         :primary="true"
         :timeline-data-filters="timelineDataFilters"
+        :metric-override="percentileKey"
         @fetch-map-data="cancelAndLoad(true)"
         @spanning-change="cancelAndLoad(true)" />
     </div> <!-- /main visualization -->
@@ -399,7 +427,7 @@ SPDX-License-Identifier: Apache-2.0
           :items="items"
           :graph="graphData"
           :field-obj="fieldObj"
-          :metric="intensity"
+          :metric="shownMetric"
           :timeline-data-filters="timelineDataFilters"
           :sort-by="sortBy" />
       </div> <!-- /heatmap graph type -->
@@ -477,11 +505,11 @@ SPDX-License-Identifier: Apache-2.0
           <timeline-graph
             v-if="stackedGraph && stackedSeries.length"
             :graph-data="stackedGraph"
-            :graph-type="graphType || 'sessionsHisto'"
+            :graph-type="shownMetric"
             :series-defs="stackedSeries"
-            :series-type="spiGraphType === 'area' ? 'area' : $store.state.seriesType === 'lines' ? 'lines' : 'bars'"
-            :y-scale="timelineMode === 'percent' ? 'percent' : 'linear'"
-            :stacked="timelineMode !== 'overlaid'"
+            :series-type="spiGraphType === 'area' ? 'area' : ($store.state.seriesType === 'lines' || percentileKey) ? 'lines' : 'bars'"
+            :y-scale="timelineMode === 'percent' && !percentileKey ? 'percent' : 'linear'"
+            :stacked="timelineMode !== 'overlaid' && !percentileKey"
             fit-height
             :timeline-data-filters="timelineDataFilters"
             :timezone="timezone"
@@ -541,7 +569,7 @@ SPDX-License-Identifier: Apache-2.0
                       :pull-left="true"
                       :session-btn="true" />
                   </strong>
-                  <sup>({{ commaString(item[graphType]) }})</sup>
+                  <sup>({{ metricText(item[shownMetric]) }})</sup>
                 </div>
               </v-col>
             </v-row> <!-- /field value -->
@@ -555,7 +583,8 @@ SPDX-License-Identifier: Apache-2.0
                   :graph-data="item.graph"
                   :map-data="item.map"
                   :primary="false"
-                  :timeline-data-filters="timelineDataFilters" />
+                  :timeline-data-filters="timelineDataFilters"
+                  :metric-override="percentileKey" />
               </v-col>
             </v-row> <!-- /field visualization -->
           </div>
@@ -639,7 +668,7 @@ import ArkimeConnectionsGraph from '../connections/ConnectionsGraph.vue';
 import SpigraphConfigDropdown from './SpigraphConfigDropdown.vue';
 import SpigraphMetricsChart from './SpigraphMetricsChart.vue';
 import { graphFromSpigraphQuery, spigraphQueryFromGraph, graphFromWidget } from '../summary/dashboardConfig';
-import { SPLIT_LENGTHS, METRIC_SLOTS } from '../summary/widgets/viewModes';
+import { SPLIT_LENGTHS, METRIC_SLOTS, PERCENTILE_AGGS } from '../summary/widgets/viewModes';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
@@ -698,6 +727,9 @@ export default {
       graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'pie', 'tagcloud', 'table', 'treemap', 'sankey', 'matrix', 'connections', 'tree'],
       timelineModes: ['separate', 'stacked', 'percent'],
       areaModes: ['stacked', 'percent', 'overlaid'],
+      // the types that can draw a percentile of their metric (?metricAgg=p95)
+      percentileTypes: ['default', 'heatmap'],
+      metricAggOptions: ['sum', ...PERCENTILE_AGGS],
       stackedColors: [] // one per top value, for the stacked timeline
     };
   },
@@ -731,6 +763,22 @@ export default {
         return this.graphType;
       }
       return 'sessionsHisto';
+    },
+    // the timeline's metric (the heatmap's intensity), a <dbField>Histo key
+    baseMetric: function () {
+      return this.spiGraphType === 'heatmap' ? this.intensity : (this.graphType || 'sessionsHisto');
+    },
+    // the percentile drawn of it in place of its sum, a multi viewer has none
+    percentileAgg: function () {
+      const agg = this.$route.query.metricAgg;
+      return !this.$constants.MULTIVIEWER && this.percentileTypes.includes(this.spiGraphType) && PERCENTILE_AGGS.includes(agg) ? agg : undefined;
+    },
+    // its series, <dbField>:p<N>Histo ('' for a sum, or the session count)
+    percentileKey: function () {
+      return this.percentileAgg && this.baseMetric !== 'sessionsHisto' ? `${this.baseMetric.slice(0, -5)}:${this.percentileAgg}Histo` : '';
+    },
+    shownMetric: function () {
+      return this.percentileKey || this.baseMetric;
     },
     intensityLabel: function () {
       return this.intensityOptions.find(o => o.value === this.intensity)?.label || '';
@@ -795,7 +843,7 @@ export default {
     // value of its metric (the heatmap does the same fold)
     stackedGraph: function () {
       if (!this.graphData) { return null; }
-      const key = this.graphType || 'sessionsHisto';
+      const key = this.percentileKey || this.graphType || 'sessionsHisto';
       const data = { xmin: this.graphData.xmin, xmax: this.graphData.xmax, interval: this.graphData.interval };
       // packets and bytes are a src and a dst series, stacked as their sum
       this.items.forEach((item, i) => { data[`s${i}`] = metricSeries(item.graph, key); });
@@ -808,10 +856,14 @@ export default {
     query: function () {
       let sort = 'name';
       if (!this.$route.query.sort || this.$route.query.sort === 'graph') {
-        sort = this.$route.query.graphType || this.$store.state.graphType || 'sessionsHisto';
+        sort = this.percentileKey || this.$route.query.graphType || this.$store.state.graphType || 'sessionsHisto';
       }
+      // a percentile is asked of the metric's field
+      const percentileField = this.percentileKey ? FieldService.getField(this.baseMetric.slice(0, -5))?.exp : undefined;
       return {
         sort,
+        metric: percentileField,
+        metricAgg: percentileField ? this.percentileAgg : undefined,
         date: this.$store.state.timeRange,
         exp: this.$route.query.exp || this.$route.query.field || this.user.settings.spiGraph || 'node',
         size: this.$route.query.size || 20,
@@ -898,8 +950,11 @@ export default {
       if (newVal.size !== this.query.size) {
         this.query.size = newVal.size || 20;
       }
-      if (newVal.sort !== this.query.sort) {
-        this.query.sort = newVal.sort || 'graph';
+      // sort=graph (or none) ranks by the metric drawn, as the query does;
+      // the server has no 'graph' sort
+      const sort = (newVal.sort && newVal.sort !== 'graph') ? newVal.sort : (this.percentileKey || newVal.graphType || this.graphType || 'sessionsHisto');
+      if (sort !== this.query.sort) {
+        this.query.sort = sort;
       }
       if (newVal.spiGraphType !== this.spiGraphType) {
         this.spiGraphType = newVal.spiGraphType || 'default';
@@ -923,8 +978,14 @@ export default {
     // watch graph type and update sort
     graphType: function (newVal, oldVal) {
       if (newVal && this.sortBy === 'graph') {
-        this.query.sort = newVal;
+        this.query.sort = this.percentileKey || newVal;
       }
+    },
+    // the server only has the percentile it was asked for: a new one (another
+    // aggregation or metric, a type that draws one, back/forward) is a new
+    // fetch; a saved graph loads once its url is in place
+    percentileKey: function (newVal, oldVal) {
+      if (newVal !== oldVal && !this.restoringGraph && this.percentileTypes.includes(this.spiGraphType)) { this.cancelAndLoad(true); }
     },
     // one color per value for the stacked timeline (d3 is lazy loaded)
     'items.length': {
@@ -1051,6 +1112,7 @@ export default {
             srcField: undefined,
             dstField: undefined,
             graphType: undefined,
+            metricAgg: undefined,
             connectionsLength: undefined,
             treeRoot: undefined,
             treeDepth: undefined,
@@ -1166,10 +1228,19 @@ export default {
         this.$router.replace({ query: { ...this.$route.query, graphType: value === 'sessionsHisto' ? undefined : value } });
       }
     },
+    // a sum or a percentile of the metric, which the server ranks and totals
+    // each value by; the percentileKey watcher fetches once the url has it
+    changeMetricAgg: function (agg) {
+      this.$router.push({ query: { ...this.$route.query, metricAgg: agg === 'sum' ? undefined : agg } });
+    },
+    // a value's total: a percentile is rarely whole
+    metricText: function (v) {
+      return commaString(Number.isFinite(v) && !Number.isInteger(v) ? Math.round(v * 100) / 100 : v);
+    },
     changeSortBy: function (sortBy) {
       this.sortBy = sortBy;
       if (this.sortBy === 'graph') {
-        this.query.sort = this.graphType;
+        this.query.sort = this.percentileKey || this.graphType;
       } else {
         this.query.sort = this.sortBy;
       }

@@ -30,6 +30,9 @@ const store = createStore({
     expression: undefined,
     // the shown dashboard's own filter (data.expression), ANDed with the search
     dashboardExpression: '',
+    // the dashboard's control widgets' variables and their picked values:
+    // { name: { field, applyAll, values } } (see dashboardVariables.js)
+    dashboardVariables: {},
     time: {
       startTime: undefined,
       stopTime: undefined
@@ -172,6 +175,9 @@ const store = createStore({
     },
     setDashboardExpression (state, value) {
       state.dashboardExpression = typeof value === 'string' ? value.trim() : '';
+    },
+    setDashboardVariables (state, value) {
+      state.dashboardVariables = value && typeof value === 'object' ? value : {};
     },
     addView (state, value) {
       state.views.push(value);
