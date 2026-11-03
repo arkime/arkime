@@ -1691,17 +1691,25 @@ defineExpose({
   visibility: visible;
 }
 
-/* Info icon + action buttons (edit/export/remove) reveal on hover like the drag
-   handle. :focus-within keeps them reachable by keyboard. */
+/* Info icon + action buttons (edit/export/remove) take no room until hover,
+   so the title gets the whole row; on hover the title shortens to make room
+   for them. The header keeps the buttons' height so revealing them doesn't
+   move the widget's body. :focus-within keeps them reachable by keyboard
+   (d-flex is !important, so these are too) */
+.widget-wrapper :deep(.widget-header) {
+  min-height: 37px;
+}
 .widget-wrapper :deep(.widget-actions),
 .widget-wrapper :deep(.widget-info-icon) {
-  visibility: hidden;
+  display: none !important;
 }
 .widget-wrapper:hover :deep(.widget-actions),
+.widget-wrapper:focus-within :deep(.widget-actions) {
+  display: flex !important;
+}
 .widget-wrapper:hover :deep(.widget-info-icon),
-.widget-wrapper:focus-within :deep(.widget-actions),
 .widget-wrapper:focus-within :deep(.widget-info-icon) {
-  visibility: visible;
+  display: inline-flex !important;
 }
 .widget-resize--e {
   top: 0;

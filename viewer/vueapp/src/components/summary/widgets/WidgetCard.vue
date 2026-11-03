@@ -28,14 +28,16 @@ The widget content is provided via the default slot.
     class="widget-card widget-error widget-loaded">
     <!-- keep Edit/Remove reachable so a persistently-erroring widget
          (bad field/expression) can still be fixed or removed -->
-    <div class="d-flex align-center mb-1">
+    <div class="widget-header d-flex align-center mb-1">
       <div class="widget-heading d-flex align-baseline">
         <v-icon
           icon="mdi-drag-vertical"
           size="large"
           class="widget-drag"
           :title="$t('sessions.summary.dragToReorder')" />
-        <h4 class="widget-title">
+        <h4
+          class="widget-title"
+          :title="shownTitle">
           {{ shownTitle }}
         </h4>
         <span
@@ -60,42 +62,19 @@ The widget content is provided via the default slot.
           </v-tooltip>
         </span>
       </div>
-      <div class="widget-actions no-wrap d-flex align-center ga-2">
+      <div class="widget-actions no-wrap d-flex align-center">
         <v-btn
-          v-if="link"
+          v-for="a in actions"
+          :key="a.key"
           variant="outlined"
           size="large"
           icon
-          :to="link"
-          :title="$t('sessions.summary.openFullPage')">
-          <v-icon icon="mdi-open-in-new" />
-        </v-btn>
-        <v-btn
-          v-if="graph && saveWidgetGraph"
-          variant="outlined"
-          size="large"
-          icon
-          :title="$t('sessions.summary.widget.saveAsGraph')"
-          @click="saveWidgetGraph(graph)">
-          <v-icon icon="mdi-bookmark-plus-outline" />
-        </v-btn>
-        <v-btn
-          variant="outlined"
-          size="large"
-          icon
-          :title="$t('sessions.summary.editWidget')"
-          @click="$emit('edit')">
-          <v-icon icon="mdi-pencil" />
-        </v-btn>
-        <v-btn
-          variant="outlined"
-          size="large"
-          icon
-          :title="$t('sessions.summary.removeWidget')"
-          @click="$emit('remove')">
+          :to="a.to"
+          :title="a.title"
+          @click="a.run && a.run()">
           <v-icon
-            icon="mdi-close"
-            class="text-danger" />
+            :icon="a.icon"
+            :class="{ 'text-danger': a.danger }" />
         </v-btn>
       </div>
     </div>
@@ -126,14 +105,16 @@ The widget content is provided via the default slot.
   <div
     v-else
     class="widget-card widget-loaded">
-    <div class="d-flex align-center mb-1">
+    <div class="widget-header d-flex align-center mb-1">
       <div class="widget-heading d-flex align-baseline">
         <v-icon
           icon="mdi-drag-vertical"
           size="large"
           class="widget-drag"
           :title="$t('sessions.summary.dragToReorder')" />
-        <h4 class="widget-title">
+        <h4
+          class="widget-title"
+          :title="shownTitle">
           {{ shownTitle }}
         </h4>
         <span
@@ -158,51 +139,19 @@ The widget content is provided via the default slot.
           </v-tooltip>
         </span>
       </div>
-      <div class="widget-actions no-wrap d-flex align-center ga-2">
+      <div class="widget-actions no-wrap d-flex align-center">
         <v-btn
-          v-if="link"
+          v-for="a in actions"
+          :key="a.key"
           variant="outlined"
           size="large"
           icon
-          :to="link"
-          :title="$t('sessions.summary.openFullPage')">
-          <v-icon icon="mdi-open-in-new" />
-        </v-btn>
-        <v-btn
-          v-if="graph && saveWidgetGraph"
-          variant="outlined"
-          size="large"
-          icon
-          :title="$t('sessions.summary.widget.saveAsGraph')"
-          @click="saveWidgetGraph(graph)">
-          <v-icon icon="mdi-bookmark-plus-outline" />
-        </v-btn>
-        <v-btn
-          variant="outlined"
-          size="large"
-          icon
-          :title="$t('sessions.summary.editWidget')"
-          @click="$emit('edit')">
-          <v-icon icon="mdi-pencil" />
-        </v-btn>
-        <v-btn
-          v-if="showExport"
-          variant="outlined"
-          size="large"
-          icon
-          :title="exportLabel || $t('sessions.summary.downloadPNG')"
-          @click="$emit('export')">
-          <v-icon icon="mdi-download" />
-        </v-btn>
-        <v-btn
-          variant="outlined"
-          size="large"
-          icon
-          :title="$t('sessions.summary.removeWidget')"
-          @click="$emit('remove')">
+          :to="a.to"
+          :title="a.title"
+          @click="a.run && a.run()">
           <v-icon
-            icon="mdi-close"
-            class="text-danger" />
+            :icon="a.icon"
+            :class="{ 'text-danger': a.danger }" />
         </v-btn>
       </div>
     </div>
@@ -258,7 +207,17 @@ const props = defineProps({
   graph: { type: Object, default: null }
 });
 
-defineEmits(['edit', 'remove', 'export', 'retry']);
+const emit = defineEmits(['edit', 'remove', 'export', 'retry']);
+
+// the header's action buttons; an erroring widget keeps only open, save,
+// edit and remove
+const actions = computed(() => [
+  props.link && { key: 'open', icon: 'mdi-open-in-new', title: t('sessions.summary.openFullPage'), to: props.link },
+  props.graph && saveWidgetGraph && { key: 'save', icon: 'mdi-bookmark-plus-outline', title: t('sessions.summary.widget.saveAsGraph'), run: () => saveWidgetGraph(props.graph) },
+  { key: 'edit', icon: 'mdi-pencil', title: t('sessions.summary.editWidget'), run: () => emit('edit') },
+  !props.error && props.showExport && { key: 'export', icon: 'mdi-download', title: props.exportLabel || t('sessions.summary.downloadPNG'), run: () => emit('export') },
+  { key: 'remove', icon: 'mdi-close', title: t('sessions.summary.removeWidget'), run: () => emit('remove'), danger: true }
+].filter(Boolean));
 
 // ${name} in a title shows the dashboard variable's picked values
 const shownTitle = computed(() => substituteTitle(props.title, store.state.dashboardVariables, t('sessions.summary.controlAll')));
@@ -269,6 +228,14 @@ const shownTitle = computed(() => substituteTitle(props.title, store.state.dashb
 .widget-heading {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* the buttons center on the title's line, not on the row its bottom margin
+   makes taller: (28.8px line - 32px button) / 2; 6px apart */
+.widget-actions {
+  align-self: flex-start;
+  margin-top: -2px;
+  gap: 6px;
 }
 
 /* reorder grip: a dots handle in the header, left of the title. Always present

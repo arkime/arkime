@@ -200,14 +200,17 @@ onMounted(() => {
 }
 
 .chart {
-  min-height: 200px;
   height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
+/* no min-height of its own: the pie is sized to its widget's body (at least
+   SummaryWidget's MIN_CHART_HEIGHT), and a taller box than the body centers
+   the pie past the body's bottom, where it is clipped (a 2 row widget's body
+   is ~270px) */
 .chart-pie {
-  min-height: 300px;
+  min-height: 0;
 }
 </style>
