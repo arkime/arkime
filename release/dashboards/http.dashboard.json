@@ -115,6 +115,32 @@
       },
       {
         "id": "w12",
+        "field": "host.http",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "session.length"
+        ],
+        "sortMetric": "session.length",
+        "metricType": "session.length",
+        "metricAgg": "p95",
+        "title": "Slowest sites: p95 session length (ms)"
+      },
+      {
+        "id": "w13",
+        "viewMode": "timeline",
+        "width": 2,
+        "height": 3,
+        "title": "p95 HTTP session length over time (ms)",
+        "metricType": "session.length",
+        "metricAgg": "p95",
+        "seriesType": "lines"
+      },
+      {
+        "id": "w14",
         "field": "ip.src",
         "viewMode": "bar",
         "width": 2,
@@ -123,7 +149,7 @@
         "title": "Clients"
       },
       {
-        "id": "w13",
+        "id": "w15",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -138,7 +164,7 @@
         "title": "Servers"
       },
       {
-        "id": "w14",
+        "id": "w16",
         "field": "ip.src",
         "fields": [
           "ip.src",

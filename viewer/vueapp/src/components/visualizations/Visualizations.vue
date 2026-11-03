@@ -305,7 +305,7 @@ SPDX-License-Identifier: Apache-2.0
               <timeline-graph
                 ref="timelineGraph"
                 :graph-data="graphData"
-                :graph-type="graphType"
+                :graph-type="metricOverride || graphType"
                 :series-type="seriesType"
                 :y-scale="yScale"
                 :timeline-data-filters="timelineDataFilters"
@@ -352,6 +352,12 @@ export default {
     timelineDataFilters: {
       type: Array,
       required: true
+    },
+    // a series to draw instead of the metric picked here (SPI Graph's
+    // percentile of it, <dbField>:p<N>Histo)
+    metricOverride: {
+      type: String,
+      default: ''
     }
   },
   data: function () {

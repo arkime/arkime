@@ -23,7 +23,7 @@ import uPlot from 'uplot';
 import { themedColor } from '@common/themes/themedColor.js';
 import 'uplot/dist/uPlot.min.css';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
-import { COMPOSITE_METRICS } from './metrics.js';
+import { COMPOSITE_METRICS, isPercentileKey, parsePercentileKey } from './metrics.js';
 import moment from 'moment-timezone';
 
 const HOST_HEIGHT = 180;
@@ -32,11 +32,21 @@ const X_AXIS_SIZE = 28;
 const PADDING = 16;
 const MIN_PX_PER_BAR = 40;
 
+// a color with an alpha, for '#rrggbb' and d3's 'rgb(r, g, b)' (anything
+// else is drawn as is)
+const withAlpha = (color, alpha) => {
+  if (/^#[0-9a-f]{6}$/i.test(color)) { return color + Math.round(alpha * 255).toString(16).padStart(2, '0'); }
+  const rgb = /^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/.exec(color);
+  return rgb ? `rgba(${rgb[1]}, ${rgb[2]}, ${rgb[3]}, ${alpha})` : color;
+};
+
 export default {
   name: 'ArkimeTimelineGraph',
   props: {
     graphData: { type: Object, required: true },
     graphType: { type: String, default: 'sessionsHisto' },
+    // 'bars' | 'lines' | 'area' (filled lines: stacked bands, or overlaid
+    // translucent areas)
     seriesType: { type: String, default: 'bars' },
     // 'linear' | 'log' | 'percent' (a stacked split: each series as its
     // share of the bucket; anything else draws linear)
@@ -117,8 +127,12 @@ export default {
     },
     friendlyTypeName (type) {
       if (type === 'sessionsHisto') return 'Sessions';
-      const filter = this.timelineDataFilters?.find((f) => f.dbField === type.slice(0, -5));
-      return filter?.friendlyName || type;
+      // a percentile series reads as "P95 Bytes"
+      const pct = parsePercentileKey(type);
+      const dbField = pct ? pct.dbField : type.slice(0, -5);
+      const filter = this.timelineDataFilters?.find((f) => f.dbField === dbField);
+      const label = filter?.friendlyName || (pct ? dbField : type);
+      return pct ? `${this.$t(`sessions.summary.agg.${pct.agg}`)} ${label}` : label;
     },
     /**
      * Build a uniform time grid using the backend-provided interval so
@@ -188,12 +202,14 @@ export default {
       const factor = Math.ceil(xs.length / maxBars);
       const reXs = [];
       const reYs = ys.map(() => []);
+      // percentiles don't add up, merged buckets show the highest
+      const percentile = isPercentileKey(this.graphType);
       for (let i = 0; i < xs.length; i += factor) {
         reXs.push(xs[i]);
         ys.forEach((y, idx) => {
           let sum = 0;
           for (let j = 0; j < factor && (i + j) < y.length; j++) {
-            sum += y[i + j];
+            sum = percentile ? Math.max(sum, y[i + j] || 0) : sum + y[i + j];
           }
           reYs[idx].push(sum);
         });
@@ -302,7 +318,8 @@ export default {
       if (v == null || !Number.isFinite(v)) return '';
       const isBytes = this.graphType === 'totBytesHisto' ||
                       this.graphType === 'totDataBytesHisto' ||
-                      this.graphType === 'network.bytesHisto';
+                      this.graphType === 'network.bytesHisto' ||
+                      /bytes$/i.test(parsePercentileKey(this.graphType)?.dbField || '');
       return isBytes ? humanReadableBytes(v) : humanReadableNumber(v);
     },
     destroyPlot () {
@@ -347,6 +364,8 @@ export default {
       }
 
       const isBars = this.seriesType === 'bars';
+      const isArea = this.seriesType === 'area';
+      const stackedDraw = this.stacked && defs.length > 1;
       const barsPath = isBars ? uPlot.paths.bars() : undefined;
       const linesPath = !isBars
         ? uPlot.paths.linear({ alignGaps: 0 })
@@ -412,8 +431,14 @@ export default {
           ...drawDefs.map((d) => ({
             label: d.label,
             stroke: d.color,
-            // a split graph's overlaid lines stay unfilled so each one can be read
-            fill: isBars ? d.color : (this.seriesDefs?.length > 1 ? undefined : d.color + '33'),
+            // a split graph's overlaid lines stay unfilled so each one can be
+            // read; an area's stacked bands are solid (each covers the one
+            // behind it below its own total), its overlaid ones see-through
+            fill: isBars
+              ? d.color
+              : isArea
+                ? (stackedDraw ? withAlpha(d.color, 0.85) : withAlpha(d.color, 0.25))
+                : (this.seriesDefs?.length > 1 ? undefined : withAlpha(d.color, 0.2)),
             paths: isBars ? barsPath : linesPath,
             width: isBars ? 1 : 1.5,
             points: { show: false }

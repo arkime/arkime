@@ -10,8 +10,9 @@ filter and the global time window.
 import { fetchWrapper } from '@common/fetchWrapper.js';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
-import { defaultLength, fieldCountLimits } from './viewModes';
+import { defaultLength, fieldCountLimits, slotMetrics, isPercentileAgg, PERCENTILE_VIEW_MODES } from './viewModes';
 import { spigraphQueryFromGraph } from '../dashboardConfig';
+import { controlFilters, substituteExpression, withoutPicks } from './dashboardVariables';
 
 /**
  * A widget's field list, capped at what its view mode takes (see
@@ -23,16 +24,32 @@ export function widgetFields (widget) {
   return widget?.field ? [widget.field] : [];
 }
 
+/** The percentile a SPIGraph-backed widget draws of its metric (p95, ...),
+ *  undefined for its sum (and for the types that only sum). */
+export function widgetPercentile (widget) {
+  return PERCENTILE_VIEW_MODES.includes(widget?.viewMode) && isPercentileAgg(widget?.metricAgg) ? widget.metricAgg : undefined;
+}
+
 /**
  * The graph/histo key a SPIGraph-backed widget visualizes for its metric:
  * 'sessionsHisto' (session count) by default, else the chosen numeric field's
- * `<dbField>Histo` series (which the backend emits when sent `metric`).
+ * `<dbField>Histo` series (which the backend emits when sent `metric`), or
+ * its `<dbField>:p<N>Histo` series for a percentile (sent `metricAgg` too).
  */
 export function metricHistoKey (widget) {
   const metric = widget?.metricType;
   if (!metric || metric === 'sessions') { return 'sessionsHisto'; }
   const dbField = FieldService.getField(metric, true)?.dbField;
-  return dbField ? `${dbField}Histo` : 'sessionsHisto';
+  if (!dbField) { return 'sessionsHisto'; }
+  const pct = widgetPercentile(widget);
+  return pct ? `${dbField}:${pct}Histo` : `${dbField}Histo`;
+}
+
+// a SPIGraph request's metric, and its percentile when the widget draws one
+function spigraphMetric (widget, extra) {
+  extra.metric = widget.metricType;
+  const pct = widgetPercentile(widget);
+  if (pct) { extra.metricAgg = pct; }
 }
 
 /** True when a widget's metric is a byte-valued field (wants human-readable
@@ -46,7 +63,7 @@ export function metricIsBytes (metricType, metricAgg) {
  *  comma count (averages keep up to two decimals). */
 export function formatMetricValue (metricType, v, metricAgg) {
   if (metricIsBytes(metricType, metricAgg)) { return humanReadableBytes(v || 0); }
-  if (metricAgg === 'avg' && Number.isFinite(v) && !Number.isInteger(v)) {
+  if ((metricAgg === 'avg' || isPercentileAgg(metricAgg)) && Number.isFinite(v) && !Number.isInteger(v)) {
     return commaString(Math.round(v * 100) / 100);
   }
   return commaString(v || 0);
@@ -82,7 +99,8 @@ export function fieldIsAggregatable (field) {
 function escapeCSV (value) {
   let s = String(value ?? '');
   if (s.length > 0 && '=+-@\t\r'.includes(s[0])) { s = `'${s}`; }
-  if (s.includes('"') || s.includes(',') || s.includes('\n')) { return `"${s.replace(/"/g, '""')}"`; }
+  // ; too, since some locales' spreadsheets split on it
+  if (/[",;\r\n]/.test(s)) { return `"${s.replace(/"/g, '""')}"`; }
   return s;
 }
 
@@ -101,31 +119,39 @@ export function downloadCSV (headers, rows, filename) {
 
 /**
  * A widget's local filter = its saved View's expression AND its own expression
- * (either may be unset). The View is resolved from store.state.views by id/name.
+ * (either may be unset), with the dashboard's ${variables} filled in. The View
+ * is resolved from store.state.views by id/name.
  * @returns {string|undefined} the combined local expression (or undefined)
  */
-export function widgetLocalExpression (widget, views) {
+export function widgetLocalExpression (widget, views, vars) {
   const parts = [];
   if (widget?.view) {
     const v = (views || []).find(x => x.id === widget.view || x.name === widget.view);
     if (v?.expression) { parts.push(v.expression); }
   }
-  if (widget?.expression) { parts.push(widget.expression); }
+  const own = substituteExpression(widget?.expression, vars);
+  if (own) { parts.push(own); }
   if (!parts.length) { return undefined; }
   return parts.length === 1 ? parts[0] : parts.map(p => `(${p})`).join(' && ');
 }
 
 /**
  * The page's search: the global search expression AND the dashboard's own
- * filter (store.state.dashboardExpression, the config's data.expression), so
- * every widget on the page, the capture stats included, sees both.
- * @returns {string|undefined} the combined expression (or undefined if neither)
+ * filter (store.state.dashboardExpression, the config's data.expression) AND
+ * the picks of the controls that filter every widget, so every widget on the
+ * page, the capture stats included, sees all of them. `excludeVariable`
+ * leaves one control's own pick out (its value list): its filter, and its
+ * ${name} as if nothing were picked.
+ * @returns {string|undefined} the combined expression (or undefined if none)
  */
-export function pageExpression (route, store) {
-  const globalExp = route.query.expression;
-  const dashboardExp = store.state.dashboardExpression;
-  if (globalExp && dashboardExp) { return `(${globalExp}) && (${dashboardExp})`; }
-  return dashboardExp || globalExp || undefined;
+export function pageExpression (route, store, excludeVariable) {
+  const vars = withoutPicks(store.state.dashboardVariables, excludeVariable);
+  const parts = [
+    route.query.expression,
+    substituteExpression(store.state.dashboardExpression, vars),
+    ...controlFilters(vars, excludeVariable)
+  ].filter(Boolean);
+  return parts.length > 1 ? parts.map(p => `(${p})`).join(' && ') : parts[0];
 }
 
 /**
@@ -135,7 +161,7 @@ export function pageExpression (route, store) {
  */
 export function combinedExpression (route, store, widget) {
   const pageExp = pageExpression(route, store);
-  const localExp = widgetLocalExpression(widget, store.state.views);
+  const localExp = widgetLocalExpression(widget, store.state.views, store.state.dashboardVariables);
   if (pageExp && localExp) { return `(${pageExp}) && (${localExp})`; }
   return localExp || pageExp || undefined;
 }
@@ -162,9 +188,9 @@ export function widgetFullPageLink (route, store, widget) {
   // the split field (unsplit, it is the Sessions page's own timeline); a split
   // time of day grid is SPI Graph's Time of day the same way (unsplit, it has
   // no full page)
-  const splitTimeline = (mode === 'timeline' || mode === 'timeofday') && !!widget.splitField && usable(widget.splitField);
+  const splitTimeline = (mode === 'timeline' || mode === 'area' || mode === 'timeofday') && !!widget.splitField && usable(widget.splitField);
   if (mode === 'timeofday' && !splitTimeline) { return null; }
-  if (!['timeline', 'timeofday', 'metric', 'gauge', 'sessions'].includes(mode)) {
+  if (!['timeline', 'area', 'timeofday', 'metric', 'gauge', 'sessions'].includes(mode)) {
     // a bar's or pie's split field becomes another SPI Graph field
     const linked = ((mode === 'bar' || mode === 'pie') && widget.splitField) ? [...fields, widget.splitField] : fields;
     if (!fields.length || !linked.every(usable)) { return null; }
@@ -188,7 +214,7 @@ export function widgetFullPageLink (route, store, widget) {
     query.date = store.state.timeRange;
   }
 
-  if ((mode === 'timeline' && !splitTimeline) || mode === 'metric' || mode === 'gauge' || mode === 'sessions') { return { path: '/sessions', query }; }
+  if (((mode === 'timeline' || mode === 'area') && !splitTimeline) || mode === 'metric' || mode === 'gauge' || mode === 'sessions') { return { path: '/sessions', query }; }
   // the same SPI Graph url a saved graph opens with; the widget's own view is
   // already in the combined expression, so the page keeps the global one
   const graphQuery = spigraphQueryFromGraph(widget);
@@ -231,7 +257,7 @@ export async function fetchSpigraph (route, store, widget, { signal } = {}) {
   // a numeric metric drives heatmap intensity / treemap size; the server sums it
   // per value into a <dbField>Histo series and we order Top-N by it
   if (widget.metricType && widget.metricType !== 'sessions') {
-    extra.metric = widget.metricType;
+    spigraphMetric(widget, extra);
     extra.sort = metricHistoKey(widget);
   }
   const data = buildWidgetParams(route, store, widget, extra);
@@ -248,7 +274,7 @@ export async function fetchSpigraph (route, store, widget, { signal } = {}) {
 export async function fetchGraph (route, store, widget, { signal } = {}) {
   const extra = { exp: 'node', size: 1 };
   if (widget.metricType && widget.metricType !== 'sessions') {
-    extra.metric = widget.metricType;
+    spigraphMetric(widget, extra);
   }
   const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
@@ -263,7 +289,7 @@ export async function fetchGraph (route, store, widget, { signal } = {}) {
 export async function fetchSplitGraph (route, store, widget, { signal } = {}) {
   const extra = { exp: widget.splitField, size: widget.splitLength || 5 };
   if (widget.metricType && widget.metricType !== 'sessions') {
-    extra.metric = widget.metricType;
+    spigraphMetric(widget, extra);
     extra.sort = metricHistoKey(widget);
   }
   const data = buildWidgetParams(route, store, widget, extra);
@@ -386,9 +412,9 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
  * multi-field table. The summary response is a JSON array of chunks; field chunks
  * carry `id` + `data`. Returns one entry per field: { exp, friendlyName, data, error }.
  */
-export async function fetchSummaryFields (route, store, widget, { signal } = {}) {
+export async function fetchSummaryFields (route, store, widget, { signal, excludeVariable } = {}) {
   const fields = widgetFields(widget);
-  const localExp = widgetLocalExpression(widget, store.state.views);
+  const localExp = widgetLocalExpression(widget, store.state.views, withoutPicks(store.state.dashboardVariables, excludeVariable));
   const body = {
     facets: 1,
     noStats: true,
@@ -406,7 +432,7 @@ export async function fetchSummaryFields (route, store, widget, { signal } = {})
       ...(localExp ? { expression: localExp } : {})
     }))
   };
-  const res = await postSummary(route, store, body, signal);
+  const res = await postSummary(route, store, body, signal, excludeVariable);
   const chunks = Array.isArray(res) ? res : [];
   return fields.map((exp, i) => {
     const chunk = chunks.find(c => c && c.id === `f${i}`);
@@ -419,10 +445,55 @@ export async function fetchSummaryFields (route, store, widget, { signal } = {})
   });
 }
 
+/** A summary row's value of one metric: the session count, or the metric's
+ *  aggregate (0 when the row has none). */
+export function metricRowValue (row, metric) {
+  if (!metric || metric === 'sessions') { return row?.sessions || 0; }
+  return row?.metricValues?.[metric] ?? 0;
+}
+
+/**
+ * Fetch a combo or scatter widget's rows: its field's top values, each with
+ * every metric slot's aggregate (metricValues), ranked by the first slot.
+ * Returns the [{ item, sessions, metricValues, ... }] rows.
+ */
+export async function fetchMetricsChart (route, store, widget, { signal } = {}) {
+  const metrics = slotMetrics(widget).filter(Boolean);
+  const [res] = await fetchSummaryFields(route, store, {
+    ...widget,
+    fields: widget.field ? [widget.field] : [],
+    metrics,
+    metricType: metrics[0],
+    sortMetric: metrics[0]
+  }, { signal });
+  if (res?.error) { throw new Error(res.error); }
+  return res?.data || [];
+}
+
+/**
+ * Fetch a control widget's value list: its field's top values by session
+ * count, searched without the control's own pick (so the other values stay
+ * listed once some are picked). Returns the [{ item, sessions }] rows.
+ */
+export async function fetchControlValues (route, store, widget, excludeVariable, { signal } = {}) {
+  const [res] = await fetchSummaryFields(route, store, {
+    ...widget,
+    fields: widget.field ? [widget.field] : [],
+    metricType: 'sessions',
+    metrics: [],
+    sortMetric: 'sessions',
+    order: 'desc',
+    orderBy: 'value',
+    bucketInterval: 0
+  }, { signal, excludeVariable });
+  if (res?.error) { throw new Error(res.error); }
+  return res?.data || [];
+}
+
 /** POST a widgets body to /api/sessions/summary with the page's search, time
  *  window and route params folded in. Returns the chunk array. */
-async function postSummary (route, store, body, signal) {
-  const pageExp = pageExpression(route, store); // global search + dashboard filter
+async function postSummary (route, store, body, signal, excludeVariable) {
+  const pageExp = pageExpression(route, store, excludeVariable); // global search + dashboard filter + controls
   if (pageExp) { body.expression = pageExp; }
   for (const p of ['view', 'bounding', 'interval', 'cluster']) {
     if (route.query[p]) { body[p] = route.query[p]; }
@@ -443,7 +514,7 @@ async function postSummary (route, store, body, signal) {
  * Returns the widget chunk's data[] ({ item, sessions, value, metricValues }).
  */
 export async function fetchMetric (route, store, widget, { signal } = {}) {
-  const localExp = widgetLocalExpression(widget, store.state.views);
+  const localExp = widgetLocalExpression(widget, store.state.views, store.state.dashboardVariables);
   const field = widgetFields(widget)[0] || '';
   const body = {
     facets: 1,

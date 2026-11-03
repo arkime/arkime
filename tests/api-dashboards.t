@@ -2,7 +2,7 @@
 # directories (config.test.ini lists release/dashboards, then tests/dashboards,
 # then capture/plugins, whose plugin dashboards stay hidden until the plugin's
 # fields exist)
-use Test::More tests => 59;
+use Test::More tests => 66;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -78,6 +78,15 @@ for my $key ("routing", "multicast", "databases") {
     is($byId{"system-$key"}->{data}->{folder}, "Analysis", "$key is in the Analysis folder");
 }
 ok((grep { $_->{viewMode} eq "bar" && ($_->{orientation} // "") eq "horizontal" } @{$byId{"system-multicast"}->{data}->{widgets}}) == 1, "multicast has a horizontal bar");
+ok((grep { $_->{viewMode} eq "area" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has an area");
+ok((grep { $_->{viewMode} eq "combo" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has a combo");
+ok((grep { $_->{viewMode} eq "scatter" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has a scatter");
+my @connWidgets = @{$byId{"system-connections"}->{data}->{widgets}};
+is((grep { $_->{viewMode} eq "control" } @connWidgets), 4, "connections has its four filter controls");
+ok((grep { ($_->{metricAgg} // '') eq "p95" && ($_->{metricType} // '') eq "session.length" } @connWidgets) >= 2, "connections has p95 session length widgets");
+my ($hostControl) = grep { $_->{viewMode} eq "control" } @{$byId{"system-hosts"}->{data}->{widgets}};
+ok($hostControl && $hostControl->{variable} eq "host" && !$hostControl->{applyAll}, "the hosts picker only sets its host variable");
+is((grep { ($_->{expression} // '') eq 'ip.src == ${host}' } @{$byId{"system-hosts"}->{data}->{widgets}}), 2, "two hosts widgets narrow to the host variable");
 
 # a dashboard id that isn't stored is a 404 (the page drops it from the url)
 my $missing = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/shareable/does-not-exist");

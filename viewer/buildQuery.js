@@ -485,6 +485,12 @@ class BuildQuery {
           }
         }
 
+        // a SPI Graph percentile of its metric, one per time bucket
+        if (req.metricPercentile) {
+          const pct = req.metricPercentile;
+          query.aggregations.dbHisto.aggregations[pct.key] = ViewerUtils.percentileAgg(pct.field, pct.percent);
+        }
+
         let histoField;
         switch (reqQuery.bounding) {
         case 'first':

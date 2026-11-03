@@ -57,21 +57,6 @@ SPDX-License-Identifier: Apache-2.0
               {{ $t('sessions.summary.addWidget') }}
             </v-btn>
 
-            <!-- export all charts as PNG -->
-            <v-btn
-              :aria-label="$t('sessions.summary.exportAllPNG')"
-              size="large"
-              variant="flat"
-              color="secondary"
-              @click="exportAllPNG">
-              <v-icon icon="mdi-download" />
-              <v-tooltip
-                activator="parent"
-                :open-delay="500">
-                {{ $t('sessions.summary.exportAllPNG') }} — {{ $t('sessions.summary.exportPNGTableWarning') }}
-              </v-tooltip>
-            </v-btn>
-
             <!-- save / load dashboard config -->
             <v-btn-group
               variant="flat"
@@ -87,6 +72,8 @@ SPDX-License-Identifier: Apache-2.0
                   @saved="onDashboardSaved"
                   @changed="dashboardsVersion++"
                   @reset="resetSummaryToDefaults"
+                  @print="printDashboard"
+                  @export-png="exportAllPNG"
                   @message="displayMessage" />
               </v-defaults-provider>
             </v-btn-group>
@@ -119,6 +106,22 @@ SPDX-License-Identifier: Apache-2.0
               {{ dashboardExpression }}
             </v-chip>
 
+            <!-- what the filter controls picked, applied to every widget (or
+                 only filling their variables); the x clears them all -->
+            <v-chip
+              v-if="controlsSummary"
+              size="small"
+              variant="tonal"
+              color="primary"
+              prepend-icon="mdi-tune-variant"
+              closable
+              class="dashboard-filter-chip"
+              :title="`${$t('sessions.summary.controlsChip')}: ${controlsSummary}`"
+              :close-label="$t('sessions.summary.controlsClear')"
+              @click:close="clearControls">
+              {{ controlsSummary }}
+            </v-chip>
+
             <!-- cancel loading button -->
             <v-btn
               v-if="summaryStreaming"
@@ -129,6 +132,34 @@ SPDX-License-Identifier: Apache-2.0
               <v-icon icon="mdi-cancel" />&nbsp;
               {{ $t('common.cancel') }}
             </v-btn>
+
+            <!-- reload every widget on a timer (?refresh=<seconds>), off by default;
+                 on the far right of the toolbar -->
+            <div class="arkime-input-group dashboard-refresh ms-auto me-2">
+              <span class="arkime-input-label">
+                <v-icon
+                  icon="mdi-refresh-auto"
+                  size="small" />
+                <v-tooltip
+                  activator="parent"
+                  :open-delay="500">
+                  {{ $t('sessions.summary.autoRefreshTip') }}
+                </v-tooltip>
+              </span>
+              <select
+                id="dashboardRefresh"
+                class="arkime-input-control"
+                :aria-label="$t('sessions.summary.autoRefresh')"
+                :value="refreshSeconds"
+                @change="setRefresh(Number($event.target.value))">
+                <option
+                  v-for="opt in refreshOptions"
+                  :key="opt.value"
+                  :value="opt.value">
+                  {{ opt.label }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
       </ArkimeCollapsible>
@@ -205,8 +236,13 @@ import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors
 import { toV6Shape, makeWidgetDef, defaultWidgets, widgetsFromConfig, migrateDashboard, DASHBOARD_VERSION } from '../summary/dashboardConfig';
 import { systemDashboard, isSystemId, defaultDashboardId, pickedDefaultId } from '../summary/systemDashboards';
 import { ArkimeError } from '@common/fetchWrapper.js';
+import { dashboardVariables, controlFilter, VARIABLE_PARAM_PREFIX } from '../summary/widgets/dashboardVariables';
 
 const DashboardService = createShareableService('summaryConfig');
+
+// the auto refresh choices, in seconds (0 is off)
+const REFRESH_SECONDS = [0, 30, 60, 300, 900, 1800, 3600];
+let refreshTimer;
 
 export default {
   name: 'Arkime',
@@ -231,6 +267,7 @@ export default {
       // on the page (the navigation widget) reload
       dashboardsVersion: 0,
       dashboardLoadSeq: 0, // the latest loadDashboardById call; earlier ones are dropped
+      reloadQueued: false, // a reloadSummaryView is waiting for the next tick
       palettes: CHART_PALETTES,
       // the saved or built-in dashboard the page shows (the ?dashboard url
       // param), '' for the user's own unsaved state
@@ -242,9 +279,27 @@ export default {
       summaryCanceled: false
     };
   },
+  beforeUnmount: function () {
+    this.stopRefreshTimer();
+    window.removeEventListener('afterprint', this.endPrint);
+  },
   computed: {
     user: function () {
       return this.$store.state.user;
+    },
+    // the auto refresh period, kept in the url so a wall display's link
+    // keeps refreshing; anything but a listed choice is off
+    refreshSeconds: function () {
+      const n = parseInt(this.$route.query.refresh, 10);
+      return REFRESH_SECONDS.includes(n) ? n : 0;
+    },
+    refreshOptions: function () {
+      return REFRESH_SECONDS.map(n => ({
+        value: n,
+        label: !n
+          ? this.$t('sessions.summary.autoRefreshOff')
+          : n < 60 ? this.$t('sessions.summary.everySeconds', { count: n }) : n < 3600 ? this.$t('sessions.summary.everyMinutes', { count: n / 60 }) : this.$t('sessions.summary.everyHours', { count: n / 3600 })
+      }));
     },
     // Current dashboard configuration for saving (layout + widgets). Also
     // dual-writes the v6 summaryConfig shape (fields[]/resultsLimit/order) so a
@@ -252,6 +307,21 @@ export default {
     // a dashboard saved by v7 — v6 reads fields[] and ignores widgets/colorScheme.
     // Session-wide widgets (timeline/map/stats/time) have no v6 equivalent and
     // are omitted from fields[]. See SHAREABLES.md.
+    // the control widgets' variables and the values the url picks for them
+    dashboardVariables: function () {
+      return dashboardVariables(this.widgets, this.$route.query);
+    },
+    // what the picks change in the searches: only variables with values
+    // (adding a control, or renaming it, reloads nothing until it picks)
+    variablesSearchKey: function () {
+      return JSON.stringify(Object.entries(this.dashboardVariables).filter(([, v]) => v.values.length));
+    },
+    controlsSummary: function () {
+      return Object.entries(this.dashboardVariables)
+        .filter(([, v]) => v.values.length)
+        .map(([varName, v]) => (v.applyAll ? controlFilter(v.field, v.values) : `\${${varName}} = ${v.values.join(', ')}`))
+        .join(' && ');
+    },
     currentDashboardConfig: function () {
       return {
         version: DASHBOARD_VERSION,
@@ -263,6 +333,19 @@ export default {
     }
   },
   watch: {
+    // the store holds the variables for the widget fetches and titles; a
+    // changed pick reloads every widget (not the first, the page loads then)
+    dashboardVariables: {
+      immediate: true,
+      handler: function (vars) { this.$store.commit('setDashboardVariables', vars); }
+    },
+    variablesSearchKey: function () {
+      if (this.$refs.summaryView) { this.reloadSummaryView(); }
+    },
+    refreshSeconds: {
+      immediate: true,
+      handler: function (seconds) { this.startRefreshTimer(seconds); }
+    },
     // Handle fetch viz data button click (re-fetch visualizations)
     '$store.state.fetchGraphData': function (value) {
       if (value) { this.reloadSummaryView(); }
@@ -472,10 +555,22 @@ export default {
       if (this.loadedDashboardId) { state.dashboardId = this.loadedDashboardId; }
       UserService.saveState(state, 'summary');
     },
+    // several changes in one tick (a dashboard load sets its widgets, filter
+    // and picks at once) reload once
     reloadSummaryView: function () {
+      if (this.reloadQueued) { return; }
+      this.reloadQueued = true;
       this.$nextTick(() => {
+        this.reloadQueued = false;
         this.$refs.summaryView?.reloadSummary?.();
       });
+    },
+    clearControls: function () {
+      const query = { ...this.$route.query };
+      for (const key of Object.keys(query)) {
+        if (key.startsWith(VARIABLE_PARAM_PREFIX)) { delete query[key]; }
+      }
+      this.$router.replace({ query });
     },
     resetSummaryToDefaults: function () {
       this.widgets = this.defaultWidgets();
@@ -493,6 +588,37 @@ export default {
     },
     exportAllPNG: function () {
       this.$refs.summaryView?.exportAllPNG?.();
+    },
+    setRefresh: function (seconds) {
+      const query = { ...this.$route.query, refresh: seconds ? String(seconds) : undefined };
+      this.$router.replace({ query });
+    },
+    stopRefreshTimer: function () {
+      if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = undefined; }
+    },
+    // each tick reissues the search, so a relative time range (the last hour)
+    // moves forward; a tick is skipped while the page is hidden or still loading
+    startRefreshTimer: function (seconds) {
+      this.stopRefreshTimer();
+      if (!seconds) { return; }
+      refreshTimer = setInterval(() => {
+        if (document.hidden || this.summaryStreaming) { return; }
+        this.$store.commit('setIssueSearch', true);
+      }, seconds * 1000);
+    },
+    // the browser's print dialog, whose Save as PDF keeps the charts as
+    // drawn; the print styles below show only the widgets while it is open
+    printDashboard: function () {
+      document.body.classList.add('arkime-print');
+      window.addEventListener('afterprint', this.endPrint);
+      // the charts reflow to the printed width before the dialog snapshots them
+      window.dispatchEvent(new Event('resize'));
+      setTimeout(() => window.print(), 300);
+    },
+    endPrint: function () {
+      document.body.classList.remove('arkime-print');
+      window.removeEventListener('afterprint', this.endPrint);
+      window.dispatchEvent(new Event('resize'));
     }
   }
 };
@@ -512,6 +638,10 @@ export default {
   text-overflow: ellipsis;
 }
 
+.dashboard-refresh .arkime-input-control {
+  width: auto;
+}
+
 /* The sibling toolbar buttons are density-compact + size-large = 32px tall.
    v-btn-group's density sets its own (taller) height and its children get an
    inline height:auto, so pin the group to 32px and force the child buttons to
@@ -521,5 +651,31 @@ export default {
 }
 .dashboard-btn-group :deep(.v-btn) {
   height: 100% !important;
+}
+</style>
+
+<style>
+/* Save as PDF: only the dashboard's widgets, the page's own scroll box opened
+   up so every widget prints, not just the ones on screen */
+@media print {
+  body.arkime-print nav.arkime-navbar,
+  body.arkime-print .navbarOffset,
+  body.arkime-print .page-chrome,
+  body.arkime-print .app-info-error,
+  body.arkime-print .help-notes,
+  body.arkime-print .footer,
+  body.arkime-print .widget-resize,
+  body.arkime-print .v-snackbar {
+    display: none !important;
+  }
+  body.arkime-print .page-shell,
+  body.arkime-print .page-body,
+  body.arkime-print .page-scroll {
+    height: auto !important;
+    overflow: visible !important;
+  }
+  body.arkime-print .widget-wrapper {
+    break-inside: avoid;
+  }
 }
 </style>

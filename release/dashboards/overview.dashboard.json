@@ -13,33 +13,51 @@
       },
       {
         "id": "w1",
+        "field": "protocols",
+        "viewMode": "control",
+        "width": 2,
+        "height": 1,
+        "length": 20,
+        "title": "Protocols"
+      },
+      {
+        "id": "w2",
+        "field": "node",
+        "viewMode": "control",
+        "width": 2,
+        "height": 1,
+        "length": 20,
+        "title": "Capture nodes"
+      },
+      {
+        "id": "w3",
         "viewMode": "stats",
         "width": 2,
         "height": 1
       },
       {
-        "id": "w2",
+        "id": "w4",
         "viewMode": "time",
         "width": 2,
         "height": 1
       },
       {
-        "id": "w3",
+        "id": "w5",
         "viewMode": "timeline",
         "width": 4,
         "height": 2,
         "title": "Sessions over time"
       },
       {
-        "id": "w4",
+        "id": "w6",
         "viewMode": "timeofday",
         "width": 2,
         "height": 3,
         "title": "Sessions by hour of the week"
       },
       {
-        "id": "w5",
-        "viewMode": "timeline",
+        "id": "w7",
+        "viewMode": "area",
         "splitField": "protocols",
         "splitLength": 10,
         "barMode": "stacked",
@@ -49,7 +67,7 @@
         "yScale": "percent"
       },
       {
-        "id": "w6",
+        "id": "w8",
         "field": "country.src",
         "viewMode": "map",
         "width": 2,
@@ -57,7 +75,7 @@
         "title": "Source countries"
       },
       {
-        "id": "w7",
+        "id": "w9",
         "field": "ip",
         "viewMode": "bar",
         "width": 2,
@@ -66,7 +84,7 @@
         "title": "Top IPs"
       },
       {
-        "id": "w8",
+        "id": "w10",
         "field": "protocols",
         "viewMode": "bar",
         "width": 2,
@@ -75,7 +93,7 @@
         "title": "Protocols"
       },
       {
-        "id": "w9",
+        "id": "w11",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -91,7 +109,7 @@
         "title": "Destinations by bytes"
       },
       {
-        "id": "w10",
+        "id": "w12",
         "field": "ip.dst",
         "viewMode": "heatmap",
         "width": 2,
@@ -99,7 +117,7 @@
         "metricType": "packets"
       },
       {
-        "id": "w11",
+        "id": "w13",
         "field": "ip.src",
         "viewMode": "treemap",
         "width": 2,

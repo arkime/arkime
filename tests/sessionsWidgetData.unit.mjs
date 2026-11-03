@@ -30,7 +30,8 @@ const STUBS = {
     export const humanReadableBytes = String;
     export const timezoneDateString = (ms, tz, showMs) => 'date:' + ms + ':' + tz + ':' + !!showMs;
     export const protocol = (p) => ({ 6: 'tcp', 17: 'udp' })[p] || String(p);
-    export const extractIPv6String = (v) => 'v6:' + v;`)
+    export const extractIPv6String = (v) => 'v6:' + v;
+    export const buildListExpression = (f, v, op) => f + ' ' + op + ' [' + v.join(',') + ']';`)
 };
 
 register(stub(`

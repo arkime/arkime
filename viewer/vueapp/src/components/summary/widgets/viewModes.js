@@ -34,6 +34,9 @@ export const VIEW_MODE_LABEL_KEYS = {
   connections: 'sessions.summary.connectionsView',
   tree: 'sessions.summary.treeView',
   timeline: 'sessions.summary.timelineView',
+  area: 'sessions.summary.areaView',
+  combo: 'sessions.summary.comboView',
+  scatter: 'sessions.summary.scatterView',
   timeofday: 'sessions.summary.timeofdayView',
   matrix: 'sessions.summary.matrixView',
   map: 'sessions.summary.mapView',
@@ -44,17 +47,22 @@ export const VIEW_MODE_LABEL_KEYS = {
   sessions: 'sessions.summary.sessionsView',
   gauge: 'sessions.summary.gaugeView',
   tagcloud: 'sessions.summary.tagcloudView',
-  navigation: 'sessions.summary.navigationView'
+  navigation: 'sessions.summary.navigationView',
+  control: 'sessions.summary.controlView'
 };
 // saved view modes come from shared data, so only own keys count
 export const viewModeLabelKey = (viewMode) => (Object.hasOwn(VIEW_MODE_LABEL_KEYS, viewMode) ? VIEW_MODE_LABEL_KEYS[viewMode] : undefined);
 
 // Field-bound types: aggregate one field's top-N values (require a field).
-export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'tagcloud'];
+export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'tagcloud', 'combo', 'scatter', 'control'];
 
 // Session-wide types: describe the whole result set (no field, fed by the host's
 // global stats chunk). (map is field-bound — it plots a chosen geo field.)
-export const SESSION_VIEW_MODES = ['timeline', 'timeofday', 'stats', 'time'];
+export const SESSION_VIEW_MODES = ['timeline', 'area', 'timeofday', 'stats', 'time'];
+
+// The timelines: the search's histogram (or one series per top value of a
+// split field), drawn as bars or lines (timeline) or as filled areas (area).
+export const TIMELINE_VIEW_MODES = ['timeline', 'area'];
 
 // Field-bound to a geo field only (country/*.geo): the map choropleth.
 export const GEO_FIELD_VIEW_MODES = ['map'];
@@ -73,6 +81,11 @@ export const GAUGE_VIEW_MODES = ['gauge'];
 // No session data at all: links to the built-in and saved dashboards.
 export const NAV_VIEW_MODES = ['navigation'];
 
+// A filter control (prototype): a picker of one field's top values that names
+// the picks as a dashboard variable and can filter every other widget by them
+// (see dashboardVariables.js).
+export const CONTROL_VIEW_MODES = ['control'];
+
 // Lists of the sessions themselves (no aggregation): the fields are its
 // columns, the limit its rows and the order its sort direction.
 export const LIST_VIEW_MODES = ['sessions'];
@@ -80,21 +93,57 @@ export const LIST_VIEW_MODES = ['sessions'];
 // Types that visualize a single selectable metric (Sessions or a numeric field).
 // timeline plots the metric's <dbField>Histo series over time; map shades each
 // country by it.
-export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline', 'timeofday', 'metric', 'gauge', 'tagcloud', 'map'];
+export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline', 'area', 'timeofday', 'metric', 'gauge', 'tagcloud', 'map'];
+
+// Types that chart several metrics of each top value, one per named slot
+// (metrics[i]): a combo's bars and line (on its own right axis), a scatter's
+// x and y position and its optional bubble size. The first slot ranks the
+// Top/Bottom N. A slot marked optional may be left unset ('').
+export const METRIC_SLOTS = {
+  combo: [{ key: 'bars', default: 'sessions' }, { key: 'line', default: 'bytes' }],
+  scatter: [{ key: 'x', default: 'sessions' }, { key: 'y', default: 'bytes' }, { key: 'size', default: '', optional: true }]
+};
 
 // Types whose metric can use an aggregation other than sum (avg/min/max/unique
 // count). Only the /api/sessions/summary paths take one; the spigraph-backed
 // modes (heatmap/treemap/timeline) always sum into their histo series.
-export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'gauge', 'tagcloud', 'map'];
+export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'gauge', 'tagcloud', 'map', 'combo', 'scatter'];
 
-// The per-bucket aggregations a metric field can use (server: ViewerUtils.METRIC_AGGS).
-export const METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality'];
+// The per-bucket aggregations a metric field can use (server: ViewerUtils.METRIC_AGGS):
+// p50 (the median), p90, p95 and p99 are percentiles of the field's values.
+export const PERCENTILE_AGGS = ['p50', 'p90', 'p95', 'p99'];
+export const METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality', ...PERCENTILE_AGGS];
+
+// The spigraph-backed types that can draw a percentile of their metric in
+// place of its sum (its own <dbField>:p<N>Histo series): a timeline draws a
+// percentile per time bucket, a heatmap colors by one. Not the area or the
+// treemap, whose parts add up, nor time of day, which folds buckets by adding.
+export const PERCENTILE_VIEW_MODES = ['timeline', 'heatmap'];
+
+/** True for a percentile aggregation (p50, p90, p95, p99). */
+export const isPercentileAgg = (agg) => PERCENTILE_AGGS.includes(agg);
+
+/**
+ * The aggregations a type's metric can use: all of them on the summary
+ * endpoint types, a sum or a percentile on the spigraph types that draw one,
+ * just a sum elsewhere. A multi viewer can't combine the clusters'
+ * percentiles, so it offers none.
+ */
+export const metricAggsFor = (viewMode, multiViewer = false) => {
+  let aggs = ['sum'];
+  if (METRIC_AGG_VIEW_MODES.includes(viewMode)) {
+    aggs = METRIC_AGGS;
+  } else if (PERCENTILE_VIEW_MODES.includes(viewMode)) {
+    aggs = ['sum', ...PERCENTILE_AGGS];
+  }
+  return multiViewer ? aggs.filter(a => !isPercentileAgg(a)) : aggs;
+};
 
 // Types that can split by a second field: a bar divides each value into
 // stacked/grouped segments, a pie draws one small pie per split value, a
 // timeline draws one series per split value (stacked bars or lines), a time
 // of day grid draws one small grid per split value.
-export const SPLIT_VIEW_MODES = ['bar', 'pie', 'timeline', 'timeofday'];
+export const SPLIT_VIEW_MODES = ['bar', 'pie', 'timeline', 'area', 'timeofday'];
 export const BAR_MODES = ['stacked', 'grouped'];
 export const SPLIT_LENGTHS = [3, 5, 10];
 
@@ -104,20 +153,21 @@ export const BAR_ORIENTATIONS = ['vertical', 'horizontal'];
 
 // timeline: bars or lines, on a linear or log y axis, or (a stacked split)
 // each series as its share of the bucket, 0-100%. An overlaid split (barMode
-// grouped) is always lines, bars would hide each other.
+// grouped) is always lines, bars would hide each other. An area is always
+// filled lines, stacked or overlaid; a scatter's log scale is both axes'.
 export const SERIES_TYPES = ['bars', 'lines'];
 export const Y_SCALES = ['linear', 'log', 'percent'];
 
 // Types that honor a result limit. bar/pie/table/heatmap/treemap/sankey/
 // intersection cap their top-N values; connections uses it as a session sample
 // size (see SAMPLE_SIZE_VIEW_MODES).
-export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'metric', 'sessions', 'tagcloud'];
+export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'metric', 'sessions', 'tagcloud', 'combo', 'scatter', 'control'];
 
 // Types that also honor an order (direction). Only the /api/sessions/summary
 // paths pass one through; /api/spigraph, /api/spigraphhierarchy and
 // /api/connections have no order parameter, so offering the control for those
 // modes would silently do nothing.
-export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 'tagcloud'];
+export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 'tagcloud', 'combo', 'scatter'];
 
 // Types that can show an "Other" share for what falls outside the top N (a
 // share only means something where the parts add up to a whole).
@@ -158,7 +208,7 @@ export const BUCKET_INTERVAL_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'tag
 // Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
 // table self-fetches (one summary sub-widget per field) so it can carry multiple
 // fields and multiple metric columns.
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'map', 'table', 'metric'];
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'intersection', 'matrix', 'map', 'table', 'metric', 'combo', 'scatter', 'control'];
 
 // [min, max] fields each view mode accepts — nested combinations (pie/treemap/
 // sankey/intersection via spigraphhierarchy), side-by-side columns (table via
@@ -197,6 +247,26 @@ export const isFieldMode = (viewMode) => FIELD_VIEW_MODES.includes(viewMode);
 /** True for session-wide widgets (timeline/stats/time) — no field, host-fed. */
 export const isSessionMode = (viewMode) => SESSION_VIEW_MODES.includes(viewMode);
 
+/** True for the timelines (bars/lines, or filled areas). */
+export const isTimelineMode = (viewMode) => TIMELINE_VIEW_MODES.includes(viewMode);
+
+/** The named metric slots of a multi-metric chart (combo/scatter), or null. */
+export const metricSlots = (viewMode) => (Object.hasOwn(METRIC_SLOTS, viewMode) ? METRIC_SLOTS[viewMode] : null);
+
+/** A slotted chart's metrics, one per slot (a slot it left unset gets its
+ *  default, '' for an optional one). Falls back to metricType for the first. */
+export const slotMetrics = (widget) => {
+  const slots = metricSlots(widget?.viewMode);
+  if (!slots) { return []; }
+  const saved = Array.isArray(widget.metrics) ? widget.metrics : [];
+  return slots.map((s, i) => {
+    const m = typeof saved[i] === 'string' ? saved[i] : undefined;
+    if (m !== undefined && (m || s.optional)) { return m; }
+    if (i === 0 && widget.metricType) { return widget.metricType; }
+    return s.default;
+  });
+};
+
 /** True when the widget aggregates a chosen geo field (the map choropleth). */
 export const isGeoFieldMode = (viewMode) => GEO_FIELD_VIEW_MODES.includes(viewMode);
 
@@ -212,6 +282,9 @@ export const isStaticMode = (viewMode) => STATIC_VIEW_MODES.includes(viewMode);
 /** True for the gauge: one metric over the result set, no field. */
 export const isGaugeMode = (viewMode) => GAUGE_VIEW_MODES.includes(viewMode);
 
+/** True for a filter control (a dashboard variable's value picker). */
+export const isControlMode = (viewMode) => CONTROL_VIEW_MODES.includes(viewMode);
+
 /** True for the connection tree (a rooted tree of the src -> dst sample). */
 export const isTreeMode = (viewMode) => TREE_VIEW_MODES.includes(viewMode);
 
@@ -222,7 +295,7 @@ export const isNavMode = (viewMode) => NAV_VIEW_MODES.includes(viewMode);
 export const allowsBucketInterval = (viewMode) => BUCKET_INTERVAL_VIEW_MODES.includes(viewMode);
 
 /** True when the widget's metric can pick an aggregation (sum/avg/min/max/unique). */
-export const hasMetricAgg = (viewMode) => METRIC_AGG_VIEW_MODES.includes(viewMode);
+export const hasMetricAgg = (viewMode) => METRIC_AGG_VIEW_MODES.includes(viewMode) || PERCENTILE_VIEW_MODES.includes(viewMode);
 
 /** True when the widget can split each value by a second field. */
 export const allowsSplit = (viewMode) => SPLIT_VIEW_MODES.includes(viewMode);
@@ -266,6 +339,11 @@ export const isFieldPair = (viewMode) => FIELD_PAIR_VIEW_MODES.includes(viewMode
  *  but only for dstField — as a source it resolves to nothing, so the pair's
  *  two ends get different lists. */
 export const fieldUsableBy = (viewMode, field, position) => {
+  // a control's picks become field == values, so it takes a field the search
+  // can query and the summary can aggregate (not Dst IP:Dst Port)
+  if (isControlMode(viewMode)) {
+    return !!field && !field.noFacet && !field.regex && !/textfield/.test(field.type || '') && field.exp !== 'ip.dst:port' && field.exp !== 'destination.ip:port';
+  }
   if (!DB_FIELD_VIEW_MODES.includes(viewMode)) { return true; }
   if (field?.exp === 'ip.dst:port' || field?.exp === 'destination.ip:port') {
     return position === 'dst';

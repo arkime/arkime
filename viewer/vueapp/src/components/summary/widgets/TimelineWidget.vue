@@ -8,7 +8,8 @@ per-widget View/expression. The plotted series follows the widget's metric:
 'sessions' -> sessionsHisto, else the field's <dbField>Histo. With a split
 field it draws one series per top value of that field instead (stacked, or
 overlaid lines), from each value's own graph. Bars or lines, on a linear or log
-y axis, per the widget. Drag-select emits a new time range to
+y axis, per the widget; the area widget is the same timeline drawn as filled
+areas (stacked bands, or overlaid). Drag-select emits a new time range to
 the host.
 -->
 <template>
@@ -43,8 +44,8 @@ the host.
           :graph-type="graphType"
           :series-defs="seriesDefs"
           :series-type="seriesType"
-          :stacked="!!seriesDefs && widget.barMode !== 'grouped'"
-          :y-scale="widget.yScale || 'linear'"
+          :stacked="!!seriesDefs && widget.barMode !== 'grouped' && !percentile"
+          :y-scale="percentile && widget.yScale === 'percent' ? 'linear' : (widget.yScale || 'linear')"
           fit-height
           :timeline-data-filters="timelineDataFilters"
           :timezone="timezone"
@@ -62,7 +63,7 @@ import WidgetCard from './WidgetCard.vue';
 import TimelineGraph from '../../visualizations/TimelineGraph.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { metricHistoKey, fetchGraph, fetchSplitGraph } from './widgetData';
+import { metricHistoKey, widgetPercentile, fetchGraph, fetchSplitGraph } from './widgetData';
 import { colorRange } from './chartColors';
 import { metricSeries } from '../../visualizations/metrics.js';
 
@@ -84,12 +85,20 @@ const graphData = ref(null);
 // [{ label, key, color }] when split by a field, else null (the single series)
 const seriesDefs = ref(null);
 const split = computed(() => !!props.widget.splitField);
+const isArea = computed(() => props.widget.viewMode === 'area');
+// a percentile per time bucket (p95, ...): its values don't stack, so a
+// split one is overlaid lines
+const percentile = computed(() => !!widgetPercentile(props.widget));
 // an overlaid (grouped) split is always lines, bars would hide each other
-const seriesType = computed(() => ((split.value && props.widget.barMode === 'grouped') || props.widget.seriesType === 'lines' ? 'lines' : 'bars'));
+const seriesType = computed(() => {
+  if (isArea.value) { return 'area'; }
+  return (split.value && (props.widget.barMode === 'grouped' || percentile.value)) || props.widget.seriesType === 'lines' ? 'lines' : 'bars';
+});
 
 // series to plot follows the widget's metric: sessions -> sessionsHisto, else
-// the numeric field's <dbField>Histo (the graph fetch requests it via `metric`)
-const graphType = computed(() => metricHistoKey({ metricType: props.widget.metricType }));
+// the numeric field's <dbField>Histo (the graph fetch requests it via
+// `metric`), or its <dbField>:p<N>Histo for a percentile
+const graphType = computed(() => metricHistoKey(props.widget));
 
 let d3 = null;
 const seriesColors = async (n) => {
@@ -143,8 +152,9 @@ const hasData = computed(() => !!graphData.value && (!split.value || (seriesDefs
 const splitName = computed(() => (props.widget.splitField
   ? (FieldService.getField(props.widget.splitField, true)?.friendlyName || props.widget.splitField)
   : ''));
+const typeLabel = computed(() => t(isArea.value ? 'sessions.summary.areaView' : 'sessions.summary.timelineView'));
 const displayTitle = computed(() => props.widget.title ||
-  (split.value ? `${t('sessions.summary.timelineView')} / ${splitName.value}` : t('sessions.summary.timelineView')));
+  (split.value ? `${typeLabel.value} / ${splitName.value}` : typeLabel.value));
 const timezone = computed(() => store.state.user?.settings?.timezone || 'local');
 </script>
 

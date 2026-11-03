@@ -2382,6 +2382,7 @@ class SessionAPIs {
    * @param {string} exp - The expression field to return data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} field=node - The database field to return data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} metric - Optional numeric (integer) field exp (dashboard widgets). When set, its per-value sum is added as a <dbField>Histo timeline series and per-item total (drives heatmap intensity / treemap size). 'sessions' and non-numeric fields are ignored (doc_count is used).
+   * @param {string} metricAgg - Optional percentile of the metric instead of its sum: 'p50' (the median), 'p90', 'p95' or 'p99'. The graph and each item then carry a <dbField>:p<N>Histo series, the percentile of each time bucket, and the item's <dbField>:p<N>Histo total is the percentile over the whole time range (sort by it to rank the values). Not with interval=hourOfWeek, and refused by a multi viewer.
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
@@ -2403,7 +2404,20 @@ class SessionAPIs {
     // (reusing the timeline-data-filter machinery). 'sessions' and non-numeric
     // fields resolve to undefined and are ignored (doc_count is used instead).
     const metricDbField = ViewerUtils.metricDbField(req.query.metric);
-    if (metricDbField) { req.query.metricField = metricDbField; }
+    // a percentile can't be summed into the timeline data filters (or folded
+    // into a week), so it gets its own series, <dbField>:p<N>Histo, from a
+    // percentiles aggregation per time bucket and one over the whole range
+    const percent = req.query.interval === 'hourOfWeek' ? undefined : ViewerUtils.metricPercent(req.query.metricAgg);
+    req.metricPercentile = undefined;
+    if (metricDbField && percent) {
+      if (Config.getBool('multiES', false)) {
+        return res.serverError(400, 'Percentiles are not supported across clusters', 'api.sessions.percentilesMultiES');
+      }
+      req.metricPercentile = { field: metricDbField, percent, key: `${metricDbField}:p${percent}` };
+    } else if (metricDbField) {
+      req.query.metricField = metricDbField;
+    }
+    const pct = req.metricPercentile;
 
     BuildQuery.build(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
@@ -2433,13 +2447,20 @@ class SessionAPIs {
         query.aggregations.field = { terms: { field, size: size * 2 } };
       }
 
+      // each value's percentile over the whole range (its total)
+      if (pct) { query.aggregations[pct.key] = ViewerUtils.percentileAgg(pct.field, pct.percent); }
+
       // Rank the candidate Top-N pool by the sort metric. Without this the terms agg
       // returns the top size*2 BY SESSION COUNT (ES default) before the metric sort
       // runs, dropping high-metric/low-count values. Order by the <dbField>Histo sum.
-      const sortMetricField = /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
+      const sortPercentile = pct && req.query.sort === `${pct.key}Histo`;
+      const sortMetricField = !sortPercentile && /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
         ? req.query.sort.replace(/Histo$/, '')
         : undefined;
-      if (sortMetricField && !query.aggregations.field.aggregations) {
+      if (sortPercentile && !query.aggregations.field.aggregations) {
+        query.aggregations.field.aggregations = { metricValue: ViewerUtils.percentileAgg(pct.field, pct.percent) };
+        query.aggregations.field.terms.order = { [ViewerUtils.percentileOrderKey('metricValue', pct.percent)]: 'desc' };
+      } else if (sortMetricField && !query.aggregations.field.aggregations) {
         query.aggregations.field.aggregations = { metricValue: { sum: { field: sortMetricField } } };
         query.aggregations.field.terms.order = { metricValue: 'desc' };
       }
@@ -2528,6 +2549,8 @@ class SessionAPIs {
               if (graph['network.bytesTotal'] !== undefined) {
                 response['network.bytesHisto'] = graph['network.bytesTotal'];
               }
+              // a percentile's total isn't its buckets added up
+              if (pct) { response[`${pct.key}Histo`] = graph[`${pct.key}Total`]; }
 
               if (results.items.length === searchResult.responses.length) {
                 const s = req.query.sort || 'sessionsHisto';
@@ -3687,7 +3710,7 @@ class SessionAPIs {
    * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), orderBy ('value' default: the Top/Bottom N by the sort metric or session count; 'key': by the field's own value, so asc is the N smallest values or names), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max' or 'cardinality'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), bucketInterval (numeric fields only: bucket the field's values into ranges of this width instead of one bucket per value; each data[] item is then a range, item '<start>-<end>' with range: [start, end]), other (when true and the metric is the session count or a sum, also return what falls outside the top N), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response. At most 100 widgets.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), orderBy ('value' default: the Top/Bottom N by the sort metric or session count; 'key': by the field's own value, so asc is the N smallest values or names), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max', 'cardinality', or a percentile 'p50' (the median), 'p90', 'p95' or 'p99'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound, and a percentile is refused), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), bucketInterval (numeric fields only: bucket the field's values into ranges of this width instead of one bucket per value; each data[] item is then a range, item '<start>-<end>' with range: [start, end]), other (when true and the metric is the session count or a sum, also return what falls outside the top N), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response. At most 100 widgets.
    * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget), at most 100. One of widgets or fields is required.
    * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
    * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
@@ -3768,6 +3791,7 @@ class SessionAPIs {
         total,
         aggName: `agg${i}`,
         metricAgg: ViewerUtils.metricAgg(w.metricAgg),
+        percent: ViewerUtils.metricPercent(w.metricAgg),
         length: clampLength(w.length, defaultTopNum),
         order: w.order === 'asc' ? 'asc' : (w.order === 'desc' ? 'desc' : defaultOrder),
         orderBy: w.orderBy === 'key' ? 'key' : 'value',
@@ -3835,7 +3859,20 @@ class SessionAPIs {
       // an average is fetched as sum + count so multi-viewer can recombine it
       // exactly; the terms order still needs a single-value agg, so an extra
       // avg agg (<key>o) ranks the buckets
-      spec.orderAggKey = spec.sortAggKey ? (spec.metricAgg === 'avg' ? `${spec.sortAggKey}o` : spec.sortAggKey) : undefined;
+      // a percentile ranks by its one value (name[95.0])
+      if (!spec.sortAggKey) {
+        spec.orderAggKey = undefined;
+      } else if (spec.metricAgg === 'avg') {
+        spec.orderAggKey = `${spec.sortAggKey}o`;
+      } else if (spec.percent) {
+        spec.orderAggKey = ViewerUtils.percentileOrderKey(spec.sortAggKey, spec.percent);
+      } else {
+        spec.orderAggKey = spec.sortAggKey;
+      }
+      // a multi viewer can't combine the clusters' percentiles into one
+      if (spec.percent && spec.metrics.length && Config.getBool('multiES', false)) {
+        spec.unsupported = 'Percentiles are not supported across clusters';
+      }
       // "Other" only adds up for a count (whatever metricAgg a saved widget
       // carries) or a sum, and a script field has no db field to total it over
       spec.other = (w.other === true || w.other === 'true') && !total && !!spec.dbField && (!spec.sortAggKey || spec.metricAgg === 'sum');
@@ -3851,6 +3888,8 @@ class SessionAPIs {
         if (spec.metricAgg === 'avg') {
           const count = bucket[`${m.aggKey}c`]?.value ?? 0;
           metricValues[m.exp] = count ? (bucket[m.aggKey]?.value ?? 0) / count : 0;
+        } else if (spec.percent) {
+          metricValues[m.exp] = ViewerUtils.percentileValue(bucket[m.aggKey]);
         } else {
           metricValues[m.exp] = bucket[m.aggKey]?.value ?? 0;
         }
@@ -3866,6 +3905,8 @@ class SessionAPIs {
           aggs[m.aggKey] = { sum: { field: m.dbField } };
           aggs[`${m.aggKey}c`] = { value_count: { field: m.dbField } };
           if (m.aggKey === spec.sortAggKey) { aggs[`${m.aggKey}o`] = { avg: { field: m.dbField } }; }
+        } else if (spec.percent) {
+          aggs[m.aggKey] = ViewerUtils.percentileAgg(m.dbField, spec.percent);
         } else {
           aggs[m.aggKey] = { [spec.metricAgg]: { field: m.dbField } };
         }
@@ -4065,6 +4106,10 @@ class SessionAPIs {
         try {
           if (spec.unknown) {
             await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}` }, false);
+            continue;
+          }
+          if (spec.unsupported) {
+            await send({ id: spec.id, field: spec.field, error: spec.unsupported }, false);
             continue;
           }
 

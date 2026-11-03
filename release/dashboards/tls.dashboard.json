@@ -111,7 +111,7 @@
       },
       {
         "id": "w12",
-        "viewMode": "timeline",
+        "viewMode": "area",
         "splitField": "tls.version",
         "splitLength": 5,
         "barMode": "stacked",
@@ -122,6 +122,22 @@
       },
       {
         "id": "w13",
+        "field": "ip.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "session.length"
+        ],
+        "sortMetric": "session.length",
+        "metricType": "session.length",
+        "metricAgg": "p95",
+        "title": "Slowest TLS servers: p95 session length (ms)"
+      },
+      {
+        "id": "w14",
         "field": "ip.src",
         "viewMode": "bar",
         "width": 2,
@@ -130,7 +146,7 @@
         "title": "Clients"
       },
       {
-        "id": "w14",
+        "id": "w15",
         "field": "ip.dst:port",
         "viewMode": "table",
         "width": 2,
@@ -145,7 +161,7 @@
         "title": "Servers"
       },
       {
-        "id": "w15",
+        "id": "w16",
         "field": "ip.src",
         "fields": [
           "ip.src",

@@ -1399,12 +1399,19 @@ Db.deleteAllShareables = async () => {
   return internals.usersImpl.deleteAllShareables();
 };
 
-Db.setShareable = async (id, doc) => {
-  return internals.usersImpl.setShareable(id, doc);
+// version, from getShareableVersioned, makes the write fail with a 409 when the
+// item was changed or deleted since it was read
+Db.setShareable = async (id, doc, version) => {
+  return internals.usersImpl.setShareable(id, doc, version);
 };
 
 Db.getShareable = async (id) => {
   return internals.usersImpl.getShareable(id);
+};
+
+// { shareable, version }, version being opaque to callers
+Db.getShareableVersioned = async (id) => {
+  return internals.usersImpl.getShareableVersioned(id);
 };
 
 Db.arkimeNodeStats = async (nodeName) => {

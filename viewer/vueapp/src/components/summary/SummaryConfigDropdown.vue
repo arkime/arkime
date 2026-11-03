@@ -78,6 +78,35 @@ SPDX-License-Identifier: Apache-2.0
         {{ $t('sessions.summary.config.exportCurrent') }}
       </v-list-item>
 
+      <!-- Save every chart as a PNG (tables aren't charts) -->
+      <v-list-item @click="menuOpen = false; emit('export-png')">
+        <v-icon
+          icon="mdi-image-multiple"
+          class="me-1" />
+        {{ $t('sessions.summary.exportAllPNG') }}
+        <v-tooltip
+          activator="parent"
+          location="right"
+          :open-delay="500">
+          {{ $t('sessions.summary.exportPNGTableWarning') }}
+        </v-tooltip>
+      </v-list-item>
+
+      <!-- Save the dashboard as a PDF (the browser's print dialog); the menu
+           closes first so it isn't printed -->
+      <v-list-item @click="menuOpen = false; emit('print')">
+        <v-icon
+          icon="mdi-file-pdf-box"
+          class="me-1" />
+        {{ $t('sessions.summary.savePDF') }}
+        <v-tooltip
+          activator="parent"
+          location="right"
+          :open-delay="500">
+          {{ $t('sessions.summary.savePDFTip') }}
+        </v-tooltip>
+      </v-list-item>
+
       <!-- Reset to defaults -->
       <v-list-item @click="resetToDefaults">
         <v-icon
@@ -313,7 +342,7 @@ const props = defineProps({
   }
 });
 
-const emit = defineEmits(['load', 'message', 'reset', 'saved', 'changed']);
+const emit = defineEmits(['load', 'message', 'reset', 'saved', 'changed', 'print', 'export-png']);
 
 // State
 const menuOpen = ref(false);

@@ -10,6 +10,7 @@ const fs = require('fs');
 const http = require('http');
 const https = require('https');
 const NodeURL = require('url').URL;
+const async = require('async');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 let Config;
@@ -27,6 +28,9 @@ const MATERIALIZED = {
   'source.ip': { col: '`source.ip`', type: 'String' },
   'destination.ip': { col: '`destination.ip`', type: 'String' }
 };
+
+// Most per-bucket sub-agg queries in flight at once for one agg
+const BUCKET_QUERY_CONCURRENCY = 8;
 
 const ARRAY_FIELDS = new Set(['protocol', 'tags', 'fileId', 'packetPos', 'packetLen', 'huntId', 'huntName']);
 const DATE_FIELDS = new Set(['timestamp', '@timestamp', 'firstPacket', 'lastPacket', 'cert.notBefore', 'cert.notAfter']);
@@ -83,6 +87,12 @@ function subPath (sub) {
 
 function chError (feature) {
   return new Error(`CH backend: ${feature} not yet implemented`);
+}
+
+// the sub-aggregation an order key names: ES orders by one value of a
+// multi-value metric (a percentile) as name[95.0]
+function metricOrderName (orderKey) {
+  return String(orderKey).replace(/\[[^\]]*\]$/, '');
 }
 
 function quoteIdent (ident) {
@@ -1001,10 +1011,18 @@ class DbCHImpl {
   }
 
   metricExpression (agg) {
-    const op = ['sum', 'min', 'max', 'avg', 'cardinality', 'value_count'].find(o => agg[o]);
+    const op = ['sum', 'min', 'max', 'avg', 'cardinality', 'value_count', 'percentiles'].find(o => agg[o]);
     if (!op) { throw chError(`aggregation ${Object.keys(agg).join(',')}`); }
     const field = agg[op].field;
     const col = this.columnForField(field);
+    // one percentile (the viewer asks for one at a time), a t-digest like ES's,
+    // answered as a single value rather than ES's values map
+    if (op === 'percentiles') {
+      const percents = agg.percentiles.percents;
+      if (!Array.isArray(percents) || percents.length !== 1 || !(percents[0] >= 0 && percents[0] <= 100)) { throw chError('percentiles: one percent'); }
+      const level = Number(percents[0]) / 100;
+      return `ifNotFinite(quantileTDigest${this.isJsonArrayField(field) ? 'Array' : ''}(${level})(${col}), 0)`;
+    }
     // an array column holds many values per row; aggregate the values, as ES
     // does, not the arrays
     if (this.isJsonArrayField(field)) {
@@ -1019,7 +1037,7 @@ class DbCHImpl {
   }
 
   isMetricAgg (agg) {
-    return !!(agg.sum || agg.min || agg.max || agg.avg || agg.cardinality || agg.value_count);
+    return !!(agg.sum || agg.min || agg.max || agg.avg || agg.cardinality || agg.value_count || agg.percentiles);
   }
 
   async translateAggs (aggs, where) {
@@ -1138,7 +1156,7 @@ class DbCHImpl {
     const orderKey = Object.keys(terms.order || {})[0] || '_count';
     const orderDir = String(terms.order?.[orderKey] || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
     let orderExpr = 'doc_count';
-    if (orderKey === '_key') { orderExpr = tieExpr; } else if (orderKey !== '_count' && metricSubs.some(([subName]) => subName === orderKey)) { orderExpr = quoteIdent(orderKey); }
+    if (orderKey === '_key') { orderExpr = tieExpr; } else if (orderKey !== '_count' && metricSubs.some(([subName]) => subName === metricOrderName(orderKey))) { orderExpr = quoteIdent(metricOrderName(orderKey)); }
     const select = [`${keyExpr} AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
     // Like ES, rows without the field aren't a bucket: HAVING drops their
     // null/empty key before the LIMIT (so it can't take a top N slot) and
@@ -1158,14 +1176,15 @@ class DbCHImpl {
     await Promise.all([
       ...histoSubs.map(([subName, subAgg]) =>
         this.runTermsHistogramSub(buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where)),
-      ...buckets.map(async (bucket) => {
-        if (otherSubs.length === 0) { return; }
-        const filter = bucketWhereFn ? bucketWhereFn(bucket.key) : this.predicateForFieldValue(field, '=', bucket.key);
-        const bucketWhere = `(${where}) AND (${filter})`;
-        for (const [subName, subAgg] of otherSubs) {
-          bucket[subName] = await this.runAgg(subAgg, bucketWhere);
-        }
-      })
+      otherSubs.length === 0
+        ? undefined
+        : async.eachLimit(buckets, BUCKET_QUERY_CONCURRENCY, async (bucket) => {
+          const filter = bucketWhereFn ? bucketWhereFn(bucket.key) : this.predicateForFieldValue(field, '=', bucket.key);
+          const bucketWhere = `(${where}) AND (${filter})`;
+          for (const [subName, subAgg] of otherSubs) {
+            bucket[subName] = await this.runAgg(subAgg, bucketWhere);
+          }
+        })
     ]);
 
     return { doc_count_error_upper_bound: 0, sum_other_doc_count: sumOther, buckets };
@@ -1296,7 +1315,7 @@ class DbCHImpl {
     const orderKey = Object.keys(histo.order || {})[0] || '_key';
     const orderDir = String(histo.order?.[orderKey] || 'asc').toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
     let orderExpr = 'key';
-    if (orderKey === '_count') { orderExpr = 'doc_count'; } else if (orderKey !== '_key' && metricSubs.some(([subName]) => subName === orderKey)) { orderExpr = quoteIdent(orderKey); }
+    if (orderKey === '_count') { orderExpr = 'doc_count'; } else if (orderKey !== '_key' && metricSubs.some(([subName]) => subName === metricOrderName(orderKey))) { orderExpr = quoteIdent(metricOrderName(orderKey)); }
 
     // a row without the field isn't a bucket: the exists predicate keeps a
     // default valued column out, isNotNull a Nullable one
@@ -1310,13 +1329,13 @@ class DbCHImpl {
     });
 
     if (otherSubs.length) {
-      await Promise.all(buckets.map(async (bucket) => {
+      await async.eachLimit(buckets, BUCKET_QUERY_CONCURRENCY, async (bucket) => {
         const inRange = this.rangePredicate(field, [['>=', bucket.key], ['<', bucket.key + interval]]);
         const bucketWhere = `(${where}) AND (${inRange})`;
         for (const [subName, subAgg] of otherSubs) {
           bucket[subName] = await this.runAgg(subAgg, bucketWhere);
         }
-      }));
+      });
     }
     return { buckets };
   }

@@ -24,7 +24,7 @@ SPDX-License-Identifier: Apache-2.0
 
         <!-- start from a saved graph: fills everything below from it -->
         <v-select
-          v-if="!staticMode && !navMode && !graphOnly && savedGraphItems.length"
+          v-if="!staticMode && !navMode && !controlMode && !graphOnly && savedGraphItems.length"
           v-model="savedGraphId"
           :items="savedGraphItems"
           :label="$t('sessions.summary.widget.loadGraph')"
@@ -160,8 +160,47 @@ SPDX-License-Identifier: Apache-2.0
             :placeholder="titlePlaceholder">
         </div>
 
+        <!-- control: the variable its picks set, and whether they filter every widget -->
         <div
-          v-if="!staticMode && !navMode"
+          v-if="controlMode"
+          class="d-flex flex-wrap align-center gap-3 mb-3">
+          <div
+            class="arkime-input-group"
+            style="min-width: 240px">
+            <span
+              id="widgetVariable"
+              class="arkime-input-label cursor-help">
+              {{ $t('sessions.summary.widget.variable') }}
+              <v-tooltip
+                activator="#widgetVariable"
+                max-width="360">
+                {{ $t('sessions.summary.widget.variableTip', { ref: variableRef }) }}
+              </v-tooltip>
+            </span>
+            <input
+              v-model="form.variable"
+              type="text"
+              class="arkime-input-control"
+              spellcheck="false"
+              maxlength="40"
+              :placeholder="variablePlaceholder">
+          </div>
+          <span id="widgetApplyAll">
+            <v-checkbox
+              v-model="form.applyAll"
+              :label="$t('sessions.summary.widget.applyAll')"
+              density="compact"
+              hide-details />
+            <v-tooltip
+              activator="#widgetApplyAll"
+              max-width="360">
+              {{ $t('sessions.summary.widget.applyAllTip', { ref: variableRef }) }}
+            </v-tooltip>
+          </span>
+        </div>
+
+        <div
+          v-if="!staticMode && !navMode && !controlMode"
           class="d-flex flex-wrap gap-3 mb-3">
           <!-- Metric basis: Sessions count, or numeric field(s) aggregated per
                value. Tables take several metric columns + a sort-by; charts one. -->
@@ -189,6 +228,22 @@ SPDX-License-Identifier: Apache-2.0
               hide-details
               style="min-width: 160px" />
           </template>
+          <!-- combo / scatter: one metric per named slot (bars and line, or
+               x, y and bubble size) -->
+          <template v-else-if="slots">
+            <v-autocomplete
+              v-for="(slot, i) in slots"
+              :key="slot.key"
+              :model-value="slotValues[i]"
+              :items="slot.optional ? optionalMetricItems : metricItems"
+              :label="$t(`sessions.summary.widget.metricSlot-${slot.key}`)"
+              density="compact"
+              variant="outlined"
+              hide-details
+              auto-select-first
+              style="min-width: 180px"
+              @update:model-value="(v) => setSlot(i, v)" />
+          </template>
           <v-autocomplete
             v-else
             v-model="form.metricType"
@@ -200,8 +255,9 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             auto-select-first
             style="min-width: 200px" />
-          <!-- How the metric field(s) combine per value; only the summary-endpoint
-               modes take one, and it means nothing for the session count -->
+          <!-- How the metric field(s) combine per value: any aggregation on the
+               summary-endpoint modes, a sum or a percentile on the timeline and
+               heatmap; it means nothing for the session count -->
           <span
             v-if="aggEnabled"
             id="widgetMetricAgg"
@@ -286,7 +342,7 @@ SPDX-License-Identifier: Apache-2.0
               class="arkime-input-label cursor-help">
               {{ $t('sessions.summary.widget.splitField') }}
               <v-tooltip activator="#widgetSplitField">
-                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? 'sessions.summary.widget.splitTimelineTip' : timeOfDaySplit ? 'sessions.summary.widget.splitTimeOfDayTip' : 'sessions.summary.widget.splitPieTip') }}
+                {{ $t(barSplit ? 'sessions.summary.widget.splitFieldTip' : timelineSplit ? (areaMode ? 'sessions.summary.widget.splitAreaTip' : 'sessions.summary.widget.splitTimelineTip') : timeOfDaySplit ? 'sessions.summary.widget.splitTimeOfDayTip' : 'sessions.summary.widget.splitPieTip') }}
               </v-tooltip>
             </span>
             <ArkimeFieldTypeahead
@@ -325,7 +381,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-select
             v-if="timelineSplit"
             v-model="timelineDrawAs"
-            :items="drawAsItems"
+            :items="areaMode ? areaDrawAsItems : drawAsItems"
             :label="$t('sessions.summary.widget.seriesMode')"
             :disabled="!form.splitField"
             density="compact"
@@ -334,9 +390,9 @@ SPDX-License-Identifier: Apache-2.0
             style="min-width: 140px" />
         </div>
 
-        <!-- how a bar chart or timeline is drawn -->
+        <!-- how a bar chart, timeline or scatter is drawn -->
         <div
-          v-if="barSplit || timelineSplit"
+          v-if="barSplit || timelineSplit || scatterMode"
           class="d-flex flex-wrap gap-3 mb-3">
           <v-select
             v-if="barSplit"
@@ -348,7 +404,7 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             style="min-width: 140px" />
           <v-select
-            v-if="timelineSplit && !form.splitField"
+            v-if="timelineSplit && !areaMode && !form.splitField"
             v-model="form.seriesType"
             :items="seriesTypeItems"
             :label="$t('sessions.summary.widget.seriesMode')"
@@ -357,10 +413,10 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             style="min-width: 140px" />
           <v-select
-            v-if="timelineSplit"
+            v-if="timelineSplit || scatterMode"
             v-model="form.yScale"
             :items="yScaleItems"
-            :label="$t('sessions.summary.widget.yScale')"
+            :label="$t(scatterMode ? 'sessions.summary.widget.scale' : 'sessions.summary.widget.yScale')"
             density="compact"
             variant="outlined"
             hide-details
@@ -590,7 +646,8 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import FieldService from '../search/FieldService';
 import { createShareableService } from '../users/ShareableService';
 import { metricIsAdditive, fieldIsAggregatable } from './widgets/widgetData';
-import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH } from './widgets/viewModes';
+import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH, isTimelineMode, metricSlots, slotMetrics, metricAggsFor, isControlMode } from './widgets/viewModes';
+import { defaultVariableName, VARIABLE_NAME_RE } from './widgets/dashboardVariables';
 import { GRAPH_VIEW_MODES, graphFromWidget, nonNeg } from './dashboardConfig';
 import { columnSortDbField, fieldHasColumn } from './widgets/sessionsWidgetData';
 import { MAX_TEXT } from './widgets/miniMarkdown';
@@ -613,6 +670,11 @@ const props = defineProps({
   graphOnly: {
     type: Boolean,
     default: false
+  },
+  // the variables the dashboard's other controls set (a control can't reuse one)
+  takenVariables: {
+    type: Array,
+    default: () => []
   }
 });
 
@@ -649,6 +711,8 @@ const blankForm = () => ({
   order: 'desc',
   orderBy: 'value',
   sortField: '',
+  variable: '',
+  applyAll: true,
   width: 2,
   height: 3,
   expression: '',
@@ -723,6 +787,14 @@ const staticMode = computed(() => isStaticMode(form.value.viewMode));
 const navMode = computed(() => isNavMode(form.value.viewMode));
 // gauge: one metric over the result set, no field, plus a maximum and thresholds
 const gaugeMode = computed(() => isGaugeMode(form.value.viewMode));
+// control: a variable name (from its field when blank) and whether it filters every widget
+const controlMode = computed(() => isControlMode(form.value.viewMode));
+const variablePlaceholder = computed(() => defaultVariableName(form.value.field) || 'name');
+const variableRef = computed(() => `\${${form.value.variable?.trim() || variablePlaceholder.value}}`);
+// a widget switched to a control starts as one row, a control is a single picker
+watch(() => form.value.viewMode, (vm) => {
+  if (vm === 'control' && props.widget?.viewMode !== 'control' && form.value.height > 2) { form.value.height = 1; }
+});
 // connection tree: a root value and a depth on top of the connections pair
 const treeMode = computed(() => isTreeMode(form.value.viewMode));
 const treeDepthItems = TREE_DEPTHS.map(n => ({ title: String(n), value: n }));
@@ -733,14 +805,34 @@ const metricEnabled = computed(() => hasMetric(form.value.viewMode));
 // aggregation choice: only the summary-endpoint modes, and only once a metric
 // field (not the session count) is chosen
 const aggEnabled = computed(() => hasMetricAgg(form.value.viewMode));
-const aggApplies = computed(() => multiMetric.value
-  ? (form.value.metrics || []).some(m => m !== 'sessions')
-  : (form.value.metricType && form.value.metricType !== 'sessions'));
-const aggItems = computed(() => METRIC_AGGS.map(a => ({ title: t(`sessions.summary.agg.${a}`), value: a })));
+const aggApplies = computed(() => {
+  if (slots.value) { return slotValues.value.some(m => m && m !== 'sessions'); }
+  return multiMetric.value
+    ? (form.value.metrics || []).some(m => m !== 'sessions')
+    : (form.value.metricType && form.value.metricType !== 'sessions');
+});
+// combo / scatter: a metric per named slot, kept in metrics[] by position
+const slots = computed(() => metricSlots(form.value.viewMode));
+const slotValues = computed(() => slotMetrics(form.value));
+const setSlot = (i, value) => {
+  const next = [...slotValues.value];
+  next[i] = value || '';
+  form.value.metrics = next;
+};
+const scatterMode = computed(() => form.value.viewMode === 'scatter');
+// a multi viewer can't combine its clusters' percentiles, so it offers none
+const multiViewer = typeof MULTIVIEWER !== 'undefined' && !!MULTIVIEWER;
+// the aggregations the type takes: a spigraph-backed one a sum or a percentile
+const aggChoices = computed(() => metricAggsFor(form.value.viewMode, multiViewer));
+const aggItems = computed(() => aggChoices.value.map(a => ({ title: t(`sessions.summary.agg.${a}`), value: a })));
+watch(aggChoices, (choices) => {
+  if (!choices.includes(form.value.metricAgg)) { form.value.metricAgg = 'sum'; }
+});
 // bar/pie: optional split field (a bar's segments, or one pie per value)
 const splitEnabled = computed(() => allowsSplit(form.value.viewMode));
 const barSplit = computed(() => form.value.viewMode === 'bar');
-const timelineSplit = computed(() => form.value.viewMode === 'timeline');
+const timelineSplit = computed(() => isTimelineMode(form.value.viewMode));
+const areaMode = computed(() => form.value.viewMode === 'area');
 const timeOfDaySplit = computed(() => form.value.viewMode === 'timeofday');
 // a trend line only means something for a summed metric over the whole
 // result set (the timeline the metric widget can fold it from)
@@ -749,7 +841,8 @@ const sparklineEnabled = computed(() => form.value.viewMode === 'metric' && !for
 // a split timeline's "Draw as" is two settings at once: stacked bars, stacked
 // lines, or overlaid (grouped) lines
 const timelineDrawAs = computed({
-  get: () => (form.value.barMode === 'grouped' ? 'grouped-lines' : form.value.seriesType === 'lines' ? 'stacked-lines' : 'stacked-bars'),
+  // an area is always lines, so its stacked layout is the stacked lines one
+  get: () => (form.value.barMode === 'grouped' ? 'grouped-lines' : (areaMode.value || form.value.seriesType === 'lines') ? 'stacked-lines' : 'stacked-bars'),
   set: (v) => {
     form.value.barMode = v === 'grouped-lines' ? 'grouped' : 'stacked';
     form.value.seriesType = v === 'stacked-bars' ? 'bars' : 'lines';
@@ -760,10 +853,16 @@ const drawAsItems = computed(() => [
   { title: t('sessions.summary.widget.seriesMode-stackedLines'), value: 'stacked-lines' },
   { title: t('sessions.summary.widget.seriesMode-grouped'), value: 'grouped-lines' }
 ]);
+// a split area: stacked bands, or each value's area overlaid on the others
+const areaDrawAsItems = computed(() => [
+  { title: t('sessions.summary.widget.areaMode-stacked'), value: 'stacked-lines' },
+  { title: t('sessions.summary.widget.areaMode-grouped'), value: 'grouped-lines' }
+]);
 const seriesTypeItems = computed(() => SERIES_TYPES.map(m => ({ title: t(`sessions.summary.widget.seriesType-${m}`), value: m })));
 // percent is each series' share of the bucket, so it takes a stacked split
+// (and a scatter has no buckets to share)
 const yScaleItems = computed(() => Y_SCALES
-  .filter(m => m !== 'percent' || (form.value.splitField && form.value.barMode !== 'grouped'))
+  .filter(m => m !== 'percent' || (!scatterMode.value && form.value.splitField && form.value.barMode !== 'grouped'))
   .map(m => ({ title: t(`sessions.summary.widget.yScale-${m}`), value: m })));
 watch(yScaleItems, (items) => {
   if (!items.some(i => i.value === form.value.yScale)) { form.value.yScale = 'linear'; }
@@ -825,12 +924,22 @@ const metricItems = computed(() => [
   { title: t('sessions.summary.sessions'), value: 'sessions' },
   ...metricFields.value
 ]);
+// a slot that may be left unset (a scatter's bubble size)
+const optionalMetricItems = computed(() => [
+  { title: t('sessions.summary.widget.metricSlotNone'), value: '' },
+  ...metricItems.value
+]);
 
 // leaving the unique-count aggregation drops any non-numeric metric field(s)
 watch(() => form.value.metricAgg, (agg) => {
   if (agg === 'cardinality') { return; }
   const numeric = (exp) => exp === 'sessions' || FieldService.getField(exp, true)?.type === 'integer';
   if (!numeric(form.value.metricType)) { form.value.metricType = 'sessions'; }
+  // a slotted chart's metrics are positional: a dropped one falls back to its slot's default
+  if (slots.value) {
+    form.value.metrics = slotValues.value.map((m, i) => (!m || numeric(m) ? m : slots.value[i].default));
+    return;
+  }
   if (Array.isArray(form.value.metrics)) { form.value.metrics = form.value.metrics.filter(numeric); }
 });
 
@@ -917,6 +1026,8 @@ const fillForm = (w) => {
     gaugeCrit: w.gaugeCrit > 0 ? w.gaugeCrit : 0,
     text: w.text || '',
     sortField: w.sortField || '',
+    variable: w.variable || '',
+    applyAll: w.applyAll !== false,
     expression: w.expression || '',
     view: w.view || '',
     title: w.title || ''
@@ -1027,9 +1138,19 @@ const save = () => {
     error.value = t('sessions.summary.widget.exactFieldsRequired', { count: minFields.value });
     return;
   }
+  const variable = form.value.variable?.trim() || '';
+  if (controlMode.value && variable && !VARIABLE_NAME_RE.test(variable)) {
+    error.value = t('sessions.summary.widget.variableInvalid');
+    return;
+  }
+  const varName = variable || defaultVariableName(fieldList[0]);
+  if (controlMode.value && props.takenVariables.includes(varName)) {
+    error.value = t('sessions.summary.widget.variableTaken', { ref: `\${${varName}}` });
+    return;
+  }
   // resolve the metric(s): tables carry a metrics[] list + a sort-by; charts one.
   // metricType stays the primary (sort) metric for charts + back-compat.
-  const metrics = multiMetric.value ? (form.value.metrics || []).slice(0, 4) : [];
+  let metrics = multiMetric.value ? (form.value.metrics || []).slice(0, 4) : [];
   let sortMetric = form.value.sortMetric || 'sessions';
   if (multiMetric.value && sortMetric !== 'sessions' && !metrics.includes(sortMetric)) {
     sortMetric = metrics[0] || 'sessions';
@@ -1039,12 +1160,20 @@ const save = () => {
   // metric field; anything else would ask for a sum of text
   // a count has no aggregation: an agg picked for an earlier metric field
   // must not stick to it (the select is hidden, so the user can't see it)
-  const metricAgg = aggEnabled.value && aggApplies.value ? (form.value.metricAgg || 'sum') : 'sum';
+  const wanted = aggEnabled.value && aggApplies.value ? (form.value.metricAgg || 'sum') : 'sum';
+  const metricAgg = aggChoices.value.includes(wanted) ? wanted : 'sum';
   if (metricAgg !== 'cardinality') {
     const numeric = (exp) => exp === 'sessions' || FieldService.getField(exp, true)?.type === 'integer';
     if (!numeric(metricType)) { metricType = 'sessions'; }
     for (let i = metrics.length - 1; i >= 0; i--) { if (!numeric(metrics[i])) { metrics.splice(i, 1); } }
     if (!numeric(sortMetric)) { sortMetric = metrics[0] || 'sessions'; }
+  }
+  // a combo or scatter keeps one metric per slot, the first ranking its values
+  if (slots.value) {
+    const numeric = (exp) => metricAgg === 'cardinality' || exp === 'sessions' || FieldService.getField(exp, true)?.type === 'integer';
+    metrics = slotValues.value.map((m, i) => (!m || numeric(m) ? m : slots.value[i].default));
+    metricType = metrics[0] || 'sessions';
+    sortMetric = metricType;
   }
   emit('save', {
     ...props.widget,
@@ -1055,13 +1184,13 @@ const save = () => {
     metricType,
     metrics,
     metricAgg,
-    sortMetric: multiMetric.value ? sortMetric : metricType,
+    sortMetric: multiMetric.value || slots.value ? sortMetric : metricType,
     splitField: splitEnabled.value ? (form.value.splitField || '') : '',
     splitLength: form.value.splitLength || 5,
     barMode: additiveMetric.value ? (form.value.barMode || 'stacked') : 'grouped',
     orientation: barSplit.value && form.value.orientation === 'horizontal' ? 'horizontal' : 'vertical',
     seriesType: timelineSplit.value && form.value.seriesType === 'lines' ? 'lines' : 'bars',
-    yScale: timelineSplit.value && yScaleItems.value.some(i => i.value === form.value.yScale) ? form.value.yScale : 'linear',
+    yScale: (timelineSplit.value || scatterMode.value) && yScaleItems.value.some(i => i.value === form.value.yScale) ? form.value.yScale : 'linear',
     sparkline: sparklineEnabled.value && !!form.value.sparkline,
     other: otherEnabled.value && additiveMetric.value && !!form.value.other,
     bucketInterval: bucketEnabled.value ? nonNeg(form.value.bucketInterval) : 0,
@@ -1075,6 +1204,8 @@ const save = () => {
     order: form.value.order,
     orderBy: orderEnabled.value && !listMode.value && form.value.orderBy === 'key' ? 'key' : 'value',
     sortField: listMode.value ? (form.value.sortField || '') : '',
+    variable: controlMode.value ? variable : '',
+    applyAll: !controlMode.value || form.value.applyAll !== false,
     width: form.value.width,
     height: form.value.height,
     // local filter only applies to field-bound widgets

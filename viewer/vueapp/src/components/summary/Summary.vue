@@ -44,6 +44,7 @@ SPDX-License-Identifier: Apache-2.0
         :metric-type="tooltipMetricType"
         :metric-agg="tooltipMetricAgg"
         :split="tooltipSplit"
+        :rows="tooltipRows"
         @close="hideTooltip" />
 
       <!-- empty state when no widgets configured -->
@@ -175,6 +176,19 @@ SPDX-License-Identifier: Apache-2.0
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- each top value's bars and line, or its point placed by two metrics -->
+          <MetricsChartWidget
+            v-else-if="metricSlots(w.viewMode)"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
+            @show-tooltip="showTooltip"
+            @hide-tooltip="hideTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <!-- one field's values down the side, another's across the top -->
           <MatrixWidget
             v-else-if="w.viewMode === 'matrix'"
@@ -208,7 +222,7 @@ SPDX-License-Identifier: Apache-2.0
             @remove="removeWidgetLocal(w)" />
           <!-- session-wide widgets: fed by the host's global stats chunk -->
           <TimelineWidget
-            v-else-if="w.viewMode === 'timeline'"
+            v-else-if="isTimelineMode(w.viewMode)"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
@@ -255,6 +269,14 @@ SPDX-License-Identifier: Apache-2.0
             :link="widgetLinks[w.id]"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- a filter control: picks values of a field as a dashboard variable -->
+          <ControlWidget
+            v-else-if="w.viewMode === 'control'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :info-items="widgetInfo(w)"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <!-- links to the system and saved dashboards -->
           <NavigationWidget
             v-else-if="w.viewMode === 'navigation'"
@@ -296,6 +318,7 @@ SPDX-License-Identifier: Apache-2.0
     <SummaryWidgetEditModal
       :show="editModalShow"
       :widget="editingWidget"
+      :taken-variables="takenVariables"
       @close="onEditClose"
       @save="onEditSave" />
 
@@ -328,6 +351,7 @@ import setReqHeaders from '@common/setReqHeaders';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import MatrixWidget from './widgets/MatrixWidget.vue';
+import MetricsChartWidget from './widgets/MetricsChartWidget.vue';
 import TimeOfDayWidget from './widgets/TimeOfDayWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
@@ -348,8 +372,10 @@ import MetricWidget from './widgets/MetricWidget.vue';
 import MarkdownWidget from './widgets/MarkdownWidget.vue';
 import GaugeWidget from './widgets/GaugeWidget.vue';
 import NavigationWidget from './widgets/NavigationWidget.vue';
+import ControlWidget from './widgets/ControlWidget.vue';
+import { controlVariable, substituteExpression } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode } from './widgets/viewModes';
+import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics } from './widgets/viewModes';
 import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
@@ -511,6 +537,7 @@ const tooltipFieldConfig = ref(null);
 const tooltipMetricType = ref('sessions');
 const tooltipMetricAgg = ref('sum');
 const tooltipSplit = ref(null);
+const tooltipRows = ref(null); // a combo's or scatter's metrics, formatted
 
 // Save SVG as PNG will be loaded lazily (for export functionality)
 let saveSvgAsPng;
@@ -542,16 +569,25 @@ const toRequestWidget = (w) => ({
   ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
   ...(allowsOther(w.viewMode) && w.other ? { other: true } : {}),
   ...(allowsBucketInterval(w.viewMode) && w.bucketInterval > 0 ? { bucketInterval: w.bucketInterval } : {}),
-  expression: widgetLocalExpression(w, store.state.views)
+  expression: widgetLocalExpression(w, store.state.views, store.state.dashboardVariables)
 });
 
 // Each widget as saved-graph data (null for the ones that aren't graphs), so
 // the card can offer "save as graph"; the card opens the dialog through the
 // provided function rather than threading an event through every widget.
-// Built from the definitions, so streamed data chunks don't rebuild it
+// Built from the definitions, so streamed data chunks don't rebuild it.
+// A graph has no controls, so its filter keeps the ${name} values picked now
+// the variables the other controls set, which the one being edited can't reuse
+const takenVariables = computed(() => props.widgets
+  .filter(w => w.viewMode === 'control' && w.field && w.id !== editingWidget.value?.id)
+  .map(controlVariable));
+
 const widgetGraphs = computed(() => {
   const graphs = Object.create(null); // keyed by widget ids from saved/shared configs
-  for (const w of props.widgets) { if (widgetIsGraph(w)) { graphs[w.id] = graphFromWidget(w); } }
+  const vars = store.state.dashboardVariables;
+  for (const w of props.widgets) {
+    if (widgetIsGraph(w)) { graphs[w.id] = graphFromWidget({ ...w, expression: substituteExpression(w.expression, vars) || '' }); }
+  }
   return graphs;
 });
 const graphSaveShow = ref(false);
@@ -596,12 +632,23 @@ const widgetInfo = (w) => {
       rows.push({ label: t('sessions.summary.widget.sortBy'), value: metricName(w.sortMetric) });
     }
   }
+  // a combo's bars and line, a scatter's x, y and bubble size
+  const slots = metricSlots(w.viewMode);
+  if (slots) {
+    const agg = w.metricAgg || 'sum';
+    slotMetrics(w).forEach((m, i) => {
+      if (!m) { return; }
+      rows.push({ label: t(`sessions.summary.widget.metricSlot-${slots[i].key}`), value: metricLabel(m, m === 'sessions' ? 'sum' : agg, t) });
+    });
+  }
 
   if (allowsSplit(w.viewMode) && w.splitField) {
     const fieldName = FieldService.getField(w.splitField, true)?.friendlyName || w.splitField;
     let layout = '';
     if (w.viewMode === 'bar') { layout = `${t(`sessions.summary.widget.barMode-${w.barMode || 'stacked'}`)}, `; }
-    if (w.viewMode === 'timeline') {
+    if (w.viewMode === 'area') {
+      layout = `${t(`sessions.summary.widget.areaMode-${w.barMode === 'grouped' ? 'grouped' : 'stacked'}`)}, `;
+    } else if (w.viewMode === 'timeline') {
       const mode = w.barMode === 'grouped' ? 'grouped' : w.seriesType === 'lines' ? 'stackedLines' : 'stacked';
       layout = `${t(`sessions.summary.widget.seriesMode-${mode}`)}, `;
     }
@@ -615,7 +662,7 @@ const widgetInfo = (w) => {
   if (w.viewMode === 'timeline' && !w.splitField && w.seriesType === 'lines') {
     rows.push({ label: t('sessions.summary.widget.seriesMode'), value: t('sessions.summary.widget.seriesType-lines') });
   }
-  if (w.viewMode === 'timeline' && w.yScale && w.yScale !== 'linear') {
+  if ((isTimelineMode(w.viewMode) || w.viewMode === 'scatter') && w.yScale && w.yScale !== 'linear') {
     rows.push({ label: t('sessions.summary.widget.yScale'), value: t(`sessions.summary.widget.yScale-${w.yScale}`) });
   }
   if (w.viewMode === 'metric' && w.sparkline && !w.field) {
@@ -624,6 +671,11 @@ const widgetInfo = (w) => {
 
   if (allowsBucketInterval(w.viewMode) && w.bucketInterval > 0) {
     rows.push({ label: t('sessions.summary.widget.bucketInterval'), value: `${w.bucketInterval}` });
+  }
+
+  if (w.viewMode === 'control') {
+    rows.push({ label: t('sessions.summary.widget.variable'), value: `\${${controlVariable(w)}}` });
+    rows.push({ label: t('sessions.summary.widget.applyAll'), value: t(w.applyAll !== false ? 'common.yes' : 'common.no') });
   }
 
   if (isTreeMode(w.viewMode)) {
@@ -992,6 +1044,7 @@ const showTooltip = (evt) => {
   tooltipMetricType.value = evt.metricType || 'sessions';
   tooltipMetricAgg.value = evt.metricAgg || 'sum';
   tooltipSplit.value = evt.split || null;
+  tooltipRows.value = evt.rows || null;
   tooltipVisible.value = true;
 };
 
@@ -1003,6 +1056,7 @@ const hideTooltip = () => {
   tooltipMetricType.value = 'sessions';
   tooltipMetricAgg.value = 'sum';
   tooltipSplit.value = null;
+  tooltipRows.value = null;
 };
 
 // Close tooltip on outside click
@@ -1637,17 +1691,25 @@ defineExpose({
   visibility: visible;
 }
 
-/* Info icon + action buttons (edit/export/remove) reveal on hover like the drag
-   handle. :focus-within keeps them reachable by keyboard. */
+/* Info icon + action buttons (edit/export/remove) take no room until hover,
+   so the title gets the whole row; on hover the title shortens to make room
+   for them. The header keeps the buttons' height so revealing them doesn't
+   move the widget's body. :focus-within keeps them reachable by keyboard
+   (d-flex is !important, so these are too) */
+.widget-wrapper :deep(.widget-header) {
+  min-height: 37px;
+}
 .widget-wrapper :deep(.widget-actions),
 .widget-wrapper :deep(.widget-info-icon) {
-  visibility: hidden;
+  display: none !important;
 }
 .widget-wrapper:hover :deep(.widget-actions),
+.widget-wrapper:focus-within :deep(.widget-actions) {
+  display: flex !important;
+}
 .widget-wrapper:hover :deep(.widget-info-icon),
-.widget-wrapper:focus-within :deep(.widget-actions),
 .widget-wrapper:focus-within :deep(.widget-info-icon) {
-  visibility: visible;
+  display: inline-flex !important;
 }
 .widget-resize--e {
   top: 0;

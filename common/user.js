@@ -706,13 +706,21 @@ class User {
   /**
    * POST - /api/users/min
    *
-   * Retrieves a list of users (non-admin usable [with role status returned only for roleAssigners]).
+   * Retrieves a list of users. Without a roleId the user must be a usersAdmin; roleAssigners must send a roleId
+   * they can assign and get the role status back.
    * @name /users/min
-   * @param {string} roleId - Optional roleId to match against
+   * @param {string} roleId - Optional roleId to match against, required unless the user is a usersAdmin
    * @returns {boolean} success - True if the request was successful, false otherwise
    * @returns {ArkimeUserInfo[]} data - The list of users configured.
    */
   static apiGetUsersMin (req, res, next) {
+    // Without a roleId this lists every user, which only the usersAdmin pages need. A roleAssigner
+    // always sends a roleId, and checkAssignableRole has already checked they can assign it.
+    if (!ArkimeUtil.isString(req.body.roleId) && !req.user.hasRole('usersAdmin')) {
+      console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, no roleId and not usersAdmin`);
+      return res.serverError(403, 'You do not have permission to access this resource');
+    }
+
     const query = {
       from: 0,
       size: 10000,

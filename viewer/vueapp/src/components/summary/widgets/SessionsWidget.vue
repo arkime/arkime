@@ -210,8 +210,9 @@ const exportCSV = () => {
   top: 0;
   background: rgb(var(--v-theme-quaternary-lightest));
   font-weight: 600;
-  /* above the detail's own positioned bits (tabs, toolbars) */
-  z-index: 2;
+  /* above the detail's own positioned bits (tabs, toolbars) and the cells'
+     session fields (z-index 1, 4 while hovered) */
+  z-index: 5;
 }
 .sessions-widget-table .toggle-col {
   width: 1%;

@@ -119,7 +119,7 @@ SPDX-License-Identifier: Apache-2.0
 
 <script>
 import moment from 'moment-timezone';
-import { metricHistoKeys } from '../visualizations/metrics.js';
+import { metricHistoKeys, parsePercentileKey } from '../visualizations/metrics.js';
 import { heatmapInterpolator } from '../summary/widgets/chartColors';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 
@@ -161,8 +161,11 @@ export default {
     },
     metricLabel () {
       if (this.metric === 'sessionsHisto') { return this.$t('spigraph.sessions'); }
-      const filter = this.timelineDataFilters.find(f => f.dbField === this.metric.slice(0, -5));
-      return filter?.friendlyName || this.metric;
+      // a percentile of a metric reads as "P95 Bytes"
+      const pct = parsePercentileKey(this.metric);
+      const dbField = pct ? pct.dbField : this.metric.slice(0, -5);
+      const label = this.timelineDataFilters.find(f => f.dbField === dbField)?.friendlyName || (pct ? dbField : this.metric);
+      return pct ? `${this.$t(`sessions.summary.agg.${pct.agg}`)} ${label}` : label;
     },
     // legend bar gradient matching the cell palette (empty -> CSS accent gradient)
     legendGradient () {
@@ -220,15 +223,18 @@ export default {
       const { xmin } = this.bounds;
       if (!xmin || !this.cols.length) { return []; }
       const span = this.colSpanMs;
+      // a percentile doesn't add up: a column holding several buckets shows
+      // the highest, and a value's total is its percentile over the range
+      const percentile = !!parsePercentileKey(this.metric);
       const rows = this.items.map((item) => {
         const values = new Array(this.cols.length).fill(0);
         for (const key of this.metricKeys) {
           for (const [ts, val] of (item.graph?.[key] || [])) {
             const idx = Math.floor((ts - xmin) / span);
-            if (idx >= 0 && idx < values.length) { values[idx] += val; }
+            if (idx >= 0 && idx < values.length) { values[idx] = percentile ? Math.max(values[idx], val || 0) : values[idx] + val; }
           }
         }
-        const total = values.reduce((a, b) => a + b, 0);
+        const total = percentile ? Math.round((item[this.metric] || 0) * 100) / 100 : values.reduce((a, b) => a + b, 0);
         return { name: item.name, values, total };
       });
       if (this.sortBy === 'name') {

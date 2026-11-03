@@ -162,7 +162,9 @@ const exportCSV = () => {
   top: 0;
   background: rgb(var(--v-theme-quaternary-lightest));
   font-weight: 600;
-  z-index: 1;
+  /* above the value cells' session fields (z-index 1, 4 while hovered),
+     which would otherwise draw over the header as they scroll under it */
+  z-index: 5;
 }
 /* a faint divider between each field's column pair */
 .mf-table th:nth-of-type(odd):not(:first-of-type),

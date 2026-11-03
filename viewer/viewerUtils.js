@@ -19,7 +19,9 @@ const internals = require('./internals');
 const PacketPortal = require('./packetPortal');
 
 class ViewerUtils {
-  static METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality'];
+  // a percentile's metricAgg name -> the percent it asks for (p50 is the median)
+  static PERCENTILE_AGGS = { p50: 50, p90: 90, p95: 95, p99: 99 };
+  static METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality', ...Object.keys(ViewerUtils.PERCENTILE_AGGS)];
   static #oldDBFields = new Map();
   static #caTrustCerts = new Map();
   static #hostnameRE = /^(?:[a-zA-Z0-9._-]+|\[[0-9a-fA-F:]+\])$/;
@@ -101,6 +103,34 @@ class ViewerUtils {
   // The aggregation a dashboard metric uses per bucket; anything unknown is a sum.
   static metricAgg (agg) {
     return ViewerUtils.METRIC_AGGS.includes(agg) ? agg : 'sum';
+  }
+
+  // ----------------------------------------------------------------------------
+  // The percent a percentile metricAgg (p50, p95, ...) asks for, else undefined.
+  static metricPercent (agg) {
+    return Object.hasOwn(ViewerUtils.PERCENTILE_AGGS, agg) ? ViewerUtils.PERCENTILE_AGGS[agg] : undefined;
+  }
+
+  // ----------------------------------------------------------------------------
+  // The aggregation for one percentile of a field. Every backend answers it as
+  // ES does ({ values: { '95.0': n } }) or, for ClickHouse, as a single value.
+  static percentileAgg (field, percent) {
+    return { percentiles: { field, percents: [percent] } };
+  }
+
+  // ----------------------------------------------------------------------------
+  // The terms/histogram order path of a percentile aggregation (ES's
+  // multi-value metric syntax, name[95.0]).
+  static percentileOrderKey (aggName, percent) {
+    return `${aggName}[${Number(percent).toFixed(1)}]`;
+  }
+
+  // ----------------------------------------------------------------------------
+  // A percentile aggregation's value: ES's values map (null for a bucket with
+  // no values), or a plain value; 0 when there is none.
+  static percentileValue (result) {
+    const v = result?.values ? Object.values(result.values)[0] : result?.value;
+    return typeof v === 'number' && Number.isFinite(v) ? v : 0;
   }
 
   // ----------------------------------------------------------------------------
@@ -273,6 +303,14 @@ class ViewerUtils {
       graph[filter + 'Total'] = 0;
     }
 
+    // a SPI Graph percentile: its own series, and a total that is the
+    // percentile over the whole range (from the query's top level aggregation)
+    const pct = req.metricPercentile;
+    if (pct) {
+      graph[pct.key + 'Histo'] = [];
+      graph[pct.key + 'Total'] = ViewerUtils.percentileValue(aggregations?.[pct.key]);
+    }
+
     // the hour of week fold: hour buckets become a week of slots, placed once
     // per request (a SPI Graph request merges a graph per value)
     const hourOfWeek = req.query.interval === 'hourOfWeek';
@@ -289,6 +327,7 @@ class ViewerUtils {
       // always add session information
       graph.sessionsHisto.push([key, item.doc_count]);
       graph.sessionsTotal += item.doc_count;
+      if (pct) { graph[pct.key + 'Histo'].push([key, ViewerUtils.percentileValue(item[pct.key])]); }
 
       for (const prop in item) {
         // excluding every item prop that isn't a summed up aggregate collection (ie. es keys)

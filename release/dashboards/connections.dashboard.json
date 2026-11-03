@@ -13,7 +13,43 @@
       },
       {
         "id": "w1",
-        "viewMode": "timeline",
+        "field": "ip.protocol",
+        "viewMode": "control",
+        "width": 1,
+        "height": 1,
+        "length": 20,
+        "title": "IP protocol"
+      },
+      {
+        "id": "w2",
+        "field": "protocols",
+        "viewMode": "control",
+        "width": 1,
+        "height": 1,
+        "length": 20,
+        "title": "Service"
+      },
+      {
+        "id": "w3",
+        "field": "port.dst",
+        "viewMode": "control",
+        "width": 1,
+        "height": 1,
+        "length": 20,
+        "title": "Destination port"
+      },
+      {
+        "id": "w4",
+        "field": "node",
+        "viewMode": "control",
+        "width": 1,
+        "height": 1,
+        "length": 20,
+        "title": "Capture node"
+      },
+      {
+        "id": "w5",
+        "viewMode": "area",
         "splitField": "protocols",
         "splitLength": 10,
         "barMode": "stacked",
@@ -22,7 +58,7 @@
         "title": "Sessions by protocol"
       },
       {
-        "id": "w2",
+        "id": "w6",
         "viewMode": "timeline",
         "splitField": "protocols",
         "splitLength": 10,
@@ -33,13 +69,13 @@
         "yScale": "percent"
       },
       {
-        "id": "w3",
+        "id": "w7",
         "viewMode": "stats",
         "width": 2,
         "height": 1
       },
       {
-        "id": "w4",
+        "id": "w8",
         "viewMode": "gauge",
         "metricType": "bytes",
         "metricAgg": "avg",
@@ -48,7 +84,7 @@
         "title": "Avg bytes/session"
       },
       {
-        "id": "w5",
+        "id": "w9",
         "viewMode": "gauge",
         "metricType": "packets",
         "metricAgg": "avg",
@@ -57,7 +93,7 @@
         "title": "Avg packets/session"
       },
       {
-        "id": "w6",
+        "id": "w10",
         "field": "ip.src",
         "viewMode": "table",
         "width": 2,
@@ -72,7 +108,7 @@
         "title": "Sources by bytes"
       },
       {
-        "id": "w7",
+        "id": "w11",
         "field": "ip.dst",
         "viewMode": "table",
         "width": 2,
@@ -87,9 +123,9 @@
         "title": "Destinations by bytes"
       },
       {
-        "id": "w8",
+        "id": "w12",
         "field": "port.dst",
-        "viewMode": "table",
+        "viewMode": "combo",
         "width": 2,
         "height": 3,
         "length": 20,
@@ -97,12 +133,12 @@
           "sessions",
           "bytes"
         ],
-        "sortMetric": "sessions",
         "metricType": "sessions",
-        "title": "Top destination ports"
+        "sortMetric": "sessions",
+        "title": "Top destination ports: sessions and bytes"
       },
       {
-        "id": "w9",
+        "id": "w13",
         "field": "packets",
         "viewMode": "bar",
         "width": 2,
@@ -112,7 +148,7 @@
         "title": "Sessions by packet count (ranges of 10)"
       },
       {
-        "id": "w10",
+        "id": "w14",
         "field": "ip.protocol",
         "viewMode": "pie",
         "width": 2,
@@ -122,17 +158,44 @@
         "title": "IP protocols"
       },
       {
-        "id": "w11",
-        "field": "session.length",
+        "id": "w15",
+        "field": "protocols",
         "viewMode": "bar",
         "width": 2,
         "height": 3,
-        "length": 20,
-        "bucketInterval": 10000,
-        "title": "Session length in ms (ranges of 10 s)"
+        "length": 15,
+        "metricType": "session.length",
+        "metricAgg": "p95",
+        "title": "p95 session length by protocol (ms)"
       },
       {
-        "id": "w12",
+        "id": "w16",
+        "viewMode": "timeline",
+        "width": 2,
+        "height": 2,
+        "title": "p95 session length over time (ms)",
+        "metricType": "session.length",
+        "metricAgg": "p95",
+        "seriesType": "lines"
+      },
+      {
+        "id": "w17",
+        "field": "ip.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "session.length"
+        ],
+        "sortMetric": "session.length",
+        "metricType": "session.length",
+        "metricAgg": "p95",
+        "title": "Longest destinations: p95 session length (ms)"
+      },
+      {
+        "id": "w18",
         "field": "ip.protocol",
         "fields": [
           "ip.protocol",
@@ -145,7 +208,7 @@
         "title": "IP protocols by destination port"
       },
       {
-        "id": "w13",
+        "id": "w19",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -154,7 +217,7 @@
         "expression": "tcpflags.syn > 0 && tcpflags.syn-ack == 0"
       },
       {
-        "id": "w14",
+        "id": "w20",
         "viewMode": "gauge",
         "metricType": "initRTT",
         "metricAgg": "avg",
@@ -163,7 +226,7 @@
         "title": "Avg initial RTT, ms"
       },
       {
-        "id": "w15",
+        "id": "w21",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -172,7 +235,7 @@
         "sparkline": true
       },
       {
-        "id": "w16",
+        "id": "w22",
         "viewMode": "metric",
         "width": 1,
         "height": 1,
@@ -181,7 +244,7 @@
         "sparkline": true
       },
       {
-        "id": "w17",
+        "id": "w23",
         "field": "oui.src",
         "viewMode": "table",
         "width": 2,
@@ -190,7 +253,7 @@
         "title": "Source MAC vendors"
       },
       {
-        "id": "w18",
+        "id": "w24",
         "field": "oui.dst",
         "viewMode": "table",
         "width": 2,
@@ -199,7 +262,7 @@
         "title": "Destination MAC vendors"
       },
       {
-        "id": "w19",
+        "id": "w25",
         "field": "country.src",
         "viewMode": "map",
         "width": 2,
@@ -208,7 +271,7 @@
         "title": "Source countries by bytes"
       },
       {
-        "id": "w20",
+        "id": "w26",
         "field": "country.dst",
         "viewMode": "map",
         "width": 2,
@@ -217,7 +280,24 @@
         "title": "Destination countries by bytes"
       },
       {
-        "id": "w21",
+        "id": "w27",
+        "field": "ip.src",
+        "viewMode": "scatter",
+        "width": 4,
+        "height": 3,
+        "length": 50,
+        "metrics": [
+          "sessions",
+          "bytes",
+          "packets"
+        ],
+        "metricType": "sessions",
+        "sortMetric": "sessions",
+        "yScale": "log",
+        "title": "Sources by sessions and bytes (point size: packets)"
+      },
+      {
+        "id": "w28",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -231,7 +311,7 @@
         "title": "Top paths: source, destination port, destination"
       },
       {
-        "id": "w22",
+        "id": "w29",
         "field": "ip.src",
         "fields": [
           "ip.src",
@@ -244,7 +324,7 @@
         "title": "Connection graph"
       },
       {
-        "id": "w23",
+        "id": "w30",
         "field": "ip.src",
         "fields": [
           "ip.src",
