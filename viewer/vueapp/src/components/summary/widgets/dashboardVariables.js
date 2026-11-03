@@ -62,6 +62,15 @@ export const withoutPicks = (vars, varName) => (varName && Object.hasOwn(vars ||
   ? { ...vars, [varName]: { ...vars[varName], values: [] } }
   : vars);
 
+/** The url query without the picks of some variables (a renamed or removed
+ *  control), or of every variable when none are named. */
+export const withoutVariableParams = (query, names) => {
+  const out = { ...(query || {}) };
+  const keys = names ? names.map(n => `${VARIABLE_PARAM_PREFIX}${n}`) : Object.keys(out).filter(k => k.startsWith(VARIABLE_PARAM_PREFIX));
+  for (const key of keys) { delete out[key]; }
+  return out;
+};
+
 /** The filter a control adds to every widget: field == the picked values. */
 export const controlFilter = (field, values) => buildListExpression(field, values, '==');
 

@@ -57,6 +57,25 @@ const {
 const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
 const { widgetFullPageLink, widgetFields, hierarchyFields, pageExpression, combinedExpression, metricHistoKey } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 const { findTreeRoot, buildConnectionTree, MAX_TREE_CHILDREN, MAX_TREE_NODES } = await import('../viewer/vueapp/src/components/summary/widgets/connectionTree.js');
+const { showsOwnLayout, defaultDashboardId, FALLBACK_DEFAULT_ID } = await import('../viewer/vueapp/src/components/summary/systemDashboards.js');
+
+describe('the dashboard the Arkime tab shows', () => {
+  test('the own layout only with no pick and a state of its own widgets', () => {
+    const own = { widgets: [{ viewMode: 'bar', field: 'ip.src' }] };
+    assert.equal(showsOwnLayout({}, own), true);
+    assert.equal(showsOwnLayout(undefined, own), true);
+    assert.equal(showsOwnLayout({ defaultDashboardId: 'abc' }, own), false, 'a picked default comes first');
+    assert.equal(showsOwnLayout({}, { ...own, dashboardId: 'abc' }), false, 'a copy of a saved dashboard is not its own');
+    assert.equal(showsOwnLayout({}, { widgets: [] }), false);
+    assert.equal(showsOwnLayout({}, { fields: [{ field: 'ip.src' }] }), false, 'a v6 state has no widgets');
+    assert.equal(showsOwnLayout({}, null), false);
+  });
+
+  test('the default is the pick, else the Overview', () => {
+    assert.equal(defaultDashboardId({ defaultDashboardId: 'abc' }), 'abc');
+    assert.equal(defaultDashboardId({}), FALLBACK_DEFAULT_ID);
+  });
+});
 
 const graph = (overrides) => graphFromWidget(overrides);
 

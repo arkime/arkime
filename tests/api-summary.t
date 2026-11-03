@@ -1,4 +1,4 @@
-use Test::More tests => 197;
+use Test::More tests => 200;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -313,6 +313,19 @@ foreach my $item (@{$bChunk->{data}}) {
     $prev = $item->{value};
 }
 ok($sorted, "bottom-N metric data is ranked ascending");
+
+# the default order of widgets without one comes from the query, like the
+# default length (a GET's, or a POST url's: the body is merged into the query)
+my $qOrder = viewerPost("/api/sessions/summary?date=-1&order=asc&length=3", to_json({ fields => 'ip.src' }));
+my $qChunk = getChunk($qOrder, 'w0');
+ok(defined $qChunk && @{$qChunk->{data}} > 0 && @{$qChunk->{data}} <= 3, "query order: the legacy fields widget takes the query length");
+is($qChunk->{order}, 'asc', "query order: order=asc in the url is the widget's order");
+($sorted, $prev) = (1, undef);
+foreach my $item (@{$qChunk->{data}}) {
+    $sorted = 0 if defined $prev && $item->{sessions} < $prev;
+    $prev = $item->{sessions};
+}
+ok($sorted, "query order: order=asc in the url ranks ascending");
 
 # metricAgg - max/avg/cardinality replace the per-bucket sum
 $chunks = postSummary("/api/sessions/summary?date=-1", {

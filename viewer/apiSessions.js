@@ -2418,6 +2418,13 @@ class SessionAPIs {
       req.query.metricField = metricDbField;
     }
     const pct = req.metricPercentile;
+    // a sort by a percentile series the items won't carry (an hour of week fold
+    // sums instead, or another percentile than metricAgg's) ranks by the
+    // field's sum, the <dbField>Histo series they do carry
+    const pctSort = /^(.+):p\d+Histo$/.exec(req.query.sort || '');
+    if (pctSort && !(pct && req.query.sort === `${pct.key}Histo`)) {
+      req.query.sort = `${pctSort[1]}Histo`;
+    }
 
     BuildQuery.build(req, (bsqErr, query, indices) => {
       const results = { items: [], graph: {}, map: {} };
@@ -2803,8 +2810,10 @@ class SessionAPIs {
           }
         }
 
-        addDataToPie(result.aggregations.field, hierarchicalResults.children);
-        addDataToTable([], result.aggregations.field.buckets);
+        // a search with no aggregations (nothing matched the indices) is an empty hierarchy
+        const topAgg = result.aggregations?.field ?? { buckets: [] };
+        addDataToPie(topAgg, hierarchicalResults.children);
+        addDataToTable([], topAgg.buckets);
 
         return res.send({
           success: true,
@@ -3724,7 +3733,8 @@ class SessionAPIs {
 
     // Global limit/order are defaults for widgets that don't set their own
     const defaultTopNum = clampLength(req.query.length, 20);
-    const defaultOrder = req.body.order === 'asc' ? 'asc' : 'desc';
+    // from req.query like length: a POST body is merged into it by fillQueryFromBody
+    const defaultOrder = req.query.order === 'asc' ? 'asc' : 'desc';
 
     // Field metadata configuration with default viewMode and metricType for each field
     const fieldMetadata = {

@@ -234,9 +234,9 @@ import UserService from '../users/UserService';
 import { createShareableService } from '../users/ShareableService';
 import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors';
 import { toV6Shape, makeWidgetDef, defaultWidgets, widgetsFromConfig, migrateDashboard, DASHBOARD_VERSION } from '../summary/dashboardConfig';
-import { systemDashboard, isSystemId, defaultDashboardId, pickedDefaultId } from '../summary/systemDashboards';
+import { systemDashboard, isSystemId, defaultDashboardId, pickedDefaultId, showsOwnLayout } from '../summary/systemDashboards';
 import { ArkimeError } from '@common/fetchWrapper.js';
-import { dashboardVariables, controlFilter, VARIABLE_PARAM_PREFIX } from '../summary/widgets/dashboardVariables';
+import { dashboardVariables, controlFilter, withoutVariableParams } from '../summary/widgets/dashboardVariables';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -508,7 +508,7 @@ export default {
       if (!pickedDefaultId(this.user?.settings)) {
         try {
           const state = await readOwn();
-          if (state && !state.dashboardId && Array.isArray(state.widgets) && state.widgets.length) {
+          if (showsOwnLayout(this.user?.settings, state)) {
             this.applyConfig(state);
             this.configLoaded = true;
             return;
@@ -566,11 +566,7 @@ export default {
       });
     },
     clearControls: function () {
-      const query = { ...this.$route.query };
-      for (const key of Object.keys(query)) {
-        if (key.startsWith(VARIABLE_PARAM_PREFIX)) { delete query[key]; }
-      }
-      this.$router.replace({ query });
+      this.$router.replace({ query: withoutVariableParams(this.$route.query) });
     },
     resetSummaryToDefaults: function () {
       this.widgets = this.defaultWidgets();

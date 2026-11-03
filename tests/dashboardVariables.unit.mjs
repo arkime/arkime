@@ -19,7 +19,7 @@ export async function resolve (specifier, context, next) {
 
 const {
   defaultVariableName, controlVariable, urlVariableValues, dashboardVariables,
-  controlFilter, controlFilters, substituteExpression, substituteTitle, withoutPicks, VARIABLE_NAME_RE
+  controlFilter, controlFilters, substituteExpression, substituteTitle, withoutPicks, withoutVariableParams, VARIABLE_NAME_RE
 } = await import('../viewer/vueapp/src/components/summary/widgets/dashboardVariables.js');
 
 const vars = {
@@ -60,6 +60,15 @@ describe('variable names', () => {
     const out = dashboardVariables([{ id: 'c', viewMode: 'control', field: 'node', variable: '__proto__' }], {});
     assert.equal(Object.getPrototypeOf(out), Object.prototype);
     assert.deepEqual(Object.keys(out), ['node']);
+  });
+
+  test('withoutVariableParams drops the named picks from the url, or all of them', () => {
+    const query = { date: '-1', 'var.node': ['a', 'b'], 'var.proto': 'tls', variant: 'x' };
+    assert.deepEqual(withoutVariableParams(query, ['node']), { date: '-1', 'var.proto': 'tls', variant: 'x' });
+    assert.deepEqual(withoutVariableParams(query, ['nothere']), query);
+    assert.deepEqual(withoutVariableParams(query), { date: '-1', variant: 'x' });
+    assert.deepEqual(withoutVariableParams(undefined, ['node']), {});
+    assert.notEqual(withoutVariableParams(query, ['node']), query);
   });
 
   test('withoutPicks treats one variable as unpicked and leaves the rest', () => {

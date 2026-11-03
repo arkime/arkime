@@ -52,7 +52,7 @@
         "field": "protocols",
         "viewMode": "pie",
         "width": 2,
-        "height": 2,
+        "height": 3,
         "length": 9,
         "other": true,
         "title": "Database protocols"

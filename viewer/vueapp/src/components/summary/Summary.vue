@@ -373,7 +373,7 @@ import MarkdownWidget from './widgets/MarkdownWidget.vue';
 import GaugeWidget from './widgets/GaugeWidget.vue';
 import NavigationWidget from './widgets/NavigationWidget.vue';
 import ControlWidget from './widgets/ControlWidget.vue';
-import { controlVariable, substituteExpression } from './widgets/dashboardVariables';
+import { controlVariable, substituteExpression, withoutVariableParams } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics } from './widgets/viewModes';
 import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
@@ -817,6 +817,17 @@ const mergeFieldChunk = (chunk) => {
   };
 };
 
+// the widgets still loading from one fetch show its failure, with a retry
+const markErrored = (widgetDefs, message) => {
+  if (!summary.value?.fields) { return; }
+  for (const def of widgetDefs) {
+    const index = summary.value.fields.findIndex(f => f.id === def.id);
+    if (index !== -1 && summary.value.fields[index].loading) {
+      summary.value.fields[index] = { ...summary.value.fields[index], loading: false, error: message };
+    }
+  }
+};
+
 // Fetch a subset of widgets and merge them into the existing summary. These are
 // incremental (add/edit/retry) so the dashboard stats are already loaded — skip
 // recomputing them server-side.
@@ -857,7 +868,11 @@ const fetchWidgets = async (widgetDefs) => {
         line = line.slice(1);
 
         const chunk = parseChunk(line);
-        if (chunk && chunk.id) {
+        if (chunk?.bsqErr) {
+          // the search itself failed (a time limit, a bad expression): the
+          // stream has no widget chunks, so say so on each widget asked for
+          markErrored(widgetDefs, String(chunk.bsqErr));
+        } else if (chunk && chunk.id) {
           // Only process widget chunks — ignore the stats chunk
           mergeFieldChunk(chunk);
         }
@@ -865,19 +880,7 @@ const fetchWidgets = async (widgetDefs) => {
     }
   } catch (err) {
     if (err.name === 'AbortError') return;
-    // Mark retried widgets as errored
-    if (summary.value?.fields) {
-      for (const def of widgetDefs) {
-        const index = summary.value.fields.findIndex(f => f.id === def.id);
-        if (index !== -1 && summary.value.fields[index].loading) {
-          summary.value.fields[index] = {
-            ...summary.value.fields[index],
-            loading: false,
-            error: err.message || String(err)
-          };
-        }
-      }
-    }
+    markErrored(widgetDefs, err.message || String(err));
   }
 };
 
@@ -1437,6 +1440,9 @@ const onEditSave = (updated) => {
 
   summary.value.fields[index] = { ...prev, ...updated };
   emitWidgetConfigChange();
+  // a control renamed (or turned into another widget) leaves its picks in the
+  // url under the old name, filtering nothing but kept in any shared link
+  if (updated.viewMode !== 'control' || controlVariable(updated) !== controlVariable(prev)) { dropVariablePicks(prev); }
 
   if (needsRefetch) {
     summary.value.fields[index] = { ...summary.value.fields[index], data: [], loading: true, error: null };
@@ -1447,11 +1453,21 @@ const onEditSave = (updated) => {
 /**
  * Remove a widget locally (from its own menu) and persist
  */
+// drop a control's picks from the url, unless another control still owns its variable
+const dropVariablePicks = (widget) => {
+  if (widget?.viewMode !== 'control') { return; }
+  const varName = controlVariable(widget);
+  const stillOwned = (summary.value?.fields || []).some(w => w !== widget && w.id !== widget.id && w.viewMode === 'control' && controlVariable(w) === varName);
+  if (stillOwned || route.query[`var.${varName}`] === undefined) { return; }
+  router.replace({ query: withoutVariableParams(route.query, [varName]) });
+};
+
 const removeWidgetLocal = (widget) => {
   if (!summary.value?.fields) return;
   const index = summary.value.fields.findIndex(f => f.id === widget.id);
   if (index !== -1) {
     summary.value.fields.splice(index, 1);
+    dropVariablePicks(widget);
   }
   emitWidgetConfigChange();
 };

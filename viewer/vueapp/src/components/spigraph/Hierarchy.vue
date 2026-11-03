@@ -1010,11 +1010,13 @@ export default {
      * @returns {Function} opacity Function to retrieve opacity based on data level
      */
     generateOpacity: function (data) {
+      // a level is a node with children, or a list whose first node has some;
+      // an empty list (no buckets) ends the walk rather than reading its first node
       let levelCount = 0;
-
-      while (data.children || data[0].children) {
+      let level = data;
+      while (level && (level.children || level[0]?.children)) {
         levelCount++;
-        data = data.children || data[0].children;
+        level = level.children || level[0].children;
       }
 
       const lowRange = levelCount > 1 ? 0.3 : 1;

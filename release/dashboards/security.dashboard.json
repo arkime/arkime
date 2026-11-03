@@ -96,7 +96,7 @@
         ],
         "viewMode": "matrix",
         "width": 2,
-        "height": 3,
+        "height": 2,
         "length": 10,
         "title": "Remote access clients by protocol",
         "expression": "protocols == [ssh, rdp, smb, krb5, dcerpc, ntlm, winrm, vnc, telnet]"
@@ -117,7 +117,7 @@
         "field": "http.authtype",
         "viewMode": "bar",
         "width": 2,
-        "height": 2,
+        "height": 3,
         "length": 15,
         "title": "HTTP authentication types"
       },
@@ -161,7 +161,7 @@
         "id": "w15",
         "field": "ip.src",
         "viewMode": "scatter",
-        "width": 2,
+        "width": 4,
         "height": 3,
         "length": 50,
         "metrics": [

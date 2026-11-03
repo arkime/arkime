@@ -1,4 +1,4 @@
-use Test::More tests => 159;
+use Test::More tests => 163;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -223,6 +223,12 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     like ($mpct->{text}, qr/not supported across clusters/, "percentile: multi viewer refuses it");
     my $how = viewerGet("/spigraph.json?date=-1&field=source.ip&size=2&metric=bytes&metricAgg=p95&interval=hourOfWeek&expression=" . uri_escape($sortfiles));
     ok (!exists $how->{graph}->{'network.bytes:p95Histo'}, "percentile: an hour of week fold sums instead");
+    my $howSort = viewerGet("/spigraph.json?date=-1&field=source.ip&size=2&metric=bytes&metricAgg=p95&interval=hourOfWeek&sort=" . uri_escape("network.bytes:p95Histo") . "&expression=" . uri_escape($sortfiles));
+    is ($howSort->{items}->[0]->{name}, "10.1.1.234", "percentile sort: an hour of week fold ranks by the sum instead");
+    is ($howSort->{items}->[0]->{'network.bytesHisto'}, 104190, "percentile sort: an hour of week fold carries the sum");
+    is ($howSort->{items}->[1]->{name}, "10.180.156.185", "percentile sort: an hour of week fold ranks the second by its sum");
+    my $otherPct = viewerGet("/spigraph.json?date=-1&field=source.ip&size=2&metric=bytes&metricAgg=p95&sort=" . uri_escape("network.bytes:p50Histo") . "&expression=" . uri_escape($sortfiles));
+    is ($otherPct->{items}->[0]->{name}, "10.1.1.234", "percentile sort: another percentile than metricAgg ranks by the sum");
 
 # a fractional size is used as a whole number; it used to hang the multi viewer's
 # nested terms merge (ip.dst:port is the nested branch)
