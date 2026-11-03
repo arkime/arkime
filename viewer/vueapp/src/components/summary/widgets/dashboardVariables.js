@@ -21,6 +21,35 @@ const VARIABLE_REF_RE = /\$\{([A-Za-z_][A-Za-z0-9_]{0,39})\}/g;
 const COMPARE_REF_RE = /([A-Za-z0-9_.:-]+)\s*(==|!=|=)\s*\$\{([A-Za-z_][A-Za-z0-9_]{0,39})\}/g;
 // the most values one control can carry into the url and the search
 export const MAX_VARIABLE_VALUES = 50;
+// how a control picks: some of a field's top values (list), a low to high
+// span of a numeric field (range, ?var.<name>=lo&var.<name>=hi), or typed
+// text that may use * wildcards (text)
+export const CONTROL_TYPES = ['list', 'range', 'text'];
+const MAX_TEXT_VALUE = 200;
+
+/** A control's type, list when it has none (or an unknown one). */
+export const controlType = (widget) => (CONTROL_TYPES.includes(widget?.controlType) ? widget.controlType : 'list');
+
+// the url's values as a control of this type keeps them: a range is two
+// numbers, low then high, and text a single string; anything else is no pick
+const valuesFor = (kind, values) => {
+  if (kind === 'range') {
+    if (values.length < 2) { return []; }
+    const [lo, hi] = values.slice(0, 2).map(Number);
+    return Number.isFinite(lo) && Number.isFinite(hi) && lo <= hi ? [String(lo), String(hi)] : [];
+  }
+  if (kind === 'text') { return values.slice(0, 1).map(v => v.slice(0, MAX_TEXT_VALUE)); }
+  return values;
+};
+
+// typed text as an expression value: always quoted (a , or ] is just text),
+// with its * wildcards kept, as the search bar treats them. The lexer reads a
+// backslash and the character after it as one, so a run of backslashes right
+// before a quote (or the closing one) is doubled, and the quote escaped: an
+// odd run would otherwise take the quote and end the value early (C:\ or
+// a\" || ...). The parser's quoted value unescapes \" and nothing else, so
+// any other backslash is left alone, and searched for as typed
+const textValue = (v) => `"${String(v).replace(/(\\*)("|$)/g, (m, run, quote) => `${run}${run}${quote ? '\\"' : ''}`)}"`;
 
 /** A variable name made from a field expression: ip.src -> ip_src. */
 export const defaultVariableName = (fieldExp) => {
@@ -51,7 +80,8 @@ export const dashboardVariables = (widgets, query) => {
     if (w?.viewMode !== 'control' || !w.field) { continue; }
     const varName = controlVariable(w);
     if (!VARIABLE_NAME_RE.test(varName) || Object.hasOwn(vars, varName)) { continue; }
-    vars[varName] = { field: w.field, applyAll: w.applyAll !== false, values: urlVariableValues(query, varName), owner: w.id };
+    const kind = controlType(w);
+    vars[varName] = { field: w.field, applyAll: w.applyAll !== false, values: valuesFor(kind, urlVariableValues(query, varName)), owner: w.id, kind };
   }
   return vars;
 };
@@ -62,8 +92,31 @@ export const withoutPicks = (vars, varName) => (varName && Object.hasOwn(vars ||
   ? { ...vars, [varName]: { ...vars[varName], values: [] } }
   : vars);
 
-/** The filter a control adds to every widget: field == the picked values. */
-export const controlFilter = (field, values) => buildListExpression(field, values, '==');
+/** The url query without the picks of some variables (a renamed or removed
+ *  control), or of every variable when none are named. */
+export const withoutVariableParams = (query, names) => {
+  const out = { ...(query || {}) };
+  const keys = names ? names.map(n => `${VARIABLE_PARAM_PREFIX}${n}`) : Object.keys(out).filter(k => k.startsWith(VARIABLE_PARAM_PREFIX));
+  for (const key of keys) { delete out[key]; }
+  return out;
+};
+
+/**
+ * A field compared with a control's picks: one of the listed values, inside
+ * the range (or outside it, for !=), or matching the typed text.
+ */
+export const controlFilter = (field, values, kind = 'list', op = '==') => {
+  if (kind === 'range') {
+    const [lo, hi] = values;
+    return op === '!=' ? `(${field} < ${lo} || ${field} > ${hi})` : `(${field} >= ${lo} && ${field} <= ${hi})`;
+  }
+  if (kind === 'text') { return `${field} ${op} ${textValue(values[0])}`; }
+  return buildListExpression(field, values, op);
+};
+
+/** A variable's picks as text (a title, the controls chip): the values, a
+ *  range as low-high, or the typed text. */
+export const variableText = (v) => (v.kind === 'range' ? `${v.values[0]}–${v.values[1]}` : v.values.join(', '));
 
 /**
  * The filters of the controls that filter every widget and have values,
@@ -73,7 +126,7 @@ export const controlFilter = (field, values) => buildListExpression(field, value
  */
 export const controlFilters = (vars, exclude) => Object.entries(vars || {})
   .filter(([varName, v]) => varName !== exclude && v.applyAll && v.values.length)
-  .map(([, v]) => controlFilter(v.field, v.values));
+  .map(([, v]) => controlFilter(v.field, v.values, v.kind));
 
 /** True when the text uses ${name} for some variable. */
 export const usesVariables = (text) => typeof text === 'string' && /\$\{[A-Za-z_]/.test(text);
@@ -146,7 +199,7 @@ export const substituteExpression = (exp, vars) => {
   const out = kept.join(' && ');
   const mask = literalMask(out);
   return out.replace(COMPARE_REF_RE, (m, field, op, varName, offset) => (Object.hasOwn(vars || {}, varName) && !mask[offset + m.indexOf('${')]
-    ? buildListExpression(field, vars[varName].values, op === '!=' ? '!=' : '==')
+    ? controlFilter(field, vars[varName].values, vars[varName].kind, op === '!=' ? '!=' : '==')
     : m));
 };
 
@@ -155,7 +208,6 @@ export const substituteTitle = (title, vars, allLabel) => {
   if (!usesVariables(title)) { return title; }
   return title.replace(VARIABLE_REF_RE, (m, varName) => {
     if (!Object.hasOwn(vars || {}, varName)) { return m; }
-    const values = vars[varName].values;
-    return values.length ? values.join(', ') : allLabel;
+    return vars[varName].values.length ? variableText(vars[varName]) : allLabel;
   });
 };

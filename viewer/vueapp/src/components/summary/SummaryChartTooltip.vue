@@ -67,6 +67,17 @@ SPDX-License-Identifier: Apache-2.0
             <span class="stat-value">{{ percentage.toFixed(1) }}%</span>
           </div>
         </div>
+        <!-- a dashboard control of this field takes the value as a pick -->
+        <v-btn
+          v-if="pickVariable && !alreadyPicked"
+          size="small"
+          variant="tonal"
+          color="primary"
+          prepend-icon="mdi-filter-plus-outline"
+          class="mt-2"
+          @click="pickValue">
+          {{ $t('sessions.summary.controlPick') }}
+        </v-btn>
       </div>
     </div>
   </Teleport>
@@ -78,7 +89,10 @@ import { commaString } from '@common/vueFilters.js';
 import ArkimeSessionField from '../sessions/SessionField.vue';
 import FieldService from '../search/FieldService';
 import { useI18n } from 'vue-i18n';
+import { useRoute, useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 import { formatMetricValue, metricLabel as metricLabelFor } from './widgets/widgetData';
+import { VARIABLE_PARAM_PREFIX, MAX_VARIABLE_VALUES } from './widgets/dashboardVariables';
 
 const props = defineProps({
   visible: {
@@ -123,7 +137,29 @@ const props = defineProps({
 
 const { t } = useI18n();
 
-defineEmits(['close']);
+const emit = defineEmits(['close']);
+
+const route = useRoute();
+const router = useRouter();
+const store = useStore();
+
+// the dashboard's list or text control of the value's field ([name, variable]),
+// so a value seen in a chart can filter the dashboard; none off the dashboard
+// (SPI Graph), for "Other" or a range bucket
+const pickVariable = computed(() => {
+  if (route.name !== 'Arkime' || !props.data || props.data.other || props.data.range || !props.fieldConfig?.exp) { return null; }
+  return Object.entries(store.state.dashboardVariables || {})
+    .find(([, v]) => v.field === props.fieldConfig.exp && (v.kind === 'list' || v.kind === 'text')) || null;
+});
+const alreadyPicked = computed(() => !!pickVariable.value?.[1].values.includes(String(props.data?.item)));
+// a list control adds the value to its picks, a text one takes it as its text
+const pickValue = () => {
+  const [varName, v] = pickVariable.value;
+  const value = String(props.data.item);
+  const values = v.kind === 'text' ? [value] : [...v.values, value].slice(0, MAX_VARIABLE_VALUES);
+  router.replace({ query: { ...route.query, [`${VARIABLE_PARAM_PREFIX}${varName}`]: values } });
+  emit('close');
+};
 
 // The selected metric's field config (null when the metric is the session count)
 const metricField = computed(() => {

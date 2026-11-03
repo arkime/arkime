@@ -19,7 +19,7 @@ export async function resolve (specifier, context, next) {
 
 const {
   defaultVariableName, controlVariable, urlVariableValues, dashboardVariables,
-  controlFilter, controlFilters, substituteExpression, substituteTitle, withoutPicks, VARIABLE_NAME_RE
+  controlFilter, controlFilters, substituteExpression, substituteTitle, withoutPicks, withoutVariableParams, VARIABLE_NAME_RE
 } = await import('../viewer/vueapp/src/components/summary/widgets/dashboardVariables.js');
 
 const vars = {
@@ -51,7 +51,7 @@ describe('variable names', () => {
       { id: 'c2', viewMode: 'control', field: 'ip.src', variable: 'node' },
       { viewMode: 'control', field: '' }
     ];
-    assert.deepEqual(dashboardVariables(widgets, { 'var.node': 'x' }), { node: { field: 'node', applyAll: false, values: ['x'], owner: 'c1' } });
+    assert.deepEqual(dashboardVariables(widgets, { 'var.node': 'x' }), { node: { field: 'node', applyAll: false, values: ['x'], owner: 'c1', kind: 'list' } });
   });
 
   test('__proto__ is not a variable name, so it never sets the prototype', () => {
@@ -60,6 +60,15 @@ describe('variable names', () => {
     const out = dashboardVariables([{ id: 'c', viewMode: 'control', field: 'node', variable: '__proto__' }], {});
     assert.equal(Object.getPrototypeOf(out), Object.prototype);
     assert.deepEqual(Object.keys(out), ['node']);
+  });
+
+  test('withoutVariableParams drops the named picks from the url, or all of them', () => {
+    const query = { date: '-1', 'var.node': ['a', 'b'], 'var.proto': 'tls', variant: 'x' };
+    assert.deepEqual(withoutVariableParams(query, ['node']), { date: '-1', 'var.proto': 'tls', variant: 'x' });
+    assert.deepEqual(withoutVariableParams(query, ['nothere']), query);
+    assert.deepEqual(withoutVariableParams(query), { date: '-1', variant: 'x' });
+    assert.deepEqual(withoutVariableParams(undefined, ['node']), {});
+    assert.notEqual(withoutVariableParams(query, ['node']), query);
   });
 
   test('withoutPicks treats one variable as unpicked and leaves the rest', () => {
@@ -120,5 +129,51 @@ describe('substitution', () => {
     assert.equal(substituteTitle('Sessions on ${node}', vars, 'All'), 'Sessions on nyc-cap1, nyc-cap2');
     assert.equal(substituteTitle('Hosts ${host}', vars, 'All'), 'Hosts All');
     assert.equal(substituteTitle('Plain', vars, 'All'), 'Plain');
+  });
+});
+
+describe('range and text controls', () => {
+  const rv = { field: 'port.dst', kind: 'range', applyAll: true, values: ['80', '443'] };
+  const tv = { field: 'host.http', kind: 'text', applyAll: true, values: ['*.example.com'] };
+
+  test('a range is between low and high, a != outside it', () => {
+    assert.equal(controlFilter('port.dst', ['80', '443'], 'range'), '(port.dst >= 80 && port.dst <= 443)');
+    assert.equal(controlFilter('port.dst', ['80', '443'], 'range', '!='), '(port.dst < 80 || port.dst > 443)');
+  });
+
+  test('text is quoted with its wildcards kept, quotes escaped', () => {
+    assert.equal(controlFilter('host.http', ['*.example.com'], 'text'), 'host.http == "*.example.com"');
+    assert.equal(controlFilter('host.http', ['a"b'], 'text'), 'host.http == "a\\"b"');
+    // the parser unescapes only \", so a backslash is sent as it is
+    assert.equal(controlFilter('http.uri', ['C:\\temp\\*'], 'text'), 'http.uri == "C:\\temp\\*"');
+  });
+
+  test('a backslash before a quote or the end can\'t end the value early', () => {
+    // the lexer reads \ and the next character as one, so a run there is
+    // doubled: C:\ would otherwise take the closing quote, a\" its escape
+    assert.equal(controlFilter('http.uri', ['C:\\'], 'text'), 'http.uri == "C:\\\\"');
+    assert.equal(controlFilter('http.uri', ['end\\\\'], 'text'), 'http.uri == "end\\\\\\\\"');
+    assert.equal(controlFilter('host.http', ['a\\"b'], 'text'), 'host.http == "a\\\\\\"b"');
+    // a crafted pick stays one quoted value, it can't add a condition
+    assert.equal(controlFilter('host.http', ['a\\" || ip.src == "1.2.3.4'], 'text'),
+      'host.http == "a\\\\\\" || ip.src == \\"1.2.3.4"');
+  });
+
+  test('the url keeps a range only as two ordered numbers, text as one value', () => {
+    const w = [{ id: 'r', viewMode: 'control', field: 'port.dst', controlType: 'range' }, { id: 't', viewMode: 'control', field: 'host.http', controlType: 'text' }];
+    assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['80', '443'], 'var.host_http': ['a', 'b'] }).port_dst.values, ['80', '443']);
+    assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['443', '80'] }).port_dst.values, []);
+    assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['80'] }).port_dst.values, []);
+    assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['x', '9'] }).port_dst.values, []);
+    assert.deepEqual(dashboardVariables(w, { 'var.host_http': ['a', 'b'] }).host_http.values, ['a']);
+    assert.equal(dashboardVariables(w, {}).host_http.kind, 'text');
+  });
+
+  test('${name} and titles use the control type', () => {
+    const vs = { port: rv, host: tv };
+    assert.equal(substituteExpression('port.dst == ${port}', vs), '(port.dst >= 80 && port.dst <= 443)');
+    assert.equal(substituteExpression('host.http != ${host}', vs), 'host.http != "*.example.com"');
+    assert.equal(substituteTitle('Ports ${port} on ${host}', vs, 'All'), 'Ports 80–443 on *.example.com');
+    assert.deepEqual(controlFilters(vs), ['(port.dst >= 80 && port.dst <= 443)', 'host.http == "*.example.com"']);
   });
 });

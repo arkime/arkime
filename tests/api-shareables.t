@@ -1,4 +1,4 @@
-use Test::More tests => 255;
+use Test::More tests => 262;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -446,6 +446,12 @@ is($info->{i18n}, "api.shareables.missingGraph", "create spigraphConfig with an 
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph matrix","type":"spigraphConfig","data":{"field":"source.ip","fields":["source.ip","destination.port"],"viewMode":"matrix","length":10}}', $token);
 ok($info->{success}, "create spigraphConfig with the matrix view succeeds");
 viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph mosaic","type":"spigraphConfig","data":{"field":"destination.geo.country_iso_code","fields":["destination.geo.country_iso_code","protocols"],"viewMode":"mosaic","length":10}}', $token);
+ok($info->{success}, "create spigraphConfig with the mosaic view succeeds");
+viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph waffle","type":"spigraphConfig","data":{"field":"protocols","viewMode":"waffle","other":true,"length":10}}', $token);
+ok($info->{success}, "create spigraphConfig with the waffle view succeeds");
+viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph percent","type":"spigraphConfig","data":{"viewMode":"timeline","splitField":"protocols","yScale":"percent","seriesType":"lines"}}', $token);
 ok($info->{success}, "create spigraphConfig with a percent timeline succeeds");
 viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
@@ -487,6 +493,8 @@ my @badGraphs = (
     ['a non-string metric', '"viewMode":"table","field":"source.ip","metrics":[{}]'],
     ['a string length', '"viewMode":"bar","field":"source.ip","length":"20"'],
     ['a view mode that is not a graph', '"viewMode":"stats","field":"source.ip"'],
+    ['a string warning level', '"viewMode":"bar","field":"source.ip","gaugeWarn":"5"'],
+    ['an object compare', '"viewMode":"timeline","splitField":"source.ip","compare":{"a":1}'],
 );
 foreach my $bad (@badGraphs) {
     $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", qq({"name":"graph bad","type":"spigraphConfig","data":{$bad->[1]}}), $token);
@@ -504,6 +512,9 @@ is($info->{i18n}, "api.shareables.invalidGraph", "spigraphConfig update invalid 
 $info = viewerPutToken("/api/shareable/${idGraph1}?arkimeRegressionUser=sac-test1", '{"data":{"viewMode":"pie","fields":["protocols"],"expression":"port.dst == 53","length":10}}', $token);
 ok($info->{success}, "update spigraphConfig with a valid graph succeeds");
 eq_or_diff($info->{shareable}->{data}, from_json('{"viewMode":"pie","fields":["protocols"],"expression":"port.dst == 53","length":10}'), "spigraphConfig update stores the new graph");
+# a graph's warning and critical levels and its comparison are kept
+$info = viewerPutToken("/api/shareable/${idGraph1}?arkimeRegressionUser=sac-test1", '{"data":{"viewMode":"timeline","splitField":"source.ip","compare":"week","gaugeWarn":5,"gaugeCrit":10}}', $token);
+ok($info->{success} && $info->{shareable}->{data}->{compare} eq "week" && $info->{shareable}->{data}->{gaugeCrit} == 10, "spigraphConfig keeps compare and levels");
 
 foreach my $id ($idGraph1, $idGraph2) {
     $info = viewerDeleteToken("/api/shareable/${id}?arkimeRegressionUser=sac-test1", $token);

@@ -70,7 +70,8 @@ by rank. Metric columns are the widget's metrics[] (falls back to metricType).
             <td
               v-for="m in metricCols"
               :key="m"
-              class="num">
+              class="num"
+              :style="fd.data[r - 1] ? cellColor(m, fd.data[r - 1]) : undefined">
               {{ fd.data[r - 1] ? formatCell(m, fd.data[r - 1]) : '' }}
             </td>
           </template>
@@ -87,7 +88,7 @@ import WidgetCard from './WidgetCard.vue';
 import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchSummaryFields, formatMetricValue, downloadCSV, metricLabel as metricLabelFor } from './widgetData';
+import { fetchSummaryFields, formatMetricValue, downloadCSV, metricLabel as metricLabelFor, thresholdColor } from './widgetData';
 
 const { t } = useI18n();
 
@@ -130,6 +131,14 @@ const metricAgg = computed(() => props.widget.metricAgg || 'sum');
 const metricLabel = (exp) => metricLabelFor(exp, metricAgg.value, t);
 const cellValue = (exp, row) => (exp === 'sessions' ? row.sessions : (row.metricValues?.[exp] ?? 0));
 const formatCell = (exp, row) => formatMetricValue(exp, cellValue(exp, row), exp === 'sessions' ? undefined : metricAgg.value);
+// the sort metric's cells turn amber or red at the widget's warning and
+// critical levels (the levels are in that metric's units)
+const levelMetric = computed(() => props.widget.sortMetric || props.widget.metricType || 'sessions');
+const cellColor = (exp, row) => {
+  if (exp !== levelMetric.value) { return undefined; }
+  const color = thresholdColor(props.widget, cellValue(exp, row));
+  return color ? { color, fontWeight: 600 } : undefined;
+};
 
 const exportLabel = computed(() => t('sessions.summary.downloadCSV'));
 const exportCSV = () => {

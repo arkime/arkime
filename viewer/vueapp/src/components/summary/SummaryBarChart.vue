@@ -46,6 +46,11 @@ const props = defineProps({
     type: String,
     default: 'vertical'
   },
+  // reference lines at the widget's warning and critical levels, [{ value, color }]
+  thresholds: {
+    type: Array,
+    default: () => []
+  },
   width: {
     type: Number,
     default: 500
@@ -199,6 +204,24 @@ const splitColors = (root, width) => {
   return color;
 };
 
+// the value axis reaches the highest level too, so its line shows
+const withLevels = (max) => Math.max(max || 0, ...props.thresholds.map(th => th.value));
+
+// a dashed line across the plot at each level, on the value scale
+const drawThresholds = (svg, scale, span, alongX) => {
+  for (const th of props.thresholds) {
+    const at = scale(th.value);
+    svg.append('line')
+      .attr('class', 'threshold')
+      .attr(alongX ? 'x1' : 'y1', at).attr(alongX ? 'x2' : 'y2', at)
+      .attr(alongX ? 'y1' : 'x1', 0).attr(alongX ? 'y2' : 'x2', span)
+      .attr('stroke', th.color)
+      .attr('stroke-width', 1.5)
+      .attr('stroke-dasharray', '6 4')
+      .style('pointer-events', 'none');
+  }
+};
+
 // Bars lying along the value axis, labels down the left: the same data, split
 // segments and hover as the vertical chart with the axes swapped
 const renderHorizontal = (root, svgWidth, svgHeight, legendHeight) => {
@@ -231,7 +254,7 @@ const renderHorizontal = (root, svgWidth, svgHeight, legendHeight) => {
     const xMax = grouped
       ? d3.max(bars, b => d3.max(b.segments, s => s.value) || 0)
       : d3.max(bars, b => d3.sum(b.segments, s => s.value));
-    x = d3.scaleLinear().domain([0, xMax || 0]).range([0, plotWidth]);
+    x = d3.scaleLinear().domain([0, withLevels(xMax)]).range([0, plotWidth]);
     const color = splitColors(root, svgWidth);
 
     const groups = svg.selectAll('.bar-group')
@@ -270,7 +293,7 @@ const renderHorizontal = (root, svgWidth, svgHeight, legendHeight) => {
     });
   } else {
     x = d3.scaleLinear()
-      .domain([0, d3.max(props.data, d => d.value)])
+      .domain([0, withLevels(d3.max(props.data, d => d.value))])
       .range([0, plotWidth]);
     const colors = d3.scaleOrdinal(colorRange(d3, props.colorScheme, props.data.length));
     svg.selectAll('.bar')
@@ -287,6 +310,8 @@ const renderHorizontal = (root, svgWidth, svgHeight, legendHeight) => {
       .on('mouseover', handlers.mouseover)
       .on('mouseleave', handlers.mouseleave);
   }
+
+  drawThresholds(svg, x, plotHeight, true);
 
   // value axis along the bottom, a tick every ~70px
   svg.append('g')
@@ -361,7 +386,7 @@ const renderChart = async () => {
     const yMax = grouped
       ? d3.max(bars, b => d3.max(b.segments, s => s.value) || 0)
       : d3.max(bars, b => d3.sum(b.segments, s => s.value));
-    const y = d3.scaleLinear().domain([0, yMax || 0]).range([height, 0]);
+    const y = d3.scaleLinear().domain([0, withLevels(yMax)]).range([height, 0]);
 
     const color = splitColors(root, svgWidth);
 
@@ -413,10 +438,11 @@ const renderChart = async () => {
       });
     }
 
+    drawThresholds(svg, y, chartInnerWidth, false);
     svg.append('g').call(d3.axisLeft(y));
   } else {
     const y = d3.scaleLinear()
-      .domain([0, d3.max(props.data, d => d.value)])
+      .domain([0, withLevels(d3.max(props.data, d => d.value))])
       .range([height, 0]);
 
     // Dashboard palette (shared with the pie/treemap charts)
@@ -437,6 +463,8 @@ const renderChart = async () => {
       .on('mouseover', handlers.mouseover)
       .on('mouseleave', handlers.mouseleave);
 
+    drawThresholds(svg, y, chartInnerWidth, false);
+
     // Y axis
     svg.append('g')
       .call(d3.axisLeft(y));
@@ -453,7 +481,7 @@ const renderChart = async () => {
 };
 
 // Watch for data, metric type, or dimension changes
-watch([() => props.data, () => props.metricType, () => props.metricAgg, () => props.width, () => props.height, () => props.colorScheme, () => props.barMode, () => props.orientation, () => props.splitFieldConfig], () => {
+watch([() => props.data, () => props.metricType, () => props.metricAgg, () => props.width, () => props.height, () => props.colorScheme, () => props.barMode, () => props.orientation, () => props.splitFieldConfig, () => JSON.stringify(props.thresholds)], () => {
   renderChart();
 }, { deep: true });
 

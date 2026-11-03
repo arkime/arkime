@@ -39,6 +39,18 @@ export const pickedDefaultId = (settings) => {
  */
 export const defaultDashboardId = (settings) => pickedDefaultId(settings) || FALLBACK_DEFAULT_ID;
 
+/**
+ * True when the Arkime tab shows the user's own layout rather than their
+ * default dashboard: no default picked, and a per-user state with widgets
+ * that is no copy of a saved or system dashboard (no dashboardId). The tab
+ * and the add to dashboard dialog decide with this, so they agree.
+ * @param {object} settings - the user's settings
+ * @param {object} state - the per-user summary state, as saved
+ * @returns {boolean}
+ */
+export const showsOwnLayout = (settings, state) => !pickedDefaultId(settings) &&
+  !!state && !state.dashboardId && Array.isArray(state.widgets) && state.widgets.length > 0;
+
 let cached = null;
 let pending = null;
 

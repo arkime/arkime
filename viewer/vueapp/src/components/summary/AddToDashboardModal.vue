@@ -106,8 +106,8 @@ import { useI18n } from 'vue-i18n';
 import { createShareableService } from '../users/ShareableService';
 import UserService from '../users/UserService';
 import FieldService from '../search/FieldService';
-import { widgetFromGraph, widgetsFromConfig, toV6Shape } from './dashboardConfig';
-import { isSystemId, systemDashboard, defaultDashboardId } from './systemDashboards';
+import { widgetFromGraph, widgetsFromConfig, toV6Shape, migrateDashboard } from './dashboardConfig';
+import { isSystemId, systemDashboard, defaultDashboardId, pickedDefaultId, showsOwnLayout } from './systemDashboards';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -155,11 +155,21 @@ const targets = computed(() => {
   ];
 });
 
-// found the way the Arkime tab loads its dashboard: the default dashboard
-// (the Overview when none is picked) when it is still readable (a system one
-// is read only), else the per-user state
+// found the way the Arkime tab loads its dashboard (Arkime.vue's
+// loadDashboardConfig): the user's own layout when that is what the tab
+// shows, else the default dashboard (the Overview when none is picked) when
+// it is still readable (a system one is read only), else the per-user state
 const resolveCurrent = async () => {
-  const defaultId = defaultDashboardId(store.state.user?.settings);
+  const settings = store.state.user?.settings;
+  if (!pickedDefaultId(settings)) {
+    try {
+      const state = (await UserService.getPageConfig('summary'))?.summaryConfig;
+      if (showsOwnLayout(settings, state)) { return { id: null }; }
+    } catch (err) {
+      // an unreadable state: the Arkime tab falls through to the default dashboard too
+    }
+  }
+  const defaultId = defaultDashboardId(settings);
   try {
     if (isSystemId(defaultId)) {
       const system = await systemDashboard(defaultId);
@@ -213,9 +223,11 @@ const appendToCurrent = async (widget) => {
 
   // a failed read throws: saving anyway would replace the dashboard with the starter one
   const response = await UserService.getPageConfig('summary');
-  const cfg = response?.summaryConfig;
+  const cfg = migrateDashboard(response?.summaryConfig);
   const all = [...widgetsFromConfig(cfg), widget];
-  await UserService.saveState({ colorScheme: cfg?.colorScheme || 'rainbow', widgets: all, ...toV6Shape(all) }, 'summary');
+  // the state as the Arkime tab saves it: its version, palette, filter and
+  // dashboardId kept, the widgets (and their v6 shape) replaced
+  await UserService.saveState({ ...cfg, widgets: all, ...toV6Shape(all) }, 'summary');
   return t('sessions.summary.addToDashboard.current');
 };
 
