@@ -51,7 +51,7 @@ describe('variable names', () => {
       { id: 'c2', viewMode: 'control', field: 'ip.src', variable: 'node' },
       { viewMode: 'control', field: '' }
     ];
-    assert.deepEqual(dashboardVariables(widgets, { 'var.node': 'x' }), { node: { field: 'node', applyAll: false, values: ['x'], owner: 'c1' } });
+    assert.deepEqual(dashboardVariables(widgets, { 'var.node': 'x' }), { node: { field: 'node', applyAll: false, values: ['x'], owner: 'c1', kind: 'list' } });
   });
 
   test('__proto__ is not a variable name, so it never sets the prototype', () => {
@@ -129,5 +129,40 @@ describe('substitution', () => {
     assert.equal(substituteTitle('Sessions on ${node}', vars, 'All'), 'Sessions on nyc-cap1, nyc-cap2');
     assert.equal(substituteTitle('Hosts ${host}', vars, 'All'), 'Hosts All');
     assert.equal(substituteTitle('Plain', vars, 'All'), 'Plain');
+  });
+});
+
+describe('range and text controls', () => {
+  const rv = { field: 'port.dst', kind: 'range', applyAll: true, values: ['80', '443'] };
+  const tv = { field: 'host.http', kind: 'text', applyAll: true, values: ['*.example.com'] };
+
+  test('a range is between low and high, a != outside it', () => {
+    assert.equal(controlFilter('port.dst', ['80', '443'], 'range'), '(port.dst >= 80 && port.dst <= 443)');
+    assert.equal(controlFilter('port.dst', ['80', '443'], 'range', '!='), '(port.dst < 80 || port.dst > 443)');
+  });
+
+  test('text is quoted with its wildcards kept, quotes escaped', () => {
+    assert.equal(controlFilter('host.http', ['*.example.com'], 'text'), 'host.http == "*.example.com"');
+    assert.equal(controlFilter('host.http', ['a"b'], 'text'), 'host.http == "a\\"b"');
+    // the parser unescapes only \", so a backslash is sent as it is
+    assert.equal(controlFilter('http.uri', ['C:\\temp\\*'], 'text'), 'http.uri == "C:\\temp\\*"');
+  });
+
+  test('the url keeps a range only as two ordered numbers, text as one value', () => {
+    const w = [{ id: 'r', viewMode: 'control', field: 'port.dst', controlType: 'range' }, { id: 't', viewMode: 'control', field: 'host.http', controlType: 'text' }];
+    assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['80', '443'], 'var.host_http': ['a', 'b'] }).port_dst.values, ['80', '443']);
+    assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['443', '80'] }).port_dst.values, []);
+    assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['80'] }).port_dst.values, []);
+    assert.deepEqual(dashboardVariables(w, { 'var.port_dst': ['x', '9'] }).port_dst.values, []);
+    assert.deepEqual(dashboardVariables(w, { 'var.host_http': ['a', 'b'] }).host_http.values, ['a']);
+    assert.equal(dashboardVariables(w, {}).host_http.kind, 'text');
+  });
+
+  test('${name} and titles use the control type', () => {
+    const vs = { port: rv, host: tv };
+    assert.equal(substituteExpression('port.dst == ${port}', vs), '(port.dst >= 80 && port.dst <= 443)');
+    assert.equal(substituteExpression('host.http != ${host}', vs), 'host.http != "*.example.com"');
+    assert.equal(substituteTitle('Ports ${port} on ${host}', vs, 'All'), 'Ports 80–443 on *.example.com');
+    assert.deepEqual(controlFilters(vs), ['(port.dst >= 80 && port.dst <= 443)', 'host.http == "*.example.com"']);
   });
 });

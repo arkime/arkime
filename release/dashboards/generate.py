@@ -25,11 +25,15 @@ def metric_agg(d, agg):
         d['metricAgg'] = agg
     return d
 def nav(): return {'viewMode': 'navigation', 'width': 4, 'height': 1}
-# a picker of a field's top values (with their session counts): the picks
-# filter every widget, or with applyAll=False only fill ${variable} where the
-# other widgets' titles and filters use it (the variable defaults to the field)
-def control(field, title=None, variable=None, length=20, w=1, h=1, applyAll=True):
+# a picker of a field's top values (with their session counts), a range
+# slider of a numeric field (kind='range') or a text box (kind='text'): the
+# picks filter every widget, or with applyAll=False only fill ${variable}
+# where the other widgets' titles and filters use it (the variable defaults
+# to the field)
+def control(field, title=None, variable=None, length=20, w=1, h=1, applyAll=True, kind='list'):
+    assert kind in ('list', 'range', 'text'), f'unknown control type {kind}'
     d = {'field': field, 'viewMode': 'control', 'width': w, 'height': h, 'length': length}
+    if kind != 'list': d['controlType'] = kind
     if variable: d['variable'] = variable
     if not applyAll: d['applyAll'] = False
     if title: d['title'] = title
@@ -72,10 +76,13 @@ def timeofday(title, split=None, length=5, w=2, h=3, expression=None, metricType
     if metricType: d['metricType'] = metricType
     if expression: d['expression'] = expression
     return d
-def timeline_plain(title, w=3, h=2, expression=None, metricType=None, lines=False, log=False, agg=None):
+def timeline_plain(title, w=3, h=2, expression=None, metricType=None, lines=False, log=False, agg=None, compare=None):
     d = {'viewMode': 'timeline', 'width': w, 'height': h, 'title': title}
     if metricType: d['metricType'] = metricType
     metric_agg(d, agg)  # a percentile is drawn per time bucket
+    if compare:  # also the same window a 'day' or a 'week' earlier, dashed
+        assert compare in ('day', 'week'), f'unknown compare {compare}'
+        d['compare'] = compare
     if lines: d['seriesType'] = 'lines'
     if log: d['yScale'] = 'log'
     if expression: d['expression'] = expression
@@ -207,7 +214,7 @@ D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, to
     nav(),
     control('protocols', title='Protocols', w=2), control('node', title='Capture nodes', w=2),
     stats(), timew(),
-    timeline_plain('Sessions over time', w=4),
+    timeline_plain('Sessions over time, and the week before', w=4, compare='week'),
     timeofday('Sessions by hour of the week'),
     area('protocols', 'Protocol share over time', length=10, w=2, h=3, percent=True),
     geomap('country.src', title='Source countries'),
@@ -221,7 +228,7 @@ D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, to
 D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol and size, with the connection graph and tree', [
     nav(),
     control('ip.protocol', title='IP protocol'), control('protocols', title='Service'),
-    control('port.dst', title='Destination port'), control('node', title='Capture node'),
+    control('port.dst', title='Destination port', kind='range'), control('node', title='Capture node'),
     area('protocols', 'Sessions by protocol', length=10, w=4),
     timeline('protocols', 'Protocol share over time', length=10, w=4, percent=True),
     stats(),

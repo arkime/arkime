@@ -62,7 +62,10 @@ export default {
     // in place of the ones graphType implies (a timeline split by a field)
     seriesDefs: { type: Array, default: null },
     // draw the series on top of each other (bars) instead of overlaid
-    stacked: { type: Boolean, default: false }
+    stacked: { type: Boolean, default: false },
+    // reference lines across the plot, [{ value, color }] (a widget's warning
+    // and critical levels); the y axis stretches to show them
+    thresholds: { type: Array, default: () => [] }
   },
   emits: ['updateTimeRange'],
   data () {
@@ -77,6 +80,7 @@ export default {
     yScale () { this.rebuild(); },
     seriesDefs () { this.rebuild(); },
     stacked () { this.rebuild(); },
+    thresholds () { this.rebuild(); },
     showCapStartTimes () { this.rebuild(); },
     timezone () { this.rebuild(); }
   },
@@ -259,6 +263,22 @@ export default {
         ctx.restore();
       }
 
+      // Reference lines (warning / critical levels) — dashed horizontals
+      for (const th of this.thresholds) {
+        if (this.yScale === 'percent' || !(th.value > 0)) continue;
+        const y = u.valToPos(th.value, 'y', true);
+        if (y < u.bbox.top || y > u.bbox.top + u.bbox.height) continue;
+        ctx.save();
+        ctx.strokeStyle = th.color;
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([6, 4]);
+        ctx.beginPath();
+        ctx.moveTo(u.bbox.left, y);
+        ctx.lineTo(u.bbox.left + u.bbox.width, y);
+        ctx.stroke();
+        ctx.restore();
+      }
+
       // Capture-restart markers — dashed red vertical + bottom triangle notch
       if (this.showCapStartTimes && this.capStartTimes?.length) {
         const restartC = '#dc3545';
@@ -389,10 +409,11 @@ export default {
           // linear near 0 and log-like far from it. Labeled "Log" in the UI
           // since that matches user expectations from other tools.
           y: this.yScale === 'log'
-            ? { distr: 4, range: (u, dmin, dmax) => [0, Math.max(10, (dmax || 1) * 1.5)] }
+            // the axis reaches the highest level too, so its line shows
+            ? { distr: 4, range: (u, dmin, dmax) => [0, Math.max(10, Math.max(dmax || 1, ...this.thresholds.map(th => th.value)) * 1.5)] }
             : percent
               ? { auto: false, range: [0, 100] }
-              : { auto: true, range: (u, dmin, dmax) => [0, (dmax || 1) * 1.05] }
+              : { auto: true, range: (u, dmin, dmax) => [0, Math.max(dmax || 1, ...this.thresholds.map(th => th.value)) * 1.05] }
         },
         axes: [
           {
@@ -441,6 +462,8 @@ export default {
                 : (this.seriesDefs?.length > 1 ? undefined : withAlpha(d.color, 0.2)),
             paths: isBars ? barsPath : linesPath,
             width: isBars ? 1 : 1.5,
+            // a comparison series (the previous day or week) is dashed
+            ...(d.dash ? { dash: d.dash, fill: undefined } : {}),
             points: { show: false }
           }))
         ],

@@ -46,7 +46,8 @@
         "viewMode": "timeline",
         "width": 4,
         "height": 2,
-        "title": "Sessions over time"
+        "title": "Sessions over time, and the week before",
+        "compare": "week"
       },
       {
         "id": "w6",

@@ -44,10 +44,11 @@ the host.
           :graph-type="graphType"
           :series-defs="seriesDefs"
           :series-type="seriesType"
-          :stacked="!!seriesDefs && widget.barMode !== 'grouped' && !percentile"
+          :stacked="!!seriesDefs && widget.barMode !== 'grouped' && !percentile && !comparing"
           :y-scale="percentile && widget.yScale === 'percent' ? 'linear' : (widget.yScale || 'linear')"
           fit-height
           :timeline-data-filters="timelineDataFilters"
+          :thresholds="thresholds"
           :timezone="timezone"
           @update-time-range="$emit('time-range', $event)" />
       </div>
@@ -63,7 +64,7 @@ import WidgetCard from './WidgetCard.vue';
 import TimelineGraph from '../../visualizations/TimelineGraph.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { metricHistoKey, widgetPercentile, fetchGraph, fetchSplitGraph } from './widgetData';
+import { metricHistoKey, widgetPercentile, fetchGraph, fetchSplitGraph, compareOffset, widgetThresholds, metricLabel as metricLabelFor } from './widgetData';
 import { colorRange } from './chartColors';
 import { metricSeries } from '../../visualizations/metrics.js';
 
@@ -86,12 +87,15 @@ const graphData = ref(null);
 const seriesDefs = ref(null);
 const split = computed(() => !!props.widget.splitField);
 const isArea = computed(() => props.widget.viewMode === 'area');
+// drawn beside the same window a day or a week earlier: overlaid lines
+const comparing = computed(() => !!seriesDefs.value?.some(d => d.key === 'prev'));
 // a percentile per time bucket (p95, ...): its values don't stack, so a
 // split one is overlaid lines
 const percentile = computed(() => !!widgetPercentile(props.widget));
 // an overlaid (grouped) split is always lines, bars would hide each other
 const seriesType = computed(() => {
   if (isArea.value) { return 'area'; }
+  if (comparing.value) { return 'lines'; }
   return (split.value && (props.widget.barMode === 'grouped' || percentile.value)) || props.widget.seriesType === 'lines' ? 'lines' : 'bars';
 });
 
@@ -127,6 +131,30 @@ const applySplit = async (res, seq) => {
   graphData.value = data;
 };
 
+// compare an unsplit timeline to the same window a day or a week earlier
+// (none for an all time search, which has no earlier window)
+const compareShift = computed(() => (split.value ? 0 : compareOffset(props.widget, store)));
+const COMPARE_COLOR = '#9e9e9e';
+// the metric now and the earlier window's, moved forward onto the same times
+// and drawn dashed (each a sum of the metric's histo keys, src + dst bytes)
+const applyCompare = async (res, seq) => {
+  const [color] = await seriesColors(1);
+  if (seq !== resultSeq) { return; }
+  if (!res.graph) { seriesDefs.value = null; graphData.value = null; return; }
+  const shiftMs = res.shift * 1000;
+  graphData.value = {
+    xmin: res.graph.xmin,
+    xmax: res.graph.xmax,
+    interval: res.graph.interval,
+    now: metricSeries(res.graph, graphType.value),
+    prev: metricSeries(res.prevGraph, graphType.value).map(([ts, v]) => [ts + shiftMs, v])
+  };
+  seriesDefs.value = [
+    { label: metricLabelFor(props.widget.metricType || 'sessions', props.widget.metricAgg, t), key: 'now', color },
+    { label: t(`sessions.summary.widget.compare-${props.widget.compare}`), key: 'prev', color: COMPARE_COLOR, dash: [5, 4] }
+  ];
+};
+
 // self-fetch the graph; re-runs on metric/expression/view/split/time change
 // (the useSpigraphWidget dependency key) so a change updates without a refresh
 const { loading, error, fetchData } = useSpigraphWidget(
@@ -135,18 +163,28 @@ const { loading, error, fetchData } = useSpigraphWidget(
   (res) => {
     const seq = ++resultSeq;
     if (split.value) { applySplit(res, seq); return; }
+    if (res.prevGraph) { applyCompare(res, seq); return; }
     seriesDefs.value = null;
     graphData.value = res.graph || null;
   },
-  (route, s, widget, opts) => (widget.splitField ? fetchSplitGraph(route, s, widget, opts) : fetchGraph(route, s, widget, opts))
+  async (route, s, widget, opts) => {
+    if (widget.splitField) { return fetchSplitGraph(route, s, widget, opts); }
+    const shift = compareShift.value;
+    if (!shift) { return fetchGraph(route, s, widget, opts); }
+    const [now, prev] = await Promise.all([fetchGraph(route, s, widget, opts), fetchGraph(route, s, widget, { ...opts, timeShift: shift })]);
+    return { ...now, prevGraph: prev?.graph || {}, shift };
+  }
 );
 
-// a palette change recolors the series without a refetch
+// a palette change recolors the series without a refetch (the comparison stays gray)
 watch(() => props.colorScheme, async () => {
   if (!seriesDefs.value) { return; }
   const colors = await seriesColors(seriesDefs.value.length);
-  seriesDefs.value = seriesDefs.value.map((d, i) => ({ ...d, color: colors[i % colors.length] }));
+  seriesDefs.value = seriesDefs.value.map((d, i) => (d.key === 'prev' ? d : { ...d, color: colors[i % colors.length] }));
 });
+
+// the widget's warning and critical levels as reference lines
+const thresholds = computed(() => widgetThresholds(props.widget));
 
 const hasData = computed(() => !!graphData.value && (!split.value || (seriesDefs.value?.length || 0) > 0));
 const splitName = computed(() => (props.widget.splitField

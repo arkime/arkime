@@ -222,6 +222,47 @@ export function widgetFullPageLink (route, store, widget) {
   return { path: '/spigraph', query: { ...query, ...graphQuery, view: query.view } };
 }
 
+// a widget's warning and critical levels (the gauge's thresholds): the
+// colors a metric or table cell turns at or above them, and the reference
+// lines a bar or timeline draws at them
+export const WARN_COLOR = '#fb8c00';
+export const CRIT_COLOR = '#e53935';
+/** [{ value, color }] for the widget's warning and critical levels that are set. */
+export function widgetThresholds (widget) {
+  return [[widget?.gaugeWarn, WARN_COLOR], [widget?.gaugeCrit, CRIT_COLOR]]
+    .filter(([v]) => v > 0)
+    .map(([value, color]) => ({ value, color }));
+}
+/** The color a value takes from the widget's levels, or '' below them. */
+export function thresholdColor (widget, value) {
+  if (widget?.gaugeCrit > 0 && value >= widget.gaugeCrit) { return CRIT_COLOR; }
+  if (widget?.gaugeWarn > 0 && value >= widget.gaugeWarn) { return WARN_COLOR; }
+  return '';
+}
+
+// how far back a widget's comparison looks (its compare setting), in seconds
+export const COMPARE_OFFSETS = { day: 86400, week: 604800 };
+
+/**
+ * The seconds a widget's comparison reaches back (the same window a day or a
+ * week earlier), 0 for none: no compare setting, or an all time search, which
+ * has no earlier window.
+ */
+export function compareOffset (widget, store) {
+  const offset = Object.hasOwn(COMPARE_OFFSETS, widget?.compare || '') ? COMPARE_OFFSETS[widget.compare] : 0;
+  if (!offset || parseInt(store.state.timeRange, 10) === -1) { return 0; }
+  return store.state.time?.startTime && store.state.time?.stopTime ? offset : 0;
+}
+
+// a request's time window moved back by `shift` seconds (a comparison)
+function shiftWindow (params, store, shift) {
+  if (!shift) { return params; }
+  delete params.date;
+  params.startTime = Number(store.state.time.startTime) - shift;
+  params.stopTime = Number(store.state.time.stopTime) - shift;
+  return params;
+}
+
 /**
  * Build the shared query params (combined expression + time window + view /
  * bounding / cluster) for a widget's independent fetch, plus endpoint extras.
@@ -271,12 +312,12 @@ export async function fetchSpigraph (route, store, widget, { signal } = {}) {
  * `graph` and ignore the per-value items. `exp: node` + `size: 1` keeps the
  * terms aggregation minimal. Returns { graph, ... }.
  */
-export async function fetchGraph (route, store, widget, { signal } = {}) {
+export async function fetchGraph (route, store, widget, { signal, timeShift } = {}) {
   const extra = { exp: 'node', size: 1 };
   if (widget.metricType && widget.metricType !== 'sessions') {
     spigraphMetric(widget, extra);
   }
-  const data = buildWidgetParams(route, store, widget, extra);
+  const data = shiftWindow(buildWidgetParams(route, store, widget, extra), store, timeShift);
   return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
 }
 
@@ -490,9 +531,32 @@ export async function fetchControlValues (route, store, widget, excludeVariable,
   return res?.data || [];
 }
 
+/**
+ * Fetch a range control's bounds: its numeric field's smallest and largest
+ * value, searched without the control's own pick (so the slider can widen
+ * again). Two whole result set metrics in one summary request.
+ * Returns { min, max } (undefined when no session has the field).
+ */
+export async function fetchControlRange (route, store, widget, excludeVariable, { signal } = {}) {
+  if (FieldService.getField(widget.field, true)?.type !== 'integer') {
+    throw { i18n: 'sessions.summary.widget.controlRangeNumeric' };
+  }
+  const localExp = widgetLocalExpression(widget, store.state.views, withoutPicks(store.state.dashboardVariables, excludeVariable));
+  const bound = (id, agg) => ({ id, field: '', total: true, metricType: widget.field, metricAgg: agg, ...(localExp ? { expression: localExp } : {}) });
+  const res = await postSummary(route, store, { facets: 1, noStats: true, widgets: [bound('lo', 'min'), bound('hi', 'max')] }, signal, excludeVariable);
+  const chunks = Array.isArray(res) ? res : [];
+  const value = (id) => {
+    const chunk = chunks.find(c => c && c.id === id);
+    if (chunk?.error) { throw new Error(chunk.error); }
+    const item = chunk?.data?.[0];
+    return item?.sessions ? item.value : undefined;
+  };
+  return { min: value('lo'), max: value('hi') };
+}
+
 /** POST a widgets body to /api/sessions/summary with the page's search, time
  *  window and route params folded in. Returns the chunk array. */
-async function postSummary (route, store, body, signal, excludeVariable) {
+async function postSummary (route, store, body, signal, excludeVariable, timeShift) {
   const pageExp = pageExpression(route, store, excludeVariable); // global search + dashboard filter + controls
   if (pageExp) { body.expression = pageExp; }
   for (const p of ['view', 'bounding', 'interval', 'cluster']) {
@@ -505,6 +569,7 @@ async function postSummary (route, store, body, signal, excludeVariable) {
     body.startTime = store.state.time.startTime;
     body.stopTime = store.state.time.stopTime;
   }
+  shiftWindow(body, store, timeShift);
   return await fetchWrapper({ url: 'api/sessions/summary', method: 'POST', data: body, signal });
 }
 
@@ -513,7 +578,7 @@ async function postSummary (route, store, body, signal, excludeVariable) {
  * result set (total: true, no field), or one per top-N value of its field.
  * Returns the widget chunk's data[] ({ item, sessions, value, metricValues }).
  */
-export async function fetchMetric (route, store, widget, { signal } = {}) {
+export async function fetchMetric (route, store, widget, { signal, timeShift } = {}) {
   const localExp = widgetLocalExpression(widget, store.state.views, store.state.dashboardVariables);
   const field = widgetFields(widget)[0] || '';
   const body = {
@@ -532,7 +597,7 @@ export async function fetchMetric (route, store, widget, { signal } = {}) {
       ...(localExp ? { expression: localExp } : {})
     }]
   };
-  const res = await postSummary(route, store, body, signal);
+  const res = await postSummary(route, store, body, signal, undefined, timeShift);
   const chunk = (Array.isArray(res) ? res : []).find(c => c && c.id === 'm');
   if (chunk?.error) { throw new Error(chunk.error); }
   return chunk?.data || [];

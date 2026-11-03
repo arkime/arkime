@@ -187,10 +187,10 @@ class ShareableAPIs {
       if (!graphField) { return missingGraph; }
       // a scatter with no bubble size leaves its third metric ''
       if (data.metrics !== undefined && !ArkimeUtil.isStringArray(data.metrics, 0)) { return invalidGraph; }
-      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'orientation', 'seriesType', 'yScale', 'order', 'orderBy', 'treeRoot', 'expression', 'view']) {
+      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'orientation', 'seriesType', 'yScale', 'order', 'orderBy', 'treeRoot', 'compare', 'expression', 'view']) {
         if (!optString(data[key])) { return invalidGraph; }
       }
-      for (const key of ['length', 'splitLength', 'treeDepth']) {
+      for (const key of ['length', 'splitLength', 'treeDepth', 'gaugeWarn', 'gaugeCrit']) {
         if (data[key] !== undefined && !Number.isInteger(data[key])) { return invalidGraph; }
       }
       break;

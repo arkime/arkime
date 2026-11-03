@@ -120,6 +120,22 @@ export const METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality', ...PERCEN
 // treemap, whose parts add up, nor time of day, which folds buckets by adding.
 export const PERCENTILE_VIEW_MODES = ['timeline', 'heatmap'];
 
+// Types that can be drawn beside the same window a day or a week earlier: an
+// unsplit timeline or area (a dashed line), and a metric's single number (its
+// change). Not for an all time search, which has no earlier window.
+export const COMPARE_VIEW_MODES = ['timeline', 'area', 'metric'];
+export const COMPARES = ['day', 'week'];
+/** True when the widget (as configured) can compare to an earlier window. */
+export const allowsCompare = (w) => COMPARE_VIEW_MODES.includes(w?.viewMode) &&
+  (w.viewMode === 'metric' ? !w.field : !w.splitField);
+
+// Types with warning / critical levels (the gauge's thresholds): a gauge's arc
+// and a metric's number change color at them, a table's sort metric column
+// too, and a bar or timeline draws a reference line at each.
+export const LEVEL_VIEW_MODES = ['gauge', 'metric', 'table', 'bar', 'timeline', 'area'];
+/** True when the type has warning / critical levels. */
+export const hasLevels = (viewMode) => LEVEL_VIEW_MODES.includes(viewMode);
+
 /** True for a percentile aggregation (p50, p90, p95, p99). */
 export const isPercentileAgg = (agg) => PERCENTILE_AGGS.includes(agg);
 

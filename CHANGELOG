@@ -265,6 +265,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4425 Dashboard variables: ${name} in a widget's title or filter, or in the dashboard filter, is filled with a control's
           picked values; with none picked a title shows All and the part of a filter using it is left out. A control can
           also only set its variable rather than filter every widget
+  - #4427 Timeline, area and metric widgets can compare to the same time range a day or a week earlier: a dashed line
+          on the timeline, the change in percent under the metric's number
+  - #4427 A filter control can be a range slider of a numeric field or a text box (* wildcards allowed) as well as a list
+          of values; a value in a chart's tooltip can be picked into its field's control
+  - #4427 Metric, table, bar and timeline widgets take the gauge's warning and critical levels: numbers and table cells
+          turn amber or red at them, bars and timelines draw a line at each
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

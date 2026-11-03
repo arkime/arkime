@@ -49,8 +49,17 @@ top-N value when a split field is chosen. Self-fetches /api/sessions/summary
         </div>
         <div
           class="metric-value"
+          :style="valueColor(row.value)"
           :title="String(row.value)">
           {{ format(row.value) }}
+        </div>
+        <!-- the change from the same window a day or a week earlier -->
+        <div
+          v-if="!fieldObj && previous !== null"
+          class="metric-compare"
+          :title="`${compareLabel}: ${String(previous)}`">
+          <span :class="changeClass(row.value)">{{ change(row.value) }}</span>
+          · {{ compareLabel }} {{ format(previous) }}
         </div>
         <div
           v-if="fieldObj"
@@ -84,7 +93,7 @@ import WidgetCard from './WidgetCard.vue';
 import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchMetric, fetchGraph, metricHistoKey, formatMetricValue, metricLabel as metricLabelFor } from './widgetData';
+import { fetchMetric, fetchGraph, metricHistoKey, formatMetricValue, metricLabel as metricLabelFor, compareOffset, thresholdColor } from './widgetData';
 import { metricSeries } from '../../visualizations/metrics.js';
 
 const { t } = useI18n();
@@ -101,13 +110,44 @@ const props = defineProps({
 defineEmits(['edit', 'remove']);
 
 const rows = ref([]); // [{ item, sessions, value, metricValues }]
+// the single number over the same window a day or a week earlier, null when
+// not compared (a split metric, an all time search)
+const previous = ref(null);
 
 const { loading, error, fetchData } = useSpigraphWidget(
   () => props.widget,
   () => props.reloadNonce,
-  (res) => { rows.value = Array.isArray(res) ? res : []; loadSpark(); },
-  fetchMetric
+  (res) => {
+    rows.value = Array.isArray(res.rows) ? res.rows : [];
+    previous.value = res.previous ?? null;
+    loadSpark();
+  },
+  async (r, s, widget, opts) => {
+    const shift = widget.field ? 0 : compareOffset(widget, s);
+    const [now, prev] = await Promise.all([
+      fetchMetric(r, s, widget, opts),
+      shift ? fetchMetric(r, s, widget, { ...opts, timeShift: shift }) : null
+    ]);
+    return { rows: now, previous: prev ? (prev[0]?.value ?? 0) : null };
+  }
 );
+
+const compareLabel = computed(() => (props.widget.compare ? t(`sessions.summary.widget.compare-${props.widget.compare}`) : ''));
+// +38% / -12% from the earlier window (an arrow says which way); with nothing
+// in the earlier window there is no percentage, so the whole value is the rise
+const change = (value) => {
+  const prev = previous.value;
+  if (!prev) { return value ? `▲ ${format(value)}` : '= 0%'; }
+  const pct = (value - prev) / prev * 100;
+  if (Math.abs(pct) < 0.05) { return '= 0%'; }
+  return `${pct > 0 ? '▲' : '▼'} ${Math.abs(pct) >= 10 ? Math.round(Math.abs(pct)) : Math.abs(pct).toFixed(1)}%`;
+};
+const changeClass = (value) => (value > (previous.value || 0) ? 'metric-compare--up' : value < (previous.value || 0) ? 'metric-compare--down' : '');
+// amber or red at the widget's warning and critical levels
+const valueColor = (value) => {
+  const color = thresholdColor(props.widget, value);
+  return color ? { color } : {};
+};
 
 // the trend line: the metric's timeline (the same <dbField>Histo series the
 // timeline widget draws) fetched beside the number, for a summed metric over
@@ -204,6 +244,17 @@ const format = (v) => formatMetricValue(metricType.value, v, metricAgg.value);
 }
 .metric-grid--single .metric-value {
   font-size: 3rem;
+}
+.metric-compare {
+  font-size: 0.75rem;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.metric-compare--up,
+.metric-compare--down {
+  font-weight: 600;
 }
 .metric-sublabel {
   font-size: 0.7rem;

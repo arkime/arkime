@@ -36,6 +36,7 @@
         "width": 1,
         "height": 1,
         "length": 20,
+        "controlType": "range",
         "title": "Destination port"
       },
       {

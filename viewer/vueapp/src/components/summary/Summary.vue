@@ -143,6 +143,7 @@ SPDX-License-Identifier: Apache-2.0
             :split-field="w.splitField"
             :bar-mode="w.barMode"
             :orientation="w.orientation"
+            :thresholds="widgetThresholds(w)"
             :other="w.other ? w.otherData : null"
             :field="w.field"
             :color-scheme="colorScheme"
@@ -375,8 +376,8 @@ import NavigationWidget from './widgets/NavigationWidget.vue';
 import ControlWidget from './widgets/ControlWidget.vue';
 import { controlVariable, substituteExpression, withoutVariableParams } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics } from './widgets/viewModes';
-import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink } from './widgets/widgetData';
+import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare } from './widgets/viewModes';
+import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -689,6 +690,14 @@ const widgetInfo = (w) => {
     if (w.gaugeWarn > 0) { parts.push(`${t('sessions.summary.widget.gaugeWarn')} ${w.gaugeWarn}`); }
     if (w.gaugeCrit > 0) { parts.push(`${t('sessions.summary.widget.gaugeCrit')} ${w.gaugeCrit}`); }
     if (parts.length) { rows.push({ label: t('sessions.summary.gaugeView'), value: parts.join(', ') }); }
+  } else if (hasLevels(w.viewMode) && (w.gaugeWarn > 0 || w.gaugeCrit > 0)) {
+    const parts = [];
+    if (w.gaugeWarn > 0) { parts.push(`${t('sessions.summary.widget.gaugeWarn')} ${w.gaugeWarn}`); }
+    if (w.gaugeCrit > 0) { parts.push(`${t('sessions.summary.widget.gaugeCrit')} ${w.gaugeCrit}`); }
+    rows.push({ label: t('sessions.summary.widget.levels'), value: parts.join(', ') });
+  }
+  if (w.compare && allowsCompare(w)) {
+    rows.push({ label: t('sessions.summary.widget.compare'), value: t(`sessions.summary.widget.compare-${w.compare}`) });
   }
 
   // The limit row reads as a session sample for connections, a Top/Bottom N for

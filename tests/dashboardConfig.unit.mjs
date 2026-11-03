@@ -54,8 +54,8 @@ const {
   GRAPH_KEYS, widgetsFromConfig, defaultWidgets, graphFromWidget, widgetFromGraph, normalizeWidget, widgetIsGraph,
   graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph, migrateDashboard, DASHBOARD_VERSION
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
-const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
-const { widgetFullPageLink, widgetFields, hierarchyFields, pageExpression, combinedExpression, metricHistoKey } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
+const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor, allowsCompare, hasLevels } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
+const { widgetFullPageLink, widgetFields, hierarchyFields, pageExpression, combinedExpression, metricHistoKey, compareOffset, widgetThresholds, thresholdColor } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 const { findTreeRoot, buildConnectionTree, MAX_TREE_CHILDREN, MAX_TREE_NODES } = await import('../viewer/vueapp/src/components/summary/widgets/connectionTree.js');
 const { showsOwnLayout, defaultDashboardId, FALLBACK_DEFAULT_ID } = await import('../viewer/vueapp/src/components/summary/systemDashboards.js');
 
@@ -720,5 +720,44 @@ describe('percentiles', () => {
     const saved = graph({ viewMode: 'heatmap', field: 'ip.src', metricType: 'bytes', metricAgg: 'p95' });
     const page = graphFromSpigraphQuery({ spiGraphType: 'heatmap', exp: 'ip.src', graphType: 'totBytesHisto' }, { fieldsArr });
     assert.equal(graphOnSpigraph(saved, page).metricAgg, 'sum');
+  });
+});
+
+describe('compare and levels', () => {
+  test('an unsplit timeline or area and a metric without a field can compare', () => {
+    assert.ok(allowsCompare({ viewMode: 'timeline' }));
+    assert.ok(allowsCompare({ viewMode: 'area' }));
+    assert.ok(!allowsCompare({ viewMode: 'timeline', splitField: 'ip.src' }));
+    assert.ok(allowsCompare({ viewMode: 'metric' }));
+    assert.ok(!allowsCompare({ viewMode: 'metric', field: 'ip.src' }));
+    assert.ok(!allowsCompare({ viewMode: 'bar' }));
+  });
+
+  test('a compare reaches back a day or a week, not from an all time search', () => {
+    const store = (timeRange) => ({ state: { timeRange, time: { startTime: 1000000, stopTime: 1003600 } } });
+    assert.equal(compareOffset({ compare: 'day' }, store(1)), 86400);
+    assert.equal(compareOffset({ compare: 'week' }, store(0)), 604800);
+    assert.equal(compareOffset({ compare: 'week' }, store(-1)), 0);
+    assert.equal(compareOffset({ compare: '' }, store(1)), 0);
+    assert.equal(compareOffset({ compare: 'year' }, store(1)), 0);
+  });
+
+  test('levels give reference lines and colors at or above them', () => {
+    const w = { gaugeWarn: 10, gaugeCrit: 20 };
+    assert.deepEqual(widgetThresholds(w).map(t => t.value), [10, 20]);
+    assert.deepEqual(widgetThresholds({ gaugeCrit: 5 }).map(t => t.value), [5]);
+    assert.equal(thresholdColor(w, 9), '');
+    assert.notEqual(thresholdColor(w, 10), '');
+    assert.notEqual(thresholdColor(w, 20), thresholdColor(w, 10));
+    assert.ok(hasLevels('table') && hasLevels('bar') && hasLevels('metric') && !hasLevels('pie'));
+  });
+
+  test('compare and control type are kept only when valid', () => {
+    assert.equal(normalizeWidget({ viewMode: 'timeline', compare: 'week' }).compare, 'week');
+    assert.equal(normalizeWidget({ viewMode: 'timeline', compare: 'month' }).compare, '');
+    assert.equal(normalizeWidget({ viewMode: 'control', field: 'port.dst', controlType: 'range' }).controlType, 'range');
+    assert.equal(normalizeWidget({ viewMode: 'control', field: 'port.dst', controlType: 'slider' }).controlType, 'list');
+    // a saved graph carries both
+    assert.equal(graphFromWidget({ viewMode: 'timeline', splitField: 'ip.src', compare: 'day', gaugeWarn: 3 }).gaugeWarn, 3);
   });
 });

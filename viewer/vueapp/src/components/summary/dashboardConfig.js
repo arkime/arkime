@@ -2,9 +2,9 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, isPercentileAgg, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, MAX_FIELDS, TREE_DEPTHS, DEFAULT_TREE_DEPTH, slotMetrics } from './widgets/viewModes';
+import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, isPercentileAgg, COMPARES, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, MAX_FIELDS, TREE_DEPTHS, DEFAULT_TREE_DEPTH, slotMetrics } from './widgets/viewModes';
 import FieldService from '../search/FieldService';
-import { VARIABLE_NAME_RE } from './widgets/dashboardVariables';
+import { VARIABLE_NAME_RE, CONTROL_TYPES } from './widgets/dashboardVariables';
 import Utils from '../utils/utils';
 
 // Saved and shared dashboards can hold any JSON (a shared one is written by
@@ -46,8 +46,9 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
     other: false, // pie: an "Other" slice for what falls outside the top N
     bucketInterval: 0, // numeric field: range width per bucket (0 = one bucket per value)
     gaugeMax: 0, // gauge: the arc's full value (0 = the value itself)
-    gaugeWarn: 0, // gauge: at or above this the arc turns amber (0 = none)
-    gaugeCrit: 0, // gauge: at or above this the arc turns red (0 = none)
+    gaugeWarn: 0, // gauge/metric/table/bar/timeline: the warning level, amber at or above it (0 = none)
+    gaugeCrit: 0, // the critical level, red at or above it (0 = none)
+    compare: '', // timeline/area/metric: also the same window a 'day' or a 'week' earlier ('' = no)
     text: '', // markdown widget content
     treeRoot: '', // connection tree: the value the tree starts from ('' = the busiest source)
     treeDepth: DEFAULT_TREE_DEPTH, // connection tree: hops drawn from the root
@@ -58,6 +59,7 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
     sortField: '', // sessions list: the column it sorts by ('' = start time)
     variable: '', // control: the variable its picks set ('' = named after its field)
     applyAll: true, // control: its picks filter every widget, not just ${variable} uses
+    controlType: 'list', // control: 'list' of top values, 'range' slider or 'text' box
     expression: '',
     view: '',
     height: 3, // 3 × 160px row unit = 480px (chart default)
@@ -99,6 +101,7 @@ export const normalizeWidget = (w) => {
     gaugeMax: nonNeg(w.gaugeMax),
     gaugeWarn: nonNeg(w.gaugeWarn),
     gaugeCrit: nonNeg(w.gaugeCrit),
+    compare: COMPARES.includes(w.compare) ? w.compare : '',
     text: str(w.text),
     treeRoot: str(w.treeRoot),
     treeDepth: TREE_DEPTHS.includes(w.treeDepth) ? w.treeDepth : DEFAULT_TREE_DEPTH,
@@ -108,6 +111,7 @@ export const normalizeWidget = (w) => {
     sortField: str(w.sortField),
     variable: VARIABLE_NAME_RE.test(str(w.variable)) ? w.variable : '',
     applyAll: w.applyAll !== false,
+    controlType: CONTROL_TYPES.includes(w.controlType) ? w.controlType : 'list',
     expression: str(w.expression),
     view: str(w.view),
     height: spanOrDefault(w.height, 3, 8),
@@ -217,7 +221,7 @@ export const widgetsFromConfig = (cfg) => {
    dashboard copies a graph in; it never references one. See SHAREABLES.md. */
 
 // the widget keys a saved graph carries (everything but id/title/width/height/text)
-export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics', 'metricAgg', 'sortMetric', 'splitField', 'splitLength', 'barMode', 'orientation', 'seriesType', 'yScale', 'other', 'bucketInterval', 'treeRoot', 'treeDepth', 'length', 'order', 'orderBy', 'expression', 'view'];
+export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics', 'metricAgg', 'sortMetric', 'splitField', 'splitLength', 'barMode', 'orientation', 'seriesType', 'yScale', 'other', 'bucketInterval', 'treeRoot', 'treeDepth', 'length', 'order', 'orderBy', 'gaugeWarn', 'gaugeCrit', 'compare', 'expression', 'view'];
 
 // view modes a graph can have: the field-bound dashboard types SPI Graph
 // draws, and a timeline, area or time of day grid split by a field (SPI

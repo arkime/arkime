@@ -46,6 +46,7 @@ SPDX-License-Identifier: Apache-2.0
         :split-field-config="splitFieldConfig"
         :bar-mode="barMode"
         :orientation="orientation"
+        :thresholds="thresholds"
         :width="chartWidth"
         :height="chartHeight"
         :metric-type="metricType"
@@ -156,6 +157,11 @@ const props = defineProps({
   orientation: {
     type: String,
     default: 'vertical'
+  },
+  // bar: reference lines at the warning and critical levels, [{ value, color }]
+  thresholds: {
+    type: Array,
+    default: () => []
   },
   // pie: the sessions outside the top N ({ sessions, value }), drawn as one slice
   other: {

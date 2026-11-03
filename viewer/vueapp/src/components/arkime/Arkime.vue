@@ -236,7 +236,7 @@ import { CHART_PALETTES, normalizePalette } from '../summary/widgets/chartColors
 import { toV6Shape, makeWidgetDef, defaultWidgets, widgetsFromConfig, migrateDashboard, DASHBOARD_VERSION } from '../summary/dashboardConfig';
 import { systemDashboard, isSystemId, defaultDashboardId, pickedDefaultId, showsOwnLayout } from '../summary/systemDashboards';
 import { ArkimeError } from '@common/fetchWrapper.js';
-import { dashboardVariables, controlFilter, withoutVariableParams } from '../summary/widgets/dashboardVariables';
+import { dashboardVariables, controlFilter, variableText, withoutVariableParams } from '../summary/widgets/dashboardVariables';
 
 const DashboardService = createShareableService('summaryConfig');
 
@@ -319,7 +319,7 @@ export default {
     controlsSummary: function () {
       return Object.entries(this.dashboardVariables)
         .filter(([, v]) => v.values.length)
-        .map(([varName, v]) => (v.applyAll ? controlFilter(v.field, v.values) : `\${${varName}} = ${v.values.join(', ')}`))
+        .map(([varName, v]) => (v.applyAll ? controlFilter(v.field, v.values, v.kind) : `\${${varName}} = ${variableText(v)}`))
         .join(' && ');
     },
     currentDashboardConfig: function () {
