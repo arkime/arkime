@@ -517,6 +517,7 @@
       "canceledSearch": "Vous avez annulé la recherche",
       "closingCancelsSearchErr": "La fermeture de la page de résumé a annulé la recherche",
       "staleDataWarning": "Certaines données peuvent être incomplètes",
+      "rangeTooWide": "Les tableaux de bord peuvent rechercher au plus {days} à la fois, choisissez une période plus courte",
       "toggleFields": "Basculer les champs de résumé",
       "searchFields": "Rechercher des champs...",
       "dragToReorder": "Glisser pour réorganiser",

@@ -759,7 +759,7 @@ function logAction (uiPage) {
     };
 
     const avoidProps = {
-      password: true, newPassword: true, currentPassword: true, cancelId: true
+      password: true, newPassword: true, currentPassword: true, cancelId: true, dashboardPage: true
     };
 
     // parse query from req.query because query params might only be in body
@@ -777,6 +777,15 @@ function logAction (uiPage) {
     }
 
     if (uiPage) { log.uiPage = uiPage; }
+
+    // a dashboard's data call (its summary, spigraph, sessions, ...) sends the
+    // dashboard page's own url query: the row is the dashboard's, and its query
+    // is that page's, url encoded, so Open reopens the dashboard (the expression
+    // stays the one the call ran, and the body still has the call's params)
+    if (ArkimeUtil.isString(req.query.dashboardPage, 0)) {
+      log.uiPage = 'arkime';
+      log.query = historyKeyword(req.query.dashboardPage);
+    }
 
     if (req.query.date && parseFloat(req.query.date) === -1) {
       log.range = log.timestamp;
@@ -2508,6 +2517,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     businessDayEnd: Config.getFloat('businessDayEnd', false),
     businessDays: Config.get('businessDays', '1,2,3,4,5'),
     turnOffGraphDays: Config.getInt('turnOffGraphDays', 30),
+    dashboardMaxQueryDays: Config.getFloat('dashboardMaxQueryDays', 7),
     disableUserPasswordUI: Config.getBool('disableUserPasswordUI', true),
     logoutUrl: Auth.logoutUrl(req),
     logoutUrlMethod: Auth.logoutUrlMethod,

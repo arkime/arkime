@@ -517,6 +517,7 @@
       "canceledSearch": "Sie haben die Suche abgebrochen",
       "closingCancelsSearchErr": "Das Schließen der Zusammenfassungsseite hat die Suche abgebrochen",
       "staleDataWarning": "Einige Daten sind möglicherweise unvollständig",
+      "rangeTooWide": "Dashboards können höchstens {days} auf einmal durchsuchen, wählen Sie einen kürzeren Zeitraum",
       "toggleFields": "Zusammenfassungsfelder umschalten",
       "searchFields": "Felder suchen...",
       "dragToReorder": "Ziehen zum Neuordnen",

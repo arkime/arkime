@@ -517,6 +517,7 @@
       "canceledSearch": "Sa tühistasid otsingu",
       "closingCancelsSearchErr": "Kokkuvõtte lehe sulgemine tühistas otsingu",
       "staleDataWarning": "Mõned andmed võivad olla puudulikud",
+      "rangeTooWide": "Armatuurlauad saavad korraga otsida kuni {days}, vali lühem ajavahemik",
       "toggleFields": "Lülita kokkuvõtte väljad",
       "searchFields": "Otsi välju...",
       "dragToReorder": "Lohistage järjestuse muutmiseks",

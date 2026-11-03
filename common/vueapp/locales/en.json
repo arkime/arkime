@@ -517,6 +517,7 @@
       "canceledSearch": "You canceled the search",
       "closingCancelsSearchErr": "Closing the Summary page canceled the search",
       "staleDataWarning": "Some data may be incomplete",
+      "rangeTooWide": "Dashboards can search at most {days} at a time, pick a shorter time range",
       "toggleFields": "Toggle summary fields",
       "searchFields": "Search for fields...",
       "dragToReorder": "Drag to reorder",

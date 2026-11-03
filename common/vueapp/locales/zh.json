@@ -517,6 +517,7 @@
       "canceledSearch": "您已取消搜索",
       "closingCancelsSearchErr": "关闭摘要页面已取消搜索",
       "staleDataWarning": "部分数据可能不完整",
+      "rangeTooWide": "仪表板一次最多可搜索 {days}，请选择更短的时间范围",
       "toggleFields": "切换摘要字段",
       "searchFields": "搜索字段...",
       "dragToReorder": "拖动以重新排序",

@@ -275,6 +275,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           each split by another field's values
   - #4427 Add a waffle widget and SPI Graph type: 100 squares, each 1% of the sessions, colored by a field's top values;
           split by another field it draws one waffle per value
+  - #4428 Add dashboardMaxQueryDays limiting how much time a dashboard may search, in days, default 7, -1 for no limit;
+          a wider time range (or All) shows why and searches nothing
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

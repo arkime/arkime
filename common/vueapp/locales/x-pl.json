@@ -518,6 +518,7 @@
       "canceledSearch": "Ouyay anceledcay ethay earchsay",
       "closingCancelsSearchErr": "Osingclay ethay ummarysay agepay anceledcay ethay earchsay",
       "staleDataWarning": "Omesay ataday aymay ebay incompleteay",
+      "rangeTooWide": "Ashboardsday ancay earchsay atway ostmay {days} atway away imetay, ickpay away ortershay imetay angeray",
       "toggleFields": "Oggletay ummarysay ieldsfay",
       "searchFields": "Earchsay orfay ieldsfay...",
       "dragToReorder": "Agdray otay eorderray",
