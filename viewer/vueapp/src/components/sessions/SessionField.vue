@@ -619,46 +619,47 @@ export default {
             continue;
           }
 
+          // function replacers so a $ in packet data isn't a replacement pattern
           let result = this.arkimeClickables[key].url
-            .replace('%EXPRESSION%', encodeURIComponent(urlParams.expression))
-            .replace('%DATE%', dateparams)
-            .replace('%ISOSTART%', isostart.toISOString())
-            .replace('%ISOSTOP%', isostop.toISOString())
-            .replace('%FIELD%', info.field)
-            .replace('%DBFIELD%', info.info.dbField)
-            .replace('%TEXT%', text)
-            .replace('%URIEncodedText%', encodeURIComponent(text))
-            .replace('%UCTEXT%', text.toUpperCase())
-            .replace('%HOST%', host)
-            .replace('%URL%', encodeURIComponent('http:' + url))
-            .replace('%NODE%', nodename)
-            .replace('%NODEHOST%', nodehost)
-            .replace('%ID%', sessionid);
+            .replace('%EXPRESSION%', () => encodeURIComponent(urlParams.expression))
+            .replace('%DATE%', () => dateparams)
+            .replace('%ISOSTART%', () => isostart.toISOString())
+            .replace('%ISOSTOP%', () => isostop.toISOString())
+            .replace('%FIELD%', () => info.field)
+            .replace('%DBFIELD%', () => info.info.dbField)
+            .replace('%TEXT%', () => text)
+            .replace('%URIEncodedText%', () => encodeURIComponent(text))
+            .replace('%UCTEXT%', () => text.toUpperCase())
+            .replace('%HOST%', () => host)
+            .replace('%URL%', () => encodeURIComponent('http:' + url))
+            .replace('%NODE%', () => nodename)
+            .replace('%NODEHOST%', () => nodehost)
+            .replace('%ID%', () => sessionid);
 
           let clickableName = this.arkimeClickables[key].name || key;
 
           clickableName = (clickableName)
-            .replace('%FIELD%', info.field)
-            .replace('%DBFIELD%', info.info.dbField)
-            .replace('%TEXT%', text)
-            .replace('%HOST%', host)
-            .replace('%URL%', url);
+            .replace('%FIELD%', () => info.field)
+            .replace('%DBFIELD%', () => info.info.dbField)
+            .replace('%TEXT%', () => text)
+            .replace('%HOST%', () => host)
+            .replace('%URL%', () => url);
 
           let value = '%URL%';
           if (rc.category === 'host') { value = '%HOST%'; }
 
           value = (value)
-            .replace('%FIELD%', info.field)
-            .replace('%DBFIELD%', info.info.dbField)
-            .replace('%TEXT%', text)
-            .replace('%HOST%', host)
-            .replace('%URL%', url);
+            .replace('%FIELD%', () => info.field)
+            .replace('%DBFIELD%', () => info.info.dbField)
+            .replace('%TEXT%', () => text)
+            .replace('%HOST%', () => host)
+            .replace('%URL%', () => url);
 
           if (rc.regex) {
             if (!rc.cregex) { rc.cregex = new RegExp(rc.regex); }
             const matches = text.match(rc.cregex);
             if (matches && matches[1]) {
-              result = result.replace('%REGEX%', matches[1]);
+              result = result.replace('%REGEX%', () => matches[1]);
             } else {
               continue;
             }

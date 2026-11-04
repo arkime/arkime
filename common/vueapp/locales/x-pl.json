@@ -238,7 +238,7 @@
     "lotOfSessionsHtml": "Hattay'say away otlay ofway essionssay, isthay objay illway aketay away ilewhay. <strong>OceedPray ithway autioncay!</strong>",
     "waitForCalculation": "Aitway orfay essionsay otalstay otay ebay alculatedcay.",
     "doubleCheckSessions": "AkeMay uresay ouryay essionssay earchsay aboveway ontainscay onlyway ethay essionssay hattay ouyay antway inway ouryay acketpay earchsay!",
-    "multiViewerHtml": "UltiviewerMay isway enabledway. Isthay unthay illway earchsay ethay essionssay inway ethay<strong>{cluster}</strong> usterclay.",
+    "multiViewerHtml": "UltiviewerMay isway enabledway. Isthay unthay illway earchsay ethay essionssay inway ethay <strong>{cluster}</strong> usterclay.",
     "safeRegexHelpTip": "Elphay ithway afesay egrexray yntaxsay.",
     "jobSrc": "earchsay rcsay acketspay",
     "jobDst": "earchsay st-dway acketspay",
