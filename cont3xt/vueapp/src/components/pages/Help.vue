@@ -505,18 +505,18 @@ SPDX-License-Identifier: Apache-2.0
             You can format dates in links. Use <code>start</code> or <code>end</code> to format the date. <strong>(see JSON Rules below)</strong>
             <p class="m-0">
               <strong class="text-info">format</strong>
-              The date format that you want to use. Defaults to "YYYY-MM-DD"
+              The date format that you want to use, in your browser's timezone. Defaults to "YYYY-MM-DD"
             </p>
             <p class="m-0">
               <strong class="text-info">timeSnap</strong>
               Optional time snap to relatively adjust the date/time. Default is empty. (eg. "+1d" for 1 day later, "-1w" for 1 week ago, etc.)
             </p>
             <p class="m-0">
-              <strong>Examples:</strong>
+              <strong>Examples (browser in UTC):</strong>
               <br>
               <code>${start,{"format":"YYYY-MM-DD"}}</code> = 2024-01-01
               <br>
-              <code>${end,{"format":"YYYY-MM-DDThh:mm:ssZ"}}</code> = 2024-01-01T00:00:00Z
+              <code>${end,{"format":"YYYY-MM-DDTHH:mm:ssZ"}}</code> = 2024-01-01T00:00:00+00:00
               <br>
               <code>${start,{"format":"DD.MM.YYYY","timeSnap":"+1w"}}</code> = 08.01.2024
             </p>

@@ -27,6 +27,9 @@ const moment = cjsRequire('moment');
 const drMod = cjsRequire('defang-refang');
 const dr = drMod.default ?? drMod;
 
+// link dates are formatted in local time, so results don't depend on the machine
+process.env.TZ = 'UTC';
+
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
 const { escapeHtml, commaString } = await import('../common/vueapp/vueFilters.js');
@@ -73,7 +76,7 @@ function scriptMethods (file, names, scope) {
   const { descriptor } = parse(read(file));
   const out = {};
   for (const fn of names) {
-    const m = descriptor.script.content.match(new RegExp(`\\n    ${fn} \\(([^)]*)\\) \\{([\\s\\S]*?)\\n    \\},?\\n`));
+    const m = descriptor.script.content.match(new RegExp(`\\n    ${fn}(?:: function)? \\(([^)]*)\\) \\{([\\s\\S]*?)\\n    \\},?\\n`));
     if (!m) { throw new Error(`no ${fn} in ${file}`); }
     out[fn] = new Function(...Object.keys(scope), `return function ${fn} (${m[1]}) {${m[2]}\n};`)(...Object.values(scope));
   }
@@ -94,6 +97,12 @@ describe('viewer hunt v-html params', () => {
       assert.ok(html.includes('&lt;img src=x'), html);
     });
   }
+
+  test('Hunt.vue multiViewerHtml escapes the cluster and renders its html', async () => {
+    const html = await render(element('viewer/vueapp/src/components/hunt/Hunt.vue', vHtml('multiViewerHtml')), { selectedCluster: [XSS] });
+    assert.ok(!html.includes('<img'), html);
+    assert.ok(html.includes('<strong>&lt;img src=x'), html);
+  });
 
   test('a normal searchType and type still render', async () => {
     const ok = { ...job, searchType: 'asciicase', type: 'reassembled' };
@@ -122,8 +131,9 @@ describe('viewer hunt v-html params', () => {
 
 describe('cont3xt stored link urls', () => {
   test('LinkGuidance never links a javascript: externalDocUrl', async () => {
-    const template = parse(read('cont3xt/vueapp/src/utils/LinkGuidance.vue')).descriptor.template.content;
-    const LinkGuidance = { props: ['link', 'elementId'], template, methods: { safeUrl } };
+    const file = 'cont3xt/vueapp/src/utils/LinkGuidance.vue';
+    const template = parse(read(file)).descriptor.template.content;
+    const LinkGuidance = { props: ['link', 'elementId'], template, computed: scriptMethods(file, ['docUrl'], { safeUrl }) };
     const guidance = (externalDocUrl) => render('<link-guidance :link="link" element-id="lg-0" />',
       { link: { name: 'x', externalDocUrl, externalDocName: 'Docs' } }, {}, { LinkGuidance });
     const bad = await guidance(JS_URL);
@@ -184,6 +194,12 @@ describe('cont3xt stored link urls', () => {
     assert.equal(vm.getUrl('https://x.example/?d=${start,{"format":"YYYY-MM-DD","timeSnap":"1w"}}'), 'https://x.example/?d=2026-10-22');
   });
 
+  test('IntegrationCard keeps a $ in the query literal', () => {
+    const { withQuery } = scriptMethods('cont3xt/vueapp/src/components/integrations/IntegrationCard.vue', ['withQuery'], {});
+    const vm = { indicator: { query: "a$`b$'c$&" } };
+    assert.equal(withQuery.call(vm, 'https://x.example/?q=%{query}&y=1'), "https://x.example/?q=a$`b$'c$&&y=1");
+  });
+
   test('a stored link color is bound as one style property', () => {
     // a single CSSOM property drops an invalid value, a style string would add the declarations
     const link = { color: 'red;position:fixed;inset:0;z-index:9999' };
@@ -193,5 +209,24 @@ describe('cont3xt stored link urls', () => {
         assert.equal(Object.keys(style).length, 1, `${file} ${node.loc.source}`);
       }
     }
+  });
+});
+
+describe('viewer value actions', () => {
+  test('SessionField keeps a $ in packet data literal', () => {
+    const { buildMenu } = scriptMethods('viewer/vueapp/src/components/sessions/SessionField.vue', ['buildMenu'], {});
+    const text = "a$`b$'c$&";
+    const vm = {
+      openDropdownPd: { value: text, queryVal: text },
+      arkimeClickables: { vt: { name: '%TEXT%', url: 'https://vt.example/?q=%TEXT%&h=%HOST%&r=%REGEX%', category: 'host', regex: '^(.*)$' } },
+      getInfo: () => ({ field: 'host.http', category: ['host'], info: { dbField: 'http.host' } }),
+      getSession: () => ({ id: 'id1', node: 'node1', nodehost: 'nodehost1' }),
+      $route: { query: { date: '1' } },
+      clearMenuItems () {},
+      menuItems: {},
+      asyncMenuItems: {}
+    };
+    buildMenu.call(vm);
+    assert.deepEqual(vm.menuItems.vt, { name: text, value: text, url: `https://vt.example/?q=${text}&h=${text}&r=${text}` });
   });
 });

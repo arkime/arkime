@@ -124,7 +124,7 @@ export default {
   methods: {
     formatUrl (option) {
       const value = formatPostProcessedValue(this.data, option.field);
-      return option.href.replace('%{value}', value);
+      return option.href.replace('%{value}', () => value);
     },
     /**
      * Triggered when a the Copy menu item is clicked for a field

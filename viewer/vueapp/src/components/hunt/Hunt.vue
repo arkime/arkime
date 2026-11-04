@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
                     <span v-if="multiviewer">
                       <br>
                       <span class="fa fa-info-circle fa-fw me-2" />
-                      {{ $t('hunts.multiViewerHtml', { cluster: selectedCluster[0] }) }}
+                      <span v-html="$t('hunts.multiViewerHtml', { cluster: escapeHtml(selectedCluster[0]) })" />
                     </span>
                   </div>
                 </div>

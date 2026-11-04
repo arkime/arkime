@@ -54,6 +54,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #4415 PCAP upload no longer returns the upload command and its output, use --debug to log them
   - #4429 Improve hunt display escaping
+  - #4429 Fix value action urls when the field value contains a $
 
 6.9.1 2026/10/22
 ## Release
