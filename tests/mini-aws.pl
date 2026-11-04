@@ -251,6 +251,11 @@ sub handle_request {
     my $headers = $state->{headers};
     my $body    = $state->{body};
 
+    # Newer aws clis send aws-chunked bodies with a checksum trailer, S3 stores just the data
+    if (($headers->{'content-encoding'} // '') =~ /aws-chunked/ || ($headers->{'x-amz-content-sha256'} // '') =~ /^STREAMING-/) {
+        $body = aws_unchunk($body);
+    }
+
     my $range = $headers->{'range'} // '';
     my $body_size = length($body);
 
@@ -315,6 +320,19 @@ sub handle_request {
     } else {
         return send_s3_error_resp(501, "NotImplemented", "Not implemented: $method $uri?$query");
     }
+}
+
+sub aws_unchunk {
+    my ($body) = @_;
+    my $out = '';
+    while ($body =~ /\G([0-9a-fA-F]+)[^\r\n]*\r\n/gc) {
+        my $size = hex($1);
+        last if $size == 0;
+        my $start = pos($body);
+        $out .= substr($body, $start, $size);
+        pos($body) = $start + $size + 2;
+    }
+    return $out;
 }
 
 sub parse_path {

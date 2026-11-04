@@ -479,6 +479,12 @@ LOCAL gboolean arkime_db_pg_loopback(const char *host)
            (strncmp(host, "127.", 4) == 0 && g_hostname_is_ip_address(host));
 }
 /******************************************************************************/
+LOCAL void arkime_db_pg_notice(void *UNUSED(arg), const char *message)
+{
+    if (config.debug)
+        LOG("Postgres %.*s", (int)strcspn(message, "\n"), message);
+}
+/******************************************************************************/
 /* Like the OpenSearch/Elasticsearch connection, a remote server's certificate is
  * verified with caTrustFile or the system CAs, and --insecure still requires TLS.
  * Settings in the url win, loopback and unix socket servers keep the libpq default.
@@ -550,6 +556,8 @@ LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *url)
     if (PQstatus(pgConn) != CONNECTION_OK) {
         LOGEXIT("ERROR - Couldn't connect to the Postgres clusterDbUrl: %s", PQerrorMessage(pgConn));
     }
+    // Every start creates the tables IF NOT EXISTS, which libpq would print a NOTICE for
+    PQsetNoticeProcessor(pgConn, arkime_db_pg_notice, NULL);
 
     char sql[300];
     for (int i = 0; pgTables[i]; i++) {
