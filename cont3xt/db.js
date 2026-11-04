@@ -14,90 +14,67 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const esSettings = { number_of_shards: 1, number_of_replicas: 0, auto_expand_replicas: '0-2' };
 const keywordStrings = [{ string_template: { match_mapping_type: 'string', mapping: { type: 'keyword' } } }];
 
-// Names match the layouts each backend used before collections
+// Every backend uses the cont3xt_ names, so cont3xt can share a store with the other apps
 const collections = {
-  linkGroups: {
+  cont3xt_links: {
     idType: 'hex',
-    table: 'link_groups',
-    es: { index: 'cont3xt_links', create: { settings: esSettings, mappings: { dynamic_templates: keywordStrings } } },
-    lmdb: { db: 'linkGroups' },
-    redis: { prefix: 'lg:' }
-  },
-  views: {
-    idType: 'hex',
-    es: {
-      index: 'cont3xt_views',
-      create: {
-        settings: esSettings,
-        mappings: {
-          properties: {
-            name: { type: 'keyword' },
-            creator: { type: 'keyword' },
-            viewRoles: { type: 'keyword' },
-            editRoles: { type: 'keyword' },
-            integrations: { type: 'keyword', index: false }
-          }
-        }
-      }
+    fields: {
+      creator: { type: 'keyword', indexed: true },
+      viewRoles: 'keyword',
+      editRoles: 'keyword'
     },
-    lmdb: { db: 'views' },
-    redis: { prefix: 'view:' }
+    es: { create: { settings: esSettings, mappings: { dynamic_templates: keywordStrings } } }
   },
-  audits: {
+  cont3xt_views: {
     idType: 'hex',
-    es: {
-      index: 'cont3xt_history',
-      create: {
-        settings: esSettings,
-        mappings: {
-          properties: {
-            issuedAt: { type: 'date' },
-            took: { type: 'long' },
-            resultCount: { type: 'long' },
-            userId: { type: 'keyword' },
-            iType: { type: 'keyword' },
-            indicator: { type: 'keyword' },
-            tags: { type: 'keyword' },
-            viewId: { type: 'keyword' }
-          },
-          dynamic_templates: keywordStrings
-        }
-      }
+    fields: {
+      name: 'keyword',
+      creator: { type: 'keyword', indexed: true },
+      viewRoles: 'keyword',
+      editRoles: 'keyword',
+      integrations: { type: 'keyword', index: false }
     },
-    sqlite: { columns: { issuedAt: 'INTEGER' } },
-    lmdb: { db: 'audits' },
-    redis: { prefix: 'audit:' }
+    es: { create: { settings: esSettings } }
   },
-  overviews: {
+  cont3xt_history: {
     idType: 'hex',
-    es: {
-      index: 'cont3xt_overviews',
-      create: {
-        settings: esSettings,
-        mappings: {
-          properties: {
-            creator: { type: 'keyword' },
-            name: { type: 'keyword' },
-            title: { type: 'keyword' },
-            iType: { type: 'keyword' },
-            viewRoles: { type: 'keyword' },
-            editRoles: { type: 'keyword' },
-            fields: {
-              properties: {
-                from: { type: 'keyword' },
-                type: { type: 'keyword' },
-                field: { type: 'keyword' },
-                custom: { type: 'keyword' }
-              }
-            }
-          },
-          dynamic_templates: keywordStrings
-        }
-      }
+    fields: {
+      issuedAt: { type: 'date', indexed: true },
+      took: 'long',
+      resultCount: 'long',
+      userId: { type: 'keyword', indexed: true },
+      iType: { type: 'keyword', indexed: true },
+      indicator: { type: 'keyword', indexed: true },
+      tags: 'keyword',
+      viewId: 'keyword'
     },
-    lmdb: { db: 'overviews' },
-    redis: { prefix: 'overview:' }
+    es: { create: { settings: esSettings, mappings: { dynamic_templates: keywordStrings } } }
+  },
+  cont3xt_overviews: {
+    idType: 'hex',
+    fields: {
+      creator: { type: 'keyword', indexed: true },
+      name: 'keyword',
+      title: 'keyword',
+      iType: 'keyword',
+      viewRoles: 'keyword',
+      editRoles: 'keyword',
+      'fields.from': 'keyword',
+      'fields.type': 'keyword',
+      'fields.field': 'keyword',
+      'fields.custom': 'keyword'
+    },
+    es: { create: { settings: esSettings, mappings: { dynamic_templates: keywordStrings } } }
   }
+};
+
+// Where SQLite kept them before the cont3xt_ names, moved once at startup.
+// Viewer views could share the old views table, cont3xt's are the ones with a creator.
+const legacy = {
+  cont3xt_links: { sqlite: { table: 'link_groups' } },
+  cont3xt_views: { sqlite: { table: 'views' }, where: { creator: { $exists: true } } },
+  cont3xt_history: { sqlite: { table: 'audits' } },
+  cont3xt_overviews: { sqlite: { table: 'overviews' } }
 };
 
 // Docs the creator owns or one of the roles can edit or view
@@ -113,6 +90,7 @@ class Db {
   static #linkGroups;
   static #views;
   static #audits;
+  static #maxIndicatorBytes = 8000;
   static #overviews;
 
   static async initialize (options) {
@@ -121,17 +99,41 @@ class Db {
     }
 
     const url = options.url ?? [options.node].flat()[0];
+    // A Postgres btree index entry is at most 2704 bytes, longer indicators would fail the audit insert
+    if (/^postgres(ql)?:/i.test(url)) { Db.#maxIndicatorBytes = 2000; }
     const conn = ArkimeUtil.dbConnect(url, { ...options, section: 'cont3xt' });
-    Db.#linkGroups = conn.collection('linkGroups', collections.linkGroups);
-    Db.#views = conn.collection('views', collections.views);
-    Db.#audits = conn.collection('audits', collections.audits);
-    Db.#overviews = conn.collection('overviews', collections.overviews);
+    Db.#linkGroups = conn.collection('cont3xt_links', collections.cont3xt_links);
+    Db.#views = conn.collection('cont3xt_views', collections.cont3xt_views);
+    Db.#audits = conn.collection('cont3xt_history', collections.cont3xt_history);
+    Db.#overviews = conn.collection('cont3xt_overviews', collections.cont3xt_overviews);
 
     try {
       await Promise.all([Db.#linkGroups.init(), Db.#views.init(), Db.#audits.init(), Db.#overviews.init()]);
+      for (const coll of [Db.#linkGroups, Db.#views, Db.#audits, Db.#overviews]) {
+        await Db.#moveLegacy(conn, coll);
+      }
     } catch (err) {
       console.log('ERROR - creating cont3xt tables', err);
       process.exit(1);
+    }
+  }
+
+  // Copy a collection from its old name the first time the new one is empty, then drop the copied docs
+  static async #moveLegacy (conn, coll) {
+    const old = legacy[coll.name];
+    if (!conn.hasCollection || !await conn.hasCollection(`legacy_${coll.name}`, old)) { return; }
+    if (await coll.count() > 0) { return; }
+
+    const from = conn.collection(`legacy_${coll.name}`, old);
+    const { data } = await from.find({ where: old.where });
+    for (const { id, doc } of data) {
+      await coll.put(id, doc);
+    }
+    for (const { id } of data) {
+      await from.delete(id);
+    }
+    if (data.length > 0) {
+      console.log(`Moved ${data.length} cont3xt docs to ${coll.name}`);
     }
   }
 
@@ -213,6 +215,10 @@ class Db {
   /**
    * Update a single audit entry
    */
+  static get maxIndicatorBytes () {
+    return Db.#maxIndicatorBytes;
+  }
+
   static async putAudit (id, audit) {
     return Db.#audits.put(id, audit);
   }

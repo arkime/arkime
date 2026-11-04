@@ -294,14 +294,24 @@ class Parliament {
 
     // Names match the layouts each backend used before collections
     Parliament.#parliaments = conn.collection('parliament', {
-      sqlite: { idColumn: 'name' },
-      lmdb: { db: 'Parliament', json: true },
-      redis: { prefix: 'parliament:' }
+      sqlite: { idColumn: 'name' }
     });
 
     const esSettings = { number_of_shards: 1, number_of_replicas: 0, auto_expand_replicas: '0-2' };
     Parliament.issues = conn.collection('parliament_issues', {
-      es: { create: { settings: esSettings, mappings: { dynamic_templates: [{ string_template: { match_mapping_type: 'string', mapping: { type: 'keyword' } } }] } } }
+      fields: {
+        parliament: { type: 'keyword', indexed: true },
+        // a message for esDown and a number for the rest, keyword takes both
+        value: 'keyword'
+      },
+      es: {
+        create: {
+          settings: esSettings,
+          mappings: {
+            dynamic_templates: [{ string_template: { match_mapping_type: 'string', mapping: { type: 'keyword', ignore_above: 1024 } } }]
+          }
+        }
+      }
     });
     await Parliament.issues.init();
   }
@@ -1139,7 +1149,23 @@ function cleanUpIssues () {
 }
 
 // Updates an existing issue or pushes a new issue onto the issue array
+// Polled clusters are remote, issues only keep a bounded name and finite numbers from them
+const MAX_REMOTE_NAME = 256;
+const MAX_IGNORE_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+function remoteName (value) {
+  return String(value ?? '').slice(0, MAX_REMOTE_NAME);
+}
+function remoteNumber (value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 function setIssue (cluster, newIssue) {
+  // last guard for any issue type, esDown's value is the locally built error message
+  if (newIssue.node !== undefined) { newIssue.node = remoteName(newIssue.node); }
+  if (newIssue.value !== undefined && newIssue.type !== 'esDown') { newIssue.value = remoteNumber(newIssue.value); }
+  if (newIssue.freeSpaceM !== undefined) { newIssue.freeSpaceM = remoteNumber(newIssue.freeSpaceM); }
+
   // build issue
   const issueType = issueTypes[newIssue.type];
   newIssue.text = issueType.text;
@@ -1289,8 +1315,12 @@ async function getStats (cluster) {
       cluster.monitoring = 0;
 
       for (const stat of stats.data) {
-        // remote data, a non string nodeName breaks issue search and the UI
-        const nodeName = String(stat.nodeName ?? '');
+        // remote data, checks and issues only see a bounded name and finite numbers
+        const nodeName = remoteName(stat.nodeName);
+        const statTime = remoteNumber(stat.currentTime);
+        const deltaPacketsPerSec = remoteNumber(stat.deltaPacketsPerSec);
+        const freeSpaceP = remoteNumber(stat.freeSpaceP);
+        const freeSpaceM = remoteNumber(stat.freeSpaceM);
 
         // sum delta bytes per second
         if (stat.deltaBytesPerSec) {
@@ -1306,21 +1336,21 @@ async function getStats (cluster) {
           cluster.monitoring += Number(stat.monitoring) || 0;
         }
 
-        if ((now - stat.currentTime) <= Parliament.getGeneralSetting('outOfDate') && stat.deltaPacketsPerSec > 0) {
+        if ((now - statTime) <= Parliament.getGeneralSetting('outOfDate') && deltaPacketsPerSec > 0) {
           cluster.arkimeNodes++;
         }
 
         // Look for issues
-        if ((now - stat.currentTime) > Parliament.getGeneralSetting('outOfDate')) {
+        if ((now - statTime) > Parliament.getGeneralSetting('outOfDate')) {
           setIssue(cluster, {
             type: 'outOfDate',
             node: nodeName,
-            value: stat.currentTime * 1000
+            value: statTime * 1000
           });
         }
 
         // look for no packets issue
-        if (stat.deltaPacketsPerSec <= Parliament.getGeneralSetting('noPackets')) {
+        if (deltaPacketsPerSec <= Parliament.getGeneralSetting('noPackets')) {
           const id = cluster.title + ':' + nodeName;
 
           // only set the noPackets issue if there is a record of this cluster/node
@@ -1330,7 +1360,7 @@ async function getStats (cluster) {
             setIssue(cluster, {
               type: 'noPackets',
               node: nodeName,
-              value: stat.deltaPacketsPerSec
+              value: deltaPacketsPerSec
             });
           } else if (!noPacketsMap.has(id)) {
             // if this issue has not been encountered yet, make a record of it
@@ -1357,9 +1387,9 @@ async function getStats (cluster) {
         let shouldCreateIssue = false;
 
         if (lowDiskSpaceType === 'percentage') {
-          shouldCreateIssue = stat.freeSpaceP !== undefined && stat.freeSpaceP <= lowDiskSpaceThreshold;
+          shouldCreateIssue = freeSpaceP !== undefined && freeSpaceP <= lowDiskSpaceThreshold;
         } else if (lowDiskSpaceType === 'gb') {
-          const freeSpaceGB = (stat.freeSpaceM || 0) / 1000;
+          const freeSpaceGB = (freeSpaceM || 0) / 1000;
           shouldCreateIssue = freeSpaceGB <= lowDiskSpaceThreshold;
         }
 
@@ -1367,8 +1397,8 @@ async function getStats (cluster) {
           setIssue(cluster, {
             type: 'lowDiskSpace',
             node: nodeName,
-            value: stat.freeSpaceP,
-            freeSpaceM: stat.freeSpaceM,
+            value: freeSpaceP,
+            freeSpaceM,
             thresholdType: lowDiskSpaceType
           });
         }
@@ -1381,23 +1411,25 @@ async function getStats (cluster) {
 
         for (const esNode of stats.esNodes) {
           // Skip non-data nodes
-          if (!esNode.roles || !esNode.roles.some(r => r.startsWith('data'))) continue;
+          if (!Array.isArray(esNode.roles) || !esNode.roles.some(r => typeof r === 'string' && r.startsWith('data'))) continue;
 
+          const esFreeSpaceP = remoteNumber(esNode.freeSpaceP);
+          const esFreeSpaceM = remoteNumber(esNode.freeSpaceM);
           let shouldCreateESIssue = false;
 
           if (lowDiskSpaceESType === 'percentage') {
-            shouldCreateESIssue = esNode.freeSpaceP !== undefined && esNode.freeSpaceP <= lowDiskSpaceESThreshold;
+            shouldCreateESIssue = esFreeSpaceP !== undefined && esFreeSpaceP <= lowDiskSpaceESThreshold;
           } else if (lowDiskSpaceESType === 'gb') {
-            const freeSpaceGB = (esNode.freeSpaceM || 0) / 1000;
+            const freeSpaceGB = (esFreeSpaceM || 0) / 1000;
             shouldCreateESIssue = freeSpaceGB <= lowDiskSpaceESThreshold;
           }
 
           if (shouldCreateESIssue) {
             setIssue(cluster, {
               type: 'lowDiskSpaceES',
-              node: String(esNode.nodeName ?? ''),
-              value: esNode.freeSpaceP,
-              freeSpaceM: esNode.freeSpaceM,
+              node: remoteName(esNode.nodeName),
+              value: esFreeSpaceP,
+              freeSpaceM: esFreeSpaceM,
               thresholdType: lowDiskSpaceESType
             });
           }
@@ -1462,24 +1494,46 @@ function saveIssues () {
   return save;
 }
 
+// Each doc saves on its own, so one doc the db rejects can't block the rest.
 async function doSaveIssues () {
   internals.issuesDirty = false;
-  try {
-    const ids = new Set();
-    for (const issue of [...issues]) {
-      const id = issueId(issue);
-      ids.add(id);
+  let firstErr;
+  const failed = (err) => {
+    firstErr ??= err;
+    console.log('Unable to save issue:', err.message ?? err);
+  };
+
+  const ids = new Set();
+  for (const issue of [...issues]) {
+    const id = issueId(issue);
+    ids.add(id);
+    try {
       await Parliament.issues.put(id, { ...issue, parliament: Parliament.name }, { refresh: false });
+    } catch (err) {
+      failed(err);
     }
-    for (const id of savedIssueIds) {
-      if (!ids.has(id)) { await Parliament.issues.delete(id, { refresh: false }); }
+  }
+  const stillSaved = new Set(ids);
+  for (const id of savedIssueIds) {
+    if (ids.has(id)) { continue; }
+    try {
+      await Parliament.issues.delete(id, { refresh: false });
+    } catch (err) {
+      stillSaved.add(id); // try the delete again next save
+      failed(err);
     }
-    savedIssueIds = ids;
+  }
+  savedIssueIds = stillSaved;
+
+  try {
     await Parliament.issues.refresh();
   } catch (err) {
-    console.log('Unable to save issues:', err.message ?? err);
+    failed(err);
+  }
+
+  if (firstErr) {
     internals.issuesDirty = true;
-    throw err;
+    throw firstErr;
   }
 }
 
@@ -1855,8 +1909,8 @@ app.put('/parliament/api/ignoreIssues', [isUser, checkCookieToken], (req, res, n
   }
 
   const ms = req.body.ms ?? 3600000; // Default to 1 hour
-  if (typeof ms !== 'number' || !Number.isFinite(ms)) {
-    return res.serverError(422, 'ms must be a finite number.');
+  if (ms !== -1 && !(Number.isSafeInteger(ms) && ms > 0 && ms <= MAX_IGNORE_MS)) {
+    return res.serverError(422, 'ms must be -1 or a positive number of milliseconds up to 10 years.');
   }
 
   let ignoreUntil = Date.now() + ms;

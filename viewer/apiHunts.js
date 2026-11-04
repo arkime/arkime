@@ -847,6 +847,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'The hunt must search source or destination packets (or both)', 'api.hunts.missingSrcOrDst');
     }
     if (!req.body.query) { return res.serverError(403, 'Missing query', 'api.hunts.missingQuery'); }
+    // replayed into Db.getViewByIdOrName, which only looks up a string
+    if (req.body.query.view !== undefined && !ArkimeUtil.isString(req.body.query.view, 0)) {
+      return res.serverError(403, 'View must be a string', 'api.hunts.viewMustBeString');
+    }
     // Number() alone would accept "", null, false and [] as 0
     const toSeconds = (v) => (typeof v === 'number' || (typeof v === 'string' && /^-?\d+$/.test(v))) ? Number(v) : NaN;
     const startTime = toSeconds(req.body.query.startTime);

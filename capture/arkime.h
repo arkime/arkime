@@ -1150,6 +1150,26 @@ typedef struct {
     uint8_t  asnLen;
 } ArkimeGeoInfo_t;
 
+typedef void (*ArkimeDbRow_cb)(const uint8_t *id, int id_len, const uint8_t *doc, int doc_len);
+
+// The clusterDbUrl, holds the stats, dstats, files, fields and sequence tables, ES by default.
+// put and update copy json. put_stats writes this node's stats doc, live captures version it so an older one can't replace a newer one.
+typedef struct {
+    void     (*put)(const char *table, const char *id, const char *json, int len, gboolean sync, int priority);
+    void     (*put_stats)(const char *json, int len, gboolean sync, int priority);
+    void     (*update)(const char *table, const char *id, const char *json, int len, int priority);
+    void     (*del)(const char *table, const char *id);
+    void     (*sequence)(const char *name, ArkimeSeqNum_cb func, gpointer uw);
+    uint32_t (*sequence_sync)(const char *name);
+    void     (*each)(const char *table, ArkimeDbRow_cb func);
+    gboolean (*file_exists)(const char *node, const char *name, uint32_t *num);
+    int      (*queue_length)(void);
+    void     (*exit)(void);
+} ArkimeClusterDb_t;
+
+typedef const ArkimeClusterDb_t *(*ArkimeClusterDbInit)(const char *url);
+
+void     arkime_db_cluster_register(char *scheme, ArkimeClusterDbInit init);
 void     arkime_db_init();
 void     arkime_db_set_tokens_enabled(gboolean enabled);
 gboolean arkime_db_tokens_enabled(void);

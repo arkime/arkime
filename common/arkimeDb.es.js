@@ -10,7 +10,7 @@ const util = require('util');
 const ArkimeDb = require('./arkimeDb');
 
 // Each collection is an index, <prefix><name> unless es.index is set. Indices
-// are only created when es.create is set, otherwise db.pl owns them.
+// are only created when fields or es.create are set and es.dbpl isn't, otherwise db.pl owns them.
 // With es.writeIndex the index is a read pattern and each put goes to
 // writeIndex(), so gets and deletes by id search across the pattern.
 // Every call takes an optional cluster, which multi cluster viewers route on.
@@ -18,10 +18,12 @@ class ESCollection extends ArkimeDb.Collection {
   #client;
   #index;
   #writeIndex;
+  #multiES;
 
-  constructor (client, prefix, collName, options) {
+  constructor (client, prefix, collName, options, multiES) {
     super(collName, options);
     this.#client = client;
+    this.#multiES = multiES;
     this.#index = options.es?.index ?? `${prefix}${collName}`;
     this.#writeIndex = options.es?.writeIndex;
   }
@@ -31,11 +33,17 @@ class ESCollection extends ArkimeDb.Collection {
   }
 
   async init () {
-    const create = this.options.es?.create;
-    if (!create) { return; }
+    const { create, dbpl } = this.options.es ?? {};
+    const fields = this.options.fields;
+    if (dbpl || (!create && !fields)) { return; }
+
+    const mappings = { ...create?.mappings };
+    if (fields) {
+      mappings.properties = { ...ArkimeDb.esProperties(fields), ...mappings.properties };
+    }
 
     try {
-      await this.#client.indices.create({ index: this.#index, body: { settings: create.settings } });
+      await this.#client.indices.create({ index: this.#index, body: { settings: create?.settings } });
     } catch (err) {
       if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
         console.log(`ERROR - creating ${this.#index}`, util.inspect(err, false, 10));
@@ -43,8 +51,8 @@ class ESCollection extends ArkimeDb.Collection {
       }
     }
 
-    if (create.mappings) {
-      await this.#client.indices.putMapping({ index: this.#index, body: create.mappings });
+    if (Object.keys(mappings).length) {
+      await this.#client.indices.putMapping({ index: this.#index, body: mappings });
     }
   }
 
@@ -71,6 +79,28 @@ class ESCollection extends ArkimeDb.Collection {
       return body._id;
     } catch (err) {
       if (createOnly && err.meta?.statusCode === 409) { throw new ArkimeDb.ConflictError(id); }
+      throw err;
+    }
+  }
+
+  async getVersioned (id, { cluster } = {}) {
+    if (this.#writeIndex) { throw new Error(`getVersioned isn't supported on ${this.#index}`); }
+    try {
+      const { body } = await this.#client.get({ index: this.#index, id, cluster });
+      return body._source ? { doc: body._source, version: { seqNo: body._seq_no, primaryTerm: body._primary_term } } : null;
+    } catch (err) {
+      if (err.meta?.statusCode === 404) { return null; }
+      throw err;
+    }
+  }
+
+  // A missing doc or a newer write is a 409
+  async putIfVersion (id, doc, version, { refresh = true, cluster } = {}) {
+    if (this.#writeIndex) { throw new Error(`putIfVersion isn't supported on ${this.#index}`); }
+    try {
+      await this.#client.index({ index: this.#index, id, body: doc, refresh, cluster, if_seq_no: version.seqNo, if_primary_term: version.primaryTerm });
+    } catch (err) {
+      if (err.meta?.statusCode === 409) { throw new ArkimeDb.ConflictError(id, `Document '${id}' was changed or deleted`); }
       throw err;
     }
   }
@@ -126,9 +156,13 @@ class ESCollection extends ArkimeDb.Collection {
     return body;
   }
 
-  // With no size every match is returned, using scroll past the first 1000.
+  // With no size every match is returned, using scroll past the first 1000. ES caps
+  // from + size at 10000 so bigger pages scroll too, multies does that scroll itself.
   // Hits also carry the ES index they came from.
   async find ({ where, sort, from = 0, size, version, fields, cluster } = {}) {
+    // Callers pass query string values, '100' + '50' would be '10050'
+    from = Math.max(0, +from || 0);
+    if (size !== undefined) { size = Math.max(0, +size || 0); }
     const body = this.searchBody({ where, sort, from, size, fields });
 
     const toHit = (h) => {
@@ -138,25 +172,27 @@ class ESCollection extends ArkimeDb.Collection {
     };
 
     const params = { index: this.#index, body, rest_total_hits_as_int: true, version: !!version, cluster };
-    if (size !== undefined) {
+    if (size !== undefined && (from + size <= 10000 || this.#multiES)) {
       const { body: { hits } } = await this.#client.search(params);
       return { total: hits.total, data: hits.hits.map(toHit) };
     }
 
     // ES won't scroll with a from, so skip the first hits here instead
     body.from = 0;
+    body.size = 1000;
     let { body: resp } = await this.#client.search({ ...params, scroll: '1m' });
     const total = resp.hits.total;
+    const want = Math.min(total, size === undefined ? total : from + size);
     const data = [];
     while (resp.hits.hits.length > 0) {
       data.push(...resp.hits.hits.map(toHit));
-      if (data.length >= total) { break; }
+      if (data.length >= want) { break; }
       ({ body: resp } = await this.#client.scroll({ scroll_id: resp._scroll_id, scroll: '1m', rest_total_hits_as_int: true, cluster }));
     }
     if (resp._scroll_id) {
       try { await this.#client.clearScroll({ body: { scroll_id: [resp._scroll_id] }, cluster }); } catch (err) { }
     }
-    return { total, data: from > 0 ? data.slice(from) : data };
+    return { total, data: data.slice(from, want) };
   }
 
   async count (where, { cluster } = {}) {
@@ -287,6 +323,8 @@ function compileOp (field, op, c) {
   case '$regex':
     if (field === 'id') { throw new Error('$regex is not supported on id'); }
     return { regexp: { [f]: { value: String(c) } } };
+  // The field must be mapped as ip, which takes a cidr in a term
+  case '$cidr': return { term: { [f]: String(c) } };
   }
 }
 
@@ -310,21 +348,79 @@ function compile (where) {
   return filter.length ? { bool: { filter } } : { match_all: {} };
 }
 
+// The reverse of compile, for multies answering the viewer's queries from a non ES cluster db
+function decompileOne (type, clause) {
+  const entries = Object.entries(clause ?? {});
+  if (entries.length !== 1) { throw new Error(`Unsupported ${type} query`); }
+  const [f, spec] = entries[0];
+  const field = f === '_id' ? 'id' : f;
+  const value = (spec !== null && typeof spec === 'object' && !Array.isArray(spec)) ? spec.value : spec;
+
+  switch (type) {
+  case 'term': return { [field]: value };
+  case 'terms': return { [field]: { $in: spec } };
+  case 'prefix': return { [field]: { $prefix: value } };
+  case 'regexp': return { [field]: { $regex: value } };
+  case 'range': {
+    const ops = {};
+    for (const [op, c] of Object.entries(spec)) {
+      if (!['gt', 'gte', 'lt', 'lte'].includes(op)) { throw new Error(`Unsupported range ${op}`); }
+      ops[`$${op}`] = c;
+    }
+    return { [field]: ops };
+  }
+  case 'wildcard': {
+    const contains = String(value).match(/^\*((?:[^\\*?]|\\.)*)\*$/);
+    if (contains) {
+      return { [field]: { [spec.case_insensitive ? '$icontains' : '$contains']: contains[1].replace(/\\(.)/g, '$1') } };
+    }
+    if (spec.case_insensitive) { throw new Error('Unsupported case_insensitive wildcard'); }
+    return { [field]: { $wildcard: value } };
+  }
+  }
+}
+
+function decompile (query) {
+  if (!query) { return {}; }
+  const [type, clause] = Object.entries(query)[0] ?? [];
+  const list = (x) => x === undefined ? [] : (Array.isArray(x) ? x : [x]);
+  switch (type) {
+  case 'match_all': return {};
+  case 'match_none': return { $or: [] };
+  case 'ids': return { id: { $in: clause.values } };
+  case 'exists': return { [clause.field === '_id' ? 'id' : clause.field]: { $exists: true } };
+  case 'bool': {
+    const parts = [...list(clause.filter), ...list(clause.must)].map(decompile);
+    const should = list(clause.should);
+    if (should.length && (clause.minimum_should_match ?? (parts.length ? 0 : 1)) > 0) {
+      parts.push({ $or: should.map(decompile) });
+    }
+    parts.push(...list(clause.must_not).map(q => ({ $not: decompile(q) })));
+    return parts.length === 1 ? parts[0] : { $and: parts };
+  }
+  case 'term': case 'terms': case 'range': case 'prefix': case 'wildcard': case 'regexp':
+    return decompileOne(type, clause);
+  }
+  throw new Error(`Unsupported ${type} query`);
+}
+
 class ESConnection {
   client;
   prefix;
+  #multiES;
   #closed = false;
   #collections = new Map();
 
   constructor (url, options) {
     this.prefix = options.prefix ?? '';
+    this.#multiES = !!options.multiES;
     this.client = options.client ?? createClient(url, options);
   }
 
   collection (collName, options = {}) {
     let coll = this.#collections.get(collName);
     if (!coll) {
-      coll = new ESCollection(this.client, this.prefix, collName, options);
+      coll = new ESCollection(this.client, this.prefix, collName, options, this.#multiES);
       this.#collections.set(collName, coll);
     }
     return coll;
@@ -364,6 +460,7 @@ function createClient (url, options) {
 }
 
 ESConnection.compile = compile;
+ESConnection.decompile = decompile;
 
 module.exports = ESConnection;
 

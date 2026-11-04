@@ -2579,6 +2579,7 @@
       "rolesMustBeArray": "Rollide väli peab olema sõnede massiiv",
       "editRolesMustBeArray": "Muutmisrollide väli peab olema sõnede massiiv",
       "usersMustBeString": "Kasutajate väli peab olema sõne",
+      "viewMustBeString": "Vaade peab olema sõne",
       "nameExists": "Otsetee nimega {name} on juba olemas",
       "created": "Uus otsetee loodud!",
       "errorCreating": "Viga otsetee loomisel",

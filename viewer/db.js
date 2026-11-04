@@ -34,7 +34,7 @@ const internals = {
   fileName2File: new Map(),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
-  sessionIndices: ['sessions2-*', 'partial-sessions3-*', 'sessions3-*'],
+  sessionIndices: ['partial-sessions3-*', 'sessions3-*'],
   queryExtraIndicesRegex: [],
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
@@ -208,7 +208,7 @@ Db.initialize = async (info) => {
 
   // build regular expressions for the user-specified extra query index patterns
   if (Array.isArray(info.queryExtraIndices)) {
-    internals.sessionIndices = [...new Set([...['sessions2-*', 'partial-sessions3-*', 'sessions3-*'], ...info.queryExtraIndices])];
+    internals.sessionIndices = [...new Set([...['partial-sessions3-*', 'sessions3-*'], ...info.queryExtraIndices])];
     delete internals.aliasesCache;
     for (const pattern of info.queryExtraIndices) {
       internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(pattern));
@@ -236,9 +236,16 @@ Db.initialize = async (info) => {
   }
 
   // hunts, queries and history live in the cluster db, the sessions ES unless clusterDbUrl says otherwise.
-  // Another ES uses the sessions ES credentials.
-  const clusterDbUrl = info.clusterDbUrl ?? Config.get('clusterDbUrl');
-  const esConn = ArkimeUtil.dbConnect(undefined, { client: internals.client7 });
+  // Another ES uses the sessions ES credentials. A Postgres cluster db also holds what capture writes.
+  // Every backend names its tables with the cluster's prefix, like the ES indices, so clusters can share one db.
+  // A multi viewer gets every cluster's cluster db through multies, see multiESNodes clusterDbUrl
+  const clusterDbUrl = internals.multiES ? undefined : (info.clusterDbUrl ?? Config.get('clusterDbUrl'));
+  // capture has to write to it too, from every sensor
+  if (clusterDbUrl && !ArkimeUtil.dbIsES(clusterDbUrl) && !/^postgres(ql)?:/i.test(clusterDbUrl)) {
+    console.log(`ERROR - clusterDbUrl '${clusterDbUrl.split(':')[0]}' isn't supported, use Elasticsearch/OpenSearch or postgres://`);
+    process.exit(1);
+  }
+  const esConn = ArkimeUtil.dbConnect(undefined, { client: internals.client7, multiES: internals.multiES });
   let clusterConn = esConn;
   if (clusterDbUrl) {
     clusterConn = ArkimeUtil.dbIsES(clusterDbUrl)
@@ -253,9 +260,16 @@ Db.initialize = async (info) => {
         apiKey: info.esApiKey,
         basicAuth: info.esBasicAuth
       })
-      : ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster' });
+      : ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster', prefix: internals.prefix });
   }
-  internals.clusterImpl = new DbClusterImpl({ conn: clusterConn, esConn, isES: !clusterDbUrl || ArkimeUtil.dbIsES(clusterDbUrl), prefix: internals.prefix, fixIndex });
+  internals.clusterImpl = new DbClusterImpl({
+    conn: clusterConn,
+    esConn,
+    isES: !clusterDbUrl || ArkimeUtil.dbIsES(clusterDbUrl),
+    isPG: /^postgres(ql)?:/i.test(clusterDbUrl ?? ''),
+    prefix: internals.prefix,
+    fixIndex
+  });
   await internals.clusterImpl.init();
 
   try {
@@ -284,11 +298,7 @@ function fixIndex (index) {
   if (index === undefined || index === '_all') { return index; }
 
   if (index === 'sessions*') {
-    // Didn't used to have a prefix, don't use one for sessions2
-    if (internals.prefix === 'arkime_') {
-      return `sessions2*,${internals.prefix}sessions3*`;
-    }
-    return `${internals.prefix}sessions2*,${internals.prefix}sessions3*`;
+    return `${internals.prefix}sessions3*`;
   }
 
   // Turn into array if comma separated
@@ -319,8 +329,8 @@ function fixIndex (index) {
     return index;
   }
 
-  // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
-  if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
+  // If prefix isn't there, add it
+  if (!index.startsWith(internals.prefix)) {
     index = internals.prefix + index;
   }
 
@@ -629,7 +639,7 @@ Db.getSession = async (id, options, cb) => {
     delete params.arkime_unflatten;
     delete params.final;
 
-    const index = Db.sid2Index(id, { multiple: true });
+    const index = Db.sid2Index(id);
 
     let results = await internals.sessionsImpl.searchSessions(index, query, params);
     if (internals.debug > 2) {
@@ -1139,6 +1149,9 @@ Db.deleteAllHistory = async () => {
 };
 
 // Hunt DB interactions
+// { devices, history, alerts } collections
+Db.featherprint = () => internals.clusterImpl.featherprint;
+
 Db.createHunt = async (doc, cluster) => {
   return internals.clusterImpl.createHunt(doc, cluster);
 };
@@ -1735,17 +1748,13 @@ Db.deleteFileDoc = async (id) => {
 };
 
 Db.session2Sid = function (item) {
-  // ver can be 2@ (sessions2), 3@ (sessions3), or x@ (user-specified queryExtraIndices)
-  const ver = internals.queryExtraIndicesRegex.some(re => re.test(item._index)) ? 'x@' : item._index.includes('sessions2') ? '2@' : '3@';
+  // ver can be 3@ (sessions3) or x@ (user-specified queryExtraIndices)
+  const ver = internals.queryExtraIndicesRegex.some(re => re.test(item._index)) ? 'x@' : '3@';
   if (ver === 'x@') {
     // document from queryExtraIndices, format Sid as x@_index:_id
     return ver + item._index + ':' + item._id;
   } else if (item._id.length < 31) {
-    // sessions2 didn't have new arkime_ prefix
-    if (ver === '2@' && internals.prefix === 'arkime_') {
-      // sessions2-191021 191021-abcd => 2@191021:191021-abcd
-      return ver + item._index.substring(10) + ':' + item._id;
-    } else if (item._index.startsWith('partial-')) {
+    if (item._index.startsWith('partial-')) {
       // partial-tests_sessions3-191021 191021-abcd => 3@191021:191021-abcd
       return ver + item._index.substring(internals.prefix.length + 18) + ':' + item._id;
     } else {
@@ -1771,7 +1780,7 @@ Db.sid2Id = function (id) {
   return id;
 };
 
-Db.sid2Index = function (id, options) {
+Db.sid2Index = function (id) {
   const colon = id.indexOf(':');
 
   if (id[1] === '@') {
@@ -1787,7 +1796,7 @@ Db.sid2Index = function (id, options) {
     }
 
     const indexDate = (colon > 0) ? id.substr(2, colon - 2) : id.substr(2, id.indexOf('-') - 2);
-    if ((id[0] !== '2' && id[0] !== '3') || !/^[\w-]+$/.test(indexDate)) {
+    if (id[0] !== '3' || !/^[\w-]+$/.test(indexDate)) {
       throw new Error('Db.sid2Index: ERROR - invalid session id');
     }
     return 'sessions' + id[0] + '-' + indexDate;
@@ -1799,30 +1808,12 @@ Db.sid2Index = function (id, options) {
   }
 
   const s3 = 'sessions3-' + date;
-  const s2 = 'sessions2-' + date;
+  return internals.aliasesCache ? fixIndex(s3) : s3;
+};
 
-  if (!internals.aliasesCache) {
-    return s3;
-  }
-
-  const fs2 = fixIndex(s2);
-
-  const results = [];
-
-  if (internals.aliasesCache[fs2] || internals.aliasesCache[fs2 + '-reindex'] || internals.aliasesCache[fs2 + '-shrink']) {
-    results.push(fs2);
-  }
-
-  const fs3 = fixIndex(s3);
-  if (internals.aliasesCache[fs3] || internals.aliasesCache['partial-' + fs3] || internals.aliasesCache[fs3 + '-reindex'] || internals.aliasesCache[fs3 + '-shrink']) {
-    results.push(fs3);
-  }
-
-  if (results.length > 1 && options?.multiple) {
-    return results;
-  }
-
-  return results[0] ?? fs3;
+// regression tests read and write the collections capture writes
+Db.clusterCollection = (collName) => {
+  return ['files', 'stats', 'dstats', 'fields', 'sequence'].includes(collName) ? internals.clusterImpl[collName] : undefined;
 };
 
 // [{ id, doc }] every field definition

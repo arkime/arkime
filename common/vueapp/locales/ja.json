@@ -2579,6 +2579,7 @@
       "rolesMustBeArray": "ロールフィールドは文字列の配列である必要があります",
       "editRolesMustBeArray": "編集ロールフィールドは文字列の配列である必要があります",
       "usersMustBeString": "ユーザーフィールドは文字列である必要があります",
+      "viewMustBeString": "ビューは文字列である必要があります",
       "nameExists": "名前 {name} のショートカットは既に存在します",
       "created": "新しいショートカットを作成しました！",
       "errorCreating": "ショートカットの作成エラー",

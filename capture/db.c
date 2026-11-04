@@ -54,6 +54,12 @@ void                   *esServer = 0;
 
 void arkime_db_ch_init(void); // db.ch.c, alternate sessions store
 
+// Holds stats, dstats, files, fields and sequence, ES unless clusterDbUrl says otherwise, see arkime_db_cluster_register
+LOCAL ArkimeStringHashStd_t    clusterDbSchemes;
+LOCAL const ArkimeClusterDb_t *clusterDb;
+void arkime_db_es_init(void);
+void arkime_db_pg_init(void);
+
 LOCAL patricia_tree_t  *ipTree4 = 0;
 LOCAL patricia_tree_t  *ipTree6 = 0;
 
@@ -73,6 +79,7 @@ LOCAL struct timespec   startHealthCheck;
 LOCAL uint64_t          esHealthMS;
 
 LOCAL int               dbExit;
+LOCAL GThread          *statsThread;
 LOCAL char             *esBulkQuery;
 LOCAL int               esBulkQueryLen;
 LOCAL char             *ecsEventProvider;
@@ -1650,62 +1657,7 @@ cleanup:
     ARKIME_UNLOCK(dbInfo[thread].lock);
 }
 /******************************************************************************/
-LOCAL uint64_t zero_atoll(const char *v)
-{
-    if (v)
-        return atoll(v);
-    return 0;
-}
-
-/******************************************************************************/
 #define NUMBER_OF_STATS 4
-LOCAL  uint64_t dbVersion;
-LOCAL  uint64_t dbTotalPackets[NUMBER_OF_STATS];
-LOCAL  uint64_t dbTotalK[NUMBER_OF_STATS];
-LOCAL  uint64_t dbTotalSessions[NUMBER_OF_STATS];
-LOCAL  uint64_t dbTotalDropped[NUMBER_OF_STATS];
-
-
-LOCAL void arkime_db_load_stats()
-{
-    size_t             data_len;
-    uint32_t           len;
-    uint32_t           source_len;
-    const uint8_t     *source = 0;
-
-    char     stats_key[200];
-    int      stats_key_len = 0;
-    stats_key_len = arkime_snprintf_len(stats_key, sizeof(stats_key), "/%sstats/_doc/%s", config.prefix, config.nodeName);
-
-    uint8_t           *data = arkime_http_get(esServer, stats_key, stats_key_len, &data_len);
-    if (!data) {
-        LOGEXIT("ERROR - Couldn't fetch stats: no data returned - %.*s", stats_key_len, stats_key);
-    }
-
-    uint32_t           version_len;
-    const uint8_t     *version = arkime_js0n_get(data, data_len, "_version", &version_len);
-
-    if (!version_len || !version) {
-        dbVersion = 0;
-    } else {
-        dbVersion = atol((char *)version);
-    }
-    source = arkime_js0n_get(data, data_len, "_source", &source_len);
-    if (source) {
-        dbTotalPackets[0]  = zero_atoll((char *)arkime_js0n_get(source, source_len, "totalPackets", &len));
-        dbTotalK[0]        = zero_atoll((char *)arkime_js0n_get(source, source_len, "totalK", &len));
-        dbTotalSessions[0] = dbTotalSessions[2] = zero_atoll((char *)arkime_js0n_get(source, source_len, "totalSessions", &len));
-        dbTotalDropped[0]  = zero_atoll((char *)arkime_js0n_get(source, source_len, "totalDropped", &len));
-
-        for (int i = 1; i < NUMBER_OF_STATS; i++) {
-            dbTotalPackets[i]  = dbTotalPackets[0];
-            dbTotalK[i]        = dbTotalK[0];
-            dbTotalSessions[i] = dbTotalSessions[0];
-            dbTotalDropped[i]  = dbTotalDropped[0];
-        }
-    }
-    free(data);
-}
 /******************************************************************************/
 #if defined(__APPLE__) && defined(__MACH__)
 LOCAL uint64_t arkime_db_memory_size()
@@ -1895,11 +1847,6 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t diffusage = (usage.ru_utime.tv_sec - lastUsage[n].ru_utime.tv_sec) * 1000 + ((int64_t)usage.ru_utime.tv_usec - (int64_t)lastUsage[n].ru_utime.tv_usec) / 1000 +
                          (usage.ru_stime.tv_sec - lastUsage[n].ru_stime.tv_sec) * 1000 + ((int64_t)usage.ru_stime.tv_usec - (int64_t)lastUsage[n].ru_stime.tv_usec) / 1000;
 
-    dbTotalPackets[n] += (arkimeCounters.totalPackets - lastPackets[n]);
-    dbTotalSessions[n] += (arkimeCounters.totalSessions - lastSessions[n]);
-    dbTotalDropped[n] += (totalDropped - lastDropped[n]);
-    dbTotalK[n] += (totalBytes - lastBytes[n]) / 1000;
-
     uint64_t memBytes;
     float    memPercent;
 
@@ -1946,10 +1893,6 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                                        "\"frags\": %u,"
                                        "\"needSave\": %u,"
                                        "\"closeQueue\": %u,"
-                                       "\"totalPackets\": %" PRIu64 ","
-                                       "\"totalK\": %" PRIu64 ","
-                                       "\"totalSessions\": %" PRIu64 ","
-                                       "\"totalDropped\": %" PRIu64 ","
                                        "\"tcpSessions\": %u,"
                                        "\"udpSessions\": %u,"
                                        "\"icmpSessions\": %u,"
@@ -1990,10 +1933,6 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                                        arkime_packet_frags_size(),
                                        arkime_session_need_save_outstanding(),
                                        arkime_session_close_outstanding(),
-                                       dbTotalPackets[n],
-                                       dbTotalK[n],
-                                       dbTotalSessions[n],
-                                       dbTotalDropped[n],
                                        tcpCount,
                                        udpCount,
                                        icmpCount,
@@ -2030,33 +1969,14 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     lastUsage[n]           = usage;
 
     if (n == 0) {
-        char     stats_key[200];
-        int      stats_key_len = 0;
-        if (config.pcapReadOffline) {
-            stats_key_len = arkime_snprintf_len(stats_key, sizeof(stats_key), "/%sstats/_doc/%s", config.prefix, config.nodeName);
-        } else {
-            // Prevent out of order stats records when doing live captures
-            dbVersion++;
-            stats_key_len = arkime_snprintf_len(stats_key, sizeof(stats_key), "/%sstats/_doc/%s?version_type=external&version=%" PRIu64, config.prefix, config.nodeName, dbVersion);
-        }
-        if (sync) {
-            uint8_t *data = arkime_http_send_sync(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, NULL, NULL);
-            if (data)
-                free(data);
-            arkime_http_free_buffer(json);
-        } else {
-            // Droppable if the current time isn't first 2 seconds of each minute
-            if ((cursec % 60) >= 2) {
-                arkime_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, NULL, NULL);
-            } else {
-                arkime_http_schedule(esServer, "POST", stats_key, stats_key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
-            }
-        }
+        // Droppable if the current time isn't first 2 seconds of each minute
+        clusterDb->put_stats(json, json_len, sync, (cursec % 60) >= 2 ? ARKIME_HTTP_PRIORITY_DROPPABLE : ARKIME_HTTP_PRIORITY_BEST);
     } else {
-        char key[200];
-        int key_len = arkime_snprintf_len(key, sizeof(key), "/%sdstats/_doc/%s-%d-%d", config.prefix, config.nodeName, (int)(currentTime.tv_sec / intervals[n]) % 1440, intervals[n]);
-        arkime_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, NULL, NULL);
+        char id[200];
+        snprintf(id, sizeof(id), "%s-%d-%d", config.nodeName, (int)(currentTime.tv_sec / intervals[n]) % 1440, intervals[n]);
+        clusterDb->put("dstats", id, json, json_len, FALSE, ARKIME_HTTP_PRIORITY_DROPPABLE);
     }
+    arkime_http_free_buffer(json);
 }
 /******************************************************************************/
 // Runs on main thread
@@ -2126,81 +2046,6 @@ LOCAL gboolean arkime_db_health_check(gpointer user_data)
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
-typedef struct arkime_seq_request {
-    char               *name;
-    ArkimeSeqNum_cb     func;
-    gpointer            uw;
-} ArkimeSeqRequest_t;
-
-LOCAL void arkime_db_get_sequence_number(const char *name, ArkimeSeqNum_cb func, gpointer uw);
-LOCAL void arkime_db_get_sequence_number_cb(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
-{
-    ArkimeSeqRequest_t *r = uw;
-    uint32_t            version_len;
-
-    const uint8_t *version = arkime_js0n_get(data, data_len, "_version", &version_len);
-
-    if (!version_len || !version) {
-        LOG("ERROR - Couldn't fetch sequence: %.*s", data_len, data);
-        arkime_db_get_sequence_number(r->name, r->func, r->uw);
-    } else {
-        if (r->func)
-            r->func(atoi((char *)version), r->uw);
-    }
-
-    g_free(r->name);
-    ARKIME_TYPE_FREE(ArkimeSeqRequest_t, r);
-}
-/******************************************************************************/
-LOCAL void arkime_db_get_sequence_number(const char *name, ArkimeSeqNum_cb func, gpointer uw)
-{
-    char                key[200];
-    int                 key_len;
-    ArkimeSeqRequest_t *r = ARKIME_TYPE_ALLOC(ArkimeSeqRequest_t);
-    char               *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
-
-    r->name = g_strdup(name);
-    r->func = func;
-    r->uw   = uw;
-
-    key_len = arkime_snprintf_len(key, sizeof(key), "/%ssequence/_doc/%s", config.prefix, name);
-    int json_len = arkime_snprintf_len(json, ARKIME_HTTP_BUFFER_SIZE, "{}");
-    arkime_http_schedule(esServer, "POST", key, key_len, json, json_len, NULL, ARKIME_HTTP_PRIORITY_BEST, arkime_db_get_sequence_number_cb, r);
-}
-/******************************************************************************/
-LOCAL uint32_t arkime_db_get_sequence_number_sync(const char *name)
-{
-
-    while (1) {
-        char key[200];
-        int key_len = arkime_snprintf_len(key, sizeof(key), "/%ssequence/_doc/%s", config.prefix, name);
-
-        size_t data_len;
-        uint8_t *data = arkime_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, &data_len, NULL);
-        if (!data) {
-            LOG("ERROR - Couldn't fetch sequence: no data returned - %.*s", key_len, key);
-            continue;
-        }
-
-        uint32_t version_len;
-        const uint8_t *version = arkime_js0n_get(data, data_len, "_version", &version_len);
-
-        if (!version_len || !version) {
-            LOG("ERROR - Couldn't fetch sequence: %d %.*s", (int)data_len, (int)data_len, data);
-
-            if (strstr((char *)data, "FORBIDDEN") != 0) {
-                LOG("ERROR - You have most likely run out of space on an elasticsearch node, see https://arkime.com/faq#recommended-elasticsearch-settings on setting disk watermarks and how to clear the elasticsearch error");
-            }
-            free(data);
-            continue;
-        } else {
-            uint32_t v = atoi((char *)version);
-            free(data);
-            return v;
-        }
-    }
-}
-/******************************************************************************/
 LOCAL void arkime_db_fn_seq_cb(uint32_t newSeq, gpointer UNUSED(uw))
 {
     ARKIME_LOCK(nextFileNum);
@@ -2210,35 +2055,11 @@ LOCAL void arkime_db_fn_seq_cb(uint32_t newSeq, gpointer UNUSED(uw))
 /******************************************************************************/
 LOCAL void arkime_db_load_file_num()
 {
-    char               key[200];
-    int                key_len;
-    size_t             data_len;
-    uint8_t           *data;
-    uint32_t           found_len;
-    const uint8_t     *found = 0;
-
-    /* First see if we have the new style number or not */
-    key_len = arkime_snprintf_len(key, sizeof(key), "/%ssequence/_doc/fn-%s", config.prefix, config.nodeName);
-    data = arkime_http_get(esServer, key, key_len, &data_len);
-
-    if (!data) {
-        LOGEXIT("ERROR - Couldn't fetch sequence: no data returned - %.*s", key_len, key);
-    }
-
-    found = arkime_js0n_get(data, data_len, "found", &found_len);
-    if (found && (found_len < 4 || memcmp("true", found, 4) != 0)) {
-        free(data);
-
-        key_len = arkime_snprintf_len(key, sizeof(key), "/%ssequence/_doc/fn-%s?version_type=external&version=100", config.prefix, config.nodeName);
-        data = arkime_http_send_sync(esServer, "POST", key, key_len, "{}", 2, NULL, NULL, NULL);
-    }
-    if (data)
-        free(data);
-
     if (!config.pcapReadOffline) {
         /* If doing a live file create a file number now */
+        char key[200];
         snprintf(key, sizeof(key), "fn-%s", config.nodeName);
-        nextFileNum = arkime_db_get_sequence_number_sync(key);
+        nextFileNum = clusterDb->sequence_sync(key);
     }
 }
 /******************************************************************************/
@@ -2282,7 +2103,6 @@ LOCAL void arkime_db_mkpath(char *path)
 char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *name, uint64_t size, int locked, uint32_t *id, ...)
 {
     char               key[200];
-    int                key_len;
     uint32_t           num;
     char               filename[1024];
     char              *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
@@ -2295,12 +2115,12 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
     snprintf(key, sizeof(key), "fn-%s", config.nodeName);
     if (nextFileNum == 0) {
         /* If doing an offline file OR the last async call hasn't returned, just get a sync filenum */
-        num = arkime_db_get_sequence_number_sync(key);
+        num = clusterDb->sequence_sync(key);
     } else {
         /* If doing a live file, use current file num and schedule the next one */
         num = nextFileNum;
         nextFileNum = 0; /* Don't reuse number */
-        arkime_db_get_sequence_number(key, arkime_db_fn_seq_cb, 0);
+        clusterDb->sequence(key, arkime_db_fn_seq_cb, 0);
     }
 
 
@@ -2315,7 +2135,6 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%u, \"name\":", num);
         arkime_db_js0n_str(&jbsb, (uint8_t *)name, TRUE);
         BSB_EXPORT_sprintf(jbsb, ", \"first\":%" PRIu64 ", \"node\":\"%s\", \"filesize\":%" PRIu64 ", \"locked\":%d", fp, config.nodeName, size, locked);
-        key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     } else {
 
         // Free-space algorithms pick the directory for this file now;
@@ -2409,7 +2228,6 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
         BSB_EXPORT_sprintf(jbsb, "{\"num\":%u, \"name\":", num);
         arkime_db_js0n_str(&jbsb, (uint8_t *)filename, TRUE);
         BSB_EXPORT_sprintf(jbsb, ", \"first\":%" PRIu64 ", \"node\":\"%s\", \"locked\":%d", fp, config.nodeName, locked);
-        key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_doc/%s-%u?refresh=true", config.prefix, config.nodeName, num);
     }
 
     va_list  args;
@@ -2462,10 +2280,12 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
 
     BSB_EXPORT_u08(jbsb, '}');
 
+    snprintf(key, sizeof(key), "%s-%u", config.nodeName, num);
     if (config.logFileCreation)
-        LOG("Creating file %u with key >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
+        LOG("Creating file %u with id >%s< using >%.*s<", num, key, (int)BSB_LENGTH(jbsb), json);
 
-    arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
+    clusterDb->put("files", key, json, BSB_LENGTH(jbsb), FALSE, ARKIME_HTTP_PRIORITY_BEST);
+    arkime_http_free_buffer(json);
 
     ARKIME_UNLOCK(nextFileNum);
 
@@ -2768,87 +2588,7 @@ void arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *ma
 /******************************************************************************/
 LOCAL void arkime_db_load_fields()
 {
-    size_t                 data_len;
-    char                   key[100];
-    int                    key_len;
-
-    key_len = arkime_snprintf_len(key, sizeof(key), "/%sfields/_search?size=3000", config.prefix);
-    uint8_t           *data = arkime_http_get(esServer, key, key_len, &data_len);
-
-    if (!data) {
-        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
-        return;
-    }
-
-    uint32_t           hits_len;
-    const uint8_t     *hits = 0;
-    hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
-    if (!hits) {
-        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
-        free(data);
-        return;
-    }
-
-    uint32_t           ahits_len;
-    const uint8_t     *ahits = 0;
-    ahits = arkime_js0n_get(hits, hits_len, "hits", &ahits_len);
-
-    if (!ahits) {
-        LOGEXIT("ERROR - Couldn't download %sfields, database (%s) might be down or not initialized.", config.prefix, config.elasticsearch);
-        free(data);
-        return;
-    }
-
-    uint32_t out[2 * 8000];
-    memset(out, 0, sizeof(out));
-    if (js0n(ahits, ahits_len, out, sizeof(out)) != 0)
-        LOG("WARNING - Couldn't parse all of the %sfields response, some fields may be missing", config.prefix);
-    for (int i = 0; out[i]; i += 2) {
-        uint32_t           id_len;
-        const uint8_t     *id = 0;
-        id = arkime_js0n_get(ahits + out[i], out[i + 1], "_id", &id_len);
-
-        uint32_t           source_len;
-        const uint8_t     *source = 0;
-        source = arkime_js0n_get(ahits + out[i], out[i + 1], "_source", &source_len);
-        if (!source) {
-            continue;
-        }
-
-        arkime_field_define_json(id, id_len, source, source_len);
-    }
-    free(data);
-}
-/******************************************************************************/
-LOCAL BSB   fieldBSB;
-LOCAL int   fieldBSBTimeout;
-LOCAL gboolean arkime_db_fieldsbsb_timeout(gpointer user_data)
-{
-    if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
-        if (user_data == 0)
-            arkime_http_schedule(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, ARKIME_HTTP_PRIORITY_BEST, NULL, NULL);
-        else {
-            uint8_t       *data = arkime_http_send_sync(esServer, "POST", "/_bulk", 6, (char *)fieldBSB.buf, BSB_LENGTH(fieldBSB), NULL, NULL, NULL);
-            arkime_http_free_buffer(fieldBSB.buf);
-            if (data)
-                free(data);
-        }
-        BSB_INIT(fieldBSB, arkime_http_get_buffer(config.dbBulkSize), config.dbBulkSize);
-    }
-    fieldBSBTimeout = 0;
-    return G_SOURCE_REMOVE;
-}
-/******************************************************************************/
-LOCAL void arkime_db_fieldbsb_make()
-{
-    if (!fieldBSB.buf) {
-        BSB_INIT(fieldBSB, arkime_http_get_buffer(config.dbBulkSize), config.dbBulkSize);
-        fieldBSBTimeout = g_timeout_add_seconds(1, arkime_db_fieldsbsb_timeout, 0);
-    } else if (BSB_REMAINING(fieldBSB) < 1000) {
-        g_source_remove(fieldBSBTimeout);
-        arkime_db_fieldsbsb_timeout(0);
-        fieldBSBTimeout = g_timeout_add_seconds(1, arkime_db_fieldsbsb_timeout, 0);
-    }
+    clusterDb->each("fields", arkime_field_define_json);
 }
 /******************************************************************************/
 // Only allow raw JSON of the form ["name","name2"] or [], like the aliases and category arrays
@@ -2904,20 +2644,20 @@ LOCAL gboolean arkime_db_field_json_string_body(const char *value)
 }
 /******************************************************************************/
 // Field definitions can come from WISE, so escape everything except simple name arrays
-LOCAL void arkime_db_field_kv(const char *key, const char *value)
+LOCAL void arkime_db_field_kv(BSB *bsb, const char *key, const char *value)
 {
-    BSB_EXPORT_sprintf(fieldBSB, "\"%s\": ", key);
+    BSB_EXPORT_sprintf(*bsb, "\"%s\": ", key);
     if (!value) {
-        BSB_EXPORT_cstr(fieldBSB, "\"\"");
+        BSB_EXPORT_cstr(*bsb, "\"\"");
     } else if (arkime_db_field_names_array(value)) {
-        BSB_EXPORT_ptr(fieldBSB, value, strlen(value));
+        BSB_EXPORT_ptr(*bsb, value, strlen(value));
     } else if (strcmp(key, "regex") == 0 && arkime_db_field_json_string_body(value)) {
         // Plugins have always passed regex already JSON escaped
-        BSB_EXPORT_u08(fieldBSB, '"');
-        BSB_EXPORT_ptr(fieldBSB, value, strlen(value));
-        BSB_EXPORT_u08(fieldBSB, '"');
+        BSB_EXPORT_u08(*bsb, '"');
+        BSB_EXPORT_ptr(*bsb, value, strlen(value));
+        BSB_EXPORT_u08(*bsb, '"');
     } else {
-        arkime_db_js0n_str(&fieldBSB, (uint8_t *)value, TRUE);
+        arkime_db_js0n_str(bsb, (uint8_t *)value, TRUE);
     }
 }
 /******************************************************************************/
@@ -2926,19 +2666,20 @@ void arkime_db_add_field(const char *group, const char *kind, const char *expres
     if (config.dryRun)
         return;
 
-    arkime_db_fieldbsb_make();
+    BSB  docBSB;
+    BSB *bsb = &docBSB;
+    BSB_INIT(docBSB, arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE), ARKIME_HTTP_BUFFER_SIZE);
 
-    BSB_EXPORT_sprintf(fieldBSB, "{\"index\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
-    BSB_EXPORT_u08(fieldBSB, '{');
-    arkime_db_field_kv("friendlyName", friendlyName);
-    BSB_EXPORT_cstr(fieldBSB, ", ");
-    arkime_db_field_kv("group", group);
-    BSB_EXPORT_cstr(fieldBSB, ", ");
-    arkime_db_field_kv("help", help);
-    BSB_EXPORT_cstr(fieldBSB, ", ");
-    arkime_db_field_kv("dbField2", dbField);
-    BSB_EXPORT_cstr(fieldBSB, ", ");
-    arkime_db_field_kv("type", kind);
+    BSB_EXPORT_u08(*bsb, '{');
+    arkime_db_field_kv(bsb, "friendlyName", friendlyName);
+    BSB_EXPORT_cstr(*bsb, ", ");
+    arkime_db_field_kv(bsb, "group", group);
+    BSB_EXPORT_cstr(*bsb, ", ");
+    arkime_db_field_kv(bsb, "help", help);
+    BSB_EXPORT_cstr(*bsb, ", ");
+    arkime_db_field_kv(bsb, "dbField2", dbField);
+    BSB_EXPORT_cstr(*bsb, ", ");
+    arkime_db_field_kv(bsb, "type", kind);
 
     if (haveap) {
         while (1) {
@@ -2950,12 +2691,14 @@ void arkime_db_add_field(const char *group, const char *kind, const char *expres
             if (!value)
                 break;
 
-            BSB_EXPORT_cstr(fieldBSB, ", ");
-            arkime_db_field_kv(field, value);
+            BSB_EXPORT_cstr(*bsb, ", ");
+            arkime_db_field_kv(bsb, field, value);
         }
     }
 
-    BSB_EXPORT_cstr(fieldBSB, "}\n");
+    BSB_EXPORT_u08(docBSB, '}');
+    clusterDb->put("fields", expression, (char *)docBSB.buf, BSB_LENGTH(docBSB), FALSE, ARKIME_HTTP_PRIORITY_BEST);
+    arkime_http_free_buffer(docBSB.buf);
 }
 /******************************************************************************/
 void arkime_db_delete_field(const char *expression)
@@ -2963,9 +2706,7 @@ void arkime_db_delete_field(const char *expression)
     if (config.dryRun)
         return;
 
-    arkime_db_fieldbsb_make();
-
-    BSB_EXPORT_sprintf(fieldBSB, "{\"delete\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
+    clusterDb->del("fields", expression);
 }
 /******************************************************************************/
 void arkime_db_update_field(const char *expression, const char *name, const char *value)
@@ -2973,19 +2714,17 @@ void arkime_db_update_field(const char *expression, const char *name, const char
     if (config.dryRun)
         return;
 
-    arkime_db_fieldbsb_make();
-
-    BSB_EXPORT_sprintf(fieldBSB, "{\"update\": {\"_index\": \"%sfields\", \"_id\": \"%s\"}}\n", config.prefix, expression);
-
-    BSB_EXPORT_cstr(fieldBSB, "{\"doc\": {");
-    arkime_db_field_kv(name, value);
-    BSB_EXPORT_cstr(fieldBSB, "}}\n");
+    char json[ARKIME_HTTP_BUFFER_SIZE];
+    BSB  bsb;
+    BSB_INIT(bsb, json, sizeof(json));
+    BSB_EXPORT_u08(bsb, '{');
+    arkime_db_field_kv(&bsb, name, value);
+    BSB_EXPORT_u08(bsb, '}');
+    clusterDb->update("fields", expression, json, BSB_LENGTH(bsb), ARKIME_HTTP_PRIORITY_BEST);
 }
 /******************************************************************************/
 void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket, uint32_t sessionsStarted, uint32_t sessionsPresent)
 {
-    char                   key[1000];
-    int                    key_len;
     BSB                    jbsb;
 
     if (config.dryRun)
@@ -2993,12 +2732,9 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
 
     char                  *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
 
-
-    key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_update/%s-%u", config.prefix, config.nodeName, fileid);
-
     BSB_INIT(jbsb, json, ARKIME_HTTP_BUFFER_SIZE);
 
-    BSB_EXPORT_sprintf(jbsb, "{\"doc\": {\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u", filesize, packetsSize, packets);
+    BSB_EXPORT_sprintf(jbsb, "{\"filesize\": %" PRIu64 ", \"packetsSize\": %" PRIu64 ", \"packets\": %u", filesize, packetsSize, packets);
 
     struct timeval currentTime;
     gettimeofday(&currentTime, NULL);
@@ -3016,90 +2752,20 @@ void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsS
     BSB_EXPORT_sprintf(jbsb, ", \"sessionsStarted\":%u", sessionsStarted);
     BSB_EXPORT_sprintf(jbsb, ", \"sessionsPresent\":%u", sessionsPresent);
 
-    BSB_EXPORT_cstr(jbsb, "}}");
+    BSB_EXPORT_u08(jbsb, '}');
 
     if (config.debug)
         LOG("Updated %s-%u with %.*s", config.nodeName, fileid, (int)BSB_LENGTH(jbsb), json);
 
-    arkime_http_schedule(esServer, "POST", key, key_len, json, BSB_LENGTH(jbsb), NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, NULL, NULL);
+    char fid[200];
+    snprintf(fid, sizeof(fid), "%s-%u", config.nodeName, fileid);
+    clusterDb->update("files", fid, json, BSB_LENGTH(jbsb), ARKIME_HTTP_PRIORITY_DROPPABLE);
+    arkime_http_free_buffer(json);
 }
 /******************************************************************************/
 gboolean arkime_db_file_exists(const char *filename, uint32_t *outputId)
 {
-    size_t                 data_len;
-    char                   key[200];
-    int                    key_len;
-
-    key_len = arkime_snprintf_len(key, sizeof(key), "/%sfiles/_search?rest_total_hits_as_int", config.prefix);
-
-    // Escaping can expand each byte to 6
-    int   size = 6 * (strlen(config.nodeName) + strlen(filename)) + 200;
-    char *body = g_malloc(size);
-    BSB   bsb;
-    BSB_INIT(bsb, body, size);
-    BSB_EXPORT_cstr(bsb, "{\"size\":1,\"sort\":[{\"num\":\"desc\"}],\"query\":{\"bool\":{\"filter\":[{\"terms\":{\"node\":[");
-    arkime_db_js0n_str(&bsb, (uint8_t *)config.nodeName, TRUE);
-    BSB_EXPORT_cstr(bsb, "]}},{\"term\":{\"name\":");
-    arkime_db_js0n_str(&bsb, (uint8_t *)filename, TRUE);
-    BSB_EXPORT_cstr(bsb, "}}]}}}");
-
-    uint8_t *data = arkime_http_send_sync(esServer, "POST", key, key_len, body, BSB_LENGTH(bsb), NULL, &data_len, NULL);
-    g_free(body);
-
-    if (!data) {
-        return FALSE;
-    }
-
-    uint32_t           hits_len;
-    const uint8_t     *hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
-
-    if (!hits_len || !hits) {
-        free(data);
-        return FALSE;
-    }
-
-    uint32_t           total_len;
-    const uint8_t     *total = arkime_js0n_get(hits, hits_len, "total", &total_len);
-
-    if (!total_len || !total) {
-        free(data);
-        return FALSE;
-    }
-
-    if (*total == '0') {
-        free(data);
-        return FALSE;
-    }
-
-    if (outputId) {
-        hits = arkime_js0n_get(data, data_len, "hits", &hits_len);
-
-        uint32_t           hit_len;
-        const uint8_t     *hit = arkime_js0n_get(hits, hits_len, "hits", &hit_len);
-
-        if (!hit || hit_len < 2) {
-            free(data);
-            return FALSE;
-        }
-
-        uint32_t           source_len;
-        const uint8_t     *source = 0;
-
-        /* Remove array wrapper */
-        source = arkime_js0n_get(hit + 1, hit_len - 2, "_source", &source_len);
-
-        uint32_t           len;
-        const uint8_t     *value;
-
-        if ((value = arkime_js0n_get(source, source_len, "num", &len))) {
-            *outputId = atoi((char *)value);
-        } else {
-            LOGEXIT("ERROR - Files check has no num field in %.*s", source_len, source);
-        }
-    }
-
-    free(data);
-    return TRUE;
+    return clusterDb->file_exists(config.nodeName, filename, outputId);
 }
 /******************************************************************************/
 int arkime_db_can_quit()
@@ -3121,6 +2787,12 @@ int arkime_db_can_quit()
     if (arkime_http_queue_length(esServer) > 0) {
         if (config.debug)
             LOG("Can't quit, arkime_http_queue_length(esServer) %d", arkime_http_queue_length(esServer));
+        return 1;
+    }
+
+    if (clusterDb->queue_length() > 0) {
+        if (config.debug)
+            LOG("Can't quit, clusterDb queue length %d", clusterDb->queue_length());
         return 1;
     }
 
@@ -3151,6 +2823,35 @@ LOCAL void *arkime_db_stats_thread(void *UNUSED(threadp))
         }
     }
     return NULL;
+}
+/******************************************************************************/
+// Plugins can register schemes before arkime_db_init
+void arkime_db_cluster_register(char *scheme, ArkimeClusterDbInit init)
+{
+    if (!clusterDbSchemes.size)
+        HASH_INIT(s_, clusterDbSchemes, arkime_string_hash, arkime_string_cmp);
+    arkime_string_add(&clusterDbSchemes, scheme, init, TRUE);
+}
+/******************************************************************************/
+LOCAL void arkime_db_cluster_init()
+{
+    arkime_db_es_init();
+    arkime_db_pg_init();
+
+    // A dryRun never writes, so it gets the ES one without a server
+    char *url = config.dryRun ? NULL : arkime_config_str(NULL, "clusterDbUrl", NULL);
+    const char *colon = url ? strstr(url, "://") : NULL;
+    char *scheme = colon ? g_ascii_strdown(url, colon - url) : g_strdup("http");
+    if (colon)
+        memcpy(url, scheme, colon - url);
+
+    ArkimeString_t *str;
+    HASH_FIND(s_, clusterDbSchemes, scheme, str);
+    if (!str)
+        CONFIGEXIT("clusterDbUrl scheme '%s' isn't supported, use Elasticsearch/OpenSearch or postgres://", scheme);
+    clusterDb = ((ArkimeClusterDbInit)str->uw)(url);
+    g_free(scheme);
+    g_free(url);
 }
 /******************************************************************************/
 LOCAL  guint timers[10];
@@ -3203,12 +2904,12 @@ void arkime_db_init()
 
         arkime_db_health_check(GINT_TO_POINTER(1));
     }
+    arkime_db_cluster_init();
     myPid = getpid() & 0xffff;
     gettimeofday(&startTime, NULL);
     if (!config.dryRun) {
         arkime_db_check();
         arkime_db_load_file_num();
-        arkime_db_load_stats();
         arkime_db_load_fields();
     } else {
         //arkimeDbVersion = ARKIME_MIN_DB_VERSION; // ALW FIX v6 release
@@ -3251,7 +2952,7 @@ void arkime_db_init()
     if (!config.dryRun) {
         int t = 0;
         if (!config.noStats) {
-            g_thread_unref(g_thread_new("arkime-stats", &arkime_db_stats_thread, NULL));
+            statsThread = g_thread_new("arkime-stats", &arkime_db_stats_thread, NULL);
         }
         timers[t++] = g_timeout_add_seconds(1, arkime_db_flush_gfunc, 0);
         if (arkime_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {
@@ -3283,27 +2984,21 @@ void arkime_db_init()
 void arkime_db_exit()
 {
     if (!config.dryRun) {
-        if (fieldBSBTimeout)
-            g_source_remove(fieldBSBTimeout);
-
-        if (fieldBSB.buf && BSB_LENGTH(fieldBSB) > 0) {
-            arkime_db_fieldsbsb_timeout(GINT_TO_POINTER(1));
-        }
-
-        if (fieldBSB.buf) {
-            arkime_http_free_buffer(fieldBSB.buf);
-            fieldBSB.buf = 0;
-        }
-
         for (int i = 0; timers[i]; i++) {
             g_source_remove(timers[i]);
         }
 
         arkime_db_flush_gfunc(GINT_TO_POINTER(1));
         dbExit = 1;
+        // The stats thread can be mid write, it must be done before the cluster db closes
+        if (statsThread) {
+            g_thread_join(statsThread);
+            statsThread = NULL;
+        }
         if (!config.noStats) {
             arkime_db_update_stats(0, 1);
         }
+        clusterDb->exit();
         if (!config.noRefresh) {
             char path[100];
             snprintf(path, sizeof(path), "/%s*/_refresh", config.prefix);

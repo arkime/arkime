@@ -2579,6 +2579,7 @@
       "rolesMustBeArray": "역할 필드는 문자열 배열이어야 합니다",
       "editRolesMustBeArray": "편집 역할 필드는 문자열 배열이어야 합니다",
       "usersMustBeString": "사용자 필드는 문자열이어야 합니다",
+      "viewMustBeString": "뷰는 문자열이어야 합니다",
       "nameExists": "이름이 {name}인 바로가기가 이미 존재합니다",
       "created": "새 바로가기가 생성되었습니다!",
       "errorCreating": "바로가기 생성 오류",

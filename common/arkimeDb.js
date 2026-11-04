@@ -7,6 +7,7 @@
 'use strict';
 
 const cryptoLib = require('crypto');
+const net = require('net');
 
 class ArkimeDb {
   // ----------------------------------------------------------------------------
@@ -151,31 +152,6 @@ class ArkimeDb {
   }
 
   // ----------------------------------------------------------------------------
-  /**
-   * Create a LMDB store from the provided url
-   * @param {string} url - The LMDB url to connect to.
-   * @param {string} section - The section this LMDB client is being created for
-   */
-  static createLMDBStore (url, section) {
-    // eslint-disable-next-line no-shadow
-    const { open } = require('lmdb');
-
-    try {
-      const root = open({
-        path: url.slice(7),
-        compression: true
-      });
-      if (section) {
-        return root.openDB(section);
-      }
-      return root;
-    } catch (err) {
-      console.log('ERROR -', err);
-      process.exit(1);
-    }
-  }
-
-  // ----------------------------------------------------------------------------
   static createSQLiteDB (url) {
     const Database = require('better-sqlite3');
     let dbPath;
@@ -187,9 +163,17 @@ class ArkimeDb {
       dbPath = url;
     }
 
-    // timeout first, several processes opening a new db race on switching it to WAL
     const db = new Database(dbPath, { timeout: 5000 });
-    db.pragma('journal_mode = WAL');
+    // Processes opening a new db together can deadlock switching it to WAL, sqlite says busy without waiting
+    for (let i = 0; ; i++) {
+      try {
+        db.pragma('journal_mode = WAL');
+        break;
+      } catch (err) {
+        if (err.code !== 'SQLITE_BUSY' || i >= 50) { throw err; }
+        Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 20 + Math.random() * 80);
+      }
+    }
     db.pragma('synchronous = NORMAL');
     return db;
   }
@@ -204,11 +188,6 @@ class ArkimeDb {
     ['opensearch', './arkimeDb.es'],
     ['sqlite', './arkimeDb.sqlite'],
     ['sqlite3', './arkimeDb.sqlite'],
-    ['lmdb', './arkimeDb.lmdb'],
-    ['redis', './arkimeDb.redis'],
-    ['rediss', './arkimeDb.redis'],
-    ['redis-sentinel', './arkimeDb.redis'],
-    ['redis-cluster', './arkimeDb.redis'],
     ['postgres', './arkimeDb.pg'],
     ['postgresql', './arkimeDb.pg']
   ]);
@@ -258,6 +237,7 @@ class ArkimeDb {
   static #backend (scheme) {
     const backend = ArkimeDb.#backends.get(scheme);
     if (!backend) {
+      if (/^(lmdb|redis)/.test(scheme)) { throw new Error(`${scheme}:// is no longer supported as a db, use sqlite:// or postgres://`); }
       throw new Error(`Unknown db url scheme '${scheme}'`);
     }
     return typeof backend === 'string' ? require(backend) : backend;
@@ -276,21 +256,63 @@ class ArkimeDb {
   // where/sort helpers shared by the backends
   // ----------------------------------------------------------------------------
   static #FIELD_RE = /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/;
-  static #OPS = new Set(['$in', '$nin', '$ne', '$exists', '$gt', '$gte', '$lt', '$lte', '$contains', '$icontains', '$prefix', '$wildcard', '$regex']);
+  static #OPS = new Set(['$in', '$nin', '$ne', '$exists', '$gt', '$gte', '$lt', '$lte', '$contains', '$icontains', '$prefix', '$wildcard', '$regex', '$cidr']);
   static #regexCache = new Map();
 
   /**
    * A whole value match regex like ES regexp, RE2 so user patterns can't backtrack forever
    */
   static regex (pattern) {
-    let re = ArkimeDb.#regexCache.get(pattern);
+    const key = `r\t${pattern}`;
+    let re = ArkimeDb.#regexCache.get(key);
     if (!re) {
       const RE2 = require('re2');
       re = new RE2(`^(?:${pattern})$`, 's');
       if (ArkimeDb.#regexCache.size > 1000) { ArkimeDb.#regexCache.clear(); }
-      ArkimeDb.#regexCache.set(pattern, re);
+      ArkimeDb.#regexCache.set(key, re);
     }
     return re;
+  }
+
+  /**
+   * Is the value an ip in cidr, or that exact ip when it has no /, like an ES term on an ip field
+   */
+  static ipInCidr (value, cidr) {
+    const family = net.isIP(String(value));
+    return family !== 0 && ArkimeDb.#cidrList(cidr).check(String(value), family === 6 ? 'ipv6' : 'ipv4');
+  }
+
+  static #cidrList (cidr) {
+    const key = `c\t${cidr}`;
+    let list = ArkimeDb.#regexCache.get(key);
+    if (!list) {
+      const [addr, bits, extra] = String(cidr).split('/');
+      const family = net.isIP(addr);
+      const max = family === 6 ? 128 : 32;
+      if (!family || extra !== undefined || (bits !== undefined && !(/^\d+$/.test(bits) && +bits <= max))) {
+        throw new Error(`Invalid db where $cidr '${cidr}'`);
+      }
+      list = new net.BlockList();
+      if (bits === undefined) {
+        list.addAddress(addr, family === 6 ? 'ipv6' : 'ipv4');
+      } else {
+        list.addSubnet(addr, +bits, family === 6 ? 'ipv6' : 'ipv4');
+      }
+      if (ArkimeDb.#regexCache.size > 1000) { ArkimeDb.#regexCache.clear(); }
+      ArkimeDb.#regexCache.set(key, list);
+    }
+    return list;
+  }
+
+  /**
+   * The values at a dotted path like ES indexes them, arrays at any level are flattened and nulls dropped
+   */
+  static pathValues (doc, field) {
+    let vals = [doc];
+    for (const part of field.split('.')) {
+      vals = vals.flatMap(v => (v !== null && typeof v === 'object' && !Array.isArray(v)) ? [v[part]] : []).flat(Infinity);
+    }
+    return vals.filter(v => v !== null && v !== undefined);
   }
 
   static checkField (field) {
@@ -300,6 +322,80 @@ class ArkimeDb {
     return field;
   }
 
+  // ----------------------------------------------------------------------------
+  // fields schema shared by the backends
+  // ----------------------------------------------------------------------------
+  static #fieldSpec (spec) {
+    return typeof spec === 'string' ? { type: spec } : spec;
+  }
+
+  static #NUMERIC = new Set(['long', 'integer', 'short', 'byte', 'double', 'float', 'half_float', 'scaled_float', 'unsigned_long']);
+
+  /**
+   * The indexed fields with a numeric type, which sort the same by their column
+   */
+  static numericIndexedFields (options) {
+    return ArkimeDb.indexedFields(options).filter(f => ArkimeDb.#NUMERIC.has(ArkimeDb.#fieldSpec(options.fields[f]).type));
+  }
+
+  /**
+   * The numeric indexed fields marked indexed: 'sort', Postgres gives them a descending index too
+   */
+  static sortIndexedFields (options) {
+    return ArkimeDb.numericIndexedFields(options).filter(f => ArkimeDb.#fieldSpec(options.fields[f]).indexed === 'sort');
+  }
+
+  /**
+   * The indexed fields marked indexed: 'wildcard', Postgres gives them a trigram index too
+   */
+  static wildcardIndexedFields (options) {
+    return ArkimeDb.indexedFields(options).filter(f => ArkimeDb.#fieldSpec(options.fields[f]).indexed === 'wildcard');
+  }
+
+  /**
+   * The fields marked indexed, which the SQL backends give a column and index
+   */
+  static indexedFields (options) {
+    return Object.entries(options.fields ?? {})
+      .filter(([, spec]) => ArkimeDb.#fieldSpec(spec).indexed)
+      .map(([field]) => {
+        if (field === 'id') { throw new Error('id is always indexed'); }
+        return ArkimeDb.checkField(field);
+      });
+  }
+
+  /**
+   * [field, type] for every field, typed collections give each its own column
+   */
+  static fieldTypes (options) {
+    return Object.entries(options.fields ?? {}).map(([field, spec]) => [ArkimeDb.checkField(field), ArkimeDb.#fieldSpec(spec).type]);
+  }
+
+  static fieldColumn (field) {
+    return `f_${field.replace(/\./g, '__')}`;
+  }
+
+  /**
+   * fields as ES mapping properties, dotted names nest
+   */
+  static esProperties (fields = {}) {
+    const properties = {};
+    for (const [field, spec] of Object.entries(fields)) {
+      const mapping = { ...ArkimeDb.#fieldSpec(spec) };
+      delete mapping.indexed;
+      const parts = ArkimeDb.checkField(field).split('.');
+      let props = properties;
+      for (const part of parts.slice(0, -1)) {
+        props[part] ??= {};
+        props[part].properties ??= {};
+        props = props[part].properties;
+      }
+      const last = parts.at(-1);
+      props[last] = { ...props[last], ...mapping };
+    }
+    return properties;
+  }
+
   /**
    * Split a where condition into [op, value] pairs, plain values are $eq
    */
@@ -307,7 +403,12 @@ class ArkimeDb {
     if (cond === null || typeof cond !== 'object' || Array.isArray(cond)) {
       return [['$eq', cond]];
     }
-    const ops = Object.entries(cond);
+    // A Set, Map or {} would compile to no clause at all, which on an access filter means everything
+    const proto = Object.getPrototypeOf(cond);
+    const ops = (proto === Object.prototype || proto === null) ? Object.entries(cond) : [];
+    if (ops.length === 0) {
+      throw new Error('db where value must be a scalar, an array or an operator object');
+    }
     for (const [op, value] of ops) {
       if (!ArkimeDb.#OPS.has(op)) {
         throw new Error(`Unknown db where operator '${op}'`);
@@ -315,6 +416,7 @@ class ArkimeDb {
       if ((op === '$in' || op === '$nin') && !Array.isArray(value)) {
         throw new Error(`db where operator ${op} needs an array`);
       }
+      if (op === '$cidr') { ArkimeDb.#cidrList(value); }
     }
     return ops;
   }
@@ -326,130 +428,6 @@ class ArkimeDb {
     if (!sort) { return []; }
     const list = Array.isArray(sort) ? sort : Object.entries(sort);
     return list.map(([field, order]) => [ArkimeDb.checkField(field), order === 'desc' ? 'desc' : 'asc']);
-  }
-
-  static getPath (doc, field) {
-    let value = doc;
-    for (const part of field.split('.')) {
-      if (value === null || typeof value !== 'object') { return undefined; }
-      value = value[part];
-    }
-    return value;
-  }
-
-  static #values (value) {
-    if (value === undefined || value === null) { return []; }
-    return Array.isArray(value) ? value.filter(v => v !== null) : [value];
-  }
-
-  static #matchOp (vals, op, c) {
-    switch (op) {
-    case '$eq': return vals.some(v => v === c);
-    case '$ne': return !vals.some(v => v === c);
-    case '$in': return vals.some(v => c.includes(v));
-    case '$nin': return !vals.some(v => c.includes(v));
-    case '$exists': return (vals.length > 0) === !!c;
-    case '$gt': return vals.some(v => typeof v === typeof c && v > c);
-    case '$gte': return vals.some(v => typeof v === typeof c && v >= c);
-    case '$lt': return vals.some(v => typeof v === typeof c && v < c);
-    case '$lte': return vals.some(v => typeof v === typeof c && v <= c);
-    case '$contains': return vals.some(v => typeof v === 'string' && v.includes(c));
-    case '$icontains': return vals.some(v => typeof v === 'string' && v.toLowerCase().includes(String(c).toLowerCase()));
-    case '$prefix': return vals.some(v => typeof v === 'string' && v.startsWith(c));
-    case '$regex': return vals.some(v => typeof v === 'string' && ArkimeDb.regex(String(c)).test(v));
-    case '$wildcard': {
-      const re = new RegExp('^' + String(c).replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*').replace(/\?/g, '.') + '$', 's');
-      return vals.some(v => typeof v === 'string' && re.test(v));
-    }
-    }
-    return false;
-  }
-
-  /**
-   * Does a doc match a where, used by the backends that scan
-   */
-  static matches (doc, id, where) {
-    if (!where) { return true; }
-    for (const [key, cond] of Object.entries(where)) {
-      if (key === '$or') {
-        if (!cond.some(w => ArkimeDb.matches(doc, id, w))) { return false; }
-      } else if (key === '$and') {
-        if (!cond.every(w => ArkimeDb.matches(doc, id, w))) { return false; }
-      } else if (key === '$not') {
-        if (ArkimeDb.matches(doc, id, cond)) { return false; }
-      } else {
-        const vals = ArkimeDb.#values(key === 'id' ? id : ArkimeDb.getPath(doc, ArkimeDb.checkField(key)));
-        for (const [op, c] of ArkimeDb.condOps(cond)) {
-          if (!ArkimeDb.#matchOp(vals, op, c)) { return false; }
-        }
-      }
-    }
-    return true;
-  }
-
-  /**
-   * Filter, sort and page [{ id, doc }] in memory, missing values sort last
-   */
-  static findInMemory (items, { where, sort, from = 0, size } = {}) {
-    let hits = items.filter(h => ArkimeDb.matches(h.doc, h.id, where));
-    const total = hits.length;
-
-    const sortList = ArkimeDb.sortList(sort);
-    if (sortList.length) {
-      const key = (h, field) => {
-        const v = field === 'id' ? h.id : ArkimeDb.getPath(h.doc, field);
-        return Array.isArray(v) ? v[0] : v;
-      };
-      hits.sort((a, b) => {
-        for (const [field, order] of sortList) {
-          const va = key(a, field);
-          const vb = key(b, field);
-          if (va === vb) { continue; }
-          if (va === undefined || va === null) { return 1; }
-          if (vb === undefined || vb === null) { return -1; }
-          const cmp = va < vb ? -1 : (va > vb ? 1 : 0);
-          if (cmp) { return order === 'desc' ? -cmp : cmp; }
-        }
-        return 0;
-      });
-    }
-
-    hits = hits.slice(from, size === undefined ? undefined : from + size);
-    return { total, data: hits };
-  }
-
-  /**
-   * Group [{ id, doc }] in memory like an ES terms aggregation, biggest groups first
-   */
-  static aggregateInMemory (items, { where, groupBy, metrics = {}, size = 1000 } = {}) {
-    const groups = new Map();
-    for (const { id, doc } of items) {
-      if (!ArkimeDb.matches(doc, id, where)) { continue; }
-      const key = groupBy === 'id' ? id : ArkimeDb.getPath(doc, ArkimeDb.checkField(groupBy));
-      for (const k of ArkimeDb.#values(key)) {
-        let g = groups.get(k);
-        if (!g) { g = { key: k, count: 0, docs: [] }; groups.set(k, g); }
-        g.count++;
-        g.docs.push(doc);
-      }
-    }
-
-    const buckets = [...groups.values()]
-      .sort((a, b) => b.count - a.count || (a.key < b.key ? -1 : (a.key > b.key ? 1 : 0)))
-      .slice(0, size);
-    for (const b of buckets) {
-      for (const [metricName, metric] of Object.entries(metrics)) {
-        const [op, field] = Object.entries(metric)[0];
-        const nums = b.docs.flatMap(d => ArkimeDb.#values(ArkimeDb.getPath(d, ArkimeDb.checkField(field)))).filter(v => typeof v === 'number');
-        if (op === 'sum') {
-          b[metricName] = nums.reduce((t, v) => t + v, 0);
-        } else {
-          b[metricName] = nums.length ? nums.reduce((m, v) => Math[op](m, v)) : null;
-        }
-      }
-      delete b.docs;
-    }
-    return buckets;
   }
 
   static checkMetrics (metrics = {}) {
@@ -470,9 +448,10 @@ class ArkimeDb {
  * Thrown by put with createOnly when the id already exists
  */
 class ArkimeDbConflictError extends Error {
-  constructor (id) {
-    super(`Document '${id}' already exists`);
+  constructor (id, message = `Document '${id}' already exists`) {
+    super(message);
     this.id = id;
+    this.statusCode = 409;
   }
 }
 
@@ -481,19 +460,28 @@ class ArkimeDbConflictError extends Error {
  *   init(), get(id), put(id, doc, { createOnly, refresh }), create(doc), update(id, fields, { refresh }),
  *   delete(id), deleteWhere(where), deleteAll(), find({ where, sort, from, size, version, fields }),
  *   count(where), getMeta(key), setMeta(obj), refresh(), lease(id, owner, ttlMs), nextSequence(id),
- *   aggregate({ where, groupBy, metrics: { name: { min|max|sum: field } }, size })
+ *   aggregate({ where, groupBy, metrics: { name: { min|max|sum: field } }, size }),
+ *   getVersioned(id), putIfVersion(id, doc, version)
  * aggregate returns [{ key, count, <metric names> }] like an ES terms aggregation, biggest first.
  * find returns { total, data: [{ id, doc, version? }] }, with no size it returns every match.
  * fields is a hint (ES only fetches those), callers still get whatever the backend returns.
  * update sets top level fields of an existing doc and returns false when there is no doc.
+ * getVersioned returns { doc, version } or null, version is opaque. putIfVersion only writes
+ * when the doc still has that version, else it throws a ConflictError, so it never recreates a deleted doc.
  * refresh: false skips the ES refresh after a write, other backends ignore it.
  *
  * Collection options:
  *   idType: 'uuid' (default) or 'hex' for generated ids
  *   version: true to keep a per doc version that every put bumps
  *   table: the table name for every SQL backend, defaults to the collection name
- *   es: { index, create: { settings, mappings } }, sqlite: { table, columns }, pg: { table },
- *   lmdb: { db, json }, redis: { prefix } - per backend names/layout, only needed for older layouts
+ *   fields: { name: 'keyword' | { type, indexed, ...es mapping } } - dotted names nest. ES builds the
+ *     index mapping from them, SQLite and Postgres give indexed fields a column and index.
+ *     Fields can be arrays like in ES, except indexed ones which must hold one value.
+ *   typed: true for fixed shape docs, Postgres keeps each top level field in its own column instead
+ *     of a json doc. Missing columns are added at init and a field with no column can't be written.
+ *   es: { index, dbpl, create: { settings, mappings } } - the index is created from fields and create,
+ *     unless dbpl is set, which means db.pl owns it
+ *   sqlite: { table, idColumn, legacyMeta }, pg: { table } - per backend names/layout, only needed for older layouts
  */
 class ArkimeDbCollection {
   name;
@@ -524,56 +512,8 @@ class ArkimeDbCollection {
   }
 }
 
-/**
- * Base for backends with no query language, subclasses implement
- * scan() -> [{ id, doc, version? }], get, put, delete, getMeta and setMeta
- */
-class ArkimeDbScanCollection extends ArkimeDbCollection {
-  async find (options = {}) {
-    return ArkimeDb.findInMemory(await this.scan(), options);
-  }
-
-  async deleteWhere (where) {
-    const { data } = ArkimeDb.findInMemory(await this.scan(), { where });
-    for (const { id } of data) {
-      await this.delete(id);
-    }
-    return data.length;
-  }
-
-  async update (id, fields) {
-    const doc = await this.get(id);
-    if (!doc) { return false; }
-    await this.put(id, Object.assign(doc, fields));
-    return true;
-  }
-
-  async aggregate (params = {}) {
-    ArkimeDb.checkMetrics(params.metrics);
-    return ArkimeDb.aggregateInMemory(await this.scan(), params);
-  }
-
-  // Not atomic, these backends are single host
-  async nextSequence (id) {
-    const doc = await this.get(id);
-    const seq = (doc?.seq ?? 0) + 1;
-    await this.put(id, { seq });
-    return seq;
-  }
-
-  // Not atomic, these backends are single host
-  async lease (id, owner, ttlMs) {
-    const now = Date.now();
-    const doc = await this.get(id);
-    if (doc && doc.name !== owner && now - doc.lastRun < ttlMs) { return false; }
-    await this.put(id, { ...doc, name: owner, lastRun: now, enabled: doc?.enabled ?? false });
-    return true;
-  }
-}
-
 ArkimeDb.ConflictError = ArkimeDbConflictError;
 ArkimeDb.Collection = ArkimeDbCollection;
-ArkimeDb.ScanCollection = ArkimeDbScanCollection;
 
 module.exports = ArkimeDb;
 

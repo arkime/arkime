@@ -8,7 +8,7 @@ use JSON;
 use Data::Dumper;
 use strict;
 
-    esCopy("tests_fields", "tests2_fields");
+    clusterCopy(8123, 8124, "fields");
     esGet("/_flush");
 
 # Make sure no items

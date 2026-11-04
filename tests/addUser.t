@@ -311,7 +311,7 @@ is ($received->{_source}->{srcNode}, "receivetest", "received session indexed");
 ok ($received->{_source}->{packetPos}->[0] < 0 && -e glob("/tmp/test3-*-receiveok.pcap"), "received session points at written pcap");
 esDelete("/tests2_sessions3-receivetest");
 
-esPost("/tests2_files*/_delete_by_query?refresh=true", '{"query":{"bool":{"should":[{"wildcard":{"name":"*-toString.pcap"}},{"wildcard":{"name":"*-receivefail.pcap"}},{"wildcard":{"name":"*-receiveok.pcap"}}]}}}');
+clusterDeleteWhere(8124, "files", {'$or' => [map { {name => {'$wildcard' => "*-$_.pcap"}} } qw(toString receivefail receiveok)]});
 unlink glob("/tmp/test3-*-receiveok.pcap");
 unlink glob("/tmp/test3-*-receivefail.pcap");
 unlink glob("/tmp/test3-*-toString.pcap");

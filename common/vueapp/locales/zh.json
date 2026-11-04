@@ -2579,6 +2579,7 @@
       "rolesMustBeArray": "角色字段必须是字符串数组",
       "editRolesMustBeArray": "编辑角色字段必须是字符串数组",
       "usersMustBeString": "用户字段必须是字符串",
+      "viewMustBeString": "视图必须是字符串",
       "nameExists": "名为 {name} 的快捷方式已存在",
       "created": "新快捷方式已创建！",
       "errorCreating": "创建快捷方式出错",

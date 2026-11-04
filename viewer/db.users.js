@@ -50,7 +50,9 @@ class DbUsersImpl {
     return this.#getOrThrow(this.#views, id, 'View');
   }
 
+  // idOrName comes from the request, an object would be read as where operators
   async getViewByIdOrName (idOrName, user, roles) {
+    if (typeof idOrName !== 'string') { return null; }
     const { data } = await this.#views.find({
       where: {
         $and: [
@@ -110,8 +112,18 @@ class DbUsersImpl {
     await this.#shareables.deleteAll();
   }
 
-  async setShareable (id, doc) {
-    await this.#shareables.put(id, doc);
+  async getShareableVersioned (id) {
+    const hit = await this.#shareables.getVersioned(id);
+    if (!hit) { throw new Error('Shareable not found'); }
+    return { shareable: hit.doc, version: hit.version };
+  }
+
+  async setShareable (id, doc, version) {
+    if (version === undefined) {
+      await this.#shareables.put(id, doc);
+    } else {
+      await this.#shareables.putIfVersion(id, doc, version);
+    }
   }
 
   // --------------------------------------------------------------------------

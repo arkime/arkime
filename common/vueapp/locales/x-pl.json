@@ -2580,6 +2580,7 @@
       "rolesMustBeArray": "Olesray ieldfay ustmay ebay anway arrayway ofway ingstray",
       "editRolesMustBeArray": "Editway olesray ieldfay ustmay ebay anway arrayway ofway ingstray",
       "usersMustBeString": "Usersway ieldfay ustmay ebay away ingstray",
+      "viewMustBeString": "Viewway ustmay ebay away ingstray",
       "nameExists": "Away ortcutshay ithway ethay amenay, {name}, alreadyway existsway",
       "created": "Eatedcray ewnay ortcutshay!",
       "errorCreating": "Errorway eatingcray ortcutshay",

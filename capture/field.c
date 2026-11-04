@@ -91,6 +91,36 @@ LOCAL int arkime_field_exp_cmp(const char *key, const ArkimeFieldInfo_t *element
     return strcmp(key, element->expression) == 0;
 }
 /******************************************************************************/
+// Same JSON array text, ignoring whitespace outside strings since Postgres jsonb adds a space after commas
+LOCAL gboolean arkime_field_json_same(const char *a, const char *b)
+{
+    gboolean inString = FALSE;
+    while (1) {
+        if (!inString) {
+            while (*a == ' ')
+                a++;
+            while (*b == ' ')
+                b++;
+        }
+        if (*a != *b)
+            return FALSE;
+        if (!*a)
+            return TRUE;
+        if (*a == '\\' && inString) {
+            a++;
+            b++;
+            if (*a != *b)
+                return FALSE;
+            if (!*a)
+                return TRUE;
+        } else if (*a == '"') {
+            inString = !inString;
+        }
+        a++;
+        b++;
+    }
+}
+/******************************************************************************/
 LOCAL void arkime_field_free_info(ArkimeFieldInfo_t *info)
 {
     g_free(info->dbFieldFull);
@@ -454,7 +484,7 @@ int arkime_field_define(const char *group, const char *kind, const char *express
         if (strcmp(kind, minfo->kind) != 0) {
             LOG("WARNING - Field kind in db '%s' doesn't match field kind '%s' in capture for field '%s'", minfo->kind, kind, expression);
         }
-        if (category && (!minfo->category || strcmp(category, minfo->category) != 0)) {
+        if (category && (!minfo->category || !arkime_field_json_same(category, minfo->category))) {
             LOG("UPDATING - Field category to '%s' from '%s' for field '%s'", category, minfo->category, expression);
             arkime_db_update_field(expression, "category", category);
         }
@@ -462,7 +492,7 @@ int arkime_field_define(const char *group, const char *kind, const char *express
             LOG("UPDATING - Field transform to '%s' from '%s' for field '%s'", transform, minfo->transform, expression);
             arkime_db_update_field(expression, "transform", transform);
         }
-        if (aliases && (!minfo->aliases || strcmp(aliases, minfo->aliases) != 0)) {
+        if (aliases && (!minfo->aliases || !arkime_field_json_same(aliases, minfo->aliases))) {
             LOG("UPDATING - Field aliases to '%s' from '%s' for field '%s'", aliases, minfo->aliases, expression);
             arkime_db_update_field(expression, "aliases", aliases);
         }

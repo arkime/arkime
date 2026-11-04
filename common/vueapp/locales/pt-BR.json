@@ -2579,6 +2579,7 @@
       "rolesMustBeArray": "O campo de funções deve ser um array de strings",
       "editRolesMustBeArray": "O campo de funções de edição deve ser um array de strings",
       "usersMustBeString": "O campo de usuários deve ser uma string",
+      "viewMustBeString": "A visualização deve ser uma string",
       "nameExists": "Um atalho com o nome, {name}, já existe",
       "created": "Novo atalho criado!",
       "errorCreating": "Erro ao criar atalho",

@@ -124,7 +124,8 @@ class MiscAPIs {
     ]).then(([files, total]) => {
       const results = { total: files.total, results: [] };
       for (const file of files.data) {
-        const fields = file.doc;
+        // only ES applies the fields hint
+        const fields = Object.fromEntries([...columns, 'cluster'].filter(c => file.doc[c] !== undefined).map(c => [c, file.doc[c]]));
         if (fields.locked === undefined) {
           fields.locked = 0;
         }
@@ -394,9 +395,7 @@ class MiscAPIs {
       const clusters = await MiscAPIs.#getClusters(); // { active: [], inactive: [] }
       const remoteclusters = MiscAPIs.#remoteClusters(); // {}
       const fieldhistory = UserAPIs.findUserState('fieldHistory', req.user); // {}
-      // views not supported for redis/lmdb user backends
-      const dbUrl = User.getDbUrl();
-      const views = (dbUrl?.startsWith('redis') || dbUrl?.startsWith('lmdb')) ? undefined : (await View.getViews(req)).data;
+      const views = (await View.getViews(req)).data;
       const roles = await User.getRoles();
 
       // can't fetch user or fields is FATAL, so let it fall through to outer

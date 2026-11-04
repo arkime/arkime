@@ -22,6 +22,10 @@ my $json;
 #_stats
     $json = mesGet("/MULTIPREFIX_stats/_stats");
     is ($json->{cluster}, "test", "Correct cluster status");
+
+    SKIP: {
+        skip "a Postgres cluster db has no ES index stats", 4 if $ArkimeTest::clusterDbPG;
+
     is (exists $json->{indices}->{MULTIPREFIX_stats_v30}, 1, "Correct stats/_stats index");
 
     $json = mesGet("/MULTIPREFIX_files/_stats");
@@ -32,12 +36,13 @@ my $json;
 
     $json = mesGet("/MULTIPREFIX_dstats/_stats");
     cmp_ok($json->{indices}->{MULTIPREFIX_dstats_v30}->{total}->{docs}->{count}, '>=', 1, "dstats count is at least 1");
+    }
 
 # _count
     $json = mesPost("/MULTIPREFIX_users/_count?ignore_unavailable=true", "");
     is ($json->{count}, 0, "Correct count number of users");
 
-    $json = mesPost("/MULTIPREFIX_sessions2-*,MULTIPREFIX_sessions3-*/_count?ignore_unavailable=true", "");
+    $json = mesPost("/MULTIPREFIX_sessions3-*/_count?ignore_unavailable=true", "");
     cmp_ok ($json->{count}, '>=', 80, "Correct count number of sessions");
 
     $json = mesPost("/MULTIPREFIX_stats*/_count?ignore_unavailable=true", "");
@@ -74,9 +79,9 @@ my $json;
     SKIP: {
         skip "multiES with ClickHouse sessions doesn't emulate per-period session indices", 2 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
 
-    $json = mesGet("/MULTIPREFIX_sessions2-*,MULTIPREFIX_sessions3-*/_alias");
-    is (exists $json->{"MULTIPREFIX_sessions2-05m03"} || exists $json->{"MULTIPREFIX_sessions3-05m03"}, 1, "Correct session alias");
-    is (exists $json->{"MULTIPREFIX_sessions2-14m01"} || exists $json->{"MULTIPREFIX_sessions3-14m01"}, 1, "Correct session alias");
+    $json = mesGet("/MULTIPREFIX_sessions3-*/_alias");
+    is (exists $json->{"MULTIPREFIX_sessions3-05m03"}, 1, "Correct session alias");
+    is (exists $json->{"MULTIPREFIX_sessions3-14m01"}, 1, "Correct session alias");
     }
 
 # _search
@@ -98,12 +103,7 @@ my $json;
         skip "multiES with ClickHouse sessions doesn't emulate per-period session indices", 6 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
 
     $json = mesGet("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
-    if ($json->{hits}->{total} == 0) {
-        $json = mesGet("/MULTIPREFIX_sessions2-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true");
-        is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions2-14m10", "Correct sessions index name");
-    } else {
-        is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-14m10", "Correct sessions index name");
-    }
+    is ($json->{hits}->{hits}->[0]->{_index}, "MULTIPREFIX_sessions3-14m10", "Correct sessions index name");
     cmp_ok($json->{hits}->{total}, '>=', 6, "sessions count is at least 6");
 
     $json = mesPost("/MULTIPREFIX_sessions3-14m10/_search?preference=primary_first&ignore_unavailable=true&rest_total_hits_as_int=true", '{"size":20000}');

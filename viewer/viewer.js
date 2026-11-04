@@ -278,9 +278,10 @@ if (ArkimeConfig.regressionTests) {
     Db.close();
     process.exit(0);
   });
-  app.post('/regressionTests/flushCache', function (req, res) {
+  app.post('/regressionTests/flushCache', async function (req, res) {
     User.flushCache();
     Db.flushCache();
+    await setFieldLocals();
     res.send('{}');
   });
   app.get('/regressionTests/processCronQueries', async function (req, res) {
@@ -334,6 +335,14 @@ if (ArkimeConfig.regressionTests) {
     await Db.deleteAllShareables();
     res.send('{}');
   });
+  // The stats a malicious cluster could send a parliament polling it
+  app.get('/regressionTests/hostileCluster/api/parliament', (req, res) => {
+    const big = (c) => c.repeat(40000);
+    res.send({
+      data: [{ nodeName: big('n'), currentTime: 1, deltaPacketsPerSec: big('0'), freeSpaceP: big('0'), freeSpaceM: big('2') }],
+      esNodes: [{ nodeName: big('e'), roles: ['data'], freeSpaceP: big('0'), freeSpaceM: big('3') }]
+    });
+  });
   app.get('/regressionTests/deleteAllHistory', async (req, res) => {
     await Db.deleteAllHistory();
     res.send('{}');
@@ -343,6 +352,34 @@ if (ArkimeConfig.regressionTests) {
     const updated = await Db.updateQuery(req.params.id, req.body);
     res.send({ result: updated ? 'updated' : 'not_found' });
   });
+  // capture's collections in whatever the cluster db is, so tests don't need to know
+  const clusterDbRoute = (fn) => async (req, res) => {
+    const coll = Db.clusterCollection(req.params.coll);
+    if (!coll) { return res.status(404).send({ error: 'unknown collection' }); }
+    try {
+      res.send(await fn(coll, req));
+    } catch (err) {
+      res.status(500).send({ error: err.message });
+    }
+  };
+  // { where, sort, size } => { total, data: [{ id, doc }] }
+  app.post('/regressionTests/clusterDb/:coll/find', clusterDbRoute((coll, req) => {
+    return coll.find({ where: req.body.where, sort: req.body.sort, size: req.body.size ?? 10000 });
+  }));
+  // [{ id, doc }]
+  app.post('/regressionTests/clusterDb/:coll/put', clusterDbRoute(async (coll, req) => {
+    await Promise.all(req.body.map(({ id, doc }) => coll.put(id, doc)));
+    if (req.params.coll === 'fields') { await setFieldLocals(); }
+    return { count: req.body.length };
+  }));
+  // { where }
+  app.post('/regressionTests/clusterDb/:coll/deleteWhere', clusterDbRoute(async (coll, req) => {
+    if (!req.body.where) { throw new Error('missing where'); }
+    return { deleted: await coll.deleteWhere(req.body.where) };
+  }));
+  app.delete('/regressionTests/clusterDb/:coll/:id', clusterDbRoute(async (coll, req) => {
+    return { deleted: await coll.delete(req.params.id) };
+  }));
   app.get('/regressionTests/getUser/:user', (req, res) => {
     User.getUser(req.params.user, (err, user) => {
       // Shallow copy
@@ -814,7 +851,7 @@ function logAction (uiPage) {
 
     // Views live in their own index now; resolve async and let finish() await it
     let viewPromise;
-    if (req.query.view) {
+    if (ArkimeUtil.isString(req.query.view)) {
       viewPromise = (async () => {
         try {
           const roles = [...await req.user.getRoles()];
@@ -982,7 +1019,7 @@ function sanitizeViewName (req, res, next) {
 // ============================================================================
 // app helpers ----------------------------------------------------------------
 function setFieldLocals () {
-  ViewerUtils.loadFields()
+  return ViewerUtils.loadFields()
     .then((result) => {
       internals.fieldsMap = result.fieldsMap;
       internals.fieldsArr = result.fieldsArr;

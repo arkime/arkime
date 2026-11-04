@@ -1714,7 +1714,8 @@ class StatsAPIs {
       const results = { total: stats.total, results: [] };
 
       for (const stat of stats.data) {
-        const fields = stat.doc;
+        // only ES applies the fields hint
+        const fields = Object.fromEntries([...params.fields, 'cluster'].filter(f => stat.doc[f] !== undefined).map(f => [f, stat.doc[f]]));
         fields.id = stat.id;
 
         // make sure necessary fields are not undefined

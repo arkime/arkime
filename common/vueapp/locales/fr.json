@@ -2579,6 +2579,7 @@
       "rolesMustBeArray": "Le champ des rôles doit être un tableau de chaînes",
       "editRolesMustBeArray": "Le champ des rôles d'édition doit être un tableau de chaînes",
       "usersMustBeString": "Le champ des utilisateurs doit être une chaîne",
+      "viewMustBeString": "La vue doit être une chaîne",
       "nameExists": "Un raccourci avec le nom {name} existe déjà",
       "created": "Nouveau raccourci créé !",
       "errorCreating": "Erreur lors de la création du raccourci",

@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 377;
+use Test::More tests => 379;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -391,10 +391,11 @@ my $session_params = "rest_total_hits_as_int=true";
 my $entire_params = "preference=primaries&ignore_unavailable=true&rest_total_hits_as_int=true";
 foreach my $test (
     ["tests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id allowed"],
-    ["tests_sessions2-2024%2Ctests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id in sessions2 and sessions3 allowed"],
+    ["tests_sessions2-2024%2Ctests_sessions3-2024/_search?$session_params", $search_ids, 200, "older sensor viewers sessions search by id in sessions2 and sessions3 allowed"],
     ["partial-tests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id in partial index allowed"],
-    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params", $search_entire, 200, "sessions search by rootId across all sessions allowed"],
-    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params&max_concurrent_shard_requests=5", $search_entire, 200, "sessions search by rootId with max_concurrent_shard_requests allowed"],
+    ["tests_sessions3-*/_search?$entire_params", $search_entire, 200, "sessions search by rootId across all sessions allowed"],
+    ["tests_sessions3-*/_search?$entire_params&max_concurrent_shard_requests=5", $search_entire, 200, "sessions search by rootId with max_concurrent_shard_requests allowed"],
+    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params", $search_entire, 200, "older sensor viewers sessions search by rootId allowed"],
     ["tests_sessions3-2024,tests_users/_search", $search_ids, 400, "sessions search with non sessions index rejected"],
     ["tests_sessions3-2024%2Ctests_users/_search", $search_ids, 400, "sessions search with encoded non sessions index rejected"],
     ["tests_sessions3-2024%252Ctests_users/_search", $search_ids, 400, "sessions search with double encoded comma rejected"],
@@ -404,7 +405,7 @@ foreach my $test (
     ["tests_sessions3-2024/_search", $search_ids_aggs, 400, "sessions search by id with aggs rejected"],
     ["tests_sessions3-2024/_search", $search_ids_two, 400, "sessions search by id with extra query clause rejected"],
     ["tests_sessions3-2024/_search", $search_ids_profile, 400, "sessions search by id with non boolean profile rejected"],
-    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params", $search_entire_profile, 400, "sessions search by rootId with non boolean profile rejected"],
+    ["tests_sessions3-*/_search?$entire_params", $search_entire_profile, 400, "sessions search by rootId with non boolean profile rejected"],
 ) {
     my ($path, $body, $code, $name) = @$test;
     $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/$path");
@@ -637,7 +638,10 @@ is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":[
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost","test"]}}]}}}'), 400, "files search for a node on another host rejected");
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost"]}}]}}}'), 200, "files search for own node with host allowed");
 # The exact body the viewer's expiry sends
-is (filesSearch("test", to_json(viewerGet("/regressionTests/expireQuery?nodes=test&dirs=/x,/y/"))), 200, "files search real expiry query allowed");
+SKIP: {
+    skip "a Postgres cluster db has no ES expiry query", 1 if $ArkimeTest::clusterDbPG;
+    is (filesSearch("test", to_json(viewerGet("/regressionTests/expireQuery?nodes=test&dirs=/x,/y/"))), 200, "files search real expiry query allowed");
+}
 # Older sensor viewers always send profile false
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":false}'), 200, "files search with profile false allowed");
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":true}'), 200, "files search with profile true allowed");
@@ -669,14 +673,17 @@ unlike ($response->content, qr/"hits"/, "GET fields _search with ; smuggled q no
 # POST - exact path compare; capture writes its stats doc with an external
 # version that it bumps from the current one, so do the same and re-post the
 # existing source to leave the doc unchanged
-$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test");
-is ($response->code, 200, "GET stats doc allowed");
-my $stats = from_json($response->content);
-$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test?version_type=external&version=" . ($stats->{_version} + 1));
-$req->header('Content-Type' => 'application/json');
-$req->content(to_json($stats->{_source}));
-$response = $ArkimeTest::userAgent->request($req);
-is ($response->code, 200, "POST stats doc with version query allowed");
+SKIP: {
+    skip "a Postgres cluster db keeps the stats doc out of ES", 2 if $ArkimeTest::clusterDbPG;
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test");
+    is ($response->code, 200, "GET stats doc allowed");
+    my $stats = from_json($response->content);
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test?version_type=external&version=" . ($stats->{_version} + 1));
+    $req->header('Content-Type' => 'application/json');
+    $req->content(to_json($stats->{_source}));
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, 200, "POST stats doc with version query allowed");
+}
 
 # A sensor with host set can only put that hostname in its stats doc, viewers
 # use it to decide which nodes are on their host
@@ -1147,9 +1154,10 @@ is ($response->code, 400, "POST session update in multi-index expression rejecte
 # The sensor viewer's es client encodes the commas in index lists, these are its startup and not found retry calls
 foreach my $test (
     ["_nodes/stats/jvm%2Cprocess%2Cfs%2Cos%2Cindices%2Cthread_pool", 200, "GET nodes stats with encoded commas allowed"],
-    ["tests_sessions2-*%2Cpartial-tests_sessions3-*%2Ctests_sessions3-*/_alias", 200, "GET viewer sessions alias list allowed"],
+    ["partial-tests_sessions3-*%2Ctests_sessions3-*/_alias", 200, "GET viewer sessions alias list allowed"],
+    ["tests_sessions2-*%2Cpartial-tests_sessions3-*%2Ctests_sessions3-*/_alias", 200, "GET older sensor viewers sessions alias list allowed"],
     ["tests_sessions3-2024/_refresh", 200, "GET sessions index refresh allowed"],
-    ["tests_sessions2-2024%2Ctests_sessions3-2024/_refresh", 200, "GET sessions2 and sessions3 index refresh allowed"],
+    ["tests_sessions2-2024%2Ctests_sessions3-2024/_refresh", 200, "GET older sensor viewers sessions2 and sessions3 index refresh allowed"],
     ["tests_*/_refresh", 200, "GET capture exit refresh allowed"],
     ["tests_queries/_doc/primary-viewer", 200, "GET primary viewer doc allowed"],
     ["tests_queries/_doc/other", 400, "GET other queries doc rejected"],

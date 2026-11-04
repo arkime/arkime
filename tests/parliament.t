@@ -1,4 +1,4 @@
-use Test::More tests => 128;
+use Test::More tests => 135;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -157,9 +157,14 @@ eq_or_diff($result, from_json('{"text": "There are no acknowledged issues to rem
 $result = parliamentPutToken("/parliament/api/removeSelectedAcknowledgedIssues?arkimeRegressionUser=parliamentAdminP", '{}', $parliamentAdminToken);
 eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) to remove.", "success": false}'));
 
-# ignoreIssues requires a finite numeric ms (rejects non-numeric ms before it corrupts ignoreUntil)
+# ignoreIssues requires -1 or a sane positive ms, anything else would be saved as an ignoreUntil the db rejects
+my $badMs = from_json('{"text": "ms must be -1 or a positive number of milliseconds up to 10 years.", "success": false}');
 $result = parliamentPutToken("/parliament/api/ignoreIssues?arkimeRegressionUser=parliamentAdminP", '{"issues": [{"clusterId": "abc", "type": "esRed"}], "ms": "not-a-number"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"text": "ms must be a finite number.", "success": false}'));
+eq_or_diff($result, $badMs);
+$result = parliamentPutToken("/parliament/api/ignoreIssues?arkimeRegressionUser=parliamentAdminP", '{"issues": [{"clusterId": "abc", "type": "esRed"}], "ms": 9e18}', $parliamentAdminToken);
+eq_or_diff($result, $badMs, "ignore ms past 10 years is rejected");
+$result = parliamentPutToken("/parliament/api/ignoreIssues?arkimeRegressionUser=parliamentAdminP", '{"issues": [{"clusterId": "abc", "type": "esRed"}], "ms": -5}', $parliamentAdminToken);
+eq_or_diff($result, $badMs, "negative ignore ms other than -1 is rejected");
 
 # parliament admin can access/update settings/parliament
 $result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
@@ -364,6 +369,26 @@ for (my $i = 0; $i < 10; $i++) {
     sleep(1);
 }
 ok((grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesSaved), "poll issues are saved to the db");
+
+# a cluster sending huge names and number strings still has its issues saved, with bounded values
+$result = parliamentPostToken("/parliament/api/groups/$issueGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "hostile", "url": "http://127.0.0.1:8123/regressionTests/hostileCluster"}', $parliamentAdminToken);
+ok($result->{success}, "hostile cluster created");
+my $hostileId = $result->{cluster}->{id};
+parliamentGet("/regressionTests/updateParliament");
+parliamentGet("/regressionTests/updateParliament");
+my @hostileIssues;
+for (my $i = 0; $i < 10; $i++) {
+    my $data = parliamentGet("/regressionTests/savedIssues");
+    @hostileIssues = grep { ($_->{clusterId} // '') eq $hostileId } @$data if ref $data eq 'ARRAY';
+    last if grep { $_->{type} eq 'lowDiskSpaceES' } @hostileIssues;
+    sleep(1);
+}
+my ($lowDisk) = grep { $_->{type} eq 'lowDiskSpace' } @hostileIssues;
+my ($lowDiskES) = grep { $_->{type} eq 'lowDiskSpaceES' } @hostileIssues;
+ok($lowDisk && $lowDiskES, "hostile cluster issues are saved");
+is(length($lowDisk->{node} // ''), 256, "remote node name is capped");
+is($lowDisk->{value}, 0, "remote number string is stored as a number");
+is(length($lowDiskES->{node} // ''), 256, "remote es node name is capped");
 
 # filter passed as an array is ignored instead of throwing (500) on .toLowerCase()
 $result = parliamentGetToken("/parliament/api/issues?filter=a&filter=b&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);

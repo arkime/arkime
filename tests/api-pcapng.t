@@ -71,7 +71,7 @@ ok ($content =~ /Host: g.example.com/, "flow G: NULL HTTP host read back");
 # The pcapng's files index doc should carry the cached interfaceOffsets array
 # (one IDB offset per interface) used to speed up read-back. The synthetic file
 # is a fixed SHB (28 bytes) + 6 IDBs (20 bytes each), so the offsets are stable.
-$json = esGet("/tests_files/_search?q=name:*multidlt_synthetic.pcapng");
+$json = clusterSearch(8123, "files", {where => {name => {'$wildcard' => "*multidlt_synthetic.pcapng"}}});
 my $file = $json->{hits}->{hits}->[0]->{_source};
 ok (defined $file->{interfaceOffsets}, "files doc has interfaceOffsets");
 eq_or_diff ($file->{interfaceOffsets}, [28, 48, 68, 88, 108, 128], "interfaceOffsets are the 6 IDB offsets");

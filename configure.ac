@@ -675,6 +675,29 @@ AS_IF([test "x$with_libxdp" != "xno"], [
 AC_SUBST([LIBXDP_CFLAGS])
 AC_SUBST([LIBXDP_LIBS])
 
+dnl Checks for libpq, lets capture write its cluster db metadata to Postgres. Optional.
+AC_ARG_WITH([libpq],
+  AS_HELP_STRING([--with-libpq], [Write capture metadata to a Postgres clusterDbUrl (requires libpq 13 or newer)]))
+
+have_libpq=no
+AS_IF([test "x$with_libpq" != "xno"], [
+    PKG_CHECK_MODULES([LIBPQ], [libpq >= 13], [
+        AC_DEFINE([HAVE_LIBPQ], [1], [Define to 1 if libpq is available for a Postgres clusterDbUrl.])
+        have_libpq=yes
+        LIBPQ_VERSION=`$PKG_CONFIG --modversion libpq`
+        AC_MSG_NOTICE([Found libpq $LIBPQ_VERSION, Postgres clusterDbUrl enabled.])
+    ], [
+        AS_IF([test "x$with_libpq" = "xyes"], [
+            AC_MSG_ERROR([libpq 13 or newer was requested but not found via pkg-config. Install libpq-dev or libpq-devel.])
+        ], [
+            AC_MSG_WARN([libpq 13 or newer not found via pkg-config, Postgres clusterDbUrl disabled.])
+        ])
+    ])
+])
+
+AC_SUBST([LIBPQ_CFLAGS])
+AC_SUBST([LIBPQ_LIBS])
+
 dnl jemalloc
 AC_ARG_WITH(jemalloc,
   AS_HELP_STRING([--with-jemalloc], [Use jemalloc memory allocator]))

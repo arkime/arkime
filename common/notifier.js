@@ -29,8 +29,12 @@ class Notifier {
       ? ArkimeUtil.dbConnect(url, { client: User.getClient(), prefix: ArkimeUtil.formatPrefix(options.prefix) })
       : ArkimeUtil.dbConnect(url, { section: 'Notifier' });
     Notifier.#notifiers = conn.collection('notifiers', {
-      lmdb: { db: 'Notifier', json: true },
-      redis: { prefix: 'notifier:' }
+      fields: {
+        name: { type: 'keyword', indexed: true },
+        users: 'keyword',
+        roles: 'keyword'
+      },
+      es: { dbpl: true }
     });
 
     Notifier.notifierTypes = {};

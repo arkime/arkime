@@ -234,18 +234,40 @@ jobs:
           clickhouse client --query "SELECT version()"
           (cd tests ; G_SLICE=always-malloc ./tests_ch.sh --viewer)
 
+      - name: viewer test postgres
+        if: ${{ matrix.viewertest == 'postgres' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          ldd capture/capture | grep -q libpq || (echo "capture wasn't built with libpq"; exit 1)
+          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
+          apt-get -qq update
+          DEBIAN_FRONTEND=noninteractive apt-get -qq install postgresql > /dev/null
+          PGBIN=$(ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1)
+          mkdir -p /tmp/pgdata && chown postgres /tmp/pgdata
+          su postgres -c "$PGBIN/initdb -D /tmp/pgdata -A trust -U arkime" > /tmp/pg.log
+          su postgres -c "$PGBIN/pg_ctl -D /tmp/pgdata -l /tmp/pg.log -o '-p 5433 -k /tmp' -w start" || (cat /tmp/pg.log; exit 1)
+          $PGBIN/createdb -h 127.0.0.1 -p 5433 -U arkime arkimetest
+          $PGBIN/createdb -h 127.0.0.1 -p 5433 -U arkime arkimecap
+          ARKIME_TEST_PG_URL=postgres://arkime@127.0.0.1:5433/arkimetest npm run test:unit
+          for i in $(seq 1 30); do
+            curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=1s' >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9200/_cat/health || (cat /tmp/os; exit 1)
+          (cd tests ; ARKIME_default__clusterDbUrl=postgres://arkime@127.0.0.1:5433/arkimecap G_SLICE=always-malloc ./tests.pl --viewer)
+
       - name: otherdb viewer test
         if: ${{ matrix.otherdbtest == 'true' }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
           echo "LMDB"
-          (cd tests ; ARKIME_cache__type=lmdb ARKIME_cache__lmdbDir=/tmp/cache.lmdb ARKIME_cont3xt__dbUrl=lmdb:///tmp/cont3xt.lmdb USERSELASTICSEARCH=lmdb:///tmp/users.lmdb ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t)
+          (cd tests ; ARKIME_cache__type=lmdb ARKIME_cache__lmdbDir=/tmp/cache.lmdb ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.lmdb.db USERSELASTICSEARCH=sqlite:///tmp/users.lmdb.db ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t)
 
           echo "SQLITE"
           (cd tests ; ARKIME_cache__type=sqlite ARKIME_cache__sqliteFile=/tmp/cache.sql ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.db USERSELASTICSEARCH=sqlite:///tmp/users.db ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t api-views.t api-shareables.t api-shortcuts.t api-buildquery.t)
 
           echo "REDIS"
-          (cd tests ; ARKIME_cache__type=redis ARKIME_cache__redisURL=redis://localhost:7379/1 ARKIME_cont3xt__dbUrl=redis://localhost:7379/2 USERSELASTICSEARCH=redis://localhost:7379/0 ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t)
+          (cd tests ; ARKIME_cache__type=redis ARKIME_cache__redisURL=redis://localhost:7379/1 ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.redis.db USERSELASTICSEARCH=sqlite:///tmp/users.redis.db ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t)
 
       - name: package arch
         if: ${{ matrix.package == 'arch' }}

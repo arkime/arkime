@@ -81,11 +81,13 @@ class Audit {
         return reject(msg);
       }
 
-      // A bulk search joins every indicator, keep it under the ES keyword term limit (32766 bytes).
-      // Cut on a separator so the history page doesn't replay a partial indicator.
-      if (audit.indicator.length > 8000) {
-        const cut = audit.indicator.lastIndexOf(', ', 8000);
-        audit.indicator = audit.indicator.slice(0, cut > 0 ? cut : 8000);
+      // A bulk search joins every indicator, keep it under the ES keyword term limit (32766 bytes) and
+      // what a Postgres index entry holds. Cut on a separator so the history page doesn't replay a partial indicator.
+      const max = Db.maxIndicatorBytes;
+      if (Buffer.byteLength(audit.indicator) > max) {
+        const head = Buffer.from(audit.indicator).subarray(0, max).toString().replace(/�+$/, '');
+        const cut = head.lastIndexOf(', ');
+        audit.indicator = cut > 0 ? head.slice(0, cut) : head;
       }
 
       Db.putAudit(null, audit).then((results) => {

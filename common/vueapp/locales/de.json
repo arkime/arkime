@@ -2579,6 +2579,7 @@
       "rolesMustBeArray": "Rollenfeld muss ein Array von Zeichenketten sein",
       "editRolesMustBeArray": "Bearbeitungsrollenfeld muss ein Array von Zeichenketten sein",
       "usersMustBeString": "Benutzerfeld muss eine Zeichenkette sein",
+      "viewMustBeString": "Ansicht muss eine Zeichenkette sein",
       "nameExists": "Eine Verknüpfung mit dem Namen {name} existiert bereits",
       "created": "Neue Verknüpfung erstellt!",
       "errorCreating": "Fehler beim Erstellen der Verknüpfung",

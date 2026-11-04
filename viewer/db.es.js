@@ -351,26 +351,10 @@ class DbESImpl {
 
   // --------------------------------------------------------------------------
   async numberOfDocuments (index, options) {
-    // count interface is slow for large data sets, don't use for sessions unless multiES
-    if (index !== 'sessions2-*' || this.#internals.multiES) {
-      const params = { index: this.#fixIndex(index), ignore_unavailable: true };
-      this.#Db.merge(params, options);
-      const { body: total } = await this.#internals.client7.count(params);
-      return { count: total.count };
-    }
-
-    let count = 0;
-    const str = `${this.#internals.prefix}sessions2-`;
-
-    const indices = await this.#Db.indicesCache(options.cluster);
-
-    for (let i = 0; i < indices.length; i++) {
-      if (indices[i].index.includes(str)) {
-        count += parseInt(indices[i]['docs.count']);
-      }
-    }
-
-    return { count };
+    const params = { index: this.#fixIndex(index), ignore_unavailable: true };
+    this.#Db.merge(params, options);
+    const { body: total } = await this.#internals.client7.count(params);
+    return { count: total.count };
   }
 
   // --------------------------------------------------------------------------
@@ -405,9 +389,7 @@ class DbESImpl {
         if (index.endsWith('-reindex')) {
           index = index.substring(0, index.length - 8);
         }
-        if (index.startsWith('sessions2-')) { // sessions2 might not have prefix
-          index = index.substring(10);
-        } else if (this.#internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+        if (this.#internals.queryExtraIndicesRegex.some(re => re.test(index))) {
           // extra user-specified indexes from the queryExtraIndices don't have the prefix
           isQueryExtraIndex = true;
         } else {
@@ -526,7 +508,7 @@ class DbESImpl {
   // --------------------------------------------------------------------------
   getSessionIndices (excludeExtra) {
     if (excludeExtra) {
-      return ['sessions2-*', 'sessions3-*'];
+      return ['sessions3-*'];
     }
     return this.#internals.sessionIndices;
   }

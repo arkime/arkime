@@ -482,7 +482,8 @@ my ($cmd) = @_;
     my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
     my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
     my $mesCh = $ArkimeTest::sessionsDbUrl ? ",sessionsDbUrl:$ArkimeTest::sessionsDbUrl" : "";
-    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh;$ELASTICSEARCH,prefix:tests2_,name:test2'";
+    my $mesCluster = $ArkimeTest::clusterDbPG ? ",clusterDbUrl:$ArkimeTest::clusterDbUrl" : "";
+    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh$mesCluster;$ELASTICSEARCH,prefix:tests2_,name:test2$mesCluster'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
@@ -507,8 +508,6 @@ my ($cmd) = @_;
         system($mcmd);
 
         die "Loaded" if ($cmd eq "--viewerload");
-
-        esCopy("tests_fields", "tests2_fields", "field");
     }
 
     if ($cmd ne "--viewernostart") {
@@ -558,6 +557,12 @@ my ($cmd) = @_;
     waitFor($ArkimeTest::host, 7379);
     waitFor($ArkimeTest::host, 4566);
     sleep 1;
+
+    # tests2 viewers need the fields capture added to tests
+    if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
+        clusterCopy(8123, 8124, "fields");
+        $main::userAgent->post("http://$ArkimeTest::host:$_/regressionTests/flushCache") for (8126, 8127, 8128);
+    }
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
     $main::userAgent->get("$ELASTICSEARCH/_refresh");

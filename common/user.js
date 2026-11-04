@@ -2030,9 +2030,20 @@ class UserDbImplementation {
 
     // Names match the layouts each backend used before collections
     this.#users = this.#conn.collection('users', {
-      sqlite: { idColumn: 'userId' },
-      lmdb: { db: 'User' },
-      redis: { prefix: 'user:' }
+      fields: {
+        userId: { type: 'keyword', indexed: true },
+        userName: { type: 'keyword', indexed: true },
+        enabled: 'boolean',
+        webEnabled: 'boolean',
+        headerAuthEnabled: 'boolean',
+        createEnabled: 'boolean',
+        removeEnabled: 'boolean',
+        lastUsed: { type: 'date', indexed: true },
+        roles: 'keyword',
+        roleAssigners: 'keyword'
+      },
+      es: { dbpl: true },
+      sqlite: { idColumn: 'userId' }
     });
 
     if (!this.#isES) { return; }

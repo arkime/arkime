@@ -8,6 +8,49 @@
 
 'use strict';
 
+const fs = require('fs');
+const path = require('path');
+
+// The stats doc capture writes, a Postgres cluster db gives each its own column. capture/db.pg.c
+// has the same list, a new field goes in both and its column is added the next time either starts.
+const STATS_FIELDS = Object.fromEntries([
+  ...['ver', 'nodeName', 'hostname'].map(f => [f, 'keyword']),
+  ['interval', 'short'], ['currentTime', 'date'], ['freeSpaceP', 'float'], ['memoryP', 'float'],
+  ...['usedSpaceM', 'freeSpaceM', 'monitoring', 'memory', 'cpu', 'diskQueue', 'esQueue', 'packetQueue', 'fragsQueue',
+    'frags', 'needSave', 'closeQueue', 'tcpSessions',
+    'udpSessions', 'icmpSessions', 'sctpSessions', 'espSessions', 'otherSessions', 'deltaPackets', 'deltaBytes',
+    'deltaWrittenBytes', 'deltaUnwrittenBytes', 'deltaSessions', 'deltaSessionBytes', 'deltaDropped',
+    'deltaFragsDropped', 'deltaOverloadDropped', 'deltaESDropped', 'deltaDupDropped', 'esHealthMS', 'deltaMS',
+    'startTime'].map(f => [f, 'long'])
+]);
+
+// What expiry, the files and stats pages and capture look up, capture creates the same columns in db.pg.c
+const COLLECTION_OPTIONS = {
+  stats: { typed: true, fields: STATS_FIELDS },
+  files: {
+    fields: {
+      node: { type: 'keyword', indexed: true },
+      name: { type: 'keyword', indexed: 'wildcard' },
+      first: { type: 'long', indexed: 'sort' },
+      num: { type: 'long', indexed: 'sort' },
+      locked: { type: 'long', indexed: true }
+    }
+  },
+  // Devices (with the mac and state docs), their history and alerts, 100k+ devices on big networks
+  featherprint: { fields: { ip: { type: 'ip', indexed: true }, lastSeen: { type: 'long', indexed: 'sort' } } },
+  featherprint_history: { fields: { ip: { type: 'ip', indexed: true }, ts: { type: 'long', indexed: 'sort' } } },
+  featherprint_alerts: { fields: { acked: { type: 'boolean', indexed: true }, ts: { type: 'long', indexed: 'sort' } } },
+  dstats: {
+    typed: true,
+    fields: {
+      ...STATS_FIELDS,
+      nodeName: { type: 'keyword', indexed: true },
+      interval: { type: 'short', indexed: true },
+      currentTime: { type: 'date', indexed: true }
+    }
+  }
+};
+
 function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
 }
@@ -17,9 +60,11 @@ class DbClusterImpl {
   #queries;
   #history;
   #isES;
+  featherprint = {};
+  #isPG;
   #sharedES;
 
-  // capture still writes these to the sessions ES, so they are read from there
+  // capture writes these, to a Postgres cluster db or else the sessions ES
   files;
   stats;
   dstats;
@@ -30,14 +75,16 @@ class DbClusterImpl {
    * @param conn the cluster db connection
    * @param esConn the sessions ES connection
    * @param isES conn is an Elasticsearch/OpenSearch connection
+   * @param isPG conn is Postgres, which capture can write to
    * @param prefix, fixIndex build the sessions ES index names
    */
-  constructor ({ conn, esConn, isES, prefix, fixIndex }) {
+  constructor ({ conn, esConn, isES, isPG, prefix, fixIndex }) {
     this.#isES = isES;
+    this.#isPG = isPG;
     // Only the sessions ES client knows the multi cluster routing
     this.#sharedES = conn === esConn;
     for (const collName of ['files', 'stats', 'dstats', 'fields', 'sequence']) {
-      this[collName] = esConn.collection(collName, { es: { index: fixIndex(collName) } });
+      this[collName] = isPG ? conn.collection(collName, DbClusterImpl.collectionOptions(collName)) : esConn.collection(collName, { es: { index: fixIndex(collName) } });
     }
 
     if (this.#isES) {
@@ -45,8 +92,7 @@ class DbClusterImpl {
       this.#queries = conn.collection('queries', { es: { index: fixIndex('queries') } });
       this.#history = conn.collection('history', {
         es: {
-          // Didn't used to have a prefix
-          index: prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
+          index: fixIndex('history_v1-*'),
           writeIndex: () => {
             const d = new Date(Date.now());
             const jan = new Date(d.getUTCFullYear(), 0, 0);
@@ -60,10 +106,30 @@ class DbClusterImpl {
       this.#queries = conn.collection('queries');
       this.#history = conn.collection('history');
     }
+
+    // On ES db.pl creates these behind their aliases
+    for (const [key, collName] of [['devices', 'featherprint'], ['history', 'featherprint_history'], ['alerts', 'featherprint_alerts']]) {
+      this.featherprint[key] = conn.collection(collName, isES ? { es: { index: fixIndex(collName), dbpl: true } } : DbClusterImpl.collectionOptions(collName));
+    }
+  }
+
+  static collectionOptions (collName) {
+    return COLLECTION_OPTIONS[collName] ?? {};
   }
 
   async init () {
-    await Promise.all([this.#hunts.init(), this.#queries.init(), this.#history.init()]);
+    await Promise.all([this.#hunts.init(), this.#queries.init(), this.#history.init(), ...Object.values(this.featherprint).map(c => c.init())]);
+    if (this.#isPG) { await DbClusterImpl.loadBaseFields(this.fields); }
+  }
+
+  /**
+   * db.pl loads the base fields into ES, a Postgres cluster db gets them from
+   * whoever connects first since capture only defines the fields it writes
+   * @param fields the cluster db fields collection
+   */
+  static async loadBaseFields (fields) {
+    const docs = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/fields.json'), 'utf8'));
+    await Promise.all(Object.entries(docs).map(([id, doc]) => fields.put(id, doc)));
   }
 
   #cluster (cluster) {

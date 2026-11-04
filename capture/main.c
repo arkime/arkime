@@ -211,6 +211,10 @@ LOCAL void arkime_cmd_version(int UNUSED(argc), char UNUSED( * *argv), gpointer 
     // libxdp has no runtime version call, this is what capture was built against
     BSB_EXPORT_sprintf(bsb, "libxdp: %s\n", LIBXDP_VERSION);
 #endif
+#ifdef HAVE_LIBPQ
+    extern int PQlibVersion(void);
+    BSB_EXPORT_sprintf(bsb, "libpq: %d.%d\n", PQlibVersion() / 10000, PQlibVersion() % 10000);
+#endif
     BSB_EXPORT_sprintf(bsb, "compiler: %s\n", __VERSION__);
 
     arkime_command_respond(cc, buf, BSB_LENGTH(bsb));
@@ -345,6 +349,10 @@ LOCAL void parse_args(int argc, char **argv)
 #ifdef HAVE_LIBXDP
         // libxdp has no runtime version call, this is what capture was built against
         printf("libxdp: %s\n", LIBXDP_VERSION);
+#endif
+#ifdef HAVE_LIBPQ
+        extern int PQlibVersion(void);
+        printf("libpq: %d.%d\n", PQlibVersion() / 10000, PQlibVersion() % 10000);
 #endif
         printf("compiler: %s\n", __VERSION__);
 

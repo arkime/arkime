@@ -8,14 +8,15 @@
 
 const ArkimeDb = require('./arkimeDb');
 
-// Each collection is a table of (id, json[, version][, extra columns]), sqlite.idColumn
-// renames the id column for older tables and sqlite.legacyMeta { key: oldMetaKey } moves their meta.
-// json fields are matched through json_each so arrays and scalars behave the same.
+// Each collection is a table of (id, json[, version]), sqlite.idColumn renames the id column
+// for older tables and sqlite.legacyMeta { key: oldMetaKey } moves their meta.
+// json fields are matched through json_each so arrays and scalars behave the same,
+// indexed fields are virtual generated columns with an index and compare directly.
 class SQLiteCollection extends ArkimeDb.Collection {
   #db;
   #table;
   #idCol;
-  #columns;
+  #indexed;
   #version;
 
   constructor (db, collName, options) {
@@ -23,16 +24,26 @@ class SQLiteCollection extends ArkimeDb.Collection {
     this.#db = db;
     this.#table = ArkimeDb.checkField(options.sqlite?.table ?? options.table ?? collName);
     this.#idCol = ArkimeDb.checkField(options.sqlite?.idColumn ?? 'id');
-    this.#columns = options.sqlite?.columns ?? {};
+    this.#indexed = new Map(ArkimeDb.indexedFields(options).map(f => [f, ArkimeDb.fieldColumn(f)]));
     this.#version = !!options.version;
 
     const cols = [`${this.#idCol} TEXT PRIMARY KEY`, 'json TEXT NOT NULL'];
     if (this.#version) { cols.push('version INTEGER DEFAULT 1'); }
-    for (const [col, type] of Object.entries(this.#columns)) {
-      cols.push(`${ArkimeDb.checkField(col)} ${type}`);
-    }
     db.exec(`CREATE TABLE IF NOT EXISTS ${this.#table} (${cols.join(', ')})`);
     db.exec('CREATE TABLE IF NOT EXISTS meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)');
+
+    // Older tables get new indexed fields added, another process may have just added them
+    const have = new Set(db.prepare(`PRAGMA table_xinfo(${this.#table})`).all().map(c => c.name));
+    for (const [field, col] of this.#indexed) {
+      if (!have.has(col)) {
+        try {
+          db.exec(`ALTER TABLE ${this.#table} ADD COLUMN ${col} GENERATED ALWAYS AS (json_extract(json, '$.${field}')) VIRTUAL`);
+        } catch (err) {
+          if (!/duplicate column/.test(err.message)) { throw err; }
+        }
+      }
+      db.exec(`CREATE INDEX IF NOT EXISTS ${this.#table}_${col} ON ${this.#table} (${col})`);
+    }
 
     // Older layouts kept meta under their own key names, move those under <table>:<key>
     for (const [key, legacyKey] of Object.entries(options.sqlite?.legacyMeta ?? {})) {
@@ -50,14 +61,12 @@ class SQLiteCollection extends ArkimeDb.Collection {
 
   async put (id, doc, { createOnly } = {}) {
     id ??= this.newId();
-    const cols = Object.keys(this.#columns);
-    const names = [this.#idCol, 'json', ...cols];
-    const updates = ['json = excluded.json', ...cols.map(c => `${c} = excluded.${c}`)];
+    const updates = ['json = excluded.json'];
     if (this.#version) { updates.push('version = version + 1'); }
     const upsert = createOnly ? '' : ` ON CONFLICT(${this.#idCol}) DO UPDATE SET ${updates.join(', ')}`;
     try {
-      this.#db.prepare(`INSERT INTO ${this.#table} (${names.join(', ')}) VALUES (${names.map(() => '?').join(', ')})${upsert}`)
-        .run(id, JSON.stringify(doc), ...cols.map(c => sqlValue(doc[c])));
+      this.#db.prepare(`INSERT INTO ${this.#table} (${this.#idCol}, json) VALUES (?, ?)${upsert}`)
+        .run(id, JSON.stringify(doc));
     } catch (err) {
       if (createOnly && err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY') { throw new ArkimeDb.ConflictError(id); }
       throw err;
@@ -69,22 +78,45 @@ class SQLiteCollection extends ArkimeDb.Collection {
     ArkimeDb.checkMetrics(metrics);
     const t = this.#table;
     const w = this.#where(where);
-    const keySource = groupBy === 'id' || this.#columns[groupBy]
-      ? `(SELECT ${t}.${groupBy === 'id' ? this.#idCol : groupBy} AS value)`
-      : `json_each(${t}.json, '$.${ArkimeDb.checkField(groupBy)}')`;
+    // The id and indexed fields group straight off the table, json fields join json_each
+    // so every array element counts. A FROM subquery can't see the table, so no (SELECT col) there.
+    let from = t;
+    let key = `${t}.${this.#idCol}`;
+    if (groupBy !== 'id') {
+      if (this.#indexed.has(ArkimeDb.checkField(groupBy))) {
+        key = `${t}.${this.#indexed.get(groupBy)}`;
+      } else {
+        from = `${t}, json_each(${t}.json, '$.${groupBy}') AS g`;
+        key = 'g.value';
+      }
+    }
     const cols = Object.entries(metrics).map(([metricName, metric]) => {
       const [op, field] = Object.entries(metric)[0];
-      const agg = `${op.toUpperCase()}(${this.#expr(field).replace(/^json_extract\(json/, `json_extract(${t}.json`)})`;
+      const agg = `${op.toUpperCase()}(${this.#expr(field)})`;
       return `${op === 'sum' ? `COALESCE(${agg}, 0)` : agg} AS m_${ArkimeDb.checkField(metricName)}`;
     });
-    const rows = this.#db.prepare(`SELECT g.value AS key, COUNT(*) AS count${cols.map(c => ', ' + c).join('')}
-      FROM ${t}, ${keySource} AS g ${w.sql ? w.sql + ' AND' : 'WHERE'} g.value IS NOT NULL
-      GROUP BY g.value ORDER BY count DESC, g.value LIMIT ?`).all(...w.params, size);
+    const rows = this.#db.prepare(`SELECT ${key} AS key, COUNT(*) AS count${cols.map(c => ', ' + c).join('')}
+      FROM ${from} ${w.sql ? w.sql + ' AND' : 'WHERE'} ${key} IS NOT NULL
+      GROUP BY ${key} ORDER BY count DESC, key LIMIT ?`).all(...w.params, size);
     return rows.map(r => {
       const bucket = { key: r.key, count: r.count };
       for (const metricName of Object.keys(metrics)) { bucket[metricName] = r[`m_${metricName}`]; }
       return bucket;
     });
+  }
+
+  // The stored json is the version
+  async getVersioned (id) {
+    const row = this.#db.prepare(`SELECT json FROM ${this.#table} WHERE ${this.#idCol} = ?`).get(id);
+    return row ? { doc: JSON.parse(row.json), version: row.json } : null;
+  }
+
+  async putIfVersion (id, doc, version) {
+    const sets = ['json = ?'];
+    if (this.#version) { sets.push('version = version + 1'); }
+    const { changes } = this.#db.prepare(`UPDATE ${this.#table} SET ${sets.join(', ')} WHERE ${this.#idCol} = ? AND json = ?`)
+      .run(JSON.stringify(doc), id, version);
+    if (changes !== 1) { throw new ArkimeDb.ConflictError(id, `Document '${id}' was changed or deleted`); }
   }
 
   async nextSequence (id) {
@@ -105,15 +137,14 @@ class SQLiteCollection extends ArkimeDb.Collection {
 
   // Top level fields replace, json_patch would drop nulls and merge nested objects
   async update (id, fields) {
-    const cols = Object.keys(this.#columns).filter(c => c in fields);
-    const sets = ['json = ?', ...cols.map(c => `${c} = ?`)];
+    const sets = ['json = ?'];
     if (this.#version) { sets.push('version = version + 1'); }
     return this.#db.transaction(() => {
       const row = this.#db.prepare(`SELECT json FROM ${this.#table} WHERE ${this.#idCol} = ?`).get(id);
       if (!row) { return false; }
       const doc = Object.assign(JSON.parse(row.json), fields);
       this.#db.prepare(`UPDATE ${this.#table} SET ${sets.join(', ')} WHERE ${this.#idCol} = ?`)
-        .run(JSON.stringify(doc), ...cols.map(c => sqlValue(fields[c])), id);
+        .run(JSON.stringify(doc), id);
       return true;
     })();
   }
@@ -169,9 +200,9 @@ class SQLiteCollection extends ArkimeDb.Collection {
 
   // --------------------------------------------------------------------------
   #expr (field) {
-    if (field === 'id') { return this.#idCol; }
-    if (this.#columns[field]) { return field; }
-    return `json_extract(json, '$.${field}')`;
+    if (field === 'id') { return `${this.#table}.${this.#idCol}`; }
+    if (this.#indexed.has(field)) { return `${this.#table}.${this.#indexed.get(field)}`; }
+    return `json_extract(${this.#table}.json, '$.${field}')`;
   }
 
   #where (where) {
@@ -200,61 +231,69 @@ class SQLiteCollection extends ArkimeDb.Collection {
     return parts.length ? parts.join(' AND ') : '1';
   }
 
-  // Every op is "some value of the field matches", except the negated ones
+  // Every op is "some value of the field matches", except the negated ones.
+  // The id and indexed fields hold one value so compare their column directly, which uses the index.
   #compileOp (field, op, c, params) {
     let negate = false;
     if (op === '$ne') { op = '$eq'; negate = true; }
     if (op === '$nin') { op = '$in'; negate = true; }
 
+    const col = field === 'id' ? this.#idCol : this.#indexed.get(field);
+    const value = col ? `${this.#table}.${col}` : 'value';
+    const type = col ? `typeof(${value})` : 'type';
+
     let test;
     switch (op) {
     case '$eq':
-      test = 'value = ?';
+      test = `${value} = ?`;
       params.push(sqlValue(c));
       break;
     case '$in':
       if (c.length === 0) { return negate ? '1' : '0'; }
-      test = `value IN (${c.map(() => '?').join(', ')})`;
+      test = `${value} IN (${c.map(() => '?').join(', ')})`;
       params.push(...c.map(sqlValue));
       break;
     case '$exists':
-      test = 'value IS NOT NULL';
+      test = '1';
       negate = !c;
       break;
     case '$gt': case '$gte': case '$lt': case '$lte':
-      test = `type IN (${typeof c === 'number' ? "'integer', 'real'" : "'text'"}) AND value ${{ $gt: '>', $gte: '>=', $lt: '<', $lte: '<=' }[op]} ?`;
+      test = `${type} IN (${typeof c === 'number' ? "'integer', 'real'" : "'text'"}) AND ${value} ${{ $gt: '>', $gte: '>=', $lt: '<', $lte: '<=' }[op]} ?`;
       params.push(sqlValue(c));
       break;
     case '$contains':
-      test = "type = 'text' AND instr(value, ?) > 0";
+      test = `${type} = 'text' AND instr(${value}, ?) > 0`;
       params.push(String(c));
       break;
     case '$icontains':
-      test = "type = 'text' AND instr(lower(value), lower(?)) > 0";
+      test = `${type} = 'text' AND instr(lower(${value}), lower(?)) > 0`;
       params.push(String(c));
       break;
     case '$prefix':
-      test = "type = 'text' AND substr(value, 1, length(?)) = ?";
+      test = `${type} = 'text' AND substr(${value}, 1, length(?)) = ?`;
       params.push(String(c), String(c));
       break;
     case '$regex':
-      test = "type = 'text' AND arkime_regexp(?, value)";
+      test = `${type} = 'text' AND arkime_regexp(?, ${value})`;
       params.push(String(c));
       break;
     case '$wildcard':
       // GLOB is case sensitive with the same * and ?, [ starts a class so match it literally
-      test = "type = 'text' AND value GLOB ?";
+      test = `${type} = 'text' AND ${value} GLOB ?`;
       params.push(String(c).replace(/\[/g, '[[]'));
+      break;
+    case '$cidr':
+      test = `${type} = 'text' AND arkime_cidr(${value}, ?)`;
+      params.push(String(c));
       break;
     }
 
-    let source;
-    if (field === 'id' || this.#columns[field]) {
-      const col = `${this.#table}.${field === 'id' ? this.#idCol : field}`;
-      source = `(SELECT ${col} AS value, typeof(${col}) AS type)`;
-    } else {
-      source = `json_each(${this.#table}.json, '$.${field}')`;
+    if (col) {
+      const direct = `(${value} IS NOT NULL AND ${test})`;
+      return negate ? `NOT COALESCE(${direct}, 0)` : direct;
     }
+    // A dotted path can cross arrays of objects, which ES flattens
+    const source = field.includes('.') ? `json_each(arkime_values(${this.#table}.json, '${field}'))` : `json_each(${this.#table}.json, '$.${field}')`;
     const sql = `EXISTS (SELECT 1 FROM ${source} WHERE value IS NOT NULL AND ${test})`;
     return negate ? `NOT ${sql}` : sql;
   }
@@ -273,6 +312,8 @@ class SQLiteConnection {
   constructor (url, options) {
     this.db = options.db ?? ArkimeDb.createSQLiteDB(url);
     this.db.function('arkime_regexp', { deterministic: true }, (pattern, value) => ArkimeDb.regex(pattern).test(value) ? 1 : 0);
+    this.db.function('arkime_cidr', { deterministic: true }, (value, cidr) => ArkimeDb.ipInCidr(value, cidr) ? 1 : 0);
+    this.db.function('arkime_values', { deterministic: true }, (json, field) => JSON.stringify(ArkimeDb.pathValues(JSON.parse(json), field)));
   }
 
   collection (collName, options = {}) {
@@ -282,6 +323,12 @@ class SQLiteConnection {
       this.#collections.set(collName, coll);
     }
     return coll;
+  }
+
+  // Does the collection's table exist, without creating it
+  async hasCollection (collName, options = {}) {
+    const table = options.sqlite?.table ?? options.table ?? collName;
+    return !!this.db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
   }
 
   async close () {
