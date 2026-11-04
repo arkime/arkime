@@ -146,7 +146,7 @@ SPDX-License-Identifier: Apache-2.0
                     <span v-if="multiviewer">
                       <br>
                       <span class="fa fa-info-circle fa-fw me-2" />
-                      {{ $t('hunts.multiViewerHtml', { cluster: selectedCluster[0] }) }}
+                      <span v-html="$t('hunts.multiViewerHtml', { cluster: escapeHtml(selectedCluster[0]) })" />
                     </span>
                   </div>
                 </div>
@@ -494,7 +494,7 @@ SPDX-License-Identifier: Apache-2.0
                         <span v-html="$t('hunts.runningJob-headHtml', { matched: commaString(runningJob.matchedSessions) })" />
                         <span
                           v-if="canView"
-                          v-html="$t('hunts.runningJob-canViewHtml', { search: escapeHtml(runningJob.search), searchType: runningJob.searchType })" />
+                          v-html="$t('hunts.runningJob-canViewHtml', { search: escapeHtml(runningJob.search), searchType: escapeHtml(runningJob.searchType) })" />
                         <span
                           v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length"
                           v-html="$t('hunts.runningJob-outOfHtml', {

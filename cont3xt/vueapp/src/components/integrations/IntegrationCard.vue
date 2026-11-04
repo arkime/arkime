@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <h5
       class="text-warning mb-3"
       v-if="card && card.title">
-      {{ card.title.replace('%{query}', indicator.query) }}
+      {{ withQuery(card.title) }}
       <div class="float-right">
         <template v-if="filteredSearchUrls && filteredSearchUrls.length > 0">
           <template v-if="filteredSearchUrls.length === 1">
@@ -17,9 +17,9 @@ SPDX-License-Identifier: Apache-2.0
               variant="outlined"
               color="primary"
               v-if="filteredSearchUrls[0]"
-              :href="filteredSearchUrls[0].url.replace('%{query}', indicator.query)"
+              :href="withQuery(filteredSearchUrls[0].url)"
               target="_blank"
-              v-tooltip="filteredSearchUrls[0].name.replace('%{query}', indicator.query)">
+              v-tooltip="withQuery(filteredSearchUrls[0].name)">
               <v-icon icon="mdi-open-in-new" />
             </v-btn>
           </template>
@@ -39,11 +39,11 @@ SPDX-License-Identifier: Apache-2.0
                     <v-btn
                       v-if="searchUrl.itypes.includes(indicator.itype)"
                       @click="action"
-                      :href="searchUrl.url.replace('%{query}', indicator.query)"
+                      :href="withQuery(searchUrl.url)"
                       target="_blank"
                       variant="text"
                       class="justify-start">
-                      {{ searchUrl.name.replace('%{query}', indicator.query) }}
+                      {{ withQuery(searchUrl.name) }}
                     </v-btn>
                   </template>
                 </v-list>
@@ -210,6 +210,10 @@ export default {
   methods: {
     dateString,
     moment,
+    // function replacer so a $ in the query isn't a replacement pattern
+    withQuery (str) {
+      return str.replace('%{query}', () => this.indicator.query);
+    },
     refresh () {
       // display loading overload (parent update hides overlay)
       this.$store.commit('SET_RENDERING_CARD', true);

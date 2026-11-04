@@ -169,15 +169,16 @@ function str2format (str) {
  * '{{ parseSeconds(-5h) }}'
  *
  * @param {string} str The relative time string
+ * @param {string|number} date The time it is relative to, default now
  */
-export const parseSeconds = function (str) {
+export const parseSeconds = function (str, date) {
   if (str === '' || str === 'now') {
-    return moment().unix();
+    return moment(date).unix();
   }
 
   let m, n;
   if ((m = str.match(/^([+-])(\d*)([a-zA-Z]*)([@]*)([a-zA-Z0-9]*)/))) {
-    const d = moment();
+    const d = moment(date);
     const format = str2format(m[3]);
     const snap = str2format(m[5]);
 
@@ -197,7 +198,7 @@ export const parseSeconds = function (str) {
   }
 
   if ((m = str.match(/^@([a-z0-9]+)/))) {
-    const d = moment();
+    const d = moment(date);
     const snap = str2format(m[1]);
 
     d.startOf(snap);

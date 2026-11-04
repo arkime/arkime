@@ -166,7 +166,7 @@ SPDX-License-Identifier: Apache-2.0
               <div class="mr-4 flex-grow-1">
                 <hr
                   class="link-separator"
-                  :style="`border-color: ${link.color || '#777'}`">
+                  :style="{ borderColor: link.color || '#777' }">
                 <div class="d-flex flex-row ga-2 justify-center">
                   <v-checkbox
                     v-for="itypeOption in itypeOptions"
