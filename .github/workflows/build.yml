@@ -249,8 +249,8 @@ jobs:
           fi
           PGBIN=$(ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1)
           mkdir -p /tmp/pgdata && chown postgres /tmp/pgdata
-          su postgres -c "$PGBIN/initdb -D /tmp/pgdata -A trust -U arkime" > /tmp/pg.log
-          su postgres -c "$PGBIN/pg_ctl -D /tmp/pgdata -l /tmp/pg.log -o '-p 5433 -k /tmp' -w start" || (cat /tmp/pg.log; exit 1)
+          su postgres -c "$PGBIN/initdb -D /tmp/pgdata -A trust -U arkime" > /tmp/pginit.log
+          su postgres -c "$PGBIN/pg_ctl -D /tmp/pgdata -l /tmp/pgdata/postgres.log -o '-p 5433 -k /tmp' -w start" || (cat /tmp/pginit.log /tmp/pgdata/postgres.log; exit 1)
           $PGBIN/createdb -h 127.0.0.1 -p 5433 -U arkime arkimetest
           $PGBIN/createdb -h 127.0.0.1 -p 5433 -U arkime arkimecap
           ARKIME_TEST_PG_URL=postgres://arkime@127.0.0.1:5433/arkimetest npm run test:unit
