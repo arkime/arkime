@@ -374,6 +374,7 @@ class Config {
       huntThrottleMs: { type: 'int', min: 0 },
       maxAggSize: { type: 'int', min: 1 },
       spiDataMaxIndices: { type: 'int', min: 1, unlimited: -1 },
+      dashboardMaxQueryDays: { type: 'float', min: 0, unlimited: -1 },
       // db.js only applies this when truthy, so 0 already means "no override"
       esMaxConcurrentShardRequests: { type: 'int', min: 1, unlimited: 0 },
       tsharkMaxConcurrent: { type: 'int', min: 0 },

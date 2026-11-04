@@ -289,6 +289,10 @@ pluginsDir=ARKIME_INSTALL_DIR/plugins
 # ES will blow up if we allow the spiData to search too many indices.
 spiDataMaxIndices=4
 
+# The max time range a dashboard can search, in days, floating point, so 0.5
+# is 12 hours. Defaults to 7. Use -1 for no limit, which also allows All.
+#dashboardMaxQueryDays=7
+
 # Uncomment the following to allow direct uploads. This is experimental
 #uploadCommand=ARKIME_INSTALL_DIR/bin/capture --copy -n {NODE} -r {TMPFILE} -c {CONFIG} {TAGS}
 

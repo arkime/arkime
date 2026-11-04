@@ -1,4 +1,4 @@
-use Test::More tests => 69;
+use Test::More tests => 74;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -306,6 +306,22 @@ my ($check) = @_;
     $json = viewerGet("/api/histories?userId=anonymous&api=sessions&sortField=timestamp&desc=true");
     is ($json->{data}->[0]->{expression}, "file=$pwd/dns-mx.pcap", "Range: body startTime 0 is still recorded");
     is ($json->{data}->[0]->{range}, 2147483647, "Range: body startTime 0 range is capped");
+
+# A dashboard's data call is the dashboard's row: uiPage arkime and the page's own
+# query, while the expression stays the one the call ran
+    nextSecond();
+    viewerPost("/api/spigraph", '{"date":-1,"exp":"node","size":1,"expression":"file=' . $pwd . '/dns-mx.pcap","dashboardPage":"dashboard=sys%3Aoverview&expression=port+%3D%3D+53&date=-1"}');
+    waitForHistory("/api/histories?userId=anonymous&api=spigraph&sortField=timestamp&desc=true", sub { $_[0]->{data}->[0] && $_[0]->{data}->[0]->{uiPage} eq "arkime" });
+    esGet("/_flush");
+    esGet("/_refresh");
+
+    $json = viewerGet("/api/histories?userId=anonymous&api=spigraph&sortField=timestamp&desc=true");
+    $item = $json->{data}->[0];
+    is ($item->{uiPage}, "arkime", "Dashboard: uiPage is the dashboard page");
+    is ($item->{query}, "dashboard=sys%3Aoverview&expression=port+%3D%3D+53&date=-1", "Dashboard: query is the page's");
+    is ($item->{expression}, "file=$pwd/dns-mx.pcap", "Dashboard: expression is the call's");
+    is ($item->{body}->{exp}, "node", "Dashboard: body has the call's params");
+    ok (!exists $item->{body}->{dashboardPage}, "Dashboard: body has no dashboardPage");
 
 # History rows can't be skipped by sending a value es would reject, a non-string
 # expression on a by-id route returns data without parsing it

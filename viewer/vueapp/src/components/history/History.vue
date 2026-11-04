@@ -604,6 +604,13 @@ export default {
     },
     /* opens the page that this history item represents */
     openPage (item) {
+      // a dashboard's row keeps the dashboard page's own query, url encoded;
+      // its expression ANDs in the dashboard's filters, so it isn't the search
+      if (item.uiPage === 'arkime') {
+        this.$router.push({ path: '/arkime', query: qs.parse(item.query || '') });
+        return;
+      }
+
       let query = item.query;
       if (item.expression && item.query.includes(item.expression)) {
         // need to remove expression because browsers can't handle the &&

@@ -58,8 +58,8 @@ SPDX-License-Identifier: Apache-2.0
                 target="_blank"
                 class="link"
                 :title="link.name"
-                :href="getUrl(link.url)"
-                :style="link.color ? `color:${link.color}` : ''">
+                :href="safeUrl(getUrl(link.url))"
+                :style="{ color: link.color }">
                 {{ link.name }}
               </a>
               <link-guidance
@@ -79,7 +79,7 @@ SPDX-License-Identifier: Apache-2.0
                 tabindex="-1"
                 class="link"
                 href="javascript:void(0)"
-                :style="link.color ? `color:${link.color}` : ''">
+                :style="{ color: link.color }">
                 {{ link.url }}
               </a>
               <link-guidance
@@ -92,7 +92,7 @@ SPDX-License-Identifier: Apache-2.0
               class="link-separator-display"
               :key="link.url + i + 'separator'"
               v-else-if="link.name === '----------'"
-              :style="`border-color: ${link.color || '#777'}`">
+              :style="{ borderColor: link.color || '#777' }">
           </template>
         </template>
         <link-group-form
@@ -348,7 +348,7 @@ SPDX-License-Identifier: Apache-2.0
 import moment from 'moment';
 import dr from 'defang-refang';
 import { mapGetters } from 'vuex';
-import { parseSeconds } from '@common/vueFilters.js';
+import { safeUrl, parseSeconds } from '@common/vueFilters.js';
 
 import LinkService from '@/components/services/LinkService';
 import LinkGroupForm from '@/components/links/LinkGroupForm.vue';
@@ -443,6 +443,7 @@ export default {
     }
   },
   methods: {
+    safeUrl,
     canTransfer (lg) {
       return this.getUser.roles.includes('cont3xtAdmin') ||
         (lg.creator && lg.creator === this.getUser.userId);
@@ -553,7 +554,7 @@ export default {
     },
     /**
      * Replace the start and end placeholders in the url with the formatted date
-     * placeholder looks like this: ${start,{"format":"YYYY-MM-DD","timeSnap":"1d"}}
+     * placeholder looks like this: ${start,{"format":"YYYY-MM-DD","timeSnap":"+1d"}}
      * @param {string} url - the url to parse
      * @param {object} options - the options for the date formatting
      * @param {array} match - the match array from the regex
@@ -566,7 +567,9 @@ export default {
       let date = match.includes('end') ? this.stopDate : this.startDate;
 
       if (options.timeSnap) {
-        date = parseSeconds(options.timeSnap, date) * 1000;
+        // "1w" is the same as "+1w"
+        const timeSnap = String(options.timeSnap).replace(/^(?=\d)/, '+');
+        date = parseSeconds(timeSnap, date) * 1000;
       }
 
       const formattedDate = moment(date).format(format);
@@ -613,7 +616,9 @@ export default {
       // replaces json parsable values
       url = this.replaceJSON(url);
 
-      return url.replace(/\${indicator}/g, dr.refang(this.query))
+      // function replacer so a $ in the query isn't a replacement pattern
+      const query = dr.refang(this.query);
+      return url.replace(/\${indicator}/g, () => query)
         .replace(/\${type}/g, this.itype)
         .replace(/\${numDays}/g, this.numDays)
         .replace(/\${numHours}/g, this.numHours)
@@ -632,7 +637,8 @@ export default {
           link.itypes.includes(this.itype) &&
           this.getCheckedLinks[linkGroup._id] &&
           this.getCheckedLinks[linkGroup._id][link.name]) {
-          window.open(this.getUrl(link.url), '_blank');
+          const url = safeUrl(this.getUrl(link.url));
+          if (url) { window.open(url, '_blank', 'noopener'); }
         }
       }
     },

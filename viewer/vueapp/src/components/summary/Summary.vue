@@ -379,7 +379,7 @@ import ControlWidget from './widgets/ControlWidget.vue';
 import { controlVariable, substituteExpression, withoutVariableParams } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare } from './widgets/viewModes';
-import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle } from './widgets/widgetData';
+import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle, dashboardPageQuery } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -786,6 +786,7 @@ const buildRequestBody = (widgetDefs, cancelId, statsless = false) => {
   // widget's local filter on top
   const pageExp = pageExpression(route, store);
   if (pageExp) { body.expression = pageExp; }
+  body.dashboardPage = dashboardPageQuery(route); // the history logs the call as the dashboard's
 
   const routeParams = ['view', 'bounding', 'interval', 'cluster'];
   for (const param of routeParams) {
