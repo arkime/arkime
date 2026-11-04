@@ -158,6 +158,9 @@ jobs:
           if [ -d "/thirdparty" ]; then
             ln -s /thirdparty .
           fi
+          if [ -d "/arkime-test-data" ]; then
+            ln -sf /arkime-test-data/* tests/
+          fi
           git config --global --add safe.directory `pwd`
 
       - name: build and install
@@ -240,8 +243,10 @@ jobs:
           export PATH=/opt/arkime/bin:$PATH
           ldd capture/capture | grep -q libpq || (echo "capture wasn't built with libpq"; exit 1)
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
-          apt-get -qq update
-          DEBIAN_FRONTEND=noninteractive apt-get -qq install postgresql > /dev/null
+          if ! ls /usr/lib/postgresql/*/bin/initdb > /dev/null 2>&1; then
+            apt-get -qq update
+            DEBIAN_FRONTEND=noninteractive apt-get -qq install postgresql > /dev/null
+          fi
           PGBIN=$(ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1)
           mkdir -p /tmp/pgdata && chown postgres /tmp/pgdata
           su postgres -c "$PGBIN/initdb -D /tmp/pgdata -A trust -U arkime" > /tmp/pg.log

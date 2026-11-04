@@ -35,19 +35,19 @@ my $EXTRA = "";
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
     }
 
     if (! -f "oui.txt") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
     }
 
     if (! -f "GeoLite2-City.mmdb") {
-        system("curl -sSfLO https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
+        system("curl -sSfLO --retry 3 --max-time 300 https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/arkime.h'))[9] > (stat('plugins/test.so'))[9]) {
