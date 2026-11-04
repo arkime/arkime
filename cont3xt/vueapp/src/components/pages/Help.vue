@@ -509,7 +509,7 @@ SPDX-License-Identifier: Apache-2.0
             </p>
             <p class="m-0">
               <strong class="text-info">timeSnap</strong>
-              Optional time snap to relatively adjust the date/time. Default is empty. (eg. "1d" for 1 day, "-1w" for 1 week ago, etc.)
+              Optional time snap to relatively adjust the date/time. Default is empty. (eg. "+1d" for 1 day later, "-1w" for 1 week ago, etc.)
             </p>
             <p class="m-0">
               <strong>Examples:</strong>
@@ -518,7 +518,7 @@ SPDX-License-Identifier: Apache-2.0
               <br>
               <code>${end,{"format":"YYYY-MM-DDThh:mm:ssZ"}}</code> = 2024-01-01T00:00:00Z
               <br>
-              <code>${start,{"format":"DD.MM.YYYY","timeSnap":"1w"}}</code> = 07.01.2024
+              <code>${start,{"format":"DD.MM.YYYY","timeSnap":"+1w"}}</code> = 08.01.2024
             </p>
           </dd>
           <dt>${array, ...}</dt>

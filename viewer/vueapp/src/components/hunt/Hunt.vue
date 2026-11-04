@@ -494,7 +494,7 @@ SPDX-License-Identifier: Apache-2.0
                         <span v-html="$t('hunts.runningJob-headHtml', { matched: commaString(runningJob.matchedSessions) })" />
                         <span
                           v-if="canView"
-                          v-html="$t('hunts.runningJob-canViewHtml', { search: escapeHtml(runningJob.search), searchType: runningJob.searchType })" />
+                          v-html="$t('hunts.runningJob-canViewHtml', { search: escapeHtml(runningJob.search), searchType: escapeHtml(runningJob.searchType) })" />
                         <span
                           v-if="runningJob.failedSessionIds && runningJob.failedSessionIds.length"
                           v-html="$t('hunts.runningJob-outOfHtml', {

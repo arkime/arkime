@@ -70,7 +70,7 @@ SPDX-License-Identifier: Apache-2.0
         v-html="$t('hunts.results-searchedHtml', {
           matched: commaString(localJob.matchedSessions),
           search: escapeHtml(localJob.search),
-          searchType: localJob.searchType,
+          searchType: escapeHtml(localJob.searchType),
           searched: localJob.failedSessionIds && localJob.failedSessionIds.length ? commaString(localJob.searchedSessions - localJob.failedSessionIds.length) : commaString(localJob.searchedSessions),
           total: commaString(localJob.totalSessions)
         })" />
@@ -133,7 +133,7 @@ SPDX-License-Identifier: Apache-2.0
         <span
           v-html="$t('hunts.results-examiningHtml', {
             size: localJob.size > 0 ? localJob.size : $t('common.all'),
-            type: localJob.type,
+            type: escapeHtml(localJob.type),
             srcdst: (localJob.src ? '<strong>' + $t('common.sourceLC') + '</strong>' : '') + (localJob.src && localJob.dst ? ' and ' : '') + (localJob.dst ? '<strong>' + $t('common.destinationLC') + '</strong>' : '')
           })" />
       </div>

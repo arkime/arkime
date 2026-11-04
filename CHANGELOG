@@ -45,11 +45,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4404 Fix "BIGGER than expected json" warnings and rare lost sessions when using GeoLite2 City and ASN
   - #4405 Fix slow session lookups when packetThreads is even, each thread only used part of its session table
   - #4423 Fix dontSaveBPFs, minPacketsSaveBPFs and rules file bpf: rules never matching with tpacketv3, bpf, netmap and tzsp readers, or after a rules file is reloaded (fixes #4421)
+## Cont3xt
+  - #4429 Improve link url escaping
+  - #4429 Fix link groups not displaying when a link uses a timeSnap date
 ## db.pl
   - #4398 Fix expire deleting the current weekly history index when viewer runs in a timezone east of UTC (thanks @jejex0)
   - #4409 Fix RADIUS sessions with a NAS-Port above 2147483647 being rejected by OpenSearch/Elasticsearch, only sessions indices created after upgrading get the new mapping
 ## Viewer
   - #4415 PCAP upload no longer returns the upload command and its output, use --debug to log them
+  - #4429 Improve hunt display escaping
 
 6.9.1 2026/10/22
 ## Release
