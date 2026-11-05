@@ -96,6 +96,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Icons switched from Font Awesome to Material Design Icons
   - #3992 Theme choice is saved per user and follows you between all four apps
   - #4424 /api/users/min without a roleId now requires usersAdmin, it was listing every user to any logged in user
+  - #4432 Add Pushover notifier, with priority (including emergency alerts that repeat until acknowledged), sound,
+          device and optional end-to-end encryption settings
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture
