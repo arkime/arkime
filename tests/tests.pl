@@ -669,13 +669,19 @@ while (scalar (@ARGV) > 0) {
     }
 }
 
-# Every node with a prefix gets <prefix>cl_ for its cluster db, the viewers and capture read it from the environment
+# Every node with a prefix gets <prefix>cl_ for its cluster db, the viewers and capture read it from the environment.
+# Debian's sh drops names with a - in them, so those are spelled DASH like the config expects.
 if ($ENV{ARKIME_TEST_SPLIT}) {
     my $section;
     open(my $cfgFh, '<', "config.test.ini") or die "Can't open config.test.ini";
     while (<$cfgFh>) {
         $section = $1 if (/^\[(.*)\]/);
-        $ENV{"ARKIME_${section}__clusterDbPrefix"} = "$1cl" if (/^prefix\s*=\s*(\S+?)_?\s*$/ && $section);
+        next if (!$section || !/^prefix\s*=\s*(\S+?)_?\s*$/);
+        my $prefix = $1;
+        (my $name = $section) =~ s/-/DASH/g;
+        $name =~ s/:/COLON/g;
+        $name =~ s/\./DOT/g;
+        $ENV{"ARKIME_${name}__clusterDbPrefix"} = "${prefix}cl";
     }
     close($cfgFh);
 }
