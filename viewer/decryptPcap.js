@@ -90,17 +90,20 @@ if (process.argv.length < 3) {
 async function premain () {
   await Config.initialize();
 
-  const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
+  const escInfo = ArkimeConfig.sessionsEsUrls();
   await Db.initialize({
     host: escInfo,
-    prefix: Config.get('prefix', 'arkime_'),
+    prefix: ArkimeConfig.sessionsDbPrefix(),
+    clusterPrefix: ArkimeConfig.clusterDbPrefix(),
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
     esClientKey: Config.get('esClientKey', null),
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
     insecure: ArkimeConfig.insecure,
-    usersHost: Config.getArray('usersElasticsearch'),
-    usersPrefix: Config.get('usersPrefix'),
+    usersHost: ArkimeConfig.usersDbUrls(),
+    usersFallbackHost: Config.getArray('elasticsearch', 'http://localhost:9200'),
+    usersFallbackPrefix: ArkimeConfig.usersFallbackPrefix(),
+    usersPrefix: ArkimeConfig.usersDbPrefix(Config.get('prefix', 'arkime_')),
     esApiKey: Config.get('elasticsearchAPIKey', null),
     usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
     esBasicAuth: Config.get('elasticsearchBasicAuth', null),

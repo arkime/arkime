@@ -231,35 +231,36 @@ async function premain () {
   await Config.initialize({ initAuth: true });
 
   if (Config.nodeName() === 'cont3xt') {
-    const usersUrl = Config.get('usersUrl');
-    const usersEs = Config.getArray('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200'));
+    const usersEs = ArkimeConfig.usersDbUrls() ?? Config.getArray('elasticsearch', 'http://localhost:9200');
     User.initialize({
-      insecure: ArkimeConfig.isInsecure([usersUrl, usersEs]),
+      insecure: ArkimeConfig.isInsecure([usersEs]),
       requestTimeout: Config.get('elasticsearchTimeout', 300),
-      url: usersUrl,
       node: usersEs,
       caTrustFile: Config.get('caTrustFile'),
       clientKey: Config.get('esClientKey'),
       clientCert: Config.get('esClientCert'),
       clientKeyPass: Config.get('esClientKeyPass'),
-      prefix: Config.get('usersPrefix'),
+      prefix: ArkimeConfig.usersDbPrefix(),
       apiKey: Config.get('usersElasticsearchAPIKey'),
       basicAuth: Config.get('usersElasticsearchBasicAuth', Config.get('elasticsearchBasicAuth')),
       noUsersCheck: true
     });
     main();
   } else {
-    const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
+    const escInfo = ArkimeConfig.sessionsEsUrls();
     await Db.initialize({
       host: escInfo,
-      prefix: Config.get('prefix', 'arkime_'),
+      prefix: ArkimeConfig.sessionsDbPrefix(),
+      clusterPrefix: ArkimeConfig.clusterDbPrefix(),
       esClientKey: Config.get('esClientKey', null),
       esClientCert: Config.get('esClientCert', null),
       esClientKeyPass: Config.get('esClientKeyPass', null),
-      insecure: ArkimeConfig.isInsecure([escInfo, Config.getArray('usersElasticsearch')]),
+      insecure: ArkimeConfig.isInsecure([escInfo, ArkimeConfig.usersDbUrls()]),
       caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
-      usersHost: Config.getArray('usersElasticsearch'),
-      usersPrefix: Config.get('usersPrefix'),
+      usersHost: ArkimeConfig.usersDbUrls(),
+      usersFallbackHost: ArkimeConfig.usersFallbackEsUrls(),
+      usersFallbackPrefix: ArkimeConfig.usersFallbackPrefix(),
+      usersPrefix: ArkimeConfig.usersDbPrefix(Config.get('prefix', 'arkime_')),
       esApiKey: Config.get('elasticsearchAPIKey', null),
       usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
       esBasicAuth: Config.get('elasticsearchBasicAuth', null),

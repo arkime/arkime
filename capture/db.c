@@ -58,6 +58,7 @@ void arkime_db_ch_init(void); // db.ch.c, alternate sessions store
 LOCAL ArkimeStringHashStd_t    clusterDbSchemes;
 LOCAL const ArkimeClusterDb_t *clusterDb;
 void arkime_db_es_init(void);
+void *arkime_db_create_es_server(const char *url); // db.es.c
 void arkime_db_pg_init(void);
 
 LOCAL patricia_tree_t  *ipTree4 = 0;
@@ -2864,38 +2865,7 @@ void arkime_db_init()
         ARKIME_UNLOCK(outputted);
     }
     if (!config.dryRun) {
-        esServer = arkime_http_create_server(config.elasticsearch, config.maxESConns, config.maxESRequests, config.compressES);
-
-        static char *headers[4] = {"Content-Type: application/json", "Expect:", NULL, NULL};
-
-        const char *elasticsearchAPIKey = arkime_config_str(NULL, "elasticsearchAPIKey", NULL);
-        const char *elasticsearchBasicAuth = arkime_config_str(NULL, "elasticsearchBasicAuth", NULL);
-        if (elasticsearchAPIKey) {
-            static char auth[1024];
-            snprintf(auth, sizeof(auth), "Authorization: ApiKey %s", elasticsearchAPIKey);
-            headers[2] = auth;
-        } else if (elasticsearchBasicAuth) {
-            static char auth[1024];
-            if (strchr(elasticsearchBasicAuth, ':') != NULL) {
-                gchar *b64 = g_base64_encode((uint8_t *)elasticsearchBasicAuth, strlen(elasticsearchBasicAuth));
-                snprintf(auth, sizeof(auth), "Authorization: Basic %s", b64);
-                g_free(b64);
-            } else {
-                snprintf(auth, sizeof(auth), "Authorization: Basic %s", elasticsearchBasicAuth);
-            }
-            headers[2] = auth;
-        }
-
-        arkime_http_set_headers(esServer, headers);
-        arkime_http_set_print_errors(esServer);
-
-        int maxRetries = arkime_config_int(NULL, "esMaxRetries", 2, 0, 10);
-        arkime_http_set_retries(esServer, maxRetries);
-
-        char *clientCert = arkime_config_str(NULL, "esClientCert", NULL);
-        char *clientKey = arkime_config_str(NULL, "esClientKey", NULL);
-        char *clientKeyPass = arkime_config_str(NULL, "esClientKeyPass", NULL);
-        arkime_http_set_client_cert(esServer, clientCert, clientKey, clientKeyPass);
+        esServer = arkime_db_create_es_server(config.elasticsearch);
 
         esBulkQuery = arkime_config_str(NULL, "esBulkQuery", "/_bulk");
         esBulkQueryLen = strlen(esBulkQuery);

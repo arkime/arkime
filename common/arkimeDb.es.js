@@ -439,7 +439,7 @@ function createClient (url, options) {
   const esSSLOptions = ArkimeUtil.tlsOptionsOrExit(options, 'OpenSearch/Elasticsearch');
 
   const esOptions = {
-    node: options.node ?? url.split(',').map(u => u.replace(/^(elasticsearch|opensearch)/, 'http')),
+    node: [options.node ?? url.split(',')].flat().map(u => u.replace(/^(elasticsearch|opensearch)/i, 'http')),
     maxRetries: 2,
     requestTimeout: (parseInt(options.requestTimeout) + 30) * 1000 || 330000,
     ssl: esSSLOptions

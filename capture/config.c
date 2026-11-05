@@ -645,12 +645,52 @@ LOCAL void arkime_config_load_hidden(const char *configFile)
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
+// The key's prefix or def, which it takes ownership of, ending in _ unless empty
+LOCAL char *arkime_config_prefix(GKeyFile *keyfile, const char *key, char *def)
+{
+    char *prefix = arkime_config_str(keyfile, key, NULL);
+    if (prefix)
+        g_free(def);
+    else
+        prefix = def;
+
+    int len = strlen(prefix);
+    if (len > 50)
+        CONFIGEXIT("%s can be at most 50 characters long", key);
+    if (len > 0 && prefix[len - 1] != '_') {
+        char *tmp = g_strdup_printf("%s_", prefix);
+        g_free(prefix);
+        prefix = tmp;
+    }
+    return prefix;
+}
+/******************************************************************************/
+// elasticsearch:// and opensearch:// style urls, comma separated, as http(s) to the server
+char *arkime_config_es_url(const char *url)
+{
+    gchar **urls = g_strsplit(url, ",", 0);
+    for (int i = 0; urls[i]; i++) {
+        const char *colon = strstr(urls[i], "://");
+        if (colon && (g_str_has_prefix(urls[i], "elasticsearch") || g_str_has_prefix(urls[i], "opensearch"))) {
+            char *tmp = g_strdup_printf("%s%s", colon[-1] == 's' ? "https" : "http", colon);
+            g_free(urls[i]);
+            urls[i] = tmp;
+        }
+    }
+    char *result = g_strjoinv(",", urls);
+    g_strfreev(urls);
+    return result;
+}
+/******************************************************************************/
 LOCAL char arkime_config_key_sep(const char *key)
 {
     if (!key)
         return ';';
     if (strcmp(key, "elasticsearch") == 0 ||
-        strcmp(key, "usersElasticsearch") == 0)
+        strcmp(key, "usersElasticsearch") == 0 ||
+        strcmp(key, "sessionsDbUrl") == 0 ||
+        strcmp(key, "clusterDbUrl") == 0 ||
+        strcmp(key, "usersDbUrl") == 0)
         return ',';
     return ';';
 }
@@ -1222,20 +1262,17 @@ LOCAL void arkime_config_load()
         }
     }
 
-    config.prefix           = arkime_config_str(keyfile, "prefix", "arkime_");
-    int len = strlen(config.prefix);
-    if (len > 50)
-        CONFIGEXIT("prefix can be at most 50 characters long");
-    if (len > 0 && config.prefix[len - 1] != '_') {
-        char *tmp  = g_malloc(len + 2);
-        memcpy(tmp, config.prefix, len);
-        tmp[len] = '_';
-        tmp[len + 1] = 0;
-        g_free(config.prefix);
-        config.prefix = tmp;
-    }
+    config.prefix           = arkime_config_prefix(keyfile, "sessionsDbPrefix", arkime_config_str(keyfile, "prefix", "arkime_"));
+    config.clusterPrefix    = arkime_config_prefix(keyfile, "clusterDbPrefix", g_strdup(config.prefix));
 
-    config.elasticsearch    = arkime_config_str(keyfile, "elasticsearch", "localhost:9200");
+    // An OpenSearch/Elasticsearch sessionsDbUrl replaces elasticsearch, a ClickHouse one is db.ch.c's
+    char *sessionsDbUrl = arkime_config_str(keyfile, "sessionsDbUrl", NULL);
+    if (sessionsDbUrl && !g_regex_match_simple("^(clickhouses?|chttps?)://", sessionsDbUrl, 0, 0)) {
+        config.elasticsearch = arkime_config_es_url(sessionsDbUrl);
+    } else {
+        config.elasticsearch = arkime_config_str(keyfile, "elasticsearch", "localhost:9200");
+    }
+    g_free(sessionsDbUrl);
     config.interface        = arkime_config_str_list(keyfile, "interface", NULL);
     config.pcapDir          = arkime_config_str_list(keyfile, "pcapDir", "/opt/arkime/raw");
     config.bpf              = arkime_config_str(keyfile, "bpf", NULL);

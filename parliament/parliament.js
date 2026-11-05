@@ -1059,19 +1059,19 @@ function findIssue (clusterId, issueType, node) {
 // Initializes the parliament, creating it in the DB if it doesn't exist
 async function initializeParliament () {
   if (User.getClient()) {
-    ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), ArkimeConfig.get('usersPrefix'), MIN_DB_VERSION);
+    ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), ArkimeConfig.usersDbPrefix(), MIN_DB_VERSION);
   }
   Notifier.initialize({
     issueTypes,
-    prefix: ArkimeConfig.get('usersPrefix')
+    prefix: ArkimeConfig.usersDbPrefix()
   });
 
   ViewConfig.initialize({ appAdminRole: 'parliamentAdmin' });
-  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.get('usersPrefix') });
+  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.usersDbPrefix() });
 
   await Parliament.initialize({
     name: internals.parliamentName,
-    prefix: ArkimeConfig.get('usersPrefix')
+    prefix: ArkimeConfig.usersDbPrefix()
   });
 
   let existing;
@@ -2090,9 +2090,9 @@ async function setupAuth () {
   });
 
   User.initialize({
-    insecure: ArkimeConfig.isInsecure([ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200')]),
-    node: ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200'),
-    prefix: ArkimeConfig.get('usersPrefix'),
+    insecure: ArkimeConfig.isInsecure([ArkimeConfig.usersDbUrls() ?? 'http://localhost:9200']),
+    node: ArkimeConfig.usersDbUrls() ?? ['http://localhost:9200'],
+    prefix: ArkimeConfig.usersDbPrefix(),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
     basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
     getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }

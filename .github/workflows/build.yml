@@ -211,7 +211,7 @@ jobs:
           done
           curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
           head /tmp/arkimedb.log
-          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+          (cd tests ; G_SLICE=always-malloc ./tests.pl ${{ matrix.splitprefix == 'true' && '--splitprefix' || '' }} --viewer)
 
       - name: viewer test clickhouse
         if: ${{ matrix.viewertest == 'clickhouse' }}

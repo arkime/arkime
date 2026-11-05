@@ -172,6 +172,26 @@ class User {
   }
 
   /**
+   * The prefix the users db indices use, undefined when it isn't OpenSearch/Elasticsearch
+   */
+  static getDbPrefix () {
+    return User.#implementation?.getPrefix();
+  }
+
+  /**
+   * A connection to the users db for another module's collections, undefined when there is no users db
+   * @param prefix the users prefix, ES index names use it, defaults to the one the users index uses
+   * @param section names the SQL connection
+   */
+  static dbConnect (prefix, section) {
+    if (!User.#implementation) { return undefined; }
+    const url = User.#dbUrl;
+    return ArkimeUtil.dbIsES(url)
+      ? ArkimeUtil.dbConnect(url, { client: User.getClient(), prefix: prefix === undefined ? User.getDbPrefix() : ArkimeUtil.formatPrefix(prefix) })
+      : ArkimeUtil.dbConnect(url, { section });
+  }
+
+  /**
    * Return a user checking cache first. Supports both promise and cb.
    * @param userId the user to fetch
    * @param cb the callback to use in cb mode
@@ -2020,12 +2040,14 @@ class UserDbImplementation {
   #conn;
   #users;
   #isES;
+  #prefix;
   #schemaVersion;
 
   constructor (options) {
     const url = options.url;
     this.#isES = ArkimeUtil.dbIsES(url);
     const prefix = this.#isES ? ArkimeUtil.formatPrefix(options.prefix) : undefined;
+    this.#prefix = prefix;
     this.#conn = ArkimeUtil.dbConnect(this.#isES ? (url ?? 'http://localhost:9200') : url, { ...options, prefix, section: 'User' });
 
     // Names match the layouts each backend used before collections
@@ -2066,6 +2088,10 @@ class UserDbImplementation {
 
   getClient () {
     return this.#isES ? this.#conn.client : null;
+  }
+
+  getPrefix () {
+    return this.#prefix;
   }
 
   getSchemaVersion () {

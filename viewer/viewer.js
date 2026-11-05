@@ -2539,7 +2539,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     path: Config.basePath(),
     version: version.version,
     multiViewer: internals.multiES,
-    hasUsersES: !!Config.get('usersElasticsearch', false),
+    hasUsersES: !!ArkimeConfig.usersDbUrls(),
     hasTshark: !!internals.tsharkPath,
     huntWarn: Config.getInt('huntWarn', 100000),
     huntLimit: limit,
@@ -2666,20 +2666,25 @@ process.on('unhandledRejection', (reason, p) => {
 async function premain () {
   await Config.initialize({ initAuth: true });
 
+  const usersHost = ArkimeConfig.usersDbUrls();
+  const usersPrefix = ArkimeConfig.usersDbPrefix(internals.multiES ? '' : Config.get('prefix', 'arkime_'));
+
   await Db.initialize({
     host: internals.elasticBase,
     prefix: internals.prefix,
+    clusterPrefix: internals.clusterPrefix,
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
-    usersHost: Config.getArray('usersElasticsearch'),
-    // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
-    usersPrefix: Config.get('usersPrefix', internals.multiES ? '' : undefined),
+    usersHost,
+    usersFallbackHost: ArkimeConfig.usersFallbackEsUrls(),
+    usersFallbackPrefix: ArkimeConfig.usersFallbackPrefix(),
+    usersPrefix,
     nodeName: Config.nodeName(),
     hostName: Config.hostName(),
     esClientKey: Config.get('esClientKey', null),
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
     multiES: internals.multiES,
-    insecure: ArkimeConfig.isInsecure([internals.elasticBase, Config.getArray('usersElasticsearch')]),
+    insecure: ArkimeConfig.isInsecure([internals.elasticBase, usersHost]),
     caTrustFile: Config.get('caTrustFile', null),
     requestTimeout: Config.get('elasticsearchTimeout', 300),
     esProfile: Config.esProfile,
@@ -2694,15 +2699,16 @@ async function premain () {
     regressionTests: ArkimeConfig.regressionTests
   });
 
+  // The same prefix the users index ended up with, whether or not there is a users url
   Notifier.initialize({
-    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
+    prefix: User.getDbPrefix()
   });
 
   ViewConfig.initialize({ appAdminRole: 'arkimeAdmin' });
 
   Banner.initialize({
     app: 'viewer',
-    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
+    prefix: User.getDbPrefix()
   });
 
   CronAPIs.initialize({

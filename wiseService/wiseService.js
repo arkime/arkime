@@ -60,11 +60,13 @@ const internals = {
         { name: 'userNameHeader', required: true, help: 'the http header to use for username', ifField: 'authMode', ifValue: 'header' },
         { name: 'httpRealm', ifField: 'authMode', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'authMode', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypt password hashes. Must be the same as viewer is using. Default password' },
-        { name: 'usersElasticsearch', required: false, help: 'The URL to connect to OpenSearch/Elasticsearch. Default http://localhost:9200' },
+        { name: 'usersDbUrl', required: false, help: 'The users db: an OpenSearch/Elasticsearch url, sqlite:// or postgres://. Falls back to usersUrl, usersElasticsearch, then elasticsearch' },
+        { name: 'usersElasticsearch', required: false, help: 'Older name for usersDbUrl' },
         { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elasticsearch API key for users DB access', password: true },
         { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elasticsearch Basic Auth', password: true },
         { name: 'userAuthIps', required: false, help: 'Comma separated list of CIDRs to allow authed requests from' },
-        { name: 'usersPrefix', required: false, help: 'The prefix used with db.pl --prefix for users OpenSearch/Elasticsearch, if empty arkime_ is used' },
+        { name: 'usersDbPrefix', required: false, help: 'The prefix used with db.pl --prefix for the users db. Falls back to usersPrefix, then prefix, then arkime_' },
+        { name: 'usersPrefix', required: false, help: 'Older name for usersDbPrefix' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' },
         { name: 'webBasePath', required: false, help: 'The base URL to wise requests, must end with slash. Defaults to "/"' }
       ]
@@ -235,16 +237,16 @@ async function setupAuth () {
     return;
   }
 
-  if (ArkimeConfig.get('usersElasticsearch')) {
-    const es = ArkimeConfig.getArray('usersElasticsearch');
+  if (ArkimeConfig.usersDbUrls()) {
+    const es = ArkimeConfig.usersDbUrls();
     User.initialize({
       insecure: ArkimeConfig.isInsecure([es]),
-      node: ArkimeConfig.getArray('usersElasticsearch'),
+      node: es,
       caTrustFile: ArkimeConfig.get('caTrustFile'),
       clientKey: ArkimeConfig.get('esClientKey'),
       clientCert: ArkimeConfig.get('esClientCert'),
       clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
-      prefix: ArkimeConfig.get('usersPrefix'),
+      prefix: ArkimeConfig.usersDbPrefix(),
       apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
       basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
       getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
@@ -258,7 +260,7 @@ async function setupAuth () {
       clientKey: ArkimeConfig.get('esClientKey'),
       clientCert: ArkimeConfig.get('esClientCert'),
       clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
-      prefix: ArkimeConfig.get('prefix'),
+      prefix: ArkimeConfig.get('usersDbPrefix') ?? ArkimeConfig.get('prefix'),
       apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
       basicAuth: ArkimeConfig.get('elasticsearchBasicAuth'),
       getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
@@ -266,7 +268,7 @@ async function setupAuth () {
   }
 
   ViewConfig.initialize({ appAdminRole: 'wiseAdmin' });
-  Banner.initialize({ app: 'wise', prefix: ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime')) });
+  Banner.initialize({ app: 'wise', prefix: User.getDbPrefix() });
 }
 
 // ----------------------------------------------------------------------------

@@ -684,6 +684,8 @@ sub changePasswordSecret {
 ################################################################################
 sub clearIndex {
 my ($index) = @_;
+    # tests.pl --splitprefix gives the cluster db indices <prefix>cl_
+    $index =~ s/^(tests2?)_(files|stats|dstats|fields|sequence|hunts|queries|history|featherprint)/$1cl_$2/ if ($ENV{ARKIME_TEST_SPLIT});
     esGet("/_flush");
     esGet("/_refresh");
     return esPost("/$index/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');

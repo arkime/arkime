@@ -570,8 +570,7 @@ User.prototype.setCont3xtKeys = function (v) {
 async function setupAuth () {
   const dbUrl = ArkimeConfig.get('dbUrl');
   const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
-  const usersUrl = ArkimeConfig.get('usersUrl');
-  const usersEs = ArkimeConfig.getArray('usersElasticsearch') ?? es;
+  const usersEs = ArkimeConfig.usersDbUrls() ?? es;
 
   await Db.initialize({
     insecure: ArkimeConfig.isInsecure([dbUrl, es]),
@@ -593,22 +592,21 @@ async function setupAuth () {
   });
 
   User.initialize({
-    insecure: ArkimeConfig.isInsecure([usersUrl, usersEs]),
+    insecure: ArkimeConfig.isInsecure([usersEs]),
     requestTimeout: ArkimeConfig.get('elasticsearchTimeout', 300),
-    url: usersUrl,
     node: usersEs,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
     clientKey: ArkimeConfig.get('esClientKey'),
     clientCert: ArkimeConfig.get('esClientCert'),
     clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
-    prefix: ArkimeConfig.get('usersPrefix'),
+    prefix: ArkimeConfig.usersDbPrefix(),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
     basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth', ArkimeConfig.get('elasticsearchBasicAuth')),
     getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
   });
 
   ViewConfig.initialize({ appAdminRole: 'cont3xtAdmin' });
-  Banner.initialize({ app: 'cont3xt', prefix: ArkimeConfig.get('usersPrefix') });
+  Banner.initialize({ app: 'cont3xt', prefix: ArkimeConfig.usersDbPrefix() });
 
   Audit.initialize({
     expireHistoryDays: ArkimeConfig.get('expireHistoryDays', 180)

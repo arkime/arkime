@@ -67,12 +67,14 @@ class ArkimeConfig {
 
     ArkimeConfig.#uri = ArkimeConfig.#configFile;
 
-    // If ARKIME__usersElasticsearch is set then create a temp config
-    if (process.env.ARKIME__usersElasticsearch) {
+    // If ARKIME__usersDbUrl or ARKIME__usersElasticsearch is set then create a temp config
+    if (process.env.ARKIME__usersDbUrl || process.env.ARKIME__usersElasticsearch) {
       ArkimeConfig.#config = {
         [ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1]]: {
+          usersDbUrl: process.env.ARKIME__usersDbUrl,
           usersElasticsearch: process.env.ARKIME__usersElasticsearch,
           usersElasticsearchBasicAuth: process.env.ARKIME__usersElasticsearchBasicAuth,
+          usersDbPrefix: process.env.ARKIME__usersDbPrefix,
           usersPrefix: process.env.ARKIME__usersPrefix
         }
       };
@@ -313,6 +315,84 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
   static getArray (sectionKey, d, sep) {
     return ArkimeConfig.getFullArray(ArkimeConfig.#defaultSections, sectionKey, d, sep);
+  }
+
+  // ----------------------------------------------------------------------------
+  // Where each group of indices lives, every setting falls back to the older or broader ones
+  // ----------------------------------------------------------------------------
+  /**
+   * The sessions OpenSearch/Elasticsearch urls, sessionsDbUrl unless it's ClickHouse, then elasticsearch
+   */
+  static sessionsEsUrls () {
+    if (ArkimeConfig.sessionsDbIsES()) {
+      return ArkimeConfig.getArray('sessionsDbUrl', undefined, ',').map(u => ArkimeConfig.esUrl(u));
+    }
+    return ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
+  }
+
+  /**
+   * sessionsDbUrl is set and is OpenSearch/Elasticsearch, not ClickHouse
+   */
+  static sessionsDbIsES () {
+    const url = ArkimeConfig.get('sessionsDbUrl');
+    return !!url && !/^(clickhouses?|chttps?):\/\//i.test(url);
+  }
+
+  /**
+   * An elasticsearch:// or opensearch:// style url as the http(s) one to the server
+   */
+  static esUrl (url) {
+    return url.replace(/^(elasticsearch|opensearch)/i, 'http');
+  }
+
+  /**
+   * The sessions prefix, sessionsDbPrefix or prefix
+   */
+  static sessionsDbPrefix () {
+    return ArkimeConfig.get('sessionsDbPrefix') ?? ArkimeConfig.get('prefix', 'arkime_');
+  }
+
+  /**
+   * The cluster db prefix, clusterDbPrefix or the sessions one
+   */
+  static clusterDbPrefix () {
+    return ArkimeConfig.get('clusterDbPrefix') ?? ArkimeConfig.sessionsDbPrefix();
+  }
+
+  /**
+   * The users db urls, usersDbUrl, usersUrl or usersElasticsearch, undefined when none is set
+   */
+  static usersDbUrls () {
+    const urls = ArkimeConfig.getArray('usersDbUrl', undefined, ',') ?? ArkimeConfig.getArray('usersUrl', undefined, ',') ?? ArkimeConfig.getArray('usersElasticsearch');
+    return urls?.map(u => ArkimeConfig.esUrl(u));
+  }
+
+  /**
+   * The OpenSearch/Elasticsearch the users db falls back to without usersDbUrl: elasticsearch, never sessionsDbUrl
+   * since the users db is shared with the other apps. Exits when there's nothing to fall back to.
+   */
+  static usersFallbackEsUrls () {
+    const urls = ArkimeConfig.getArray('elasticsearch');
+    if (!urls && ArkimeConfig.sessionsDbIsES() && !ArkimeConfig.usersDbUrls()) {
+      console.log('ERROR - set usersDbUrl, the users db does not follow sessionsDbUrl');
+      process.exit(1);
+    }
+    return urls ?? ['http://localhost:9200'];
+  }
+
+  /**
+   * The users db prefix, usersDbPrefix, usersPrefix or else d
+   */
+  static usersDbPrefix (d) {
+    return ArkimeConfig.get('usersDbPrefix') ?? ArkimeConfig.get('usersPrefix') ?? d;
+  }
+
+  /**
+   * The users prefix when the users db falls back to elasticsearch without a users url: usersDbPrefix then prefix.
+   * usersPrefix only ever went with a users url, without one the users have always used prefix.
+   */
+  static usersFallbackPrefix (d = 'arkime_') {
+    return ArkimeConfig.get('usersDbPrefix') ?? ArkimeConfig.get('prefix', d);
   }
 
   // ----------------------------------------------------------------------------
@@ -950,7 +1030,10 @@ ArkimeConfig.registerSettings({
   usersElasticsearchAPIKey: { secret: true },
   usersElasticsearchBasicAuth: { secret: true },
   elasticsearch: { type: 'urls' },
-  usersElasticsearch: { type: 'urls' }
+  usersElasticsearch: { type: 'urls' },
+  usersDbUrl: { type: 'urls' },
+  sessionsDbUrl: { type: 'urls' },
+  clusterDbUrl: { type: 'urls' }
 });
 
 module.exports = ArkimeConfig;

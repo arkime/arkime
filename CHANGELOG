@@ -104,10 +104,14 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Icons switched from Font Awesome to Material Design Icons
   - #3992 Theme choice is saved per user and follows you between all four apps
   - #4424 /api/users/min without a roleId now requires usersAdmin, it was listing every user to any logged in user
-  - #4430 New clusterDbUrl setting, an OpenSearch/Elasticsearch url or postgres://, holds hunts, queries, history and featherprint
-          instead of the sessions OpenSearch/Elasticsearch. With postgres:// capture's stats, dstats, files, fields and
-          sequence go there too, which needs capture built with libpq 13 or newer. multiESNodes takes a per cluster
-          clusterDbUrl:postgres://...
+  - #4430 The sessions, cluster and users dbs can each live somewhere else:
+          sessions: sessionsDbUrl -> elasticsearch
+          cluster: clusterDbUrl -> sessionsDbUrl -> elasticsearch
+          users: usersDbUrl -> usersUrl -> usersElasticsearch -> elasticsearch
+          They all have matching prefix settings. multiESNodes entries take sessionsDbUrl, sessionsDbPrefix,
+          clusterDbUrl and clusterDbPrefix
+  - #4430 Sessions supports OpenSearch/Elasticsearch or ClickHouse, cluster supports OpenSearch/Elasticsearch or Postgres,
+          users supports OpenSearch/Elasticsearch, SQLite or Postgres
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture

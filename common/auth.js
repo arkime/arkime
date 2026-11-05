@@ -338,7 +338,7 @@ class Auth {
         resave: false,
         saveUninitialized: false,
         cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000, httpOnly: true },
-        store: new ESStore({ })
+        store: new DbStore({ })
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -1667,150 +1667,97 @@ class Auth {
 }
 
 // ----------------------------------------------------------------------------
-class ESStore extends expressSession.Store {
-  static #client;
-  static #index;
+class DbStore extends expressSession.Store {
+  static #sids;
   static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
-  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no Elasticsearch client
+  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no users db
 
   constructor (options) {
     super();
-    setTimeout(async () => {
-      ESStore.#client = User.getClient();
-      if (!ESStore.#client) {
-        console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
-        // MemoryStore only drops an expired session when it is read again, all() checks every one
-        setInterval(() => ESStore.#memoryStore.all(), 60 * 1000).unref();
-        return;
-      }
-      ESStore.start();
-      setInterval(() => ESStore.#prune(), 10 * 60 * 1000).unref();
-    }, 100);
-    const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
-    ESStore.#index = `${prefix}sids_v50`;
+    DbStore.#start(0);
   }
 
-  // ----------------------------------------------------------------------------
-  static async start () {
-    // Create Index if needed
-    try {
-      await ESStore.#client.indices.create({
-        index: ESStore.#index,
-        body: {
-          settings: {
-            number_of_shards: 1,
-            number_of_replicas: 0,
-            auto_expand_replicas: '0-1'
+  // The app sets up its users db after auth, wait up to 30s for it
+  static #start (tries) {
+    setTimeout(async () => {
+      if (User.getDbUrl() === undefined && tries < 300) {
+        return DbStore.#start(tries + 1);
+      }
+      // The same prefix as the users index, whichever way the app picked it
+      const prefix = User.getDbPrefix() ?? '';
+      const conn = User.dbConnect(undefined, 'sids');
+      if (!conn) {
+        console.log('WARNING - no users db, using in-memory sessions (lost on restart, not shared across nodes)');
+        // MemoryStore only drops an expired session when it is read again, all() checks every one
+        setInterval(() => DbStore.#memoryStore.all(), 60 * 1000).unref();
+        return;
+      }
+      const sids = conn.collection('sids', {
+        fields: {
+          _timestamp: { type: 'date', indexed: true },
+          _expires: { type: 'date', indexed: true }
+        },
+        es: {
+          index: `${prefix}sids_v50`,
+          create: {
+            settings: { number_of_shards: 1, number_of_replicas: 0, auto_expand_replicas: '0-1' },
+            mappings: { dynamic_templates: [{ string_template: { match_mapping_type: 'string', mapping: { type: 'keyword' } } }] }
           }
         }
       });
-    } catch (err) {
-      // If already exists ignore error
-      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log(err);
+      try {
+        await sids.init();
+      } catch (err) {
+        console.log('ERROR - creating the sids store', err);
         process.exit(1);
       }
-    }
-
-    // Update mapping if needed
-    await ESStore.#client.indices.putMapping({
-      index: ESStore.#index,
-      body: {
-        dynamic_templates: [
-          {
-            string_template: {
-              match_mapping_type: 'string',
-              mapping: {
-                type: 'keyword'
-              }
-            }
-          }
-        ],
-        properties: {
-          _timestamp: { type: 'date' },
-          _expires: { type: 'date' }
-        }
-      }
-    });
-
-    await ESStore.#prune();
+      DbStore.#sids = sids;
+      await DbStore.#prune();
+      setInterval(() => DbStore.#prune(), 10 * 60 * 1000).unref();
+    }, 100);
   }
 
   // ----------------------------------------------------------------------------
   // Delete expired sids, ignore errors. Older docs only have _timestamp.
   static async #prune () {
-    const now = new Date().getTime();
+    const now = Date.now();
     try {
-      await ESStore.#client.deleteByQuery({
-        index: ESStore.#index,
-        body: {
-          query: {
-            bool: {
-              should: [
-                { range: { _expires: { lte: now } } },
-                { range: { _timestamp: { lte: now - ESStore.#ttl } } }
-              ]
-            }
-          }
-        },
-        timeout: '5m'
-      });
+      await DbStore.#sids.deleteWhere({ $or: [{ _expires: { $lte: now } }, { _timestamp: { $lte: now - DbStore.#ttl } }] });
     } catch (err) { }
   }
 
   // ----------------------------------------------------------------------------
   destroy (sid, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.destroy(sid, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.destroy(sid, callback);
     }
-    ESStore.#client.delete({
-      index: ESStore.#index,
-      id: sid
-    }, (err, response) => {
-      callback();
-    });
+    DbStore.#sids.delete(sid, { refresh: false }).then(() => callback(), () => callback());
   }
 
   // ----------------------------------------------------------------------------
   get (sid, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.get(sid, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.get(sid, callback);
     }
-    ESStore.#client.get({
-      index: ESStore.#index,
-      id: sid
-    }, (err, response) => {
-      if (err) {
-        if (response?.statusCode === 404) {
-          return callback();
-        }
-        return callback(err);
-      }
-
-      const _source = response.body._source;
-      const now = new Date().getTime();
-      if (now - _source._timestamp > ESStore.#ttl || now > (_source._expires ?? Infinity)) {
+    DbStore.#sids.get(sid).then((session) => {
+      if (!session) { return callback(); }
+      const now = Date.now();
+      if (now - session._timestamp > DbStore.#ttl || now > (session._expires ?? Infinity)) {
         this.destroy(sid, () => {});
         return callback();
       }
-      return callback(err, _source);
-    });
+      return callback(null, session);
+    }, err => callback(err));
   }
 
   // ----------------------------------------------------------------------------
   set (sid, session, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.set(sid, session, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.set(sid, session, callback);
     }
-    session._timestamp = new Date().getTime();
-    session._expires = session.cookie?.expires ? new Date(session.cookie.expires).getTime() : session._timestamp + ESStore.#ttl;
-    ESStore.#client.index({
-      index: ESStore.#index,
-      id: sid,
-      body: session
-    }, (err, response) => {
-      callback(err);
-    });
+    session._timestamp = Date.now();
+    session._expires = session.cookie?.expires ? new Date(session.cookie.expires).getTime() : session._timestamp + DbStore.#ttl;
+    DbStore.#sids.put(sid, session, { refresh: false }).then(() => callback(), err => callback(err));
   }
 }
 // ----------------------------------------------------------------------------

@@ -16,6 +16,7 @@
 #   sanitizebuild - when set the command to use for latest-commit to build a sanitized version
 #   prbuild - if True then this build is used for PR builds & main, otherwise just main
 #   otherdbtest - if True then test sqlite users/cont3xt and the sqlite/lmdb/redis caches
+#   splitprefix - if True the packetpocket viewer tests give the cluster db indices their own prefix
 #   tshark - if True then this build is used by the manual tshark workflow
 #   Versions starting with alpine run the container with docker run in the alpine-build job, not as a job container
 
@@ -178,6 +179,7 @@ include:
     ja4plus: true
     prbuild: true
     viewertest: packetpocket
+    splitprefix: "true"
 
   - version: el9.aarch64
     container: ghcr.io/arkime/arkime-build-9-arm64:7.0.0-3

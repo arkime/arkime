@@ -544,12 +544,12 @@ LOCAL PGconn *arkime_db_pg_connect(const char *url)
 /******************************************************************************/
 LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *url)
 {
-    for (const char *c = config.prefix; *c; c++) {
+    for (const char *c = config.clusterPrefix; *c; c++) {
         if (!g_ascii_isalnum(*c) && *c != '_')
-            CONFIGEXIT("prefix '%s' can only have letters, digits and _ with a Postgres clusterDbUrl", config.prefix);
+            CONFIGEXIT("clusterDbPrefix '%s' can only have letters, digits and _ with a Postgres clusterDbUrl", config.clusterPrefix);
     }
     for (int i = 0; pgTableNames[i]; i++) {
-        pgTables[i] = g_strdup_printf("%s%s", config.prefix, pgTableNames[i]);
+        pgTables[i] = g_strdup_printf("%s%s", config.clusterPrefix, pgTableNames[i]);
     }
 
     pgConn = arkime_db_pg_connect(url);

@@ -64,7 +64,7 @@ class DbClusterImpl {
   #isPG;
   #sharedES;
 
-  // capture writes these, to a Postgres cluster db or else the sessions ES
+  // capture writes these, to the cluster db like the rest
   files;
   stats;
   dstats;
@@ -75,7 +75,7 @@ class DbClusterImpl {
    * @param conn the cluster db connection
    * @param esConn the sessions ES connection
    * @param isES conn is an Elasticsearch/OpenSearch connection
-   * @param isPG conn is Postgres, which capture can write to
+   * @param isPG conn is Postgres, which gets its base fields from db/fields.json instead of db.pl
    * @param prefix, fixIndex build the sessions ES index names
    */
   constructor ({ conn, esConn, isES, isPG, prefix, fixIndex }) {
@@ -84,7 +84,7 @@ class DbClusterImpl {
     // Only the sessions ES client knows the multi cluster routing
     this.#sharedES = conn === esConn;
     for (const collName of ['files', 'stats', 'dstats', 'fields', 'sequence']) {
-      this[collName] = isPG ? conn.collection(collName, DbClusterImpl.collectionOptions(collName)) : esConn.collection(collName, { es: { index: fixIndex(collName) } });
+      this[collName] = conn.collection(collName, isPG ? DbClusterImpl.collectionOptions(collName) : { es: { index: fixIndex(collName) } });
     }
 
     if (this.#isES) {
@@ -112,6 +112,9 @@ class DbClusterImpl {
       this.featherprint[key] = conn.collection(collName, isES ? { es: { index: fixIndex(collName), dbpl: true } } : DbClusterImpl.collectionOptions(collName));
     }
   }
+
+  // The index names the cluster db holds, every other index is a sessions or users one
+  static INDEX_NAMES = ['files', 'stats', 'dstats', 'fields', 'sequence', 'hunts', 'queries', 'history', 'featherprint'];
 
   static collectionOptions (collName) {
     return COLLECTION_OPTIONS[collName] ?? {};

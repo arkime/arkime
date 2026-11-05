@@ -97,18 +97,19 @@ class ArkimeDb {
    */
   static createElasticsearchInfo (url) {
     url = url.split(',')[0];
-    url = url.replace(/^elasticsearch/, 'http').replace(/^opensearch/, 'http');
+    url = ArkimeConfig.esUrl(url);
     let auth;
     if (url.includes('://usersElasticsearch')) {
       let es, basicAuth;
 
-      if (ArkimeConfig.get('usersElasticsearch')) {
-        es = ArkimeConfig.get('usersElasticsearch');
+      const usersEs = ArkimeConfig.usersDbUrls()?.filter(u => ArkimeDb.isES(u));
+      if (usersEs?.length) {
+        es = usersEs.join(',');
         basicAuth = ArkimeConfig.get('usersElasticsearchBasicAuth');
       }
 
       if (!es) {
-        console.log(`ERROR - No usersElasticsearch defined but used in ${url}`);
+        console.log(`ERROR - No OpenSearch/Elasticsearch usersDbUrl defined but used in ${url}`);
         process.exit(1);
       }
 

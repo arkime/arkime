@@ -91,6 +91,7 @@ Db.initialize = async (info) => {
   checkURLs(info.usersHost);
 
   internals.prefix = ArkimeUtil.formatPrefix(info.prefix);
+  internals.clusterPrefix = ArkimeUtil.formatPrefix(info.clusterPrefix ?? info.prefix);
   internals.usersPrefix = ArkimeUtil.formatPrefix(info.usersPrefix ?? info.prefix);
 
   internals.nodeName = info.nodeName;
@@ -156,13 +157,13 @@ Db.initialize = async (info) => {
       insecure: info.insecure,
       caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
-      node: info.host,
+      node: info.usersFallbackHost ?? info.host,
       clientKey: info.esClientKey,
       clientCert: info.esClientCert,
       clientKeyPass: info.esClientKeyPass,
       apiKey: info.esApiKey,
       basicAuth: info.esBasicAuth,
-      prefix: internals.prefix,
+      prefix: internals.multiES ? internals.prefix : (info.usersFallbackPrefix ?? internals.prefix),
       readOnly: internals.multiES,
       getCurrentUserCB: info.getCurrentUserCB,
       noUsersCheck: info.noUsersCheck
@@ -200,6 +201,7 @@ Db.initialize = async (info) => {
   if (internals.multiES) {
     Db.isLocalView = (node) => { return false; };
     internals.prefix = 'MULTIPREFIX_';
+    internals.clusterPrefix = 'MULTIPREFIX_';
   }
 
   if (internals.debug) {
@@ -235,8 +237,8 @@ Db.initialize = async (info) => {
     console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
   }
 
-  // hunts, queries and history live in the cluster db, the sessions ES unless clusterDbUrl says otherwise.
-  // Another ES uses the sessions ES credentials. A Postgres cluster db also holds what capture writes.
+  // What capture writes plus hunts, queries, history and featherprint live in the cluster db, the sessions ES
+  // unless clusterDbUrl says otherwise. Another ES uses the sessions ES credentials and needs db.pl init too.
   // Every backend names its tables with the cluster's prefix, like the ES indices, so clusters can share one db.
   // A multi viewer gets every cluster's cluster db through multies, see multiESNodes clusterDbUrl
   const clusterDbUrl = internals.multiES ? undefined : (info.clusterDbUrl ?? Config.get('clusterDbUrl'));
@@ -250,7 +252,7 @@ Db.initialize = async (info) => {
   if (clusterDbUrl) {
     clusterConn = ArkimeUtil.dbIsES(clusterDbUrl)
       ? ArkimeUtil.dbConnect(clusterDbUrl, {
-        prefix: internals.prefix,
+        prefix: internals.clusterPrefix,
         insecure: info.insecure,
         caTrustFile: info.caTrustFile,
         requestTimeout: info.requestTimeout,
@@ -260,14 +262,16 @@ Db.initialize = async (info) => {
         apiKey: info.esApiKey,
         basicAuth: info.esBasicAuth
       })
-      : ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster', prefix: internals.prefix });
+      : ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster', prefix: internals.clusterPrefix });
   }
+  internals.clusterShared = clusterConn === esConn;
+  internals.clusterEsClient = (!clusterDbUrl || ArkimeUtil.dbIsES(clusterDbUrl)) ? clusterConn.client : undefined;
   internals.clusterImpl = new DbClusterImpl({
     conn: clusterConn,
     esConn,
     isES: !clusterDbUrl || ArkimeUtil.dbIsES(clusterDbUrl),
     isPG: /^postgres(ql)?:/i.test(clusterDbUrl ?? ''),
-    prefix: internals.prefix,
+    prefix: internals.clusterPrefix,
     fixIndex
   });
   await internals.clusterImpl.init();
@@ -294,6 +298,8 @@ Db.initialize = async (info) => {
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Low level functions to convert from no prefix to having a prefix
 /// ///////////////////////////////////////////////////////////////////////////////
+const CLUSTER_INDEX_RE = new RegExp(`^(${DbClusterImpl.INDEX_NAMES.join('|')})(?![a-z])`);
+
 function fixIndex (index) {
   if (index === undefined || index === '_all') { return index; }
 
@@ -307,13 +313,7 @@ function fixIndex (index) {
   }
 
   if (Array.isArray(index)) {
-    return index.map((val) => {
-      if (val.startsWith(internals.prefix)) {
-        return val;
-      } else {
-        return fixIndex(val);
-      }
-    }).join(',');
+    return index.map(val => fixIndex(val)).join(',');
   }
 
   // Don't fix extra user-specified indexes from the queryExtraIndices
@@ -327,6 +327,15 @@ function fixIndex (index) {
       index = 'partial-' + internals.prefix + index.substring(8);
     }
     return index;
+  }
+
+  // The cluster db indices can have their own prefix, a name with the sessions one is moved to it
+  if (internals.clusterPrefix && index.startsWith(internals.clusterPrefix) && CLUSTER_INDEX_RE.test(index.substring(internals.clusterPrefix.length))) {
+    return index;
+  }
+  const bare = internals.prefix && index.startsWith(internals.prefix) ? index.substring(internals.prefix.length) : index;
+  if (CLUSTER_INDEX_RE.test(bare)) {
+    return internals.clusterPrefix + bare;
   }
 
   // If prefix isn't there, add it
@@ -1080,13 +1089,33 @@ Db.allocationExplain = async (cluster, index, shard, primary) => {
   return internals.client7.cluster.allocationExplain(params);
 };
 
+// A flush or refresh of everything, or of a cluster db index, also has to reach a separate cluster db ES
+function clusterDbIndices (op, index, cluster) {
+  const separate = internals.clusterEsClient && internals.clusterEsClient !== internals.client7;
+  if (index !== undefined && index !== '*') {
+    if (separate && CLUSTER_INDEX_RE.test(index)) {
+      return internals.clusterEsClient.indices[op]({ index: fixIndex(index) });
+    }
+    return internals.client7.indices[op]({ index: fixIndex(index), cluster });
+  }
+  const sessions = internals.client7.indices[op]({ index: fixIndex(index), cluster });
+  // No index is every index on the sessions ES, * is just the sessions prefix
+  if (separate) {
+    return Promise.all([sessions, internals.clusterEsClient.indices[op]({ index: `${internals.clusterPrefix}*` })]);
+  }
+  if (index === '*' && internals.clusterPrefix !== internals.prefix) {
+    return Promise.all([sessions, internals.client7.indices[op]({ index: `${internals.clusterPrefix}*`, cluster })]);
+  }
+  return sessions;
+}
+
 Db.flush = async (index, cluster) => {
   if (index === 'users') {
     return User.flush(cluster);
   } else if (index === 'lookups' || index === 'views' || index === 'shareables') {
     return internals.usersImpl.flush(index, cluster);
   } else {
-    return internals.client7.indices.flush({ index: fixIndex(index), cluster });
+    return clusterDbIndices('flush', index, cluster);
   }
 };
 
@@ -1096,7 +1125,7 @@ Db.refresh = async (index, cluster) => {
   } else if (index === 'lookups' || index === 'views' || index === 'shareables') {
     return internals.usersImpl.refresh(index, cluster);
   } else {
-    return internals.client7.indices.refresh({ index: fixIndex(index), cluster });
+    return clusterDbIndices('refresh', index, cluster);
   }
 };
 
@@ -1677,17 +1706,19 @@ Db.checkVersion = async function (minVersion) {
     process.exit(1);
   }
 
-  for (const index of ['stats', 'dstats', 'sequence']) {
+  // An OpenSearch/Elasticsearch cluster db needs its own db.pl init when it isn't the sessions one
+  const dbpl = internals.clusterShared ? 'db/db.pl <host:port> init' : `db/db.pl --prefix ${internals.clusterPrefix} <cluster db host:port> init`;
+  for (const index of internals.clusterEsClient ? ['stats', 'dstats', 'sequence'] : []) {
     try {
-      await Db.indexStats(index);
+      await internals.clusterEsClient.indices.stats({ index: fixIndex(index) });
     } catch (err) {
-      console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure 'db/db.pl <host:port> init' has been run.\n`, err);
+      console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure '${dbpl}' has been run.\n`, err);
       process.exit(1);
     }
   }
 
-  if (!internals.multiES) {
-    const { body: doc } = await internals.client7.indices.getMapping({
+  if (!internals.multiES && internals.clusterEsClient) {
+    const { body: doc } = await internals.clusterEsClient.indices.getMapping({
       index: fixIndex('files'),
     });
 

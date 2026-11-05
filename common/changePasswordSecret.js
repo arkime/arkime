@@ -200,19 +200,16 @@ async function premain () {
     defaultSections: 'default'
   });
 
-  const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
-  const usersUrl = ArkimeConfig.get('usersUrl');
-  const usersEs = ArkimeConfig.getArray('usersElasticsearch') ?? es;
-
-  // Match viewer/db.js: users prefix is usersPrefix falling back to the main prefix.
-  const usersPrefix = ArkimeConfig.get('usersPrefix') ?? ArkimeConfig.get('prefix', 'arkime');
+  // Match viewer/db.js: usersPrefix only counts with a users url, without one the users use prefix
+  const usersUrls = ArkimeConfig.usersDbUrls();
+  const usersEs = usersUrls ?? ArkimeConfig.usersFallbackEsUrls();
+  const usersPrefix = usersUrls ? ArkimeConfig.usersDbPrefix(ArkimeConfig.get('prefix', 'arkime')) : ArkimeConfig.usersFallbackPrefix('arkime');
 
   await Auth.initialize({ passwordSecretSection: 'default' });
 
   User.initialize({
-    insecure: ArkimeConfig.isInsecure([usersUrl, usersEs]),
+    insecure: ArkimeConfig.isInsecure([usersEs]),
     requestTimeout: ArkimeConfig.get('elasticsearchTimeout', 300),
-    url: usersUrl,
     node: usersEs,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
     clientKey: ArkimeConfig.get('esClientKey'),

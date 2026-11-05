@@ -429,7 +429,8 @@ typedef struct arkime_config {
     int                numPlugins;
 
     GRegex  *offlineRegex;
-    char     *prefix;
+    char     *prefix;        // sessions indices, sessionsDbPrefix or prefix
+    char     *clusterPrefix; // stats, dstats, files, fields and sequence, clusterDbPrefix or the sessions one
     char     *nodeClass;
     char     *elasticsearch;
     char    **interface;
@@ -1096,6 +1097,7 @@ gchar *arkime_config_section_str(GKeyFile *keyfile, const char *section, const c
 gchar **arkime_config_section_keys(GKeyFile *keyfile, const char *section, gsize *keys_len);
 
 gchar *arkime_config_str(GKeyFile *keyfile, const char *key, const char *d);
+char  *arkime_config_es_url(const char *url);
 gchar **arkime_config_str_list(GKeyFile *keyfile, const char *key, const char *d);
 gchar **arkime_config_raw_str_list(GKeyFile *keyfile, const char *key, const char *d);
 uint32_t arkime_config_int(GKeyFile *keyfile, const char *key, uint32_t d, uint32_t min, uint32_t max);

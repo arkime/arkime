@@ -2,9 +2,9 @@
 /* banner.js  -- shared per-app banner code
  *
  * Each Arkime app (viewer, cont3xt, parliament, wise) has its own banner,
- * stored as a doc `banner-<app>` in the `configs` index on the shared Users
- * DB (User.getClient()), the same store that syncs themes across apps. A
- * "sync" copies one app's banner to every app's doc.
+ * stored as a doc `banner-<app>` in the `configs` collection on the shared
+ * users db, whatever backend it is. A "sync" copies one app's banner to every
+ * app's doc.
  *
  * Copyright Yahoo Inc.
  *
@@ -24,7 +24,8 @@ const EMPTY_BANNER = { enabled: false, message: '', type: 'info', effects: [], e
 
 class Banner {
   static #app; // this process's app name
-  static #index; // configs index on the users cluster
+  static #prefix; // the users prefix
+  static #configs; // configs collection on the users db, made on first use
 
   /**
    * @ignore
@@ -34,7 +35,16 @@ class Banner {
    */
   static initialize (options) {
     Banner.#app = options.app;
-    Banner.#index = `${ArkimeUtil.formatPrefix(options.prefix)}configs`;
+    Banner.#prefix = options.prefix;
+  }
+
+  // undefined when there's no users db (e.g. wise in anonymous mode)
+  static #collection () {
+    if (!Banner.#configs) {
+      // On ES db.pl creates the configs index
+      Banner.#configs = User.dbConnect(Banner.#prefix, 'Banner')?.collection('configs', { es: { dbpl: true } });
+    }
+    return Banner.#configs;
   }
 
   static #docId (app) { return `banner-${app}`; }
@@ -60,22 +70,18 @@ class Banner {
    * @returns {object} banner
    */
   static async getBanner (app = Banner.#app) {
-    const client = User.getClient();
-    if (!client) { return { ...EMPTY_BANNER }; }
+    const configs = Banner.#collection();
+    if (!configs) { return { ...EMPTY_BANNER }; }
     try {
-      const { body: { _source: doc } } = await client.get({ index: Banner.#index, id: Banner.#docId(app) });
-      return Banner.#normalize(doc);
+      return Banner.#normalize(await configs.get(Banner.#docId(app)));
     } catch (err) {
-      if (err.meta?.statusCode === 404) { return { ...EMPTY_BANNER }; }
       console.log('ERROR - fetching banner', util.inspect(err, false, 50));
       return { ...EMPTY_BANNER };
     }
   }
 
   static async #save (app, doc) {
-    await User.getClient().index({
-      index: Banner.#index, id: Banner.#docId(app), body: doc, refresh: true
-    });
+    await Banner.#collection().put(Banner.#docId(app), doc);
   }
 
   // builds a validated banner doc from a request body, or returns { error }
@@ -132,7 +138,7 @@ class Banner {
 
   /** PUT - /api/banner -- update this app's banner (admin only) */
   static async apiUpdateBanner (req, res) {
-    if (!User.getClient()) {
+    if (!Banner.#collection()) {
       return res.status(500).json({ success: false, text: 'Users DB not configured' });
     }
     const { error, doc } = Banner.#buildDoc(req);
@@ -149,7 +155,7 @@ class Banner {
 
   /** POST - /api/banner/sync -- copy this app's banner to every app (admin only) */
   static async apiSyncBanner (req, res) {
-    if (!User.getClient()) {
+    if (!Banner.#collection()) {
       return res.status(500).json({ success: false, text: 'Users DB not configured' });
     }
     try {

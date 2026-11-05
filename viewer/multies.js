@@ -81,7 +81,7 @@ ArkimeConfig.loaded(() => {
 
 const clients = {};
 const chImpls = {}; // optional per-node ClickHouse sessions backend
-const clusterDbs = {}; // optional per-node Postgres cluster db { conn }
+const clusterDbs = {}; // optional per-node cluster db, Postgres { conn } or OpenSearch/Elasticsearch { esUrl, client }
 let nodes = [];
 const clusters = {};
 const clusterList = [];
@@ -153,10 +153,74 @@ app.use((req, res, next) => {
   return next();
 });
 
+// The cluster's sessions ES, an OpenSearch/Elasticsearch sessionsDbUrl replaces the entry's url
 function node2Url (node) {
-  const url = node.split(',')[0];
+  const sessionsDbUrl = node2DbUrl(node, 'sessionsDbUrl');
+  if (sessionsDbUrl && !/^(clickhouses?|chttps?):\/\//i.test(sessionsDbUrl)) {
+    return ArkimeConfig.esUrl(sessionsDbUrl).replace(/\/+$/, '');
+  }
+  const url = node.split(',')[0].trim();
   if (url.match(/^http/)) { return url; }
   return 'http://' + url;
+}
+
+// sessionsDbPrefix, else the entry's prefix
+function node2SessionsPrefix (node) {
+  const prefix = node2DbUrl(node, 'sessionsDbPrefix');
+  return prefix === null ? node2Prefix(node) : ArkimeUtil.formatPrefix(prefix);
+}
+
+// clusterDbPrefix, else the sessions one
+function node2ClusterPrefix (node) {
+  const prefix = node2DbUrl(node, 'clusterDbPrefix');
+  return prefix === null ? node2SessionsPrefix(node) : ArkimeUtil.formatPrefix(prefix);
+}
+
+const MULTI_CLUSTER_RE = new RegExp(`MULTIPREFIX_(?=(${DbClusterImpl.INDEX_NAMES.join('|')})(?![a-z]))`, 'g');
+
+// A cluster's prefixes and the regexes that turn them back into MULTIPREFIX_, they never change
+const nodePrefixes = new Map();
+function node2Prefixes (node) {
+  let p = nodePrefixes.get(node);
+  if (!p) {
+    p = { sessions: node2SessionsPrefix(node), cluster: node2ClusterPrefix(node) };
+    p.res = [
+      [new RegExp('(index":\\s*|[,{]|  )"' + p.cluster + '(stats|dstats|sequence|files|history)', 'g'), '$1"MULTIPREFIX_$2'],
+      [new RegExp('(index":\\s*)"' + p.cluster + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"'],
+      [new RegExp('(index":\\s*|[,{]|  )"' + p.sessions + '(sessions3|users)', 'g'), '$1"MULTIPREFIX_$2']
+    ];
+    nodePrefixes.set(node, p);
+  }
+  return p;
+}
+
+// MULTIPREFIX_ to the cluster's prefix for that index
+function toNodePrefix (str, node) {
+  const p = node2Prefixes(node);
+  return str.replace(MULTI_CLUSTER_RE, p.cluster).replace(/MULTIPREFIX_/g, p.sessions);
+}
+
+// The cluster's prefixes in an ES response back to MULTIPREFIX_
+function fromNodePrefix (str, node) {
+  for (const [re, to] of node2Prefixes(node).res) {
+    str = str.replace(re, to);
+  }
+  return str;
+}
+
+// Requests for the cluster db indices, which a cluster may keep in another db
+function isClusterDbPath (reqPath) {
+  return !!MultiesClusterDb.collectionName(reqPath);
+}
+
+// A flush or refresh of everything also goes to each cluster's separate OpenSearch/Elasticsearch cluster db
+function clusterDbsToo (op) {
+  return async (req, res, next) => {
+    await Promise.all(Object.entries(clusterDbs).filter(([, c]) => c.client).map(([node, c]) =>
+      c.client.indices[op]({ index: `${node2ClusterPrefix(node)}*` }).catch(() => {})
+    ));
+    next();
+  };
 }
 
 function node2Prefix (node) {
@@ -270,8 +334,7 @@ function makeRequest (url, options, cb) {
     pres.on('end', () => {
       if (result.length) {
         if (!options.skipReplace) {
-          result = result.replace(new RegExp('(index":\\s*|[,{]|  )"' + options.arkime_prefix + '(sessions3|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
-          result = result.replace(new RegExp('(index":\\s*)"' + options.arkime_prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
+          result = fromNodePrefix(result, options.arkime_node);
         }
         try {
           result = JSON.parse(result);
@@ -346,19 +409,15 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
       // Apply the same prefix→MULTIPREFIX_ rewrite the HTTP path does
       // (see makeRequest), so multi-cluster viewers see consistent
       // _index values regardless of whether a backend is ES or CH.
-      const prefix = node2Prefix(node);
-      if (prefix && !req._skipReplace) {
+      if (node2Prefixes(node).sessions && !req._skipReplace) {
         try {
-          let s = JSON.stringify(result);
-          s = s.replace(new RegExp('(index":\\s*|[,{]|  )"' + prefix + '(sessions3|stats|dstats|sequence|files|users|history)', 'g'), '$1"MULTIPREFIX_$2');
-          s = s.replace(new RegExp('(index":\\s*)"' + prefix + '(fields_v[1-4][0-9]?)"', 'g'), '$1"MULTIPREFIX_$2"');
-          result = JSON.parse(s);
+          result = JSON.parse(fromNodePrefix(JSON.stringify(result), node));
         } catch (e) { /* leave result untouched on error */ }
       }
       result.cluster = clusters[node];
       return asyncCb(null, result);
     }
-    const collName = clusterDbs[node] && MultiesClusterDb.collectionName(req.path);
+    const collName = clusterDbs[node]?.conn && MultiesClusterDb.collectionName(req.path);
     if (collName) {
       const body = req._body ? (bodies?.[node] ?? req.body) : undefined;
       return MultiesClusterDb.answer(clusterDbs[node].conn.collection(collName, DbClusterImpl.collectionOptions(collName)), req._clusterDbOp, req.params.id, req.query, body)
@@ -372,15 +431,15 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
         });
     }
     const nodeName = node2Name(node);
-    let nodeUrl = node2Url(node) + req.url;
+    let nodeUrl = (clusterDbs[node]?.esUrl && isClusterDbPath(req.path) ? clusterDbs[node].esUrl : node2Url(node)) + req.url;
 
     const options = {
       method: req.method,
       arkime_opaque: req.headers['x-opaque-id'],
       skipReplace: req._skipReplace
     };
-    options.arkime_prefix = node2Prefix(node);
-    nodeUrl = nodeUrl.replace(/MULTIPREFIX_/g, options.arkime_prefix);
+    options.arkime_node = node;
+    nodeUrl = toNodePrefix(nodeUrl, node);
     const url = new URL(nodeUrl);
     if (url.protocol === 'https:') {
       options.agent = httpsAgent;
@@ -643,7 +702,7 @@ app.get('/_cluster/:type/details', function (req, res) {
     } else {
       result.inactive.push(clusterList[i]);
     }
-    result.prefix[clusterList[i]] = node2Prefix(clusters[clusterList[i]]);
+    result.prefix[clusterList[i]] = node2SessionsPrefix(clusters[clusterList[i]]);
   }
   res.send(result);
 });
@@ -701,9 +760,9 @@ app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
 app.put('/_template/MULTIPREFIX_sessions3_template', simpleGather1Cluster);
 
 app.put('/arkime_sids_v50', (req, res) => {
-  console.log('ERROR - Please set usersElasticsearch and usersPrefix in config.ini for multi-viewer. Maybe something like');
-  console.log('usersElasticsearch=http://localhost:9200');
-  console.log('usersPrefix=arkime');
+  console.log('ERROR - Please set usersDbUrl and usersDbPrefix in config.ini for multi-viewer. Maybe something like');
+  console.log('usersDbUrl=http://localhost:9200');
+  console.log('usersDbPrefix=arkime');
   process.exit(1);
 });
 
@@ -975,7 +1034,7 @@ function fixQuery (node, body, doneCb) {
           doneCb(outerErr, body);
         }
       };
-      if (clusterDbs[node]) {
+      if (clusterDbs[node]?.conn) {
         clusterDbs[node].conn.collection('files', DbClusterImpl.collectionOptions('files')).find({ where: ESConnection.decompile(query.query), size: 500 })
           .then(({ data }) => filesDone(data.map(h => h.doc)))
           .catch((err) => {
@@ -983,7 +1042,7 @@ function fixQuery (node, body, doneCb) {
             filesDone([]);
           });
       } else {
-        clients[node].search({ index: node2Prefix(node) + 'files', size: 500, body: query }, (err, result) => {
+        (clusterDbs[node]?.client ?? clients[node]).search({ index: node2ClusterPrefix(node) + 'files', size: 500, body: query }, (err, result) => {
           if (err) {
             console.log(`ERROR - multies files lookup for cluster '${node2Name(node)}':`, err.message);
             return filesDone([]);
@@ -1247,8 +1306,7 @@ function msearch (req, res) {
       });
     }, (err) => {
       bodies[node] = nlines.join('\n') + '\n';
-      const prefix = node2Prefix(node);
-      bodies[node] = bodies[node].replace(/MULTIPREFIX_/g, prefix);
+      bodies[node] = toNodePrefix(bodies[node], node);
       nodeCb();
     });
   }, (err) => {
@@ -1293,8 +1351,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
     const node = clusters[cluster];
     delete body.cluster;
 
-    const prefix = node2Prefix(node);
-    const index = req.params.index.replace(/MULTIPREFIX_/g, prefix);
+    const index = toNodePrefix(req.params.index, node);
     const id = req.params.id;
 
     if (chImpls[node] && isSessionsIndex(req.params.index)) {
@@ -1307,7 +1364,7 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
       }
     }
 
-    const collName = clusterDbs[node] && MultiesClusterDb.collectionName(req.path);
+    const collName = clusterDbs[node]?.conn && MultiesClusterDb.collectionName(req.path);
     if (collName) {
       try {
         const result = await MultiesClusterDb.answer(clusterDbs[node].conn.collection(collName, DbClusterImpl.collectionOptions(collName)), 'update', id, req.query, JSON.stringify(body));
@@ -1327,7 +1384,8 @@ app.post(['/:index/:type/:id/_update', '/:index/_update/:id'], async (req, res) 
     };
 
     try {
-      const { body: result } = await clients[node].update(params);
+      const client = clusterDbs[node]?.client && isClusterDbPath(req.path) ? clusterDbs[node].client : clients[node];
+      const { body: result } = await client.update(params);
       return res.send(result);
     } catch (err) {
       console.log('ERROR - /%s/%s/%s/_update', ArkimeUtil.sanitizeStr(req.params.index), ArkimeUtil.sanitizeStr(req.params.type), ArkimeUtil.sanitizeStr(req.params.id), err);
@@ -1351,8 +1409,8 @@ app.post('/:index/:type/_count', clusterDbOp('count'), sessionsCount);
 
 app.post('/_cache/clear', simpleGather1Cluster);
 app.post('/_cluster/reroute', simpleGather1Cluster);
-app.get('/MULTIPREFIX_*/_flush', clusterDbOp('refresh'), simpleGather1Cluster);
-app.get('/MULTIPREFIX_*/_refresh', clusterDbOp('refresh'), simpleGather1Cluster);
+app.get('/MULTIPREFIX_*/_flush', clusterDbsToo('flush'), clusterDbOp('refresh'), simpleGather1Cluster);
+app.get('/MULTIPREFIX_*/_refresh', clusterDbsToo('refresh'), clusterDbOp('refresh'), simpleGather1Cluster);
 
 app.post('/MULTIPREFIX_hunts/_doc', clusterDbOp('index'), simpleGather1Cluster);
 app.put('/MULTIPREFIX_hunts/_doc/:id', clusterDbOp('index'), simpleGather1Cluster);
@@ -1447,8 +1505,7 @@ async function premain () {
       console.log('WARNING - multiESNodes may be using a comma as a host delimiter, change to semicolon');
     }
 
-    let esNode = node.split(',')[0].trim();
-    esNode = esNode.startsWith('http') ? esNode : `http://${esNode}`;
+    const esNode = node2Url(node);
 
     const esClientOptions = {
       node: esNode,
@@ -1481,10 +1538,10 @@ async function premain () {
     clients[node] = new Client(esClientOptions);
 
     const chUrl = node2DbUrl(node, 'sessionsDbUrl');
-    if (chUrl) {
+    if (chUrl && /^(clickhouses?|chttps?):\/\//i.test(chUrl)) {
       try {
         const DbCHImpl = require('./db.ch.js');
-        chImpls[node] = new DbCHImpl({ sessionsDbUrl: chUrl, prefix: node2Prefix(node) });
+        chImpls[node] = new DbCHImpl({ sessionsDbUrl: chUrl, prefix: node2SessionsPrefix(node) });
         console.log(`multies: ClickHouse sessions backend for cluster '${nodeName}' -> ${chUrl}`);
       } catch (err) {
         console.log(`multies: failed to create ClickHouse backend for cluster '${nodeName}':`, err.message);
@@ -1495,12 +1552,17 @@ async function premain () {
     // The cluster's own ES is used unless it keeps capture's metadata, hunts and history elsewhere
     const clusterDbUrl = node2DbUrl(node, 'clusterDbUrl');
     if (clusterDbUrl) {
-      if (!/^postgres(ql)?:/i.test(clusterDbUrl)) {
-        console.log(`ERROR - multiESNodes clusterDbUrl for cluster '${nodeName}' must be postgres://`);
+      if (ArkimeUtil.dbIsES(clusterDbUrl)) {
+        // Another OpenSearch/Elasticsearch with the cluster's credentials, its requests pass straight through
+        const esUrl = ArkimeConfig.esUrl(clusterDbUrl).replace(/\/+$/, '');
+        clusterDbs[node] = { esUrl, client: new Client({ ...esClientOptions, node: esUrl }) };
+      } else if (/^postgres(ql)?:/i.test(clusterDbUrl)) {
+        clusterDbs[node] = { conn: ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster', prefix: node2ClusterPrefix(node) }) };
+        await DbClusterImpl.loadBaseFields(clusterDbs[node].conn.collection('fields'));
+      } else {
+        console.log(`ERROR - multiESNodes clusterDbUrl for cluster '${nodeName}' must be OpenSearch/Elasticsearch or postgres://`);
         process.exit(1);
       }
-      clusterDbs[node] = { conn: ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster', prefix: node2Prefix(node) }) };
-      await DbClusterImpl.loadBaseFields(clusterDbs[node].conn.collection('fields'));
       console.log(`multies: ${clusterDbUrl.split(':')[0]} cluster db for cluster '${nodeName}'`);
     }
   }
