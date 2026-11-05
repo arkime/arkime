@@ -54,6 +54,9 @@ void                   *esServer = 0;
 
 void arkime_db_ch_init(void); // db.ch.c, alternate sessions store
 
+// sessionsDbUrl schemes besides OpenSearch/Elasticsearch, see arkime_db_sessions_register
+LOCAL ArkimeStringHashStd_t    sessionsDbSchemes;
+
 // Holds stats, dstats, files, fields and sequence, ES unless clusterDbUrl says otherwise, see arkime_db_cluster_register
 LOCAL ArkimeStringHashStd_t    clusterDbSchemes;
 LOCAL const ArkimeClusterDb_t *clusterDb;
@@ -2834,11 +2837,41 @@ void arkime_db_cluster_register(char *scheme, ArkimeClusterDbInit init)
     arkime_string_add(&clusterDbSchemes, scheme, init, TRUE);
 }
 /******************************************************************************/
+// Plugins can register schemes before arkime_db_init
+void arkime_db_sessions_register(char *scheme, ArkimeSessionsDbInit init)
+{
+    if (!sessionsDbSchemes.size)
+        HASH_INIT(s_, sessionsDbSchemes, arkime_string_hash, arkime_string_cmp);
+    arkime_string_add(&sessionsDbSchemes, scheme, init, TRUE);
+}
+/******************************************************************************/
+// sessionsDbUrl or else elasticsearch, the first url's scheme picks it and no scheme is http
+LOCAL void arkime_db_sessions_init()
+{
+    char *url = arkime_config_str(NULL, "sessionsDbUrl", NULL);
+    if (!url)
+        url = g_strdup(config.elasticsearch);
+
+    const char *first = url;
+    while (*first == ' ' || *first == ',')
+        first++;
+    const char *colon = strstr(first, "://");
+    char *scheme = colon && colon < first + strcspn(first, ",") ? g_ascii_strdown(first, colon - first) : g_strdup("http");
+    ArkimeString_t *str;
+    HASH_FIND(s_, sessionsDbSchemes, scheme, str);
+    if (!str)
+        CONFIGEXIT("sessionsDbUrl scheme '%s' isn't supported, use Elasticsearch/OpenSearch or ClickHouse", scheme);
+    ((ArkimeSessionsDbInit)str->uw)(url);
+    g_free(scheme);
+    g_free(url);
+
+    // ClickHouse and plugin sessions still use elasticsearch for the checks and the default cluster db
+    if (!esServer)
+        esServer = arkime_db_create_es_server(config.elasticsearch);
+}
+/******************************************************************************/
 LOCAL void arkime_db_cluster_init()
 {
-    arkime_db_es_init();
-    arkime_db_pg_init();
-
     // A dryRun never writes, so it gets the ES one without a server
     char *url = config.dryRun ? NULL : arkime_config_str(NULL, "clusterDbUrl", NULL);
     const char *colon = url ? strstr(url, "://") : NULL;
@@ -2864,13 +2897,16 @@ void arkime_db_init()
         fflush(stderr);
         ARKIME_UNLOCK(outputted);
     }
+    // A rootPlugins plugin may have registered schemes already
+    arkime_db_es_init();
+    arkime_db_pg_init();
+    arkime_db_ch_init();
+
     if (!config.dryRun) {
-        esServer = arkime_db_create_es_server(config.elasticsearch);
+        arkime_db_sessions_init();
 
         esBulkQuery = arkime_config_str(NULL, "esBulkQuery", "/_bulk");
         esBulkQueryLen = strlen(esBulkQuery);
-
-        arkime_db_ch_init();
 
         arkime_db_health_check(GINT_TO_POINTER(1));
     }

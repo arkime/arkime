@@ -156,7 +156,7 @@ app.use((req, res, next) => {
 // The cluster's sessions ES, an OpenSearch/Elasticsearch sessionsDbUrl replaces the entry's url
 function node2Url (node) {
   const sessionsDbUrl = node2DbUrl(node, 'sessionsDbUrl');
-  if (sessionsDbUrl && !/^(clickhouses?|chttps?):\/\//i.test(sessionsDbUrl)) {
+  if (sessionsDbUrl && ArkimeConfig.isEsUrl(sessionsDbUrl)) {
     return ArkimeConfig.esUrl(sessionsDbUrl).replace(/\/+$/, '');
   }
   const url = node.split(',')[0].trim();

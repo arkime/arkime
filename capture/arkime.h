@@ -1171,7 +1171,12 @@ typedef struct {
 
 typedef const ArkimeClusterDb_t *(*ArkimeClusterDbInit)(const char *url);
 
+// A rootPlugins plugin can add a clusterDbUrl or sessionsDbUrl scheme, they load before arkime_db_init picks one.
+// A sessions init sets up sending the sessions, eg with arkime_db_set_send_bulk2.
+typedef void (*ArkimeSessionsDbInit)(const char *url);
+
 void     arkime_db_cluster_register(char *scheme, ArkimeClusterDbInit init);
+void     arkime_db_sessions_register(char *scheme, ArkimeSessionsDbInit init);
 void     arkime_db_init();
 void     arkime_db_set_tokens_enabled(gboolean enabled);
 gboolean arkime_db_tokens_enabled(void);

@@ -112,6 +112,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           clusterDbUrl and clusterDbPrefix
   - #4430 Sessions supports OpenSearch/Elasticsearch or ClickHouse, cluster supports OpenSearch/Elasticsearch or Postgres,
           users supports OpenSearch/Elasticsearch, SQLite or Postgres
+  - #4430 A capture rootPlugins plugin can add a clusterDbUrl or sessionsDbUrl scheme with arkime_db_cluster_register or
+          arkime_db_sessions_register
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
 ## Capture

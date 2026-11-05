@@ -115,18 +115,8 @@ LOCAL gboolean arkime_db_ch_parse_url(const char *url, char **hostUrl, char **us
     return TRUE;
 }
 /******************************************************************************/
-void arkime_db_ch_init(void)
+LOCAL void arkime_db_ch_sessions_init(const char *sessionsDbUrl)
 {
-    const char *sessionsDbUrl = arkime_config_str(NULL, "sessionsDbUrl", NULL);
-
-    if (!sessionsDbUrl ||
-        (!g_str_has_prefix(sessionsDbUrl, "clickhouse://") &&
-         !g_str_has_prefix(sessionsDbUrl, "clickhouses://") &&
-         !g_str_has_prefix(sessionsDbUrl, "chttp://") &&
-         !g_str_has_prefix(sessionsDbUrl, "chttps://"))) {
-        return;
-    }
-
     char *hostUrl = NULL;
     char *userpwd = NULL;
     if (!arkime_db_ch_parse_url(sessionsDbUrl, &hostUrl, &userpwd)) {
@@ -174,6 +164,13 @@ void arkime_db_ch_init(void)
     g_free(insert);
     g_free(hostUrl);
     g_free(userpwd);
+}
+/******************************************************************************/
+void arkime_db_ch_init(void)
+{
+    const char *schemes[] = {"clickhouse", "clickhouses", "chttp", "chttps"};
+    for (int i = 0; i < ARRAY_LEN(schemes); i++)
+        arkime_db_sessions_register((char *)schemes[i], arkime_db_ch_sessions_init);
 }
 /******************************************************************************/
 /* Don't let capture exit while the final session batch is still in flight */

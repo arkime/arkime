@@ -669,17 +669,21 @@ LOCAL char *arkime_config_prefix(GKeyFile *keyfile, const char *key, char *def)
 char *arkime_config_es_url(const char *url)
 {
     gchar **urls = g_strsplit(url, ",", 0);
+    GString *result = g_string_new(NULL);
     for (int i = 0; urls[i]; i++) {
-        const char *colon = strstr(urls[i], "://");
-        if (colon && (g_str_has_prefix(urls[i], "elasticsearch") || g_str_has_prefix(urls[i], "opensearch"))) {
-            char *tmp = g_strdup_printf("%s%s", colon[-1] == 's' ? "https" : "http", colon);
-            g_free(urls[i]);
-            urls[i] = tmp;
-        }
+        const char *u = g_strstrip(urls[i]);
+        if (!*u)
+            continue;
+        if (result->len)
+            g_string_append_c(result, ',');
+        const char *colon = strstr(u, "://");
+        if (colon && (g_str_has_prefix(u, "elasticsearch") || g_str_has_prefix(u, "opensearch")))
+            g_string_append_printf(result, "%s%s", colon[-1] == 's' ? "https" : "http", colon);
+        else
+            g_string_append(result, u);
     }
-    char *result = g_strjoinv(",", urls);
     g_strfreev(urls);
-    return result;
+    return g_string_free(result, FALSE);
 }
 /******************************************************************************/
 LOCAL char arkime_config_key_sep(const char *key)
@@ -1265,14 +1269,7 @@ LOCAL void arkime_config_load()
     config.prefix           = arkime_config_prefix(keyfile, "sessionsDbPrefix", arkime_config_str(keyfile, "prefix", "arkime_"));
     config.clusterPrefix    = arkime_config_prefix(keyfile, "clusterDbPrefix", g_strdup(config.prefix));
 
-    // An OpenSearch/Elasticsearch sessionsDbUrl replaces elasticsearch, a ClickHouse one is db.ch.c's
-    char *sessionsDbUrl = arkime_config_str(keyfile, "sessionsDbUrl", NULL);
-    if (sessionsDbUrl && !g_regex_match_simple("^(clickhouses?|chttps?)://", sessionsDbUrl, 0, 0)) {
-        config.elasticsearch = arkime_config_es_url(sessionsDbUrl);
-    } else {
-        config.elasticsearch = arkime_config_str(keyfile, "elasticsearch", "localhost:9200");
-    }
-    g_free(sessionsDbUrl);
+    config.elasticsearch    = arkime_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = arkime_config_str_list(keyfile, "interface", NULL);
     config.pcapDir          = arkime_config_str_list(keyfile, "pcapDir", "/opt/arkime/raw");
     config.bpf              = arkime_config_str(keyfile, "bpf", NULL);

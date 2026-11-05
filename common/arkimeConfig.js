@@ -331,11 +331,18 @@ class ArkimeConfig {
   }
 
   /**
-   * sessionsDbUrl is set and is OpenSearch/Elasticsearch, not ClickHouse
+   * sessionsDbUrl is set and is OpenSearch/Elasticsearch, not ClickHouse or a capture plugin's scheme
    */
   static sessionsDbIsES () {
     const url = ArkimeConfig.get('sessionsDbUrl');
-    return !!url && !/^(clickhouses?|chttps?):\/\//i.test(url);
+    return !!url && ArkimeConfig.isEsUrl(url);
+  }
+
+  /**
+   * No scheme, http(s) or the elasticsearch:// and opensearch:// style ones
+   */
+  static isEsUrl (url) {
+    return !url.includes('://') || /^(https?|elasticsearchs?|opensearchs?):\/\//i.test(url);
   }
 
   /**

@@ -534,9 +534,19 @@ LOCAL const ArkimeClusterDb_t *arkime_db_es_cluster_init(const char *url)
     return &esClusterDb;
 }
 /******************************************************************************/
+// The sessions ES, it is also what the health check, template check and the cluster db default use
+LOCAL void arkime_db_es_sessions_init(const char *url)
+{
+    g_free(config.elasticsearch);
+    config.elasticsearch = arkime_config_es_url(url);
+    esServer = arkime_db_create_es_server(config.elasticsearch);
+}
+/******************************************************************************/
 void arkime_db_es_init()
 {
     const char *schemes[] = {"http", "https", "elasticsearch", "elasticsearchs", "opensearch", "opensearchs"};
-    for (int i = 0; i < ARRAY_LEN(schemes); i++)
+    for (int i = 0; i < ARRAY_LEN(schemes); i++) {
+        arkime_db_sessions_register((char *)schemes[i], arkime_db_es_sessions_init);
         arkime_db_cluster_register((char *)schemes[i], arkime_db_es_cluster_init);
+    }
 }
