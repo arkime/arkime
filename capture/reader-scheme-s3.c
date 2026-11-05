@@ -15,6 +15,7 @@ extern ArkimeConfig_t        config;
 
 LOCAL GHashTable            *bucket2Region;
 LOCAL char                  *s3Host;
+LOCAL gboolean              s3UseHttp;
 LOCAL char                  *s3Region;
 LOCAL gboolean               inited;
 LOCAL gboolean               s3PathAccessStyle;
@@ -78,6 +79,7 @@ LOCAL void s3_enqueue(S3ItemHead *head, const char *url)
 LOCAL void scheme_s3_init()
 {
     s3Host = arkime_config_str(NULL, "s3Host", NULL);
+    s3UseHttp = arkime_config_boolean(NULL, "s3UseHttp", FALSE);
     s3Region = arkime_config_str(NULL, "s3Region", "us-east-1");
     config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
     s3PathAccessStyle = arkime_config_boolean(NULL, "s3PathAccessStyle", FALSE);
@@ -550,7 +552,7 @@ LOCAL int scheme_s3_load_dir(const char *dir, ArkimeSchemeFlags flags, ArkimeSch
         }
 
         char schemehostport[300];
-        snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
+        snprintf(schemehostport, sizeof(schemehostport), "%s://%s", s3UseHttp ? "http" : "https", hostport);
 
         server = scheme_s3_make_server(schemehostport, region);
 
@@ -768,7 +770,7 @@ LOCAL int scheme_s3_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeA
         }
 
         char schemehostport[300];
-        snprintf(schemehostport, sizeof(schemehostport), "https://%s", hostport);
+        snprintf(schemehostport, sizeof(schemehostport), "%s://%s", s3UseHttp ? "http" : "https", hostport);
 
         void *server = scheme_s3_make_server(schemehostport, region);
 
