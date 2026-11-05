@@ -26,7 +26,9 @@ SPDX-License-Identifier: Apache-2.0
       density="compact"
       color="primary"
       class="session-detail-tabs mt-1">
-      <v-tab value="details">
+      <v-tab
+        value="details"
+        @click="rememberTab('details')">
         <v-icon
           icon="mdi-information-outline"
           size="small"
@@ -35,7 +37,8 @@ SPDX-License-Identifier: Apache-2.0
       </v-tab>
       <v-tab
         v-if="!hidePackets && !user.hidePcap"
-        value="packets">
+        value="packets"
+        @click="rememberTab('packets')">
         <v-icon
           icon="mdi-package-variant-closed"
           size="small"
@@ -54,7 +57,8 @@ SPDX-License-Identifier: Apache-2.0
       </v-tab>
       <v-tab
         v-if="hasTshark && !hidePackets && !user.hidePcap"
-        value="tshark">
+        value="tshark"
+        @click="rememberTab('tshark')">
         <v-icon
           icon="mdi-magnify-scan"
           size="small"
@@ -575,6 +579,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const defaultUserSettings = {
+  sessionDetailTab: 'details',
   detailFormat: 'last',
   numPackets: 'last',
   showTimestamps: 'last'
@@ -646,7 +651,31 @@ const packetErrorResponse = (response) => {
   return null;
 };
 const tsharkOutputRef = ref(null);
-const activeTab = ref('details');
+
+// The tab a session opens on comes from the sessionDetailTab setting, or for
+// 'last' the tab the user last clicked. One the user can't see (no pcap
+// access, no tshark) falls back to Details.
+const DETAIL_TAB_KEY = 'arkime-session-detail-tab';
+const tabAvailable = (tab) => {
+  if (tab === 'details') { return true; }
+  if (user.value?.hidePcap || hidePackets.value) { return false; }
+  return tab === 'packets' || (tab === 'tshark' && hasTshark.value);
+};
+const initialTab = () => {
+  let tab = user.value?.settings?.sessionDetailTab || 'details';
+  if (tab === 'last') {
+    try { tab = localStorage[DETAIL_TAB_KEY]; } catch (e) { tab = undefined; }
+  }
+  return tabAvailable(tab) ? tab : 'details';
+};
+const activeTab = ref(initialTab());
+
+// Only a click is remembered, not a fall back to Details, so a session
+// without packets doesn't reset the last used tab
+const rememberTab = (tab) => {
+  if (user.value?.settings?.sessionDetailTab !== 'last') { return; }
+  try { localStorage[DETAIL_TAB_KEY] = tab; } catch (e) { /* private mode */ }
+};
 const tsharkFilter = ref('');
 const tsharkSelectedIdx = ref(0);
 const tsharkExpandSignal = ref(0);
@@ -1594,6 +1623,14 @@ watch(activeTab, (newTab) => {
   }
 });
 
+// a session with no packets hides the Packets and Shark tabs once its detail
+// loads, so one that opened on either moves to Details
+watch(hidePackets, (hidden) => {
+  if (!hidden || activeTab.value === 'details') { return; }
+  cancelTshark();
+  activeTab.value = 'details';
+});
+
 // picking a different packet count has to re-run the dissection, otherwise the
 // menu label changes and nothing else does
 watch(tsharkLength, () => {
@@ -1613,6 +1650,9 @@ onMounted(async () => {
   decodings.value = response;
   setBrowserParams();
   getPackets();
+  // opening on the Shark tab doesn't change activeTab, so its watcher won't
+  // start the dissection
+  if (activeTab.value === 'tshark') { getTshark(); }
 });
 
 onUnmounted(() => {
