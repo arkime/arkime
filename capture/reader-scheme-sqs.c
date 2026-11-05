@@ -14,6 +14,7 @@ extern ArkimeConfig_t        config;
 
 
 LOCAL char                  *s3Host;
+LOCAL gboolean              s3UseHttp;
 LOCAL gboolean               inited;
 
 typedef struct sqs_item {
@@ -68,6 +69,7 @@ LOCAL void sqs_init()
 {
     inited = TRUE;
     s3Host = arkime_config_str(NULL, "s3Host", NULL);
+    s3UseHttp = arkime_config_boolean(NULL, "s3UseHttp", FALSE);
 }
 /******************************************************************************/
 LOCAL void sqs_delete_done(int UNUSED(code), uint8_t *data, int data_len, gpointer UNUSED(uw))
@@ -330,7 +332,7 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
             if (isaws) {
                 snprintf(s3url, sizeof(s3url), "s3://%s/%s", item->bucket, item->key);
             } else if (s3Host) {
-                snprintf(s3url, sizeof(s3url), "s3https://%s/%s/%s", s3Host, item->bucket, item->key);
+                snprintf(s3url, sizeof(s3url), "s3%s://%s/%s/%s", s3UseHttp ? "http" : "https", s3Host, item->bucket, item->key);
             } else {
                 snprintf(s3url, sizeof(s3url), "s3%s/%s/%s", schemehostport, item->bucket, item->key);
             }

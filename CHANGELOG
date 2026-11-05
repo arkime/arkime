@@ -71,6 +71,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4403 userNameHeader no longer selects the auth mode, authMode must be set or it defaults to digest. Header auth now needs
           authMode=header, and a userNameHeader that is an auth mode name (digest, basic, oidc, ...) is ignored, so replace
           userNameHeader=digest from older cont3xt and wise sample configs with authMode=digest
+  - #4432 The s3 writer now finds AWS credentials the same way as the s3/sqs readers: s3AccessKeyId, then AWS_ACCESS_KEY_ID,
+          ~/.aws credentials/config (--profile), EKS, ECS and finally instance metadata. A host with an instance role
+          and AWS env variables or ~/.aws files now uses those instead. s3UseECSEnv is no longer needed
+  - #4432 awsUseTokenForMetadata now defaults to true, so the s3/sqs readers use IMDSv2 like the s3 writer did
+          (s3UseTokenForMetadata is still accepted). Set it to false to skip the token request on hosts without IMDSv2
+  - #4432 s3UseHttp now also applies to the s3/sqs readers when s3Host is set, they always used https before
 ## Release
   - #4389 Node 26.12.1
   - #4280 Each release now includes a CycloneDX SBOM, arkime-sbom.cdx.json, covering the server and browser npm
@@ -96,7 +102,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Icons switched from Font Awesome to Material Design Icons
   - #3992 Theme choice is saved per user and follows you between all four apps
   - #4424 /api/users/min without a roleId now requires usersAdmin, it was listing every user to any logged in user
-  - #4432 Add Pushover notifier, with priority (including emergency alerts that repeat until acknowledged), sound,
+  - Add Pushover notifier, with priority (including emergency alerts that repeat until acknowledged), sound,
           device and optional end-to-end encryption settings
 ## Capture/Viewer
   - pcapng support greatly improved: read/write files with multiple interfaces (up to 255) and different link types (DLTs), write pcapng when copying pcapng input, and download/export sessions as pcapng
@@ -127,6 +133,11 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           and each rule no longer allocates ~40KB of per field tables. log: true for a fields: rule now logs
           "field (value), ..." instead of "field: value, ..."
   - New xdp pcapReadMethod that reads with AF_XDP sockets, one socket and thread per nic receive queue. Linux only, requires libxdp at build time
+  - #4432 s3 writer and s3/sqs readers support EKS IRSA (AWS_ROLE_ARN + AWS_WEB_IDENTITY_TOKEN_FILE) and Pod Identity
+          (AWS_CONTAINER_CREDENTIALS_FULL_URI + AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE) credentials, so EKS pods
+          no longer need instance metadata access. Used when the env variables are set and no access key is configured
+  - #4432 s3/sqs readers treat an empty s3AccessKeyId/sqsAccessKeyId setting as unset, like the s3 writer, instead of signing with an empty key
+  - #4432 AWS instance metadata credentials use a 10 second timeout instead of 120, and the ECS credentials endpoint no longer gets an IMDSv2 token request
   - Support multiple GeoIP vendors (MaxMind GeoLite2/GeoIP2, GeoOpen, ipinfo, db-ip)
   - Renamed geoLite2Country/geoLite2ASN config settings to geoFile/geoASNFile (deprecated names still accepted)
   - #4210 Add the [protocol-settings] section to set idle/save/closing/packets per mProtocol, eg tcp=idle:600;closing:5

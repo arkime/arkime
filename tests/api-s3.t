@@ -1,4 +1,4 @@
-use Test::More tests => 42;
+use Test::More tests => 75;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -129,6 +129,87 @@ is (`grep -c 'Invalid S3 bucket' /tmp/arkime.capture.sqsbadbucket.log` + 0, 3, "
 
 system(qq(../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n s3-test -r "s3://evil.example#/$specialDir/plain.pcap" > /tmp/arkime.capture.s3badbucket.log 2>&1));
 is (system("grep -q 'Invalid S3 bucket' /tmp/arkime.capture.s3badbucket.log"), 0, "bad s3:// bucket rejected");
+
+# --- aws credentials chain (EKS IRSA, Pod Identity, env, ECS) from mini-aws, with the config keys blanked ---
+my $eksvalue = int(rand() * 1000000);
+my $eksBase = "env -u ECS_CONTAINER_METADATA_URI_V4 -u AWS_ACCESS_KEY_ID -u AWS_SECRET_ACCESS_KEY -u AWS_SESSION_TOKEN -u AWS_PROFILE -u AWS_ROLE_ARN -u AWS_WEB_IDENTITY_TOKEN_FILE " .
+              "-u AWS_CONTAINER_CREDENTIALS_FULL_URI -u AWS_CONTAINER_CREDENTIALS_RELATIVE_URI -u AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE " .
+              "-u AWS_CONTAINER_AUTHORIZATION_TOKEN AWS_SHARED_CREDENTIALS_FILE=/nonexistent AWS_CONFIG_FILE=/nonexistent";
+my $podEnv = "AWS_CONTAINER_CREDENTIALS_FULL_URI=http://127.0.0.1:4566/_eks/credentials AWS_CONTAINER_AUTHORIZATION_TOKEN_FILE";
+my $irsaEnv = "AWS_ROLE_ARN=arn:aws:iam::000000000000:role/arkime AWS_ENDPOINT_URL_STS=http://127.0.0.1:4566 AWS_WEB_IDENTITY_TOKEN_FILE";
+my $blankOpts = "-o s3AccessKeyId= -o s3SecretAccessKey=";
+my %eksTokens = (pod => "mini-aws-pod-identity-token", web => "mini.aws-web+identity/token=", bad => "bad-token");
+foreach my $t (keys %eksTokens) {
+    open(my $fh, '>', "/tmp/arkime.eks.$t") or die "Can't write /tmp/arkime.eks.$t";
+    print $fh "$eksTokens{$t}\n";
+    close($fh);
+}
+
+sub authSeen {
+my ($reset) = @_;
+    my $url = "http://localhost:4566/_auth_seen";
+    return from_json(($reset ? $ArkimeTest::userAgent->delete($url) : $ArkimeTest::userAgent->get($url))->content);
+}
+
+# Writer uploads with the EKS credentials, then the viewer reads the pcap back
+sub eksWriter {
+my ($name, $env, $opts, $key, $token) = @_;
+    my $tag = "eks$name-$eksvalue";
+    authSeen(1);
+    system("$eksBase $env ../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n s3-test $opts --copy -r pcap/socks-http-pass.pcap --tag $tag --flush > /tmp/arkime.capture.$tag.log 2>&1");
+    my $seen = authSeen();
+    ok (($seen->{keys}->{$key}->{$token} // 0) > 0, "s3 writer signed with $name credentials");
+
+    my $json = countTest2(1, "date=-1&expression=" . uri_escape("tags=$tag && port.src == 54072"));
+    my $content = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/session/s3/$json->{data}->[0]->{id}/packets?line=false&ts=false&base=ascii")->content;
+    ok ($content =~ /domain in examples without prior coordination or asking for permission/, "$name written pcap readable");
+    return $seen;
+}
+
+eksWriter("pod", "$podEnv=/tmp/arkime.eks.pod", $blankOpts, "ASIAMINIPODIDENTITY", "mini/pod+session+token=");
+# An empty node setting from the environment is the same as unset
+my $seen = eksWriter("irsa", "$irsaEnv=/tmp/arkime.eks.web ARKIME_s3DASHtest__s3AccessKeyId= ARKIME_s3DASHtest__s3SecretAccessKey=", "", "ASIAMINIIRSA", "mini/irsa+session+token=");
+is ($seen->{sts}->{"arkime-s3-test"}, 1, "STS called once with the node session name");
+# The writer uses the same aws credentials chain as the readers, so env credentials work too
+eksWriter("env", "AWS_ACCESS_KEY_ID=AKIAMINIENV AWS_SECRET_ACCESS_KEY=mini/env+secret= AWS_SESSION_TOKEN=mini/env+session+token=", $blankOpts, "AKIAMINIENV", "mini/env+session+token=");
+# ECS container credentials are found without s3UseECSEnv, and don't get an IMDSv2 token request
+$seen = eksWriter("ecs", "ECS_CONTAINER_METADATA_URI_V4=http://127.0.0.1:4566/v4/mini AWS_CONTAINER_CREDENTIALS_RELATIVE_URI=/_ecs/credentials", "$blankOpts -o s3UseECSEnv=true", "ASIAMINIECS", "mini/ecs+session+token=");
+is ($seen->{imdsToken} // 0, 0, "no IMDSv2 token request to the ECS endpoint");
+is (system("grep -q 's3UseECSEnv is no longer needed' /tmp/arkime.capture.eksecs-$eksvalue.log"), 0, "s3UseECSEnv warns it isn't needed");
+
+# s3 reader through the aws credentials chain
+my $ekskey = "eks-$eksvalue.pcap";
+system("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap s3://testbucket/$ekskey > /dev/null 2>&1");
+
+sub eksReader {
+my ($name, $env, $opts, $key, $token) = @_;
+    my $tag = "eksread$name-$eksvalue";
+    authSeen(1);
+    system("$eksBase $env ../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n sqs-test $opts --tag $tag -r s3http://127.0.0.1:4566/testbucket/$ekskey > /tmp/arkime.capture.$tag.log 2>&1");
+    ok ((authSeen()->{keys}->{$key}->{$token} // 0) > 0, "s3 reader signed with $name credentials");
+    countTest2($expected, "date=-1&expression=" . uri_escape("tags=$tag"));
+}
+
+eksReader("pod", "$podEnv=/tmp/arkime.eks.pod ARKIME_sqsDASHtest__s3AccessKeyId= ARKIME_sqsDASHtest__s3SecretAccessKey=", "", "ASIAMINIPODIDENTITY", "mini/pod+session+token=");
+eksReader("irsa", "$irsaEnv=/tmp/arkime.eks.web", $blankOpts, "ASIAMINIIRSA", "mini/irsa+session+token=");
+
+# The s3 writer's s3AccessKeyId and the sqs reader's sqsAccessKeyId are kept apart, even though the writer starts first
+my $sqsekstag = "ekssqs-$eksvalue";
+system("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap s3://sqsbucket/$sqsekstag.pcap > /dev/null 2>&1");
+authSeen(1);
+system("$eksBase ../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n s3-test -o sqsAccessKeyId=AKIAMINISQS -o sqsSecretAccessKey=mini/sqs+secret= --copy --tag $sqsekstag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.$sqsekstag.log 2>&1");
+$seen = authSeen();
+ok (($seen->{keys}->{AKIAMINISQS}->{""} // 0) > 0, "sqs reader signed with sqsAccessKeyId");
+ok (($seen->{keys}->{foo}->{""} // 0) > 0, "s3 writer and reader signed with s3AccessKeyId");
+countTest2($expected, "date=-1&expression=" . uri_escape("tags=$sqsekstag"));
+
+# Bad tokens exit with the error from STS or the Pod Identity agent
+my $badlog = "/tmp/arkime.capture.eksbad-$eksvalue.log";
+isnt (system("$eksBase $irsaEnv=/tmp/arkime.eks.bad ../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n s3-test $blankOpts --copy -r pcap/socks-http-pass.pcap > $badlog 2>&1"), 0, "s3 writer exits with a bad web identity token");
+is (system("grep -q 'InvalidIdentityToken' $badlog"), 0, "STS error logged");
+isnt (system("$eksBase $podEnv=/tmp/arkime.eks.bad ../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n sqs-test $blankOpts -r s3http://127.0.0.1:4566/testbucket/$ekskey > $badlog 2>&1"), 0, "s3 reader exits with a bad pod identity token");
+is (system("grep -q 'Container credentials request failed 401' $badlog"), 0, "Pod Identity error logged");
+unlink("/tmp/arkime.eks.$_") foreach (keys %eksTokens);
 
 # --- s3Expire (issue #4099): force expire via regressionTests endpoint ---
 my $filesQuery = '{"query":{"bool":{"must":[{"prefix":{"name":"s3://"}}],"must_not":{"term":{"locked":1}}}}}';
