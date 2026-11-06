@@ -7,7 +7,10 @@
 'use strict';
 
 const cryptoLib = require('crypto');
+const fs = require('fs');
 const net = require('net');
+const path = require('path');
+const { LRUCache } = require('lru-cache');
 
 class ArkimeDb {
   // ----------------------------------------------------------------------------
@@ -182,15 +185,41 @@ class ArkimeDb {
   // ----------------------------------------------------------------------------
   // Connections and collections
   // ----------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------
+  // Db url schemes
+  //
+  // Every app and tool opens its dbs through connect, the url's scheme picks the backend. Built in:
+  //   http(s), elasticsearch(s), opensearch(s)   OpenSearch/Elasticsearch, can hold anything
+  //   postgres(ql)                                 can hold the users, cont3xt and cluster dbs
+  //   sqlite(3)                                    can hold the users and cont3xt dbs
+  // The sessions db is separate, see the viewer's sessionsDbUrl handling.
+  //
+  // dbPlugins adds more, a list of modules found in pluginsDir, set in each app's section:
+  //   dbPlugins=mydb.js
+  // mydb.js:
+  //   exports.registerDb = (api) => {
+  //     class MyCollection extends api.ArkimeDb.Collection { ... the methods listed on ArkimeDb.Collection }
+  //     class MyConnection {
+  //       constructor (url, options) { ... options.prefix goes in front of every table name }
+  //       collection (name, options) { return a MyCollection, the same one each time for a name }
+  //       async close () { ... }
+  //       withPrefix (prefix) { optional, this db with another prefix sharing the same client, else this one is used }
+  //       async schemaVersion (minVersion) { optional, the db.pl schema version, exits when under minVersion }
+  //       static tlsHost (url) { optional, the host its TLS goes to, for the loopback insecure rule }
+  //     }
+  //     api.registerDbScheme('mydb', MyConnection, { cluster: false });
+  //   };
+  // Then mydb://... works for usersDbUrl, cont3xt's dbUrl and every other plain collection db. With
+  // cluster: true it can also be the viewer's and multies' dbUrl, capture writes that db too so it also
+  // needs a capture rootPlugins writer, see arkime_db_cluster_register.
+  // ----------------------------------------------------------------------------
+  // url scheme -> { backend: module path or Connection class, es, cluster }, see register
   static #backends = new Map([
-    ['http', './arkimeDb.es'],
-    ['https', './arkimeDb.es'],
-    ['elasticsearch', './arkimeDb.es'],
-    ['opensearch', './arkimeDb.es'],
-    ['sqlite', './arkimeDb.sqlite'],
-    ['sqlite3', './arkimeDb.sqlite'],
-    ['postgres', './arkimeDb.pg'],
-    ['postgresql', './arkimeDb.pg']
+    ...['http', 'https', 'elasticsearch', 'elasticsearchs', 'opensearch', 'opensearchs'].map(s => [s, { backend: './arkimeDb.es', es: true, cluster: true }]),
+    ['sqlite', { backend: './arkimeDb.sqlite' }],
+    ['sqlite3', { backend: './arkimeDb.sqlite' }],
+    ['postgres', { backend: './arkimeDb.pg', cluster: true }],
+    ['postgresql', { backend: './arkimeDb.pg', cluster: true }]
   ]);
 
   static #connections = new Map();
@@ -198,50 +227,118 @@ class ArkimeDb {
   static #connOptions = ['prefix', 'node', 'apiKey', 'basicAuth', 'insecure', 'caTrustFile', 'clientKey', 'clientCert', 'clientKeyPass', 'requestTimeout'];
 
   /**
-   * Register a backend for a url scheme
+   * Register a db url scheme. Any registered scheme can hold the users db, cont3xt's db, parliament and the
+   * notifiers, those are plain collections. Only a cluster one can be dbUrl for the viewer and multies, capture
+   * writes that db too so it needs a capture rootPlugins writer for the scheme as well.
    * @param {string} scheme - The url scheme, without the ://
-   * @param {string|function} backend - A module path or a Connection class
+   * @param {string|function} backend - A module path or a Connection class. A Connection is constructed with
+   *   (url, options) and has collection(name, options) returning an ArkimeDb.Collection and async close().
+   * @param {object} [flags]
+   * @param {boolean} [flags.cluster=false] - It can hold the cluster db
+   * @param {boolean} [flags.es=false] - It is OpenSearch/Elasticsearch, only the built in schemes
    */
-  static register (scheme, backend) {
-    ArkimeDb.#backends.set(scheme, backend);
+  static register (scheme, backend, { cluster = false, es = false } = {}) {
+    ArkimeDb.#backends.set(scheme.toLowerCase(), { backend, cluster, es });
   }
 
   /**
    * Get a connection for a url, connections are shared per url and connection options.
-   * @param {string} url - The db url, the scheme picks the backend
+   * @param {string} url - The db url, the scheme picks the backend, no scheme is http
    * @param {object} options - Backend options, prefix is used by all of them.
    *   For ES, client reuses an existing @elastic/elasticsearch client.
    */
   static connect (url, options = {}) {
     if (options.client) {
-      return new (ArkimeDb.#backend('http'))(url, options);
+      return new (ArkimeDb.#backend(ArkimeDb.#scheme(url)))(url, options);
     }
 
     const key = `${url}\t${JSON.stringify(ArkimeDb.#connOptions.map(o => options[o] ?? null))}`;
     let conn = ArkimeDb.#connections.get(key);
     if (!conn) {
-      const scheme = url?.match(/^([a-z0-9+.-]+):/i)?.[1].toLowerCase();
-      conn = new (ArkimeDb.#backend(scheme))(url, options);
+      conn = new (ArkimeDb.#backend(ArkimeDb.#scheme(url)))(url, options);
       ArkimeDb.#connections.set(key, conn);
     }
     return conn;
   }
 
   /**
-   * Is the url (or a missing url) an Elasticsearch/OpenSearch db. Apps default to ES
-   * for anything they don't recognize, so only the other backends are checked.
+   * Is the url (or a missing url) an OpenSearch/Elasticsearch db, no scheme is http
    */
   static isES (url) {
-    return !/^(lmdb|redis[a-z-]*|sqlite3?|postgres(ql)?):/i.test(url ?? '');
+    return ArkimeDb.#entry(ArkimeDb.#scheme(url))?.es ?? false;
+  }
+
+  /**
+   * Can the url's scheme hold the cluster db
+   */
+  static holdsCluster (url) {
+    return ArkimeDb.#entry(ArkimeDb.#scheme(url))?.cluster ?? false;
+  }
+
+  /**
+   * The host a url's TLS connection goes to, undefined when it doesn't use TLS or can't be parsed. A backend
+   * answers for its scheme with a static tlsHost(url), without one only https urls use TLS.
+   */
+  static tlsHost (url) {
+    const entry = ArkimeDb.#entry(ArkimeDb.#scheme(url));
+    const backend = typeof entry?.backend === 'string' ? require(entry.backend) : entry?.backend;
+    if (typeof backend?.tlsHost === 'function') { return backend.tlsHost(url); }
+    const u = ArkimeUtil.parseUrl(url);
+    return u?.protocol === 'https:' ? u.hostname : undefined;
+  }
+
+  static #scheme (url) {
+    return url?.trim().match(/^([a-z][a-z0-9+.-]*):\/\//i)?.[1].toLowerCase() ?? 'http';
+  }
+
+  static #entry (scheme) {
+    ArkimeDb.#loadPlugins();
+    return ArkimeDb.#backends.get(scheme);
   }
 
   static #backend (scheme) {
-    const backend = ArkimeDb.#backends.get(scheme);
-    if (!backend) {
+    const entry = ArkimeDb.#entry(scheme);
+    if (!entry) {
       if (/^(lmdb|redis)/.test(scheme)) { throw new Error(`${scheme}:// is no longer supported as a db, use sqlite:// or postgres://`); }
-      throw new Error(`Unknown db url scheme '${scheme}'`);
+      throw new Error(`Unknown db url scheme '${scheme}', is its dbPlugins module loaded?`);
     }
-    return typeof backend === 'string' ? require(backend) : backend;
+    return typeof entry.backend === 'string' ? require(entry.backend) : entry.backend;
+  }
+
+  static #pluginsLoaded = false;
+  /**
+   * Load the dbPlugins setting's modules once, before the first scheme lookup, so every app and tool gets them.
+   * Each name is found in pluginsDir like viewerPlugins and the module exports registerDb(api), where
+   * api.registerDbScheme(scheme, Connection, { cluster }) is register and api.ArkimeDb has Collection and
+   * ConflictError to build on. Waits for the config to load, before that only the built in schemes are known.
+   */
+  static #loadPlugins () {
+    if (ArkimeDb.#pluginsLoaded) { return; }
+    // Required here, arkimeConfig may still be loading when this file is
+    const Config = require('./arkimeConfig');
+    if (!Config.isLoaded()) { return; }
+    ArkimeDb.#pluginsLoaded = true;
+
+    const plugins = Config.getArray('dbPlugins', []);
+    if (!plugins.length) { return; }
+    const dirs = Config.getArray('pluginsDir', `${require('./version').config_prefix}/plugins`);
+    const api = {
+      registerDbScheme: (scheme, Connection, flags = {}) => ArkimeDb.register(scheme, Connection, { cluster: !!flags.cluster }),
+      ArkimeDb
+    };
+    for (const plugin of plugins) {
+      const dir = dirs.find(d => fs.existsSync(path.join(d, plugin)));
+      if (!dir) {
+        console.log(`ERROR - Couldn't find dbPlugins '${plugin}' in pluginsDir ${dirs.join(', ')}`);
+        process.exit(1);
+      }
+      const mod = require(path.resolve(dir, plugin));
+      if (typeof mod.registerDb !== 'function') {
+        console.log(`ERROR - dbPlugins '${plugin}' doesn't export registerDb(api)`);
+        process.exit(1);
+      }
+      mod.registerDb(api);
+    }
   }
 
   /**
@@ -258,7 +355,10 @@ class ArkimeDb {
   // ----------------------------------------------------------------------------
   static #FIELD_RE = /^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$/;
   static #OPS = new Set(['$in', '$nin', '$ne', '$exists', '$gt', '$gte', '$lt', '$lte', '$contains', '$icontains', '$prefix', '$wildcard', '$regex', '$cidr']);
-  static #regexCache = new Map();
+  // SQLite matches every row with the same few patterns, a compiled pattern can be MBs
+  static MAX_WHERE_REGEXES = 50;
+  static #regexCache = new LRUCache({ max: ArkimeDb.MAX_WHERE_REGEXES * 2 });
+  static #cidrCache = new LRUCache({ max: 1000 });
 
   /**
    * A whole value match regex like ES regexp, RE2 so user patterns can't backtrack forever
@@ -269,7 +369,6 @@ class ArkimeDb {
     if (!re) {
       const RE2 = require('re2');
       re = new RE2(`^(?:${pattern})$`, 's');
-      if (ArkimeDb.#regexCache.size > 1000) { ArkimeDb.#regexCache.clear(); }
       ArkimeDb.#regexCache.set(key, re);
     }
     return re;
@@ -285,7 +384,7 @@ class ArkimeDb {
 
   static #cidrList (cidr) {
     const key = `c\t${cidr}`;
-    let list = ArkimeDb.#regexCache.get(key);
+    let list = ArkimeDb.#cidrCache.get(key);
     if (!list) {
       const [addr, bits, extra] = String(cidr).split('/');
       const family = net.isIP(addr);
@@ -299,8 +398,7 @@ class ArkimeDb {
       } else {
         list.addSubnet(addr, +bits, family === 6 ? 'ipv6' : 'ipv4');
       }
-      if (ArkimeDb.#regexCache.size > 1000) { ArkimeDb.#regexCache.clear(); }
-      ArkimeDb.#regexCache.set(key, list);
+      ArkimeDb.#cidrCache.set(key, list);
     }
     return list;
   }
@@ -460,7 +558,7 @@ class ArkimeDbConflictError extends Error {
  * A collection of json docs keyed by id. Every backend implements:
  *   init(), get(id), put(id, doc, { createOnly, refresh }), create(doc), update(id, fields, { refresh }),
  *   delete(id), deleteWhere(where), deleteAll(), find({ where, sort, from, size, version, fields }),
- *   count(where), getMeta(key), setMeta(obj), refresh(), lease(id, owner, ttlMs), nextSequence(id),
+ *   count(where), getMeta(key), setMeta(obj), refresh(), flush(), check(), lease(id, owner, ttlMs), nextSequence(id),
  *   aggregate({ where, groupBy, metrics: { name: { min|max|sum: field } }, size }),
  *   getVersioned(id), putIfVersion(id, doc, version)
  * aggregate returns [{ key, count, <metric names> }] like an ES terms aggregation, biggest first.
@@ -470,6 +568,8 @@ class ArkimeDbConflictError extends Error {
  * getVersioned returns { doc, version } or null, version is opaque. putIfVersion only writes
  * when the doc still has that version, else it throws a ConflictError, so it never recreates a deleted doc.
  * refresh: false skips the ES refresh after a write, other backends ignore it.
+ * check() throws when a collection something else creates, like db.pl, is missing or has the wrong layout.
+ * refresh, flush and check default to doing nothing.
  *
  * Collection options:
  *   idType: 'uuid' (default) or 'hex' for generated ids
@@ -480,8 +580,8 @@ class ArkimeDbConflictError extends Error {
  *     Fields can be arrays like in ES, except indexed ones which must hold one value.
  *   typed: true for fixed shape docs, Postgres keeps each top level field in its own column instead
  *     of a json doc. Missing columns are added at init and a field with no column can't be written.
- *   es: { index, dbpl, create: { settings, mappings } } - the index is created from fields and create,
- *     unless dbpl is set, which means db.pl owns it
+ *   es: { index, dbpl, checkMapping, create: { settings, mappings } } - the index is created from fields and
+ *     create, unless dbpl is set, which means db.pl owns it. checkMapping makes check() verify indexed keyword fields
  *   sqlite: { table, idColumn, legacyMeta }, pg: { table } - per backend names/layout, only needed for older layouts
  */
 class ArkimeDbCollection {
@@ -495,6 +595,8 @@ class ArkimeDbCollection {
 
   async init () {}
   async refresh () {}
+  async flush () {}
+  async check () {}
 
   async create (doc) {
     return this.put(null, doc);

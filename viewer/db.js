@@ -15,6 +15,7 @@ const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const { LRUCache } = require('lru-cache');
 const Config = require('./config.js');
 const DbESImpl = require('./db.es');
@@ -104,8 +105,11 @@ Db.initialize = async (info) => {
 
   internals.regressionTests = info.regressionTests ?? false;
 
+  // Each connection's loopback rule comes from its own urls
+  const insecure = (urls) => !!info.insecure || ArkimeConfig.isInsecure([urls]);
+
   const esSSLOptions = ArkimeUtil.tlsOptionsOrExit({
-    insecure: internals.info.insecure,
+    insecure: insecure(info.host),
     caTrustFile: internals.info.caTrustFile,
     clientKey: info.esClientKey,
     clientCert: info.esClientCert,
@@ -139,7 +143,7 @@ Db.initialize = async (info) => {
 
   if (info.usersHost) {
     User.initialize({
-      insecure: info.insecure,
+      insecure: insecure(info.usersHost),
       caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
       node: info.usersHost,
@@ -154,7 +158,7 @@ Db.initialize = async (info) => {
     });
   } else {
     User.initialize({
-      insecure: info.insecure,
+      insecure: insecure(info.usersFallbackHost ?? info.host),
       caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
       node: info.usersFallbackHost ?? info.host,
@@ -163,20 +167,15 @@ Db.initialize = async (info) => {
       clientKeyPass: info.esClientKeyPass,
       apiKey: info.esApiKey,
       basicAuth: info.esBasicAuth,
-      prefix: internals.multiES ? internals.prefix : (info.usersFallbackPrefix ?? internals.prefix),
+      prefix: internals.multiES ? internals.prefix : internals.usersPrefix,
       readOnly: internals.multiES,
       getCurrentUserCB: info.getCurrentUserCB,
       noUsersCheck: info.noUsersCheck
     });
   }
 
-  internals.usersClient7 = User.getClient();
-
   // views, shareables and shortcuts live in the users db, whatever backend it is
-  const usersConn = internals.usersClient7
-    ? ArkimeUtil.dbConnect(User.getDbUrl(), { client: internals.usersClient7, prefix: internals.usersPrefix })
-    : ArkimeUtil.dbConnect(User.getDbUrl(), { section: 'users' });
-  internals.usersImpl = new DbUsersImpl(usersConn);
+  internals.usersImpl = new DbUsersImpl(User.dbConnect(internals.usersPrefix));
   await internals.usersImpl.init();
 
   // Initialize the sessions DB backend. sessionsImpl serves sessions indices
@@ -184,7 +183,11 @@ Db.initialize = async (info) => {
   // always exists and serves everything else.
   internals.esImpl = new DbESImpl({ Db, internals, fixIndex });
 
-  const sessionsDbUrl = info.sessionsDbUrl || Config.get('sessionsDbUrl');
+  const sessionsDbUrl = info.sessionsDbUrl || ArkimeConfig.sessionsDbUrls().join(',');
+  if (!internals.multiES && !isClickHouseSessionsUrl(sessionsDbUrl) && !ArkimeConfig.isEsUrl(sessionsDbUrl)) {
+    console.log(`ERROR - the sessions db can't be '${sessionsDbUrl.split(':')[0]}', set sessionsDbUrl to OpenSearch/Elasticsearch or ClickHouse`);
+    process.exit(1);
+  }
   if (isClickHouseSessionsUrl(sessionsDbUrl) && !internals.multiES) {
     info.sessionsDbUrl = sessionsDbUrl;
     // The caller's info doesn't carry the clickhouse* options; capture reads
@@ -192,7 +195,7 @@ Db.initialize = async (info) => {
     for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable']) {
       info[opt] ??= Config.get(opt);
     }
-    internals.sessionsImpl = new DbCHImpl(info);
+    internals.sessionsImpl = new DbCHImpl({ ...info, insecure: insecure(sessionsDbUrl.replace(/^(clickhouses|chttps):/i, 'https:')) });
   } else {
     internals.sessionsImpl = internals.esImpl;
   }
@@ -237,42 +240,47 @@ Db.initialize = async (info) => {
     console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
   }
 
-  // What capture writes plus hunts, queries, history and featherprint live in the cluster db, the sessions ES
-  // unless clusterDbUrl says otherwise. Another ES uses the sessions ES credentials and needs db.pl init too.
+  // What capture writes plus hunts, queries, history and featherprint live in the cluster db, dbUrl, which shares
+  // the sessions ES connection when it is the same ES. Another ES uses the sessions ES credentials and needs db.pl init too.
   // Every backend names its tables with the cluster's prefix, like the ES indices, so clusters can share one db.
-  // A multi viewer gets every cluster's cluster db through multies, see multiESNodes clusterDbUrl
-  const clusterDbUrl = internals.multiES ? undefined : (info.clusterDbUrl ?? Config.get('clusterDbUrl'));
+  // A multi viewer gets every cluster's cluster db through multies, see multiESNodes dbUrl
+  let clusterDbUrl;
+  if (!internals.multiES) {
+    const urls = ArkimeConfig.dbUrls();
+    const norm = (list) => [list].flat().map(u => (u.includes('://') ? u : 'http://' + u).replace(/\/+$/, '')).join(',');
+    if (!ArkimeConfig.isEsUrl(urls[0]) || norm(urls) !== norm(internals.info.host)) {
+      clusterDbUrl = urls.join(',');
+    }
+  }
   // capture has to write to it too, from every sensor
-  if (clusterDbUrl && !ArkimeUtil.dbIsES(clusterDbUrl) && !/^postgres(ql)?:/i.test(clusterDbUrl)) {
-    console.log(`ERROR - clusterDbUrl '${clusterDbUrl.split(':')[0]}' isn't supported, use Elasticsearch/OpenSearch or postgres://`);
+  if (clusterDbUrl && !ArkimeUtil.dbHoldsCluster(clusterDbUrl)) {
+    console.log(`ERROR - dbUrl '${clusterDbUrl.split(':')[0]}' can't hold the cluster db, use Elasticsearch/OpenSearch, postgres:// or a dbPlugins cluster scheme, or set sessionsDbUrl and dbUrl`);
     process.exit(1);
   }
   const esConn = ArkimeUtil.dbConnect(undefined, { client: internals.client7, multiES: internals.multiES });
-  let clusterConn = esConn;
-  if (clusterDbUrl) {
-    clusterConn = ArkimeUtil.dbIsES(clusterDbUrl)
-      ? ArkimeUtil.dbConnect(clusterDbUrl, {
-        prefix: internals.clusterPrefix,
-        insecure: info.insecure,
-        caTrustFile: info.caTrustFile,
-        requestTimeout: info.requestTimeout,
-        clientKey: info.esClientKey,
-        clientCert: info.esClientCert,
-        clientKeyPass: info.esClientKeyPass,
-        apiKey: info.esApiKey,
-        basicAuth: info.esBasicAuth
-      })
-      : ArkimeUtil.dbConnect(clusterDbUrl, { section: 'cluster', prefix: internals.clusterPrefix });
-  }
+  // Each backend takes the options it understands
+  const clusterConn = !clusterDbUrl
+    ? esConn
+    : ArkimeUtil.dbConnect(clusterDbUrl, {
+      prefix: internals.clusterPrefix,
+      insecure: insecure(clusterDbUrl),
+      caTrustFile: info.caTrustFile,
+      requestTimeout: info.requestTimeout,
+      clientKey: info.esClientKey,
+      clientCert: info.esClientCert,
+      clientKeyPass: info.esClientKeyPass,
+      apiKey: info.esApiKey,
+      basicAuth: info.esBasicAuth
+    });
   internals.clusterShared = clusterConn === esConn;
-  internals.clusterEsClient = (!clusterDbUrl || ArkimeUtil.dbIsES(clusterDbUrl)) ? clusterConn.client : undefined;
+  // The flush and refresh admin calls also reach a separate OpenSearch/Elasticsearch cluster db
+  internals.clusterEsClient = clusterConn.client;
   internals.clusterImpl = new DbClusterImpl({
     conn: clusterConn,
     esConn,
-    isES: !clusterDbUrl || ArkimeUtil.dbIsES(clusterDbUrl),
-    isPG: /^postgres(ql)?:/i.test(clusterDbUrl ?? ''),
     prefix: internals.clusterPrefix,
-    fixIndex
+    fixIndex,
+    multiES: internals.multiES
   });
   await internals.clusterImpl.init();
 
@@ -941,9 +949,11 @@ Db.indicesSettings = async (index, cluster) => {
 
 Db.setIndexSettings = async (index, options) => {
   // Users might be on a different cluster
-  if ((index === '*' || index.includes('users')) && internals.info.usersHost) {
+  // The ES index settings page also reaches a users db on its own OpenSearch/Elasticsearch
+  const usersClient = User.dbConnect()?.client;
+  if ((index === '*' || index.includes('users')) && internals.info.usersHost && usersClient) {
     try {
-      await internals.usersClient7.indices.putSettings({
+      await usersClient.indices.putSettings({
         index,
         body: options.body,
         timeout: '10m',
@@ -1706,30 +1716,13 @@ Db.checkVersion = async function (minVersion) {
     process.exit(1);
   }
 
-  // An OpenSearch/Elasticsearch cluster db needs its own db.pl init when it isn't the sessions one
-  const dbpl = internals.clusterShared ? 'db/db.pl <host:port> init' : `db/db.pl --prefix ${internals.clusterPrefix} <cluster db host:port> init`;
-  for (const index of internals.clusterEsClient ? ['stats', 'dstats', 'sequence'] : []) {
-    try {
-      await internals.clusterEsClient.indices.stats({ index: fixIndex(index) });
-    } catch (err) {
-      console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure '${dbpl}' has been run.\n`, err);
-      process.exit(1);
-    }
-  }
-
-  if (!internals.multiES && internals.clusterEsClient) {
-    const { body: doc } = await internals.clusterEsClient.indices.getMapping({
-      index: fixIndex('files'),
-    });
-
-    const fname = fixIndex('files_v30');
-    if (doc[fname]?.mappings?.properties?.name?.type !== 'keyword') {
-      console.log(`ERROR - Issue with '${fixIndex('files')}' index, use 'db/db.pl http://<host:port> repair' to fix.\n`);
-      if (internals.debug) {
-        console.log(JSON.stringify(doc, null, 2));
-      }
-      process.exit(1);
-    }
+  try {
+    await internals.clusterImpl.check();
+  } catch (err) {
+    // A separate cluster db needs its own init with its prefix
+    const where = internals.clusterShared ? '' : `, for the cluster db use 'db/db.pl --prefix ${internals.clusterPrefix} <dbUrl> init'`;
+    console.log(`ERROR - ${err.message}${where}\n`, err.cause?.message ?? '');
+    process.exit(1);
   }
 
   await ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);

@@ -42,7 +42,7 @@ class Banner {
   static #collection () {
     if (!Banner.#configs) {
       // On ES db.pl creates the configs index
-      Banner.#configs = User.dbConnect(Banner.#prefix, 'Banner')?.collection('configs', { es: { dbpl: true } });
+      Banner.#configs = User.dbConnect(Banner.#prefix)?.collection('configs', { es: { dbpl: true } });
     }
     return Banner.#configs;
   }

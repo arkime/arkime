@@ -2533,7 +2533,8 @@
       "needAdminPrivileges": "Administratorrechte erforderlich",
       "retrieveFailed": "Fehler beim Abrufen des Verlaufs",
       "deletedSuccessfully": "Verlaufseintrag erfolgreich gelöscht",
-      "deleteFailed": "Fehler beim Löschen des Verlaufseintrags"
+      "deleteFailed": "Fehler beim Löschen des Verlaufseintrags",
+      "notFound": "Verlaufseintrag nicht gefunden"
     },
     "shareables": {
       "missingName": "Name des gemeinsamen Elements fehlt",

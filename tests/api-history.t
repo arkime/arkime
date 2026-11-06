@@ -1,4 +1,4 @@
-use Test::More tests => 74;
+use Test::More tests => 76;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -210,9 +210,13 @@ my ($check) = @_;
   }
   is ($found3, 0, "Non admin should not see forcedExpression in history");
 
-  # delete the history item with the forced expression
+  # delete the history item with the forced expression through multi
   $item = $json->{data}->[0];
-  $json = viewerDeleteToken("/api/history/$item->{id}?index=$item->{index}", $token);
+  $json = multiDeleteToken("/api/history/$item->{id}?cluster=test", $token);
+  is($json->{i18n}, "api.history.deletedSuccessfully", "multi delete i18n");
+  esGet("/_refresh");
+  $json = viewerDeleteToken("/api/history/$item->{id}", $token);
+  is($json->{i18n}, "api.history.notFound", "deleted item is not found");
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/historytest1", $token);

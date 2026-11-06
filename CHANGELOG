@@ -110,16 +110,19 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Icons switched from Font Awesome to Material Design Icons
   - #3992 Theme choice is saved per user and follows you between all four apps
   - #4424 /api/users/min without a roleId now requires usersAdmin, it was listing every user to any logged in user
-  - #4430 The sessions, cluster and users dbs can each live somewhere else:
-          sessions: sessionsDbUrl -> elasticsearch
-          cluster: clusterDbUrl -> sessionsDbUrl -> elasticsearch
-          users: usersDbUrl -> usersUrl -> usersElasticsearch -> elasticsearch
-          They all have matching prefix settings. multiESNodes entries take sessionsDbUrl, sessionsDbPrefix,
-          clusterDbUrl and clusterDbPrefix
+  - #4430 New dbUrl setting holds everything, with sessionsDbUrl and usersDbUrl moving those dbs elsewhere:
+          sessions: sessionsDbUrl -> dbUrl -> elasticsearch
+          cluster: dbUrl -> elasticsearch
+          users: usersDbUrl -> usersUrl -> usersElasticsearch -> dbUrl -> elasticsearch
+          A db with its own url uses its own prefix setting then prefix, one in dbUrl uses its own then dbPrefix
+          then prefix
+          multiESNodes entries take sessionsDbUrl, sessionsDbPrefix, dbUrl and dbPrefix
   - #4430 Sessions supports OpenSearch/Elasticsearch or ClickHouse, cluster supports OpenSearch/Elasticsearch or Postgres,
           users supports OpenSearch/Elasticsearch, SQLite or Postgres
-  - #4430 A capture rootPlugins plugin can add a clusterDbUrl or sessionsDbUrl scheme with arkime_db_cluster_register or
-          arkime_db_sessions_register
+  - #4430 New dbPlugins setting loads plugins that add more db url schemes for viewer, cont3xt, parliament and wise
+  - #4430 A multiES viewer only uses elasticsearch, its multies, sessionsDbUrl and dbUrl are ignored
+  - #4430 cont3xt dbUrl is the db for an OpenSearch/Elasticsearch url too, it used to be ignored in favor of elasticsearch.
+          Without a users url the cont3xt, parliament and wise users db is dbUrl, then elasticsearch
   - Add Pushover notifier, with priority (including emergency alerts that repeat until acknowledged), sound,
           device and optional end-to-end encryption settings
 ## Capture/Viewer

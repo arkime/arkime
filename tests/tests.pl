@@ -510,9 +510,12 @@ my ($cmd) = @_;
     my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
     my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
     my $mesCh = $ArkimeTest::sessionsDbUrl ? ",sessionsDbUrl:$ArkimeTest::sessionsDbUrl" : "";
-    my $mesCluster = $ArkimeTest::clusterDbUrl ? ",clusterDbUrl:$ArkimeTest::clusterDbUrl" : "";
-    my ($mesSplit, $mesSplit2) = $ENV{ARKIME_TEST_SPLIT} ? (",clusterDbPrefix:testscl", ",clusterDbPrefix:tests2cl") : ("", "");
-    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh$mesCluster$mesSplit;$ELASTICSEARCH,prefix:tests2_,name:test2$mesCluster$mesSplit2'";
+    my $mesCluster = $ArkimeTest::dbUrl ? ",dbUrl:$ArkimeTest::dbUrl" : "";
+    # Only the sessions follow sessionsDbUrl, a Postgres dbUrl needs one for them
+    my $mesPGSessions = $ArkimeTest::clusterDbPG ? ",sessionsDbUrl:$ELASTICSEARCH" : "";
+    $mesCh ||= $mesPGSessions;
+    my ($mesSplit, $mesSplit2) = $ENV{ARKIME_TEST_SPLIT} ? (",dbPrefix:testscl,sessionsDbPrefix:tests", ",dbPrefix:tests2cl,sessionsDbPrefix:tests2") : ("", "");
+    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh$mesCluster$mesSplit;$ELASTICSEARCH,prefix:tests2_,name:test2$mesPGSessions$mesCluster$mesSplit2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
@@ -719,7 +722,8 @@ if ($ENV{ARKIME_TEST_SPLIT}) {
         (my $name = $section) =~ s/-/DASH/g;
         $name =~ s/:/COLON/g;
         $name =~ s/\./DOT/g;
-        $ENV{"ARKIME_${name}__clusterDbPrefix"} = "${prefix}cl";
+        $ENV{"ARKIME_${name}__dbPrefix"} = "${prefix}cl";
+        $ENV{"ARKIME_${name}__sessionsDbPrefix"} = $prefix;
     }
     close($cfgFh);
 }

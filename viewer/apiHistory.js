@@ -90,7 +90,8 @@ class HistoryAPIs {
       }
 
       if (ArkimeUtil.isString(req.query.exists)) {
-        for (const field of req.query.exists.split(',')) {
+        // each one is a subquery over every history row, the page has a handful of columns
+        for (const field of [...new Set(req.query.exists.split(','))].slice(0, 20)) {
           if (/^[A-Za-z_][A-Za-z0-9_.]*$/.test(field)) {
             and.push({ [field]: { $exists: true } });
           }
@@ -156,7 +157,9 @@ class HistoryAPIs {
    */
   static async deleteHistory (req, res) {
     try {
-      await Db.deleteHistory(req.params.id, req.query.cluster);
+      if (!await Db.deleteHistory(req.params.id, req.query.cluster)) {
+        return res.serverError(404, 'History item not found', 'api.history.notFound');
+      }
       return res.json({
         success: true,
         text: 'Deleted history item successfully',

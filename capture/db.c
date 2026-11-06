@@ -37,7 +37,6 @@ LOCAL const char      **geoCityPath;
 LOCAL const char      **geoASNNumPath;
 LOCAL const char      **geoASNOrgPath;
 
-#define ARKIME_MIN_DB_VERSION 85
 
 int                     arkimeDbVersion = 0;
 LOCAL  uint16_t         myPid;
@@ -50,18 +49,17 @@ extern int              vlanField;
 LOCAL struct timeval    startTime;
 LOCAL char             *rirs[256];
 
-void                   *esServer = 0;
 
 void arkime_db_ch_init(void); // db.ch.c, alternate sessions store
 
-// sessionsDbUrl schemes besides OpenSearch/Elasticsearch, see arkime_db_sessions_register
+// sessionsDbUrl/dbUrl schemes for the sessions, see arkime_db_sessions_register
 LOCAL ArkimeStringHashStd_t    sessionsDbSchemes;
+LOCAL const ArkimeSessionsDb_t *sessionsDb;
 
-// Holds stats, dstats, files, fields and sequence, ES unless clusterDbUrl says otherwise, see arkime_db_cluster_register
+// Holds stats, dstats, files, fields and sequence in dbUrl, see arkime_db_cluster_register
 LOCAL ArkimeStringHashStd_t    clusterDbSchemes;
 LOCAL const ArkimeClusterDb_t *clusterDb;
 void arkime_db_es_init(void);
-void *arkime_db_create_es_server(const char *url); // db.es.c
 void arkime_db_pg_init(void);
 
 LOCAL patricia_tree_t  *ipTree4 = 0;
@@ -79,13 +77,9 @@ extern uint8_t          arkime_hex_to_char[256][256];
 LOCAL uint32_t          nextFileNum;
 LOCAL ARKIME_LOCK_DEFINE(nextFileNum);
 
-LOCAL struct timespec   startHealthCheck;
-LOCAL uint64_t          esHealthMS;
 
 LOCAL int               dbExit;
 LOCAL GThread          *statsThread;
-LOCAL char             *esBulkQuery;
-LOCAL int               esBulkQueryLen;
 LOCAL char             *ecsEventProvider;
 LOCAL char             *ecsEventDataset;
 
@@ -434,34 +428,7 @@ void arkime_db_geo_lookup6(ArkimeSession_t *session, struct in6_addr addr, Arkim
     }
 }
 /******************************************************************************/
-LOCAL void arkime_db_send_bulk_cb(int code, uint8_t *data, int data_len, gpointer UNUSED(uw))
-{
-    uint8_t *forbidden;
-
-    if (code != 200)
-        LOG("Bulk issue.  Code: %d\n%.*s", code, data_len, data);
-    else if (config.debug > 4)
-        LOG("Bulk Reply code:%d :>%.*s<", code, data_len, data);
-    else if (data && (forbidden = (uint8_t *)strstr((char *)data, "FORBIDDEN")) != 0) {
-        const uint8_t *end = forbidden + 10;
-        while (forbidden > data && *forbidden != '{') {
-            forbidden--;
-        }
-        while (end < data + data_len && *end != '}') {
-            end++;
-        }
-        LOG("ERROR - OpenSearch/Elasticsearch is returning a FORBIDDEN error. This is most likely because: the index is closed, the index is read-only from ILM, or you've hit the disk watermarks. %.*s", (int)(end - forbidden + 1), forbidden);
-    }
-}
-/******************************************************************************/
-LOCAL void arkime_db_send_bulk(char *json, int len)
-{
-    if (config.debug > 4)
-        LOG("Sending Bulk:>%.*s<", len, json);
-    arkime_http_schedule(esServer, "POST", esBulkQuery, esBulkQueryLen, json, len, NULL, ARKIME_HTTP_PRIORITY_NORMAL, arkime_db_send_bulk_cb, NULL);
-}
-/******************************************************************************/
-LOCAL ArkimeDbSendBulkFunc sendBulkFunc = arkime_db_send_bulk;
+LOCAL ArkimeDbSendBulkFunc sendBulkFunc;
 LOCAL gboolean sendBulkHeader = TRUE;
 LOCAL gboolean sendIndexInDoc = FALSE;
 LOCAL uint16_t sendMaxDocs = 0xffff;
@@ -1807,7 +1774,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
     uint64_t totalDropped    = arkime_packet_dropped_packets();
     uint64_t fragsDropped    = arkime_packet_dropped_frags();
     uint64_t dupDropped      = arkimeCounters.packetStats[ARKIME_PACKET_DUPLICATE_DROPPED];
-    uint64_t esDropped       = arkime_http_dropped_count(esServer);
+    uint64_t esDropped       = sessionsDb->dropped ? sessionsDb->dropped() : 0;
     uint64_t totalBytes      = arkime_packet_total_bytes();
     uint64_t writtenBytes    = arkime_packet_written_bytes();
     uint64_t unwrittenBytes  = arkime_packet_unwritten_bytes();
@@ -1931,7 +1898,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                                        memPercent,
                                        diffusage * 10000 / diffms,
                                        arkime_writer_queue_length ? arkime_writer_queue_length() : 0,
-                                       arkime_http_queue_length(esServer),
+                                       arkime_db_queue_length(),
                                        arkime_packet_outstanding(),
                                        arkime_packet_frags_outstanding(),
                                        arkime_packet_frags_size(),
@@ -1954,7 +1921,7 @@ LOCAL void arkime_db_update_stats(int n, gboolean sync)
                                        (overloadDropped - lastOverloadDropped[n]),
                                        (esDropped - lastESDropped[n]),
                                        (dupDropped - lastDupDropped[n]),
-                                       esHealthMS,
+                                       sessionsDb->health_ms ? sessionsDb->health_ms() : 0,
                                        diffms,
                                        (uint64_t)startTime.tv_sec);
 
@@ -2008,45 +1975,6 @@ LOCAL gboolean arkime_db_flush_gfunc(gpointer user_data)
         }
     }
 
-    return G_SOURCE_CONTINUE;
-}
-/******************************************************************************/
-LOCAL void arkime_db_health_check_cb(int code, uint8_t *data, int data_len, gpointer uw)
-{
-    if (code != 200 || !data || data_len < 2) {
-        LOG("WARNING - Couldn't perform Elasticsearch health check");
-        return;
-    }
-
-    uint32_t           status_len;
-    const uint8_t     *status;
-    struct timespec    stopHealthCheck;
-
-    clock_gettime(CLOCK_MONOTONIC, &stopHealthCheck);
-
-    esHealthMS = (stopHealthCheck.tv_sec - startHealthCheck.tv_sec) * 1000 +
-                 (stopHealthCheck.tv_nsec - startHealthCheck.tv_nsec) / 1000000L;
-
-    if (*data == '[')
-        status = arkime_js0n_get(data + 1, data_len - 2, "status", &status_len);
-    else
-        status = arkime_js0n_get(data, data_len, "status", &status_len);
-
-    if (!status) {
-        LOG("WARNING - Couldn't find status in '%.*s'", data_len, data);
-    } else if (esHealthMS > 20000) {
-        LOG("WARNING - Elasticsearch health check took more than 20 seconds %" PRIu64 "ms", esHealthMS);
-    } else if ((status[0] == 'y' && uw == GINT_TO_POINTER(1)) || (status[0] == 'r')) {
-        LOG("WARNING - Elasticsearch is %.*s and took %" PRIu64 "ms to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
-    }
-}
-/******************************************************************************/
-
-// Runs on main thread
-LOCAL gboolean arkime_db_health_check(gpointer user_data)
-{
-    arkime_http_schedule(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, arkime_db_health_check_cb, user_data);
-    clock_gettime(CLOCK_MONOTONIC, &startHealthCheck);
     return G_SOURCE_CONTINUE;
 }
 /******************************************************************************/
@@ -2300,63 +2228,6 @@ char *arkime_db_create_file_full(const struct timeval *firstPacket, const char *
 
     return g_strdup(filename);
 }
-/******************************************************************************/
-LOCAL void arkime_db_check()
-{
-    size_t             data_len;
-    char               key[1000];
-    int                key_len;
-    char               tname[100];
-    uint8_t           *data;
-
-    snprintf(tname, sizeof(tname), "%ssessions3_template", config.prefix);
-
-    key_len = arkime_snprintf_len(key, sizeof(key), "/_template/%s?filter_path=**._meta", tname);
-    data = arkime_http_get(esServer, key, key_len, &data_len);
-
-    if (!data || data_len == 0) {
-        LOGEXIT("ERROR - Couldn't load version information, database (%s) might be down or not initialized.", config.elasticsearch);
-    }
-
-    uint32_t           template_len;
-    const uint8_t     *template = 0;
-
-    template = arkime_js0n_get(data, data_len, tname, &template_len);
-    if (!template || template_len == 0) {
-        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
-    }
-
-    uint32_t           mappings_len;
-    const uint8_t     *mappings = 0;
-
-    mappings = arkime_js0n_get(template, template_len, "mappings", &mappings_len);
-    if (!mappings || mappings_len == 0) {
-        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
-    }
-
-    uint32_t           meta_len;
-    const uint8_t     *meta = 0;
-
-    meta = arkime_js0n_get(mappings, mappings_len, "_meta", &meta_len);
-    if (!meta || meta_len == 0) {
-        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
-    }
-
-    uint32_t           version_len = 0;
-    const uint8_t     *version = 0;
-
-    version = arkime_js0n_get(meta, meta_len, "molochDbVersion", &version_len);
-
-    if (!version)
-        LOGEXIT("ERROR - Database version couldn't be found, have you run \"db/db.pl host:port init\"");
-
-    arkimeDbVersion = atoi((char *)version);
-    if (arkimeDbVersion < ARKIME_MIN_DB_VERSION) {
-        LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, ARKIME_MIN_DB_VERSION);
-    }
-    free(data);
-}
-
 /******************************************************************************/
 LOCAL void arkime_db_free_mmdb(MMDB_s *geo)
 {
@@ -2788,9 +2659,9 @@ int arkime_db_can_quit()
         ARKIME_UNLOCK(dbInfo[thread].lock);
     }
 
-    if (arkime_http_queue_length(esServer) > 0) {
+    if (arkime_db_queue_length() > 0) {
         if (config.debug)
-            LOG("Can't quit, arkime_http_queue_length(esServer) %d", arkime_http_queue_length(esServer));
+            LOG("Can't quit, sessions db queue length %d", arkime_db_queue_length());
         return 1;
     }
 
@@ -2845,44 +2716,87 @@ void arkime_db_sessions_register(char *scheme, ArkimeSessionsDbInit init)
     arkime_string_add(&sessionsDbSchemes, scheme, init, TRUE);
 }
 /******************************************************************************/
-// sessionsDbUrl or else elasticsearch, the first url's scheme picks it and no scheme is http
-LOCAL void arkime_db_sessions_init()
+// The first url's scheme lowercased, no scheme is http
+LOCAL char *arkime_db_url_scheme(const char *url)
 {
-    char *url = arkime_config_str(NULL, "sessionsDbUrl", NULL);
-    if (!url)
-        url = g_strdup(config.elasticsearch);
-
     const char *first = url;
     while (*first == ' ' || *first == ',')
         first++;
     const char *colon = strstr(first, "://");
-    char *scheme = colon && colon < first + strcspn(first, ",") ? g_ascii_strdown(first, colon - first) : g_strdup("http");
+    return colon && colon < first + strcspn(first, ",") ? g_ascii_strdown(first, colon - first) : g_strdup("http");
+}
+/******************************************************************************/
+// dbUrl or else elasticsearch, it holds everything sessionsDbUrl doesn't
+LOCAL char *arkime_db_url()
+{
+    char *url = arkime_config_str(NULL, "dbUrl", NULL);
+    if (!url)
+        url = arkime_config_str(NULL, "elasticsearch", NULL);
+    if (!url) {
+        char *sessionsUrl = arkime_config_str(NULL, "sessionsDbUrl", NULL);
+        if (sessionsUrl)
+            CONFIGEXIT("Set dbUrl, only the sessions db uses sessionsDbUrl");
+        url = g_strdup("localhost:9200");
+    }
+    return url;
+}
+/******************************************************************************/
+// sessionsDbUrl or else dbUrl, the first url's scheme picks it
+LOCAL void arkime_db_sessions_init()
+{
+    char *url = arkime_config_str(NULL, "sessionsDbUrl", NULL);
+    const char *key = url ? "sessionsDbUrl" : "dbUrl";
+    if (!url)
+        url = arkime_db_url();
+
+    char *scheme = arkime_db_url_scheme(url);
     ArkimeString_t *str;
     HASH_FIND(s_, sessionsDbSchemes, scheme, str);
     if (!str)
-        CONFIGEXIT("sessionsDbUrl scheme '%s' isn't supported, use Elasticsearch/OpenSearch or ClickHouse", scheme);
-    ((ArkimeSessionsDbInit)str->uw)(url);
+        CONFIGEXIT("%s scheme '%s' can't hold the sessions db, use Elasticsearch/OpenSearch or ClickHouse%s", key, scheme, strcmp(key, "dbUrl") == 0 ? " or set sessionsDbUrl" : "");
+    sessionsDb = ((ArkimeSessionsDbInit)str->uw)(url);
+    if (!sessionsDb || !sendBulkFunc)
+        CONFIGEXIT("%s scheme '%s' didn't set up sending sessions", key, scheme);
     g_free(scheme);
     g_free(url);
-
-    // ClickHouse and plugin sessions still use elasticsearch for the checks and the default cluster db
-    if (!esServer)
-        esServer = arkime_db_create_es_server(config.elasticsearch);
 }
 /******************************************************************************/
+// Sessions waiting to be written
+int arkime_db_queue_length()
+{
+    return sessionsDb && sessionsDb->queue_length ? sessionsDb->queue_length() : 0;
+}
+/******************************************************************************/
+// Important cluster db writes waiting, like a file create
+int arkime_db_queue_length_best()
+{
+    if (!clusterDb)
+        return 0;
+    return clusterDb->queue_length_best ? clusterDb->queue_length_best() : clusterDb->queue_length();
+}
+/******************************************************************************/
+// Runs on main thread
+LOCAL gboolean arkime_db_health_check(gpointer UNUSED(user_data))
+{
+    sessionsDb->health(FALSE);
+    return G_SOURCE_CONTINUE;
+}
+/******************************************************************************/
+// dbUrl, the first url's scheme picks it
 LOCAL void arkime_db_cluster_init()
 {
-    // A dryRun never writes, so it gets the ES one without a server
-    char *url = config.dryRun ? NULL : arkime_config_str(NULL, "clusterDbUrl", NULL);
+    // A dryRun never writes, so it gets the default one without a url
+    char *url = config.dryRun ? NULL : arkime_db_url();
+    char *scheme = url ? arkime_db_url_scheme(url) : g_strdup("http");
+
     const char *colon = url ? strstr(url, "://") : NULL;
-    char *scheme = colon ? g_ascii_strdown(url, colon - url) : g_strdup("http");
-    if (colon)
+    if (colon && colon - url == (long)strlen(scheme))
         memcpy(url, scheme, colon - url);
 
     ArkimeString_t *str;
     HASH_FIND(s_, clusterDbSchemes, scheme, str);
     if (!str)
-        CONFIGEXIT("clusterDbUrl scheme '%s' isn't supported, use Elasticsearch/OpenSearch or postgres://", scheme);
+        CONFIGEXIT("dbUrl scheme '%s' can't hold the cluster db, use Elasticsearch/OpenSearch, postgres:// or a rootPlugins scheme, or set sessionsDbUrl and dbUrl", scheme);
     clusterDb = ((ArkimeClusterDbInit)str->uw)(url);
     g_free(scheme);
     g_free(url);
@@ -2904,22 +2818,19 @@ void arkime_db_init()
 
     if (!config.dryRun) {
         arkime_db_sessions_init();
-
-        esBulkQuery = arkime_config_str(NULL, "esBulkQuery", "/_bulk");
-        esBulkQueryLen = strlen(esBulkQuery);
-
-        arkime_db_health_check(GINT_TO_POINTER(1));
+        if (sessionsDb->health)
+            sessionsDb->health(TRUE);
     }
     arkime_db_cluster_init();
     myPid = getpid() & 0xffff;
     gettimeofday(&startTime, NULL);
+    // A sessions db without a schema version writes the current layout
+    arkimeDbVersion = ARKIME_MIN_DB_VERSION;
     if (!config.dryRun) {
-        arkime_db_check();
+        if (sessionsDb->check)
+            arkimeDbVersion = sessionsDb->check();
         arkime_db_load_file_num();
         arkime_db_load_fields();
-    } else {
-        //arkimeDbVersion = ARKIME_MIN_DB_VERSION; // ALW FIX v6 release
-        arkimeDbVersion = 85;
     }
 
     arkime_add_can_quit(arkime_db_can_quit, "DB");
@@ -2961,7 +2872,7 @@ void arkime_db_init()
             statsThread = g_thread_new("arkime-stats", &arkime_db_stats_thread, NULL);
         }
         timers[t++] = g_timeout_add_seconds(1, arkime_db_flush_gfunc, 0);
-        if (arkime_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {
+        if (sessionsDb->health && arkime_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {
             timers[t++] = g_timeout_add_seconds(30, arkime_db_health_check, 0);
         }
     }
@@ -3005,14 +2916,8 @@ void arkime_db_exit()
             arkime_db_update_stats(0, 1);
         }
         clusterDb->exit();
-        if (!config.noRefresh) {
-            char path[100];
-            snprintf(path, sizeof(path), "/%s*/_refresh", config.prefix);
-            uint8_t *data = arkime_http_get(esServer, path, -1, NULL);
-            if (data)
-                free(data);
-        }
-        arkime_http_free_server(esServer);
+        if (sessionsDb->exit)
+            sessionsDb->exit();
     }
 
     if (config.tests) {

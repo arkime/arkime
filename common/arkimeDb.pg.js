@@ -71,7 +71,10 @@ class PGCollection extends ArkimeDb.Collection {
           console.log(`WARNING - no pg_trgm index on ${t}, wildcard searches of ${wildcard.join(', ')} will scan it -`, err.message);
         }
       }
-    })();
+    })().catch((err) => {
+      this.#ready = undefined; // the next call retries, a database that was down isn't a failure for good
+      throw err;
+    });
     return this.#ready;
   }
 
@@ -85,7 +88,7 @@ class PGCollection extends ArkimeDb.Collection {
 
   async #query (sql, params) {
     await this.init();
-    return this.#pool.query(sql, params);
+    return params?.[PATTERNS] ? patternQuery(this.#pool, sql, params) : this.#pool.query(sql, params);
   }
 
   async get (id) {
@@ -97,7 +100,7 @@ class PGCollection extends ArkimeDb.Collection {
     id ??= this.newId();
     const onConflict = createOnly ? 'DO NOTHING' : `DO UPDATE SET doc = excluded.doc, version = ${this.#table}.version + 1`;
     const { rowCount } = await this.#query(`INSERT INTO ${this.#table} (id, doc) VALUES ($1, $2) ON CONFLICT (id) ${onConflict}`,
-      [id, JSON.stringify(doc)]);
+      [id, jsonParam(doc)]);
     if (createOnly && rowCount === 0) { throw new ArkimeDb.ConflictError(id); }
     return id;
   }
@@ -109,7 +112,7 @@ class PGCollection extends ArkimeDb.Collection {
 
   async putIfVersion (id, doc, version) {
     const { rowCount } = await this.#query(`UPDATE ${this.#table} SET doc = $1, version = version + 1 WHERE id = $2 AND version = $3`,
-      [JSON.stringify(doc), id, version]);
+      [jsonParam(doc), id, version]);
     if (rowCount !== 1) { throw new ArkimeDb.ConflictError(id, `Document '${id}' was changed or deleted`); }
   }
 
@@ -161,13 +164,13 @@ class PGCollection extends ArkimeDb.Collection {
     const { rowCount } = await this.#query(`INSERT INTO ${t} (id, doc) VALUES ($1, $2)
       ON CONFLICT (id) DO UPDATE SET doc = ${t}.doc || jsonb_build_object('name', $3::text, 'lastRun', $4::bigint)
       WHERE ${t}.doc->>'name' = $3 OR $4 - (${t}.doc->>'lastRun')::bigint >= $5`,
-    [id, JSON.stringify({ name: owner, lastRun: now, enabled: false }), owner, now, ttlMs]);
+    [id, jsonParam({ name: owner, lastRun: now, enabled: false }), owner, now, ttlMs]);
     return rowCount > 0;
   }
 
   async update (id, fields) {
     const { rowCount } = await this.#query(`UPDATE ${this.#table} SET doc = doc || $1::jsonb, version = version + 1 WHERE id = $2`,
-      [JSON.stringify(fields), id]);
+      [jsonParam(fields), id]);
     return rowCount > 0;
   }
 
@@ -177,6 +180,7 @@ class PGCollection extends ArkimeDb.Collection {
   }
 
   async deleteWhere (where) {
+    await this.init();
     const params = [];
     const { rowCount } = await this.#query(`DELETE FROM ${this.#table} WHERE ${compile(where, params, this.#op)}`, params);
     return rowCount;
@@ -234,20 +238,33 @@ class PGCollection extends ArkimeDb.Collection {
   async setMeta (obj) {
     for (const [key, value] of Object.entries(obj)) {
       await this.#query(`INSERT INTO ${this.#meta} (key, value) VALUES ($1, $2)
-        ON CONFLICT (key) DO UPDATE SET value = excluded.value`, [`${this.#table}:${key}`, JSON.stringify(value)]);
+        ON CONFLICT (key) DO UPDATE SET value = excluded.value`, [`${this.#table}:${key}`, jsonParam(value)]);
     }
   }
 }
 
+// jsonb can't hold a NUL or a lone surrogate, which would fail the whole write, JSON.stringify escapes both
+function jsonParam (value) {
+  return JSON.stringify(value)?.replace(/(?<!\\)((?:\\\\)*)\\u(?:0000|d[89a-f][0-9a-f]{2})/gi, '$1\\ufffd');
+}
+
 // * and ? to a LIKE pattern, LIKE's own % _ and \ are literal
-function likePattern (c) {
+function likePattern (c, params) {
+  params[PATTERNS] = true;
   return String(c).replace(/[\\%_]/g, '\\$&').replace(/\*/g, '%').replace(/\?/g, '_');
 }
 
-// Postgres's regex engine backtracks, so only run patterns RE2 accepts like ES and SQLite do
-function regexPattern (c) {
-  ArkimeDb.regex(String(c));
-  return String(c);
+// Postgres's regex engine only backtracks for a backreference, \digit. Lookarounds, (?flags), ***
+// directors and \m \M \y \Y \Z are Postgres only. Refusing them all keeps a where matching
+// what it does on the other dbs, and patternQuery bounds the rest.
+const PG_ONLY_REGEX_RE = /^\*\*\*|(?<!\\)(?:\\\\)*(?:\\[\dmMyYZ]|\(\?(?!:))/;
+function regexPattern (c, params) {
+  const pattern = String(c);
+  if (PG_ONLY_REGEX_RE.test(pattern)) {
+    throw new Error(`Invalid db where $regex '${pattern}', backreferences, lookarounds, (?flags) and Postgres only escapes aren't supported`);
+  }
+  params[PATTERNS] = true;
+  return pattern;
 }
 
 function jsonPath (field) {
@@ -297,8 +314,8 @@ function compileOp (field, op, c, params, indexed, inet) {
     case '$contains': return `strpos(id, ${p(String(c))}) > 0`;
     case '$icontains': return `strpos(lower(id), lower(${p(String(c))})) > 0`;
     case '$prefix': return `left(id, length(${p(String(c))})) = $${params.length}`;
-    case '$wildcard': return `id LIKE ${p(likePattern(c))} ESCAPE '\\'`;
-    case '$regex': return `id ~ ('^(?:' || ${p(regexPattern(c))} || ')$')`;
+    case '$wildcard': return `id LIKE ${p(likePattern(c, params))} ESCAPE '\\'`;
+    case '$regex': return `id ~ ('^(?:' || ${p(regexPattern(c, params))} || ')$')`;
     }
   }
 
@@ -312,10 +329,10 @@ function compileOp (field, op, c, params, indexed, inet) {
   let test;
   switch (op) {
   case '$eq':
-    test = `${value} = ${p(JSON.stringify(c))}::jsonb`;
+    test = `${value} = ${p(jsonParam(c))}::jsonb`;
     break;
   case '$in':
-    test = `${value} = ANY(${p(c.map(v => JSON.stringify(v)))}::jsonb[])`;
+    test = `${value} = ANY(${p(c.map(v => jsonParam(v)))}::jsonb[])`;
     break;
   case '$exists':
     test = 'TRUE';
@@ -339,10 +356,10 @@ function compileOp (field, op, c, params, indexed, inet) {
     test = `jsonb_typeof(${value}) = 'string' AND left(${text}, length(${p(String(c))})) = $${params.length}`;
     break;
   case '$wildcard':
-    test = `jsonb_typeof(${value}) = 'string' AND ${text} LIKE ${p(likePattern(c))} ESCAPE '\\'`;
+    test = `jsonb_typeof(${value}) = 'string' AND ${text} LIKE ${p(likePattern(c, params))} ESCAPE '\\'`;
     break;
   case '$regex':
-    test = `jsonb_typeof(${value}) = 'string' AND ${text} ~ ('^(?:' || ${p(regexPattern(c))} || ')$')`;
+    test = `jsonb_typeof(${value}) = 'string' AND ${text} ~ ('^(?:' || ${p(regexPattern(c, params))} || ')$')`;
     break;
   case '$cidr':
     test = `jsonb_typeof(${value}) = 'string' AND ${inet}(${text}) <<= ${p(String(c))}::inet`;
@@ -442,7 +459,10 @@ class PGTypedCollection extends ArkimeDb.Collection {
           await this.#create(`CREATE INDEX IF NOT EXISTS ${t}_${col}_desc ON ${t} ("${field}" DESC NULLS LAST)`);
         }
       }
-    })();
+    })().catch((err) => {
+      this.#ready = undefined; // the next call retries, a database that was down isn't a failure for good
+      throw err;
+    });
     return this.#ready;
   }
 
@@ -462,7 +482,7 @@ class PGTypedCollection extends ArkimeDb.Collection {
 
   async #query (sql, params) {
     await this.init();
-    return this.#pool.query(sql, params);
+    return params?.[PATTERNS] ? patternQuery(this.#pool, sql, params) : this.#pool.query(sql, params);
   }
 
   #cols (fields) {
@@ -499,7 +519,7 @@ class PGTypedCollection extends ArkimeDb.Collection {
       : `DO UPDATE SET ${fields.map(f => `"${f}" = excluded."${f}"`).join(', ')}, version = ${t}.version + 1`;
     const { rowCount } = await this.#query(`INSERT INTO ${t} (id, ${this.#cols(fields)})
       SELECT $1, ${fields.map(f => `p."${f}"`).join(', ')} FROM jsonb_populate_record(NULL::${t}, $2::jsonb) p
-      ON CONFLICT (id) ${onConflict}`, [id, JSON.stringify(doc)]);
+      ON CONFLICT (id) ${onConflict}`, [id, jsonParam(doc)]);
     if (createOnly && rowCount === 0) { throw new ArkimeDb.ConflictError(id); }
     return id;
   }
@@ -515,7 +535,7 @@ class PGTypedCollection extends ArkimeDb.Collection {
     const fields = [...this.#columns.keys()];
     const { rowCount } = await this.#query(`UPDATE ${this.#table} SET (${this.#cols(fields)}) =
       (SELECT ${fields.map(f => `p."${f}"`).join(', ')} FROM jsonb_populate_record(NULL::${this.#table}, $1::jsonb) p),
-      version = version + 1 WHERE id = $2 AND version = $3`, [JSON.stringify(doc), id, version]);
+      version = version + 1 WHERE id = $2 AND version = $3`, [jsonParam(doc), id, version]);
     if (rowCount !== 1) { throw new ArkimeDb.ConflictError(id, `Document '${id}' was changed or deleted`); }
   }
 
@@ -526,7 +546,7 @@ class PGTypedCollection extends ArkimeDb.Collection {
     if (!names.length) { return (await this.get(id)) !== null; }
     const { rowCount } = await this.#query(`UPDATE ${this.#table} SET (${this.#cols(names)}) =
       (SELECT ${names.map(f => `p."${f}"`).join(', ')} FROM jsonb_populate_record(NULL::${this.#table}, $1::jsonb) p),
-      version = version + 1 WHERE id = $2`, [JSON.stringify(fields), id]);
+      version = version + 1 WHERE id = $2`, [jsonParam(fields), id]);
     return rowCount > 0;
   }
 
@@ -630,7 +650,7 @@ class PGTypedCollection extends ArkimeDb.Collection {
   async setMeta (obj) {
     for (const [key, value] of Object.entries(obj)) {
       await this.#query(`INSERT INTO ${this.#meta} (key, value) VALUES ($1, $2)
-        ON CONFLICT (key) DO UPDATE SET value = excluded.value`, [`${this.#table}:${key}`, JSON.stringify(value)]);
+        ON CONFLICT (key) DO UPDATE SET value = excluded.value`, [`${this.#table}:${key}`, jsonParam(value)]);
     }
   }
 }
@@ -684,10 +704,10 @@ function compileTypedOp (field, op, c, params, columns, inet) {
       if (isText) { test = `left(${col}, length(${p(String(c))})) = $${params.length}`; }
       break;
     case '$wildcard':
-      if (isText) { test = `${col} LIKE ${p(likePattern(c))} ESCAPE '\\'`; }
+      if (isText) { test = `${col} LIKE ${p(likePattern(c, params))} ESCAPE '\\'`; }
       break;
     case '$regex':
-      if (isText) { test = `${col} ~ ('^(?:' || ${p(regexPattern(c))} || ')$')`; }
+      if (isText) { test = `${col} ~ ('^(?:' || ${p(regexPattern(c, params))} || ')$')`; }
       break;
     case '$cidr':
       if (isText) { test = `${inet}(${col}) <<= ${p(String(c))}::inet`; }
@@ -703,15 +723,58 @@ function compileTypedOp (field, op, c, params, columns, inet) {
 // or the system CAs, and --insecure still requires TLS. Ssl settings in the url win, loopback and unix
 // socket servers are left alone.
 function sslOptions (url, options) {
-  let u;
-  try { u = new URL(url); } catch (e) { return undefined; }
-  if (['ssl', 'sslmode', 'sslcert', 'sslkey', 'sslrootcert'].some(k => u.searchParams.has(k))) { return undefined; }
-  const host = u.searchParams.get('host') ?? decodeURIComponent(u.hostname);
-  if (!host || host.startsWith('/') || ['localhost', '[::1]', '::1'].includes(host) || /^127\.\d+\.\d+\.\d+$/.test(host)) { return undefined; }
+  let params;
+  try { params = new URL(url).searchParams; } catch (e) { params = new URLSearchParams(); }
+  if (['ssl', 'sslmode', 'sslcert', 'sslkey', 'sslrootcert'].some(k => params.has(k))) { return undefined; }
+  // Unparseable is remote, a parse that isn't pg's could miss the host pg uses
+  if (ArkimeConfig.isLoopbackHost(PGConnection.tlsHost(url))) { return undefined; }
   return ArkimeUtil.tlsOptionsOrExit({
     insecure: options.insecure ?? ArkimeConfig.insecure,
     caTrustFile: options.caTrustFile ?? ArkimeConfig.get('caTrustFile')
   }, 'Postgres');
+}
+
+// Set on a query's params when its where has a user's $regex or $wildcard pattern
+const PATTERNS = Symbol('patterns');
+const PATTERN_SLOTS = 2;
+const PATTERN_QUEUE = 100;
+const patternSlots = new WeakMap(); // pool -> { free, waiting }
+
+// A user's pattern can run long, so each runs with postgresPatternTimeout and only a couple at a
+// time per pool, the rest of the pool stays free for everything else
+async function patternQuery (pool, sql, params) {
+  let slots = patternSlots.get(pool);
+  if (!slots) {
+    slots = { free: PATTERN_SLOTS, waiting: [] };
+    patternSlots.set(pool, slots);
+  }
+  if (slots.free > 0) {
+    slots.free--;
+  } else {
+    if (slots.waiting.length >= PATTERN_QUEUE) { throw new Error('Too many $regex/$wildcard searches running, try again'); }
+    await new Promise(resolve => slots.waiting.push(resolve));
+  }
+
+  try {
+    const timeout = parseInt(ArkimeConfig.get('postgresPatternTimeout', 60), 10) || 0;
+    const client = await pool.connect();
+    let broken;
+    try {
+      await client.query('BEGIN');
+      await client.query(`SET LOCAL statement_timeout = ${Math.max(0, timeout) * 1000}`);
+      const result = await client.query(sql, params);
+      await client.query('COMMIT');
+      return result;
+    } catch (err) {
+      await client.query('ROLLBACK').catch((e) => { broken = e; });
+      throw err;
+    } finally {
+      client.release(broken);
+    }
+  } finally {
+    const next = slots.waiting.shift();
+    if (next) { next(); } else { slots.free++; }
+  }
 }
 
 class PGConnection {
@@ -723,17 +786,21 @@ class PGConnection {
   constructor (url, options) {
     const { Pool } = require('pg');
     this.prefix = options.prefix ?? '';
-    const connectionString = url.replace(/^postgres(ql)?:/, 'postgres:');
     if (options.pool) {
       this.pool = options.pool;
       return;
     }
+    const connectionString = url.replace(/^postgres(ql)?:/, 'postgres:');
     this.pool = new Pool({ connectionString, ssl: sslOptions(connectionString, options) });
     // An idle client losing its connection, like a Postgres restart, is an error event that would
     // otherwise end the process. The pool drops that client and the next query connects again.
     this.pool.on('error', (err) => {
       console.log('ERROR - Postgres idle connection lost:', err.message);
     });
+  }
+
+  withPrefix (prefix) {
+    return prefix === this.prefix ? this : new PGConnection(undefined, { pool: this.pool, prefix });
   }
 
   collection (collName, options = {}) {
@@ -743,6 +810,18 @@ class PGConnection {
       this.#collections.set(collName, coll);
     }
     return coll;
+  }
+
+  /**
+   * The host pg will connect to, PGHOST and a repeated ?host= included, '' when pg can't parse it so it counts as remote
+   */
+  static tlsHost (url) {
+    try {
+      const ConnectionParameters = require('pg/lib/connection-parameters');
+      return new ConnectionParameters({ connectionString: url }).host ?? '';
+    } catch (e) {
+      return '';
+    }
   }
 
   async close () {

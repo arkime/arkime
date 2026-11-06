@@ -55,14 +55,22 @@ function twoDigitString (value) {
   return (value < 10) ? ('0' + value) : value.toString();
 }
 
+// Key order independent, Postgres stores jsonb with its own key order
+function canonical (value) {
+  if (Array.isArray(value)) { return `[${value.map(canonical).join(',')}]`; }
+  if (value !== null && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map(k => `${JSON.stringify(k)}:${canonical(value[k])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
 class DbClusterImpl {
   #hunts;
   #queries;
   #history;
-  #isES;
   featherprint = {};
-  #isPG;
   #sharedES;
+  #multiES;
 
   // capture writes these, to the cluster db like the rest
   files;
@@ -72,44 +80,36 @@ class DbClusterImpl {
   sequence;
 
   /**
+   * Each collection gets its fields for the other backends plus es options naming the index db.pl made,
+   * every backend reads only its own options.
    * @param conn the cluster db connection
    * @param esConn the sessions ES connection
-   * @param isES conn is an Elasticsearch/OpenSearch connection
-   * @param isPG conn is Postgres, which gets its base fields from db/fields.json instead of db.pl
    * @param prefix, fixIndex build the sessions ES index names
+   * @param multiES conn goes through multies, which only answers the calls it routes
    */
-  constructor ({ conn, esConn, isES, isPG, prefix, fixIndex }) {
-    this.#isES = isES;
-    this.#isPG = isPG;
+  constructor ({ conn, esConn, prefix, fixIndex, multiES }) {
+    this.#multiES = !!multiES;
     // Only the sessions ES client knows the multi cluster routing
     this.#sharedES = conn === esConn;
+    const options = (collName, es = {}) => ({ ...DbClusterImpl.collectionOptions(collName), es: { index: fixIndex(collName), dbpl: true, ...es } });
     for (const collName of ['files', 'stats', 'dstats', 'fields', 'sequence']) {
-      this[collName] = conn.collection(collName, isPG ? DbClusterImpl.collectionOptions(collName) : { es: { index: fixIndex(collName) } });
+      this[collName] = conn.collection(collName, options(collName, collName === 'files' ? { checkMapping: true } : {}));
     }
 
-    if (this.#isES) {
-      this.#hunts = conn.collection('hunts', { es: { index: fixIndex('hunts') } });
-      this.#queries = conn.collection('queries', { es: { index: fixIndex('queries') } });
-      this.#history = conn.collection('history', {
-        es: {
-          index: fixIndex('history_v1-*'),
-          writeIndex: () => {
-            const d = new Date(Date.now());
-            const jan = new Date(d.getUTCFullYear(), 0, 0);
-            return prefix + 'history_v1-' + twoDigitString(d.getUTCFullYear() % 100) + 'w' +
-              twoDigitString(Math.floor((d - jan) / 604800000));
-          }
-        }
-      });
-    } else {
-      this.#hunts = conn.collection('hunts');
-      this.#queries = conn.collection('queries');
-      this.#history = conn.collection('history');
-    }
+    this.#hunts = conn.collection('hunts', options('hunts'));
+    this.#queries = conn.collection('queries', options('queries'));
+    this.#history = conn.collection('history', options('history', {
+      index: fixIndex('history_v1-*'),
+      writeIndex: () => {
+        const d = new Date(Date.now());
+        const jan = new Date(d.getUTCFullYear(), 0, 0);
+        return prefix + 'history_v1-' + twoDigitString(d.getUTCFullYear() % 100) + 'w' +
+          twoDigitString(Math.floor((d - jan) / 604800000));
+      }
+    }));
 
-    // On ES db.pl creates these behind their aliases
     for (const [key, collName] of [['devices', 'featherprint'], ['history', 'featherprint_history'], ['alerts', 'featherprint_alerts']]) {
-      this.featherprint[key] = conn.collection(collName, isES ? { es: { index: fixIndex(collName), dbpl: true } } : DbClusterImpl.collectionOptions(collName));
+      this.featherprint[key] = conn.collection(collName, options(collName));
     }
   }
 
@@ -122,17 +122,35 @@ class DbClusterImpl {
 
   async init () {
     await Promise.all([this.#hunts.init(), this.#queries.init(), this.#history.init(), ...Object.values(this.featherprint).map(c => c.init())]);
-    if (this.#isPG) { await DbClusterImpl.loadBaseFields(this.fields); }
   }
 
   /**
-   * db.pl loads the base fields into ES, a Postgres cluster db gets them from
-   * whoever connects first since capture only defines the fields it writes
+   * Throws when what capture writes isn't set up, a multi viewer only checks what multies routes
+   */
+  async check () {
+    for (const coll of [this.stats, this.dstats, this.sequence]) { await coll.check(); }
+    if (this.#multiES) { return; }
+    await this.files.check();
+    try {
+      await DbClusterImpl.loadBaseFields(this.fields);
+    } catch (err) {
+      console.log('WARNING - loading the base fields', err.message);
+    }
+  }
+
+  /**
+   * capture only defines the fields it writes, so the base fields come from db/fields.json.
+   * db.pl loads the same file into ES, a db without db.pl gets them the first time a viewer starts.
+   * Only a missing or changed doc is written, every viewer start gets here
    * @param fields the cluster db fields collection
    */
   static async loadBaseFields (fields) {
     const docs = JSON.parse(fs.readFileSync(path.join(__dirname, '../db/fields.json'), 'utf8'));
-    await Promise.all(Object.entries(docs).map(([id, doc]) => fields.put(id, doc)));
+    const { data } = await fields.find({ size: 10000 });
+    const have = new Map(data.map(h => [h.id, canonical(h.doc)]));
+    await Promise.all(Object.entries(docs)
+      .filter(([id, doc]) => have.get(id) !== canonical(doc))
+      .map(([id, doc]) => fields.put(id, doc)));
   }
 
   #cluster (cluster) {
@@ -206,8 +224,8 @@ class DbClusterImpl {
     if (doc) {
       return { node: doc.name, updateTime: doc.lastRun };
     }
-    // Older versions kept it in the queries index _meta
-    if (!this.#isES) { return { node: undefined, updateTime: undefined }; }
+    // Older versions kept it in the queries index _meta. multies has no _mapping route, a request there never answers
+    if (this.#multiES) { return { node: undefined, updateTime: undefined }; }
     return { node: await this.#queries.getMeta('node'), updateTime: await this.#queries.getMeta('updateTime') };
   }
 

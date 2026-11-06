@@ -729,6 +729,8 @@ void arkime_plugin_init()
         LOG("Not enabling in dryRun mode");
         return;
     }
+    if (!esServer)
+        CONFIGEXIT("The tagger plugin needs an OpenSearch/Elasticsearch sessions db");
 
     HASH_INIT(s_, allFiles, arkime_string_hash, arkime_string_cmp);
     HASH_INIT(s_, allDomains, arkime_string_hash, arkime_string_cmp);

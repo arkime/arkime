@@ -431,6 +431,11 @@ class Integration {
     return res.send({ success: true, integrations: results });
   }
 
+  // Postgres stores a NUL or a lone surrogate as U+FFFD, refusing them keeps the audit exact on every backend
+  static #storable (str) {
+    return !str.includes('\u0000') && str.isWellFormed();
+  }
+
   // runIntegrationsList is deliberately never awaited, so it has to swallow its
   // own failures. An unhandled rejection here exits cont3xt for every user.
   static #startIntegrationsList (shared, indicator, parentIndicator, integrations) {
@@ -700,6 +705,10 @@ class Integration {
       return res.send({ purpose: 'error', text: 'viewId must be a string of at most 256 characters when present' });
     }
 
+    if ([req.body.query, req.body.viewId ?? '', ...(req.body.tags ?? [])].some(s => !Integration.#storable(s))) {
+      return res.send({ purpose: 'error', text: 'query, tags and viewId can\'t contain a NUL or a lone surrogate' });
+    }
+
     // dedupe and trim queries
     const queries = [...new Set(
       ArkimeUtil.sanitizeStr(req.body.query.trim())
@@ -727,6 +736,25 @@ class Integration {
     const isBulk = indicators.length > 1;
 
     const issuedAt = Date.now();
+    // Audited before anything is looked up, a search that can't be audited doesn't run
+    let auditId;
+    try {
+      auditId = await Audit.create({
+        userId: req.user.userId,
+        indicator: queries.join(', '),
+        iType: isBulk ? 'bulk' : indicators[0].itype,
+        tags: req.body.tags ?? [],
+        viewId: req.body.viewId,
+        issuedAt,
+        took: 0,
+        resultCount: 0
+      }, { refresh: false });
+    } catch (err) {
+      console.log('ERROR - creating audit log.', err);
+      return res.send({ purpose: 'error', text: 'Couldn\'t save the search history' });
+    }
+    if (res.destroyed) { return; }
+
     const shared = {
       skipCache: !!req.body.skipCache,
       skipChildren: !!req.body.skipChildren,
@@ -743,7 +771,7 @@ class Integration {
         res.write(JSON.stringify(obj));
         res.write(',\n');
       },
-      finishWrite () { // end data write and create audit log, once, whichever caller gets here first
+      finishWrite () { // end data write and finish the audit log, once, whichever caller gets here first
         if (this.finished) { return; }
         const wasOpen = this.open();
         this.finished = true;
@@ -753,17 +781,8 @@ class Integration {
           res.end(']\n');
         }
 
-        Audit.create({
-          userId: req.user.userId,
-          indicator: queries.join(', '),
-          iType: isBulk ? 'bulk' : indicators[0].itype,
-          tags: req.body.tags ?? [],
-          viewId: req.body.viewId,
-          issuedAt,
-          took: Date.now() - issuedAt,
-          resultCount: this.resultCount
-        }).catch((err) => {
-          console.log('ERROR - creating audit log.', err);
+        Audit.finish(auditId, Date.now() - issuedAt, this.resultCount).catch((err) => {
+          console.log('ERROR - finishing audit log.', err);
         });
       }
     };
@@ -820,6 +839,10 @@ class Integration {
       return res.send({ purpose: 'error', text: 'Missing query' });
     }
 
+    if (!Integration.#storable(req.body.query)) {
+      return res.send({ purpose: 'error', text: 'query can\'t contain a NUL or a lone surrogate' });
+    }
+
     const itype = req.params.itype;
     const query = ArkimeUtil.sanitizeStr(req.body.query.trim());
 
@@ -859,6 +882,25 @@ class Integration {
       return res.send({ purpose: 'error', text: `integration ${itype} ${req.params.integration} not allowed` });
     }
 
+    // this endpoint queries the same external sources as /integration/search,
+    // so it must leave the same history behind, written before the lookup runs
+    const issuedAt = Date.now();
+    let auditId;
+    try {
+      auditId = await Audit.create({
+        userId: req.user.userId,
+        indicator: query,
+        iType: itype,
+        tags: [],
+        issuedAt,
+        took: 0,
+        resultCount: 0
+      }, { refresh: false });
+    } catch (err) {
+      console.log('ERROR - creating audit log.', err);
+      return res.send({ purpose: 'error', text: 'Couldn\'t save the search history' });
+    }
+
     const stats = integration.stats;
     if (itypeStats[itype] === undefined) {
       makeITypeStats(itype);
@@ -871,26 +913,14 @@ class Integration {
     istats.directLookup++;
     const dStartTime = Date.now();
 
-    // this endpoint queries the same external sources as /integration/search,
-    // so it must leave the same history behind - otherwise it is a way to look
-    // an indicator up without being audited
-    // audited exactly once, by the result, the error or the deadline, whichever is first
-    const issuedAt = dStartTime;
+    // finished exactly once, by the result, the error or the deadline, whichever is first
     let audited = false;
     const audit = (resultCount) => {
       if (audited) { return false; }
       audited = true;
       clearTimeout(timer);
-      Audit.create({
-        userId: req.user.userId,
-        indicator: query,
-        iType: itype,
-        tags: [],
-        issuedAt,
-        took: Date.now() - issuedAt,
-        resultCount
-      }).catch((err) => {
-        console.log('ERROR - creating audit log.', err);
+      Audit.finish(auditId, Date.now() - issuedAt, resultCount).catch((err) => {
+        console.log('ERROR - finishing audit log.', err);
       });
       return true;
     };

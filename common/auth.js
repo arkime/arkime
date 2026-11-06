@@ -1685,7 +1685,7 @@ class DbStore extends expressSession.Store {
       }
       // The same prefix as the users index, whichever way the app picked it
       const prefix = User.getDbPrefix() ?? '';
-      const conn = User.dbConnect(undefined, 'sids');
+      const conn = User.dbConnect();
       if (!conn) {
         console.log('WARNING - no users db, using in-memory sessions (lost on restart, not shared across nodes)');
         // MemoryStore only drops an expired session when it is read again, all() checks every one

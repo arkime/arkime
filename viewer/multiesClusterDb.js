@@ -1,6 +1,6 @@
 /******************************************************************************/
 /* multiesClusterDb.js -- Answer the ES calls a multi viewer makes on the
- *                        cluster db indices from a cluster's Postgres clusterDbUrl
+ *                        cluster db indices from a cluster's Postgres dbUrl
  *
  * Copyright Andy Wick
  *
@@ -11,8 +11,8 @@
 
 const ESConnection = require('../common/arkimeDb.es.js');
 
-// Only history has dated indices
-const INDEX_RE = /^MULTIPREFIX_(?:(files|stats|dstats|fields|sequence|hunts|queries)(?:_v\d+)?|(history)(?:_v1(?:-[^,/]*)?)?)\*?$/;
+// Only history has dated indices. Nothing ES would decode, so a %2C list can't pass as one index
+const INDEX_RE = /^MULTIPREFIX_(?:(files|stats|dstats|fields|sequence|hunts|queries)(?:_v\d+)?|(history)(?:_v1(?:-(?:\d+w\d+)?)?)?)\*?$/;
 
 /**
  * The cluster db collection a multi viewer request is for

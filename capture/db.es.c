@@ -1,6 +1,6 @@
 /******************************************************************************/
-/* db.es.c -- Elasticsearch/OpenSearch cluster db for capture's stats, dstats,
- *            files, fields and sequence, the default when clusterDbUrl isn't set
+/* db.es.c -- Elasticsearch/OpenSearch sessions db and cluster db for capture's
+ *            stats, dstats, files, fields and sequence, the default when dbUrl isn't set
  *
  * Copyright Andy Wick
  *
@@ -11,14 +11,20 @@
 #include <inttypes.h>
 
 extern ArkimeConfig_t config;
-extern void          *esServer;
-// esServer unless clusterDbUrl is a different OpenSearch/Elasticsearch
+// The sessions ES, NULL when the sessions db isn't OpenSearch/Elasticsearch, the tagger plugin uses it too
+void                 *esServer;
+// esServer unless dbUrl is a different OpenSearch/Elasticsearch
 LOCAL void          *clusterServer;
 LOCAL const char    *clusterServerName;
 
+LOCAL char          *esBulkQuery;
+LOCAL int            esBulkQueryLen;
+LOCAL struct timespec startHealthCheck;
+LOCAL uint64_t       esHealthMS;
+
 /******************************************************************************/
 // An OpenSearch/Elasticsearch server with the elasticsearch auth, retry and client cert settings
-void *arkime_db_create_es_server(const char *url)
+LOCAL void *arkime_db_create_es_server(const char *url)
 {
     void *server = arkime_http_create_server(url, config.maxESConns, config.maxESRequests, config.compressES);
 
@@ -432,6 +438,11 @@ LOCAL gboolean arkime_db_es_file_exists(const char *node, const char *filename, 
     return TRUE;
 }
 /******************************************************************************/
+LOCAL int arkime_db_es_queue_length_best()
+{
+    return arkime_http_queue_length_best(clusterServer);
+}
+/******************************************************************************/
 LOCAL int arkime_db_es_queue_length()
 {
     ARKIME_LOCK(pendingFiles);
@@ -480,21 +491,23 @@ LOCAL const ArkimeClusterDb_t esClusterDb = {
     .each          = arkime_db_es_each,
     .file_exists   = arkime_db_es_file_exists,
     .queue_length  = arkime_db_es_queue_length,
+    .queue_length_best = arkime_db_es_queue_length_best,
     .exit          = arkime_db_es_exit
 };
 /******************************************************************************/
-// The sessions ES server unless clusterDbUrl is an OpenSearch/Elasticsearch url
+// The sessions ES server unless dbUrl is a different OpenSearch/Elasticsearch
 LOCAL const ArkimeClusterDb_t *arkime_db_es_cluster_init(const char *url)
 {
     pendingFiles = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
-    if (url) {
-        char *httpUrl = arkime_config_es_url(url);
-        clusterServer = arkime_db_create_es_server(httpUrl);
-        clusterServerName = httpUrl;
-    } else {
+    char *httpUrl = url ? arkime_config_es_url(url) : NULL;
+    if (!httpUrl || (esServer && strcmp(httpUrl, config.elasticsearch) == 0)) {
+        g_free(httpUrl);
         clusterServer = esServer;
         clusterServerName = config.elasticsearch;
+    } else {
+        clusterServer = arkime_db_create_es_server(httpUrl);
+        clusterServerName = httpUrl;
     }
 
     // File numbers start at 101
@@ -534,12 +547,175 @@ LOCAL const ArkimeClusterDb_t *arkime_db_es_cluster_init(const char *url)
     return &esClusterDb;
 }
 /******************************************************************************/
-// The sessions ES, it is also what the health check, template check and the cluster db default use
-LOCAL void arkime_db_es_sessions_init(const char *url)
+LOCAL void arkime_db_es_send_bulk_cb(int code, uint8_t *data, int data_len, gpointer UNUSED(uw))
+{
+    uint8_t *forbidden;
+
+    if (code != 200)
+        LOG("Bulk issue.  Code: %d\n%.*s", code, data_len, data);
+    else if (config.debug > 4)
+        LOG("Bulk Reply code:%d :>%.*s<", code, data_len, data);
+    else if (data && (forbidden = (uint8_t *)strstr((char *)data, "FORBIDDEN")) != 0) {
+        const uint8_t *end = forbidden + 10;
+        while (forbidden > data && *forbidden != '{') {
+            forbidden--;
+        }
+        while (end < data + data_len && *end != '}') {
+            end++;
+        }
+        LOG("ERROR - OpenSearch/Elasticsearch is returning a FORBIDDEN error. This is most likely because: the index is closed, the index is read-only from ILM, or you've hit the disk watermarks. %.*s", (int)(end - forbidden + 1), forbidden);
+    }
+}
+/******************************************************************************/
+LOCAL void arkime_db_es_send_bulk(char *json, int len)
+{
+    if (config.debug > 4)
+        LOG("Sending Bulk:>%.*s<", len, json);
+    arkime_http_schedule(esServer, "POST", esBulkQuery, esBulkQueryLen, json, len, NULL, ARKIME_HTTP_PRIORITY_NORMAL, arkime_db_es_send_bulk_cb, NULL);
+}
+/******************************************************************************/
+LOCAL void arkime_db_es_health_cb(int code, uint8_t *data, int data_len, gpointer uw)
+{
+    if (code != 200 || !data || data_len < 2) {
+        LOG("WARNING - Couldn't perform Elasticsearch health check");
+        return;
+    }
+
+    uint32_t           status_len;
+    const uint8_t     *status;
+    struct timespec    stopHealthCheck;
+
+    clock_gettime(CLOCK_MONOTONIC, &stopHealthCheck);
+
+    esHealthMS = (stopHealthCheck.tv_sec - startHealthCheck.tv_sec) * 1000 +
+                 (stopHealthCheck.tv_nsec - startHealthCheck.tv_nsec) / 1000000L;
+
+    if (*data == '[')
+        status = arkime_js0n_get(data + 1, data_len - 2, "status", &status_len);
+    else
+        status = arkime_js0n_get(data, data_len, "status", &status_len);
+
+    if (!status) {
+        LOG("WARNING - Couldn't find status in '%.*s'", data_len, data);
+    } else if (esHealthMS > 20000) {
+        LOG("WARNING - Elasticsearch health check took more than 20 seconds %" PRIu64 "ms", esHealthMS);
+    } else if ((status[0] == 'y' && uw == GINT_TO_POINTER(1)) || (status[0] == 'r')) {
+        LOG("WARNING - Elasticsearch is %.*s and took %" PRIu64 "ms to query health, this may cause issues.  See FAQ.", status_len, status, esHealthMS);
+    }
+}
+/******************************************************************************/
+// Runs on main thread
+LOCAL void arkime_db_es_health(gboolean first)
+{
+    arkime_http_schedule(esServer, "GET", "/_cat/health?format=json", -1, NULL, 0, NULL, ARKIME_HTTP_PRIORITY_DROPPABLE, arkime_db_es_health_cb, GINT_TO_POINTER(first));
+    clock_gettime(CLOCK_MONOTONIC, &startHealthCheck);
+}
+/******************************************************************************/
+LOCAL uint64_t arkime_db_es_health_ms()
+{
+    return esHealthMS;
+}
+/******************************************************************************/
+LOCAL int arkime_db_es_check()
+{
+    size_t             data_len;
+    char               key[1000];
+    int                key_len;
+    char               tname[100];
+    uint8_t           *data;
+
+    snprintf(tname, sizeof(tname), "%ssessions3_template", config.prefix);
+
+    key_len = arkime_snprintf_len(key, sizeof(key), "/_template/%s?filter_path=**._meta", tname);
+    data = arkime_http_get(esServer, key, key_len, &data_len);
+
+    if (!data || data_len == 0) {
+        LOGEXIT("ERROR - Couldn't load version information, database (%s) might be down or not initialized.", config.elasticsearch);
+    }
+
+    uint32_t           template_len;
+    const uint8_t     *template = 0;
+
+    template = arkime_js0n_get(data, data_len, tname, &template_len);
+    if (!template || template_len == 0) {
+        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
+    }
+
+    uint32_t           mappings_len;
+    const uint8_t     *mappings = 0;
+
+    mappings = arkime_js0n_get(template, template_len, "mappings", &mappings_len);
+    if (!mappings || mappings_len == 0) {
+        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
+    }
+
+    uint32_t           meta_len;
+    const uint8_t     *meta = 0;
+
+    meta = arkime_js0n_get(mappings, mappings_len, "_meta", &meta_len);
+    if (!meta || meta_len == 0) {
+        LOGEXIT("ERROR - Couldn't load version information, database might be down or out of date.  Run \"db/db.pl host:port upgrade\"");
+    }
+
+    uint32_t           version_len = 0;
+    const uint8_t     *version = 0;
+
+    version = arkime_js0n_get(meta, meta_len, "molochDbVersion", &version_len);
+
+    if (!version)
+        LOGEXIT("ERROR - Database version couldn't be found, have you run \"db/db.pl host:port init\"");
+
+    const int dbVersion = atoi((char *)version);
+    if (dbVersion < ARKIME_MIN_DB_VERSION) {
+        LOGEXIT("ERROR - Database version '%.*s' is too old, needs to be at least (%d), run \"db/db.pl host:port upgrade\"", version_len, version, ARKIME_MIN_DB_VERSION);
+    }
+    free(data);
+    return dbVersion;
+}
+/******************************************************************************/
+LOCAL int arkime_db_es_sessions_queue_length()
+{
+    return arkime_http_queue_length(esServer);
+}
+/******************************************************************************/
+LOCAL uint64_t arkime_db_es_dropped()
+{
+    return arkime_http_dropped_count(esServer);
+}
+/******************************************************************************/
+LOCAL void arkime_db_es_sessions_exit()
+{
+    if (!config.noRefresh) {
+        char path[100];
+        snprintf(path, sizeof(path), "/%s*/_refresh", config.prefix);
+        uint8_t *data = arkime_http_get(esServer, path, -1, NULL);
+        if (data)
+            free(data);
+    }
+    arkime_http_free_server(esServer);
+    esServer = NULL;
+}
+/******************************************************************************/
+LOCAL const ArkimeSessionsDb_t esSessionsDb = {
+    .check        = arkime_db_es_check,
+    .health       = arkime_db_es_health,
+    .health_ms    = arkime_db_es_health_ms,
+    .queue_length = arkime_db_es_sessions_queue_length,
+    .dropped      = arkime_db_es_dropped,
+    .exit         = arkime_db_es_sessions_exit
+};
+/******************************************************************************/
+// The sessions ES, the cluster db shares it when dbUrl is the same ES
+LOCAL const ArkimeSessionsDb_t *arkime_db_es_sessions_init(const char *url)
 {
     g_free(config.elasticsearch);
     config.elasticsearch = arkime_config_es_url(url);
     esServer = arkime_db_create_es_server(config.elasticsearch);
+
+    esBulkQuery = arkime_config_str(NULL, "esBulkQuery", "/_bulk");
+    esBulkQueryLen = strlen(esBulkQuery);
+    arkime_db_set_send_bulk2(arkime_db_es_send_bulk, TRUE, FALSE, 0xffff);
+    return &esSessionsDb;
 }
 /******************************************************************************/
 void arkime_db_es_init()

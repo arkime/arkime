@@ -274,6 +274,12 @@ class SQLiteCollection extends ArkimeDb.Collection {
       params.push(String(c), String(c));
       break;
     case '$regex':
+      // more than the cache holds would recompile every pattern for every row
+      params.regexes ??= new Set();
+      params.regexes.add(String(c));
+      if (params.regexes.size > ArkimeDb.MAX_WHERE_REGEXES) {
+        throw new Error(`Invalid db where, more than ${ArkimeDb.MAX_WHERE_REGEXES} different $regex patterns`);
+      }
       test = `${type} = 'text' AND arkime_regexp(?, ${value})`;
       params.push(String(c));
       break;

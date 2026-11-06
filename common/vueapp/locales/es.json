@@ -2533,7 +2533,8 @@
       "needAdminPrivileges": "Se necesitan privilegios de administrador",
       "retrieveFailed": "Error al recuperar el historial",
       "deletedSuccessfully": "Elemento del historial eliminado exitosamente",
-      "deleteFailed": "Error al eliminar el elemento del historial"
+      "deleteFailed": "Error al eliminar el elemento del historial",
+      "notFound": "Elemento del historial no encontrado"
     },
     "shareables": {
       "missingName": "Falta el nombre del elemento compartido",

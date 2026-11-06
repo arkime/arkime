@@ -2533,7 +2533,8 @@
       "needAdminPrivileges": "管理者権限が必要です",
       "retrieveFailed": "履歴の取得エラー",
       "deletedSuccessfully": "履歴項目を正常に削除しました",
-      "deleteFailed": "履歴項目の削除エラー"
+      "deleteFailed": "履歴項目の削除エラー",
+      "notFound": "履歴項目が見つかりません"
     },
     "shareables": {
       "missingName": "共有アイテム名が未入力です",

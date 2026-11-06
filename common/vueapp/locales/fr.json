@@ -2533,7 +2533,8 @@
       "needAdminPrivileges": "Privilèges administrateur requis",
       "retrieveFailed": "Erreur lors de la récupération de l'historique",
       "deletedSuccessfully": "Élément d'historique supprimé avec succès",
-      "deleteFailed": "Erreur lors de la suppression de l'élément d'historique"
+      "deleteFailed": "Erreur lors de la suppression de l'élément d'historique",
+      "notFound": "Élément d'historique introuvable"
     },
     "shareables": {
       "missingName": "Nom de l'élément partageable manquant",

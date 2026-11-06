@@ -2533,7 +2533,8 @@
       "needAdminPrivileges": "需要管理员权限",
       "retrieveFailed": "检索历史记录出错",
       "deletedSuccessfully": "历史记录项已成功删除",
-      "deleteFailed": "删除历史记录项出错"
+      "deleteFailed": "删除历史记录项出错",
+      "notFound": "未找到历史记录项"
     },
     "shareables": {
       "missingName": "缺少共享项名称",

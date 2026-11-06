@@ -1,5 +1,5 @@
 /******************************************************************************/
-/* db.pg.c -- Postgres clusterDbUrl writer for capture's stats, dstats, files,
+/* db.pg.c -- Postgres dbUrl writer for capture's stats, dstats, files,
  *            fields and sequence, sessions still go to ES or ClickHouse
  *
  * Copyright Andy Wick
@@ -16,6 +16,8 @@ extern ArkimeConfig_t config;
 #include <libpq-fe.h>
 
 #define PG_MAX_DROPPABLE   500
+// A files or fields write tries this many times, a second plus a reconnect apart, before it is lost
+#define PG_MAX_RETRIES     30
 
 enum {
     PG_OP_PUT,
@@ -31,6 +33,8 @@ typedef struct {
     char            *id;
     char            *json;
     uint64_t         version;
+    int              priority;
+    int              tries;
     ArkimeSeqNum_cb  func;
     gpointer         uw;
 } ArkimeDbPgOp_t;
@@ -41,6 +45,8 @@ LOCAL GAsyncQueue  *pgQueue;
 LOCAL GThread      *pgThread;
 LOCAL int           pgOutstanding;
 LOCAL uint64_t      pgDropped;
+LOCAL uint64_t      pgLost;
+LOCAL volatile int  pgExiting;
 
 // Same layout as the viewer's ArkimeDb Postgres collections, prefixed like the ES indices
 LOCAL const char   *pgTableNames[] = {"stats", "dstats", "files", "fields", "sequence", NULL};
@@ -165,7 +171,7 @@ LOCAL uint32_t arkime_db_pg_next_sequence(const char *name)
 /******************************************************************************/
 // Caller holds the pgConn lock. A version only replaces an older one, which keeps
 // out of order stats out like ES external versioning.
-LOCAL void arkime_db_pg_do_put(const char *name, const char *id, const char *json, uint64_t version)
+LOCAL gboolean arkime_db_pg_do_put(const char *name, const char *id, const char *json, uint64_t version)
 {
     const char *table = arkime_db_pg_table(name);
     const int typed = arkime_db_pg_typed(name);
@@ -173,8 +179,7 @@ LOCAL void arkime_db_pg_do_put(const char *name, const char *id, const char *jso
         char vstr[30];
         snprintf(vstr, sizeof(vstr), "%" PRIu64, version);
         const char *params[3] = {id, json, vstr};
-        arkime_db_pg_command(table, pgTypedSql[typed][version ? 1 : 0], version ? 3 : 2, params);
-        return;
+        return arkime_db_pg_command(table, pgTypedSql[typed][version ? 1 : 0], version ? 3 : 2, params);
     }
 
     char sql[300];
@@ -184,13 +189,13 @@ LOCAL void arkime_db_pg_do_put(const char *name, const char *id, const char *jso
         const char *params[3] = {id, json, vstr};
         snprintf(sql, sizeof(sql), "INSERT INTO %s (id, doc, version) VALUES ($1, $2::jsonb, $3) "
                  "ON CONFLICT (id) DO UPDATE SET doc = excluded.doc, version = excluded.version WHERE %s.version < excluded.version", table, table);
-        arkime_db_pg_command(table, sql, 3, params);
-    } else {
-        const char *params[2] = {id, json};
-        snprintf(sql, sizeof(sql), "INSERT INTO %s (id, doc) VALUES ($1, $2::jsonb) "
-                 "ON CONFLICT (id) DO UPDATE SET doc = excluded.doc, version = %s.version + 1", table, table);
-        arkime_db_pg_command(table, sql, 2, params);
+        return arkime_db_pg_command(table, sql, 3, params);
     }
+
+    const char *params[2] = {id, json};
+    snprintf(sql, sizeof(sql), "INSERT INTO %s (id, doc) VALUES ($1, $2::jsonb) "
+             "ON CONFLICT (id) DO UPDATE SET doc = excluded.doc, version = %s.version + 1", table, table);
+    return arkime_db_pg_command(table, sql, 2, params);
 }
 /******************************************************************************/
 LOCAL void arkime_db_pg_op_free(ArkimeDbPgOp_t *op)
@@ -211,29 +216,47 @@ LOCAL void *arkime_db_pg_thread(void *UNUSED(threadp))
 
         char     sql[300];
         uint32_t seq = 0;
+        gboolean ok;
+        gboolean down;
 
-        ARKIME_LOCK(pgConn);
-        switch (op->type) {
-        case PG_OP_PUT:
-            arkime_db_pg_do_put(op->table, op->id, op->json, op->version);
-            break;
-        case PG_OP_UPDATE: {
-            const char *params[2] = {op->id, op->json};
-            snprintf(sql, sizeof(sql), "UPDATE %s SET doc = doc || $2::jsonb, version = version + 1 WHERE id = $1", arkime_db_pg_table(op->table));
-            arkime_db_pg_command(op->table, sql, 2, params);
-            break;
+        // A files or fields write waits in place for Postgres to come back, so a file's create still
+        // lands before its update. What queues up behind it is droppable, or waits too.
+        while (1) {
+            ARKIME_LOCK(pgConn);
+            switch (op->type) {
+            case PG_OP_PUT:
+                ok = arkime_db_pg_do_put(op->table, op->id, op->json, op->version);
+                break;
+            case PG_OP_UPDATE: {
+                const char *params[2] = {op->id, op->json};
+                snprintf(sql, sizeof(sql), "UPDATE %s SET doc = doc || $2::jsonb, version = version + 1 WHERE id = $1", arkime_db_pg_table(op->table));
+                ok = arkime_db_pg_command(op->table, sql, 2, params);
+                break;
+            }
+            case PG_OP_DELETE: {
+                const char *params[1] = {op->id};
+                snprintf(sql, sizeof(sql), "DELETE FROM %s WHERE id = $1", arkime_db_pg_table(op->table));
+                ok = arkime_db_pg_command(op->table, sql, 1, params);
+                break;
+            }
+            default:
+                seq = arkime_db_pg_next_sequence(op->id);
+                ok = seq != 0;
+                break;
+            }
+            // A statement error isn't retried, only a connection that is down
+            down = !ok && PQstatus(pgConn) != CONNECTION_OK;
+            ARKIME_UNLOCK(pgConn);
+
+            if (!down || op->type == PG_OP_SEQUENCE || op->priority == ARKIME_HTTP_PRIORITY_DROPPABLE || pgExiting)
+                break;
+            if (++op->tries >= PG_MAX_RETRIES) {
+                pgLost++;
+                LOG("ERROR - Postgres %s write of %s lost after %d tries", op->table, op->id, op->tries);
+                break;
+            }
+            sleep(1);
         }
-        case PG_OP_DELETE: {
-            const char *params[1] = {op->id};
-            snprintf(sql, sizeof(sql), "DELETE FROM %s WHERE id = $1", arkime_db_pg_table(op->table));
-            arkime_db_pg_command(op->table, sql, 1, params);
-            break;
-        }
-        case PG_OP_SEQUENCE:
-            seq = arkime_db_pg_next_sequence(op->id);
-            break;
-        }
-        ARKIME_UNLOCK(pgConn);
 
         // Callbacks run unlocked, they may take their own locks
         if (op->type == PG_OP_SEQUENCE && seq && op->func)
@@ -259,6 +282,7 @@ LOCAL void arkime_db_pg_push(int type, const char *table, const char *id, const 
     if (json)
         op->json = g_strndup(json, len);
     op->version = version;
+    op->priority = priority;
 
     ARKIME_THREAD_INCR(pgOutstanding);
     g_async_queue_push(pgQueue, op);
@@ -371,6 +395,8 @@ LOCAL void arkime_db_pg_exit()
     if (!pgConn)
         return;
 
+    // A write waiting for Postgres to come back stops waiting
+    pgExiting = 1;
     ArkimeDbPgOp_t *op = ARKIME_TYPE_ALLOC0(ArkimeDbPgOp_t);
     op->type = PG_OP_EXIT;
     g_async_queue_push(pgQueue, op);
@@ -379,6 +405,8 @@ LOCAL void arkime_db_pg_exit()
 
     if (pgDropped)
         LOG("Postgres dropped %" PRIu64 " droppable writes", pgDropped);
+    if (pgLost)
+        LOG("Postgres lost %" PRIu64 " writes while it was down", pgLost);
 
     PQfinish(pgConn);
     pgConn = NULL;
@@ -479,6 +507,50 @@ LOCAL gboolean arkime_db_pg_loopback(const char *host)
            (strncmp(host, "127.", 4) == 0 && g_hostname_is_ip_address(host));
 }
 /******************************************************************************/
+// hosts is a libpq host or hostaddr value, a comma separated list
+LOCAL gboolean arkime_db_pg_remote(const char *hosts)
+{
+    if (!hosts || !hosts[0])
+        return FALSE;
+
+    gboolean remote = FALSE;
+    gchar **list = g_strsplit(hosts, ",", 0);
+    for (int i = 0; list[i]; i++) {
+        if (list[i][0] && !arkime_db_pg_loopback(list[i]))
+            remote = TRUE;
+    }
+    g_strfreev(list);
+    return remote;
+}
+/******************************************************************************/
+// The service's settings from the service file libpq would read, NULL when that can't be told
+LOCAL GKeyFile *arkime_db_pg_service_file(const char *service)
+{
+    char *files[2];
+    const char *env = getenv("PGSERVICEFILE");
+    files[0] = env && env[0] ? g_strdup(env) : g_build_filename(g_get_home_dir(), ".pg_service.conf", NULL);
+    env = getenv("PGSYSCONFDIR");
+    files[1] = env && env[0] ? g_build_filename(env, "pg_service.conf", NULL) : NULL;
+
+    GKeyFile *found = NULL;
+    for (int i = 0; i < 2 && files[i] && !found; i++) {
+        if (!g_file_test(files[i], G_FILE_TEST_EXISTS))
+            continue;
+        GKeyFile *kf = g_key_file_new();
+        gboolean loaded = g_key_file_load_from_file(kf, files[i], G_KEY_FILE_NONE, NULL);
+        if (loaded && g_key_file_has_group(kf, service)) {
+            found = kf;
+            continue;
+        }
+        g_key_file_free(kf);
+        if (!loaded) // libpq may read it, so what the service names is unknown
+            break;
+    }
+    g_free(files[0]);
+    g_free(files[1]);
+    return found;
+}
+/******************************************************************************/
 LOCAL void arkime_db_pg_notice(void *UNUSED(arg), const char *message)
 {
     if (config.debug)
@@ -494,43 +566,90 @@ LOCAL PGconn *arkime_db_pg_connect(const char *url)
     char *err = NULL;
     PQconninfoOption *opts = PQconninfoParse(url, &err);
     if (!opts) {
-        LOGEXIT("ERROR - Couldn't parse the Postgres clusterDbUrl: %s", err ? err : "out of memory");
+        LOGEXIT("ERROR - Couldn't parse the Postgres dbUrl: %s", err ? err : "out of memory");
     }
 
     gboolean sslSet = FALSE;
+    gboolean rootSet = FALSE;
     gboolean verify = FALSE;
     gboolean remote = FALSE;
+    gboolean hasHost = FALSE;
+    gboolean hasHostaddr = FALSE;
+    char *service = NULL;
     for (PQconninfoOption *o = opts; o->keyword; o++) {
         if (!o->val || !o->val[0])
             continue;
         if (strcmp(o->keyword, "sslmode") == 0 || strcmp(o->keyword, "requiressl") == 0) {
             sslSet = TRUE;
             verify = strncmp(o->val, "verify-", 7) == 0;
-        } else if (strcmp(o->keyword, "host") == 0 || strcmp(o->keyword, "hostaddr") == 0) {
-            gchar **hosts = g_strsplit(o->val, ",", 0);
-            for (int i = 0; hosts[i]; i++) {
-                if (hosts[i][0] && !arkime_db_pg_loopback(hosts[i]))
-                    remote = TRUE;
-            }
-            g_strfreev(hosts);
+        } else if (strcmp(o->keyword, "sslrootcert") == 0) {
+            rootSet = TRUE;
+        } else if (strcmp(o->keyword, "host") == 0) {
+            hasHost = TRUE;
+            remote |= arkime_db_pg_remote(o->val);
+        } else if (strcmp(o->keyword, "hostaddr") == 0) {
+            hasHostaddr = TRUE;
+            remote |= arkime_db_pg_remote(o->val);
+        } else if (strcmp(o->keyword, "service") == 0) {
+            service = g_strdup(o->val);
         }
     }
     PQconninfoFree(opts);
 
+    // PQconninfoParse leaves out what libpq fills in later, a service file's settings and then
+    // PGHOST/PGHOSTADDR. A service file that can't be read could name any host, so it counts as remote.
+    if (!service && getenv("PGSERVICE") && getenv("PGSERVICE")[0])
+        service = g_strdup(getenv("PGSERVICE"));
+    if (service) {
+        GKeyFile *kf = arkime_db_pg_service_file(service);
+        if (!kf) {
+            remote = TRUE;
+        } else {
+            char *val;
+            if (!sslSet && ((val = g_key_file_get_value(kf, service, "sslmode", NULL)) ||
+                            (val = g_key_file_get_value(kf, service, "requiressl", NULL)))) {
+                sslSet = TRUE;
+                verify = strncmp(val, "verify-", 7) == 0;
+                g_free(val);
+            }
+            if (g_key_file_has_key(kf, service, "sslrootcert", NULL))
+                rootSet = TRUE;
+            if (!hasHost && (val = g_key_file_get_value(kf, service, "host", NULL))) {
+                hasHost = TRUE;
+                remote |= arkime_db_pg_remote(val);
+                g_free(val);
+            }
+            if (!hasHostaddr && (val = g_key_file_get_value(kf, service, "hostaddr", NULL))) {
+                hasHostaddr = TRUE;
+                remote |= arkime_db_pg_remote(val);
+                g_free(val);
+            }
+            g_key_file_free(kf);
+        }
+        g_free(service);
+    }
+    if (!hasHost)
+        remote |= arkime_db_pg_remote(getenv("PGHOST"));
+    if (!hasHostaddr)
+        remote |= arkime_db_pg_remote(getenv("PGHOSTADDR"));
+
     // Entries before dbname are overridden by the same setting in the url
-    const char *keywords[4];
-    const char *values[4];
+    const char *keywords[5];
+    const char *values[5];
     int n = 0;
+    // Every op reconnects under the pgConn lock, so a server that drops packets can't hold capture for the OS's connect timeout
+    keywords[n] = "connect_timeout";
+    values[n++] = "10";
     if (remote && !sslSet) {
         keywords[n] = "sslmode";
         values[n++] = config.insecure ? "require" : "verify-full";
         verify = !config.insecure;
     }
     // libpq verifies require too when it has a root cert, so only give one when verifying
-    if (remote && verify && config.caTrustFile) {
+    if (remote && verify && !rootSet && config.caTrustFile) {
         keywords[n] = "sslrootcert";
         values[n++] = config.caTrustFile;
-    } else if (remote && verify && !sslSet && PQlibVersion() >= 160000) {
+    } else if (remote && verify && !sslSet && !rootSet && PQlibVersion() >= 160000) {
         keywords[n] = "sslrootcert";
         values[n++] = "system";
     }
@@ -546,7 +665,7 @@ LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *url)
 {
     for (const char *c = config.clusterPrefix; *c; c++) {
         if (!g_ascii_isalnum(*c) && *c != '_')
-            CONFIGEXIT("clusterDbPrefix '%s' can only have letters, digits and _ with a Postgres clusterDbUrl", config.clusterPrefix);
+            CONFIGEXIT("dbPrefix '%s' can only have letters, digits and _ with a Postgres dbUrl", config.clusterPrefix);
     }
     for (int i = 0; pgTableNames[i]; i++) {
         pgTables[i] = g_strdup_printf("%s%s", config.clusterPrefix, pgTableNames[i]);
@@ -554,7 +673,7 @@ LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *url)
 
     pgConn = arkime_db_pg_connect(url);
     if (PQstatus(pgConn) != CONNECTION_OK) {
-        LOGEXIT("ERROR - Couldn't connect to the Postgres clusterDbUrl: %s", PQerrorMessage(pgConn));
+        LOGEXIT("ERROR - Couldn't connect to the Postgres dbUrl: %s", PQerrorMessage(pgConn));
     }
     // Every start creates the tables IF NOT EXISTS, which libpq would print a NOTICE for
     PQsetNoticeProcessor(pgConn, arkime_db_pg_notice, NULL);
@@ -606,7 +725,7 @@ LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *url)
     pgThread = g_thread_new("arkime-pg", &arkime_db_pg_thread, NULL);
 
     if (config.debug)
-        LOG("Using Postgres clusterDbUrl for stats, dstats, files, fields and sequence");
+        LOG("Using Postgres dbUrl for stats, dstats, files, fields and sequence");
     return &pgClusterDb;
 }
 
@@ -615,7 +734,7 @@ LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *url)
 /******************************************************************************/
 LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *UNUSED(url))
 {
-    LOGEXIT("ERROR - clusterDbUrl is Postgres, but capture was built without libpq 13 or newer");
+    LOGEXIT("ERROR - dbUrl is Postgres, but capture was built without libpq 13 or newer");
 }
 #endif
 /******************************************************************************/

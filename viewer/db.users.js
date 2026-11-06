@@ -15,6 +15,13 @@ const COLLECTIONS = {
   shortcuts: { version: true, es: { index: 'lookups' }, sqlite: { legacyMeta: { version: 'shortcutsVersion' } } }
 };
 
+// The api layers allow the same, anything else sorts by name
+const SORT_FIELDS = {
+  views: ['name', 'expression', 'created'],
+  shareables: ['name', 'type', 'description', 'creator', 'created', 'updated'],
+  shortcuts: ['name', 'description', 'created']
+};
+
 class DbUsersImpl {
   #views;
   #shareables;
@@ -39,7 +46,7 @@ class DbUsersImpl {
   // VIEWS
   // --------------------------------------------------------------------------
   async searchViews (params) {
-    return this.#search(this.#views, viewsWhere(params), params);
+    return this.#search(this.#views, 'views', viewsWhere(params), params);
   }
 
   async numberOfViews (params) {
@@ -50,23 +57,36 @@ class DbUsersImpl {
     return this.#getOrThrow(this.#views, id, 'View');
   }
 
-  // idOrName comes from the request, an object would be read as where operators
+  // idOrName comes from the request, an object would be read as where operators.
+  // An id, then the user's own view by that name, then the one view shared with them by that name.
+  // Anyone can share a view with anyone, so a name more than one shared view has is refused.
   async getViewByIdOrName (idOrName, user, roles) {
     if (typeof idOrName !== 'string') { return null; }
-    const { data } = await this.#views.find({
+    const size = 100;
+    const { total, data } = await this.#views.find({
       where: {
         $and: [
           { $or: [{ id: idOrName }, { name: idOrName }] },
           { $or: accessClauses({ roles, users: user, user }) }
         ]
       },
-      size: 100
+      size
     });
-    if (data.length === 0) { return null; }
 
-    // Prefer an id match, then the user's own view with that name
-    const hit = data.find(h => h.id === idOrName) ?? data.find(h => h.doc.user === user) ?? data[0];
-    return hit.doc;
+    // Past one page the id or own view may not be on it, and the shared name is ambiguous anyway
+    if (total > size) {
+      const { data: exact } = await this.#views.find({
+        where: { $or: [{ $and: [{ id: idOrName }, { $or: accessClauses({ roles, users: user, user }) }] }, { $and: [{ name: idOrName }, { user }] }] },
+        size
+      });
+      return (exact.find(h => h.id === idOrName) ?? exact[0])?.doc ?? null;
+    }
+
+    const named = data.filter(h => h.doc.name === idOrName);
+    const hit = data.find(h => h.id === idOrName) ??
+      named.find(h => h.doc.user === user) ??
+      (named.length === 1 ? named[0] : undefined);
+    return hit?.doc ?? null;
   }
 
   async createView (doc) {
@@ -89,7 +109,7 @@ class DbUsersImpl {
   // SHAREABLES
   // --------------------------------------------------------------------------
   async searchShareables (params) {
-    return this.#search(this.#shareables, shareablesWhere(params), params);
+    return this.#search(this.#shareables, 'shareables', shareablesWhere(params), params);
   }
 
   async numberOfShareables (params) {
@@ -130,7 +150,7 @@ class DbUsersImpl {
   // SHORTCUTS
   // --------------------------------------------------------------------------
   async searchShortcuts (params) {
-    return this.#search(this.#shortcuts, shortcutsWhere(params), params);
+    return this.#search(this.#shortcuts, 'shortcuts', shortcutsWhere(params), params);
   }
 
   async numberOfShortcuts (params) {
@@ -188,10 +208,11 @@ class DbUsersImpl {
   }
 
   // --------------------------------------------------------------------------
-  async #search (coll, where, params) {
+  async #search (coll, collName, where, params) {
+    const sortField = SORT_FIELDS[collName].includes(params.sortField) ? params.sortField : 'name';
     const { total, data } = await coll.find({
       where,
-      sort: { [params.sortField || 'name']: params.sortOrder === 'desc' ? 'desc' : 'asc' },
+      sort: { [sortField]: params.sortOrder === 'desc' ? 'desc' : 'asc' },
       from: params.from || 0,
       size: params.size || 50
     });

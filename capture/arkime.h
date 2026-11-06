@@ -429,8 +429,8 @@ typedef struct arkime_config {
     int                numPlugins;
 
     GRegex  *offlineRegex;
-    char     *prefix;        // sessions indices, sessionsDbPrefix or prefix
-    char     *clusterPrefix; // stats, dstats, files, fields and sequence, clusterDbPrefix or the sessions one
+    char     *prefix;        // sessions indices, sessionsDbPrefix, then prefix with a sessionsDbUrl or the cluster one
+    char     *clusterPrefix; // stats, dstats, files, fields and sequence, dbPrefix or prefix
     char     *nodeClass;
     char     *elasticsearch;
     char    **interface;
@@ -1154,7 +1154,7 @@ typedef struct {
 
 typedef void (*ArkimeDbRow_cb)(const uint8_t *id, int id_len, const uint8_t *doc, int doc_len);
 
-// The clusterDbUrl, holds the stats, dstats, files, fields and sequence tables, ES by default.
+// The dbUrl, holds the stats, dstats, files, fields and sequence tables, ES by default.
 // put and update copy json. put_stats writes this node's stats doc, live captures version it so an older one can't replace a newer one.
 typedef struct {
     void     (*put)(const char *table, const char *id, const char *json, int len, gboolean sync, int priority);
@@ -1166,18 +1166,35 @@ typedef struct {
     void     (*each)(const char *table, ArkimeDbRow_cb func);
     gboolean (*file_exists)(const char *node, const char *name, uint32_t *num);
     int      (*queue_length)(void);
+    int      (*queue_length_best)(void);
     void     (*exit)(void);
 } ArkimeClusterDb_t;
 
 typedef const ArkimeClusterDb_t *(*ArkimeClusterDbInit)(const char *url);
 
-// A rootPlugins plugin can add a clusterDbUrl or sessionsDbUrl scheme, they load before arkime_db_init picks one.
-// A sessions init sets up sending the sessions, eg with arkime_db_set_send_bulk2.
-typedef void (*ArkimeSessionsDbInit)(const char *url);
+// The sessionsDbUrl, or dbUrl when it isn't set. Every member can be NULL.
+// check exits when the db isn't set up and returns its schema version, health runs every 30 seconds
+// and health_ms is how long the last one took, dropped counts writes given up on.
+typedef struct {
+    int      (*check)(void);
+    void     (*health)(gboolean first);
+    uint64_t (*health_ms)(void);
+    int      (*queue_length)(void);
+    uint64_t (*dropped)(void);
+    void     (*exit)(void);
+} ArkimeSessionsDb_t;
+
+// A rootPlugins plugin can add a dbUrl or sessionsDbUrl scheme, they load before arkime_db_init picks one.
+// A sessions init sets up sending the sessions with arkime_db_set_send_bulk2.
+typedef const ArkimeSessionsDb_t *(*ArkimeSessionsDbInit)(const char *url);
+
+#define ARKIME_MIN_DB_VERSION 85
 
 void     arkime_db_cluster_register(char *scheme, ArkimeClusterDbInit init);
 void     arkime_db_sessions_register(char *scheme, ArkimeSessionsDbInit init);
 void     arkime_db_init();
+int      arkime_db_queue_length();
+int      arkime_db_queue_length_best();
 void     arkime_db_set_tokens_enabled(gboolean enabled);
 gboolean arkime_db_tokens_enabled(void);
 void     arkime_db_set_tokens_field(int pos, const char *tokensKey);

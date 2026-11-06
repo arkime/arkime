@@ -2533,7 +2533,8 @@
       "needAdminPrivileges": "Vajalikud administraatoriõigused",
       "retrieveFailed": "Ajaloo toomine ebaõnnestus",
       "deletedSuccessfully": "Ajaloo kirje edukalt kustutatud",
-      "deleteFailed": "Viga ajaloo kirje kustutamisel"
+      "deleteFailed": "Viga ajaloo kirje kustutamisel",
+      "notFound": "Ajaloo kirjet ei leitud"
     },
     "shareables": {
       "missingName": "Jagatud elemendi nimi puudub",

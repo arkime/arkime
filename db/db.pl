@@ -1000,8 +1000,12 @@ sub fieldsUpdate
     logmsg "Setting fields_v30 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}fields_v30/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
 
+    # recreate-fields and repair-old get here without the startup load
+    loadBaseFields() unless (defined $BASEFIELDS);
+    # Sorted keys so every run writes the same doc, capture compares them
+    my $json = JSON->new->canonical;
     foreach my $field (sort keys %{$BASEFIELDS}) {
-        esPost("/${PREFIX}fields_v30/_doc/$field?timeout=${ESTIMEOUT}s", to_json($BASEFIELDS->{$field}));
+        esPost("/${PREFIX}fields_v30/_doc/$field?timeout=${ESTIMEOUT}s", $json->encode($BASEFIELDS->{$field}));
     }
     ecsFieldsUpdate();
 }

@@ -117,12 +117,18 @@ class ESCollection extends ArkimeDb.Collection {
   }
 
   async delete (id, { refresh = true, cluster } = {}) {
+    let index = this.#index;
     if (this.#writeIndex) {
-      return (await this.deleteWhere({ id }, { cluster })) > 0;
+      // Which dated index holds it, a delete by query would and multies has no route for one
+      const { body: { hits } } = await this.#client.search({ index, body: { query: { ids: { values: [id] } }, size: 1, _source: false }, cluster });
+      if (!hits.hits[0]) { return false; }
+      index = hits.hits[0]._index;
     }
     try {
-      await this.#client.delete({ index: this.#index, id, refresh, cluster });
-      return true;
+      // multies answers 200 with the cluster's body, a miss or failure is only in it
+      const { body } = await this.#client.delete({ index, id, refresh, cluster });
+      if (body?.error) { throw new Error(typeof body.error === 'string' ? body.error : body.error.reason ?? JSON.stringify(body.error)); }
+      return body?.result !== 'not_found';
     } catch (err) {
       if (err.meta?.statusCode === 404) { return false; }
       throw err;
@@ -292,6 +298,25 @@ class ESCollection extends ArkimeDb.Collection {
   async flush ({ cluster } = {}) {
     await this.#client.indices.flush({ index: this.#index, cluster });
   }
+
+  // The index exists, with es.checkMapping its indexed keyword fields are keywords
+  async check () {
+    try {
+      await this.#client.indices.stats({ index: this.#index });
+    } catch (err) {
+      throw new Error(`Issue with '${this.#index}' index, make sure 'db/db.pl <host:port> init' has been run`, { cause: err });
+    }
+    const keywords = Object.entries(this.options.fields ?? {})
+      .filter(([, spec]) => typeof spec === 'object' && spec.type === 'keyword' && spec.indexed).map(([field]) => field);
+    if (!this.options.es?.checkMapping || !keywords.length) { return; }
+    const { body } = await this.#client.indices.getMapping({ index: this.#index });
+    for (const index of Object.values(body)) {
+      const bad = keywords.find(f => index.mappings?.properties?.[f] && index.mappings.properties[f].type !== 'keyword');
+      if (bad) {
+        throw new Error(`Issue with '${this.#index}' index, ${bad} isn't a keyword, use 'db/db.pl <host:port> repair' to fix`);
+      }
+    }
+  }
 }
 
 function esField (field) {
@@ -417,6 +442,14 @@ class ESConnection {
     this.client = options.client ?? createClient(url, options);
   }
 
+  withPrefix (prefix) {
+    return prefix === this.prefix ? this : new ESConnection(undefined, { client: this.client, prefix, multiES: this.#multiES });
+  }
+
+  async schemaVersion (minVersion) {
+    return ArkimeUtil.checkArkimeSchemaVersion(this.client, this.prefix, minVersion);
+  }
+
   collection (collName, options = {}) {
     let coll = this.#collections.get(collName);
     if (!coll) {
@@ -439,7 +472,7 @@ function createClient (url, options) {
   const esSSLOptions = ArkimeUtil.tlsOptionsOrExit(options, 'OpenSearch/Elasticsearch');
 
   const esOptions = {
-    node: [options.node ?? url.split(',')].flat().map(u => u.replace(/^(elasticsearch|opensearch)/i, 'http')),
+    node: [options.node ?? (url ?? 'http://localhost:9200').split(',')].flat().map(u => u.replace(/^(elasticsearch|opensearch)/i, 'http')),
     maxRetries: 2,
     requestTimeout: (parseInt(options.requestTimeout) + 30) * 1000 || 330000,
     ssl: esSSLOptions

@@ -200,10 +200,8 @@ async function premain () {
     defaultSections: 'default'
   });
 
-  // Match viewer/db.js: usersPrefix only counts with a users url, without one the users use prefix
-  const usersUrls = ArkimeConfig.usersDbUrls();
-  const usersEs = usersUrls ?? ArkimeConfig.usersFallbackEsUrls();
-  const usersPrefix = usersUrls ? ArkimeConfig.usersDbPrefix(ArkimeConfig.get('prefix', 'arkime')) : ArkimeConfig.usersFallbackPrefix('arkime');
+  const usersEs = ArkimeConfig.usersDbUrls() ?? ArkimeConfig.dbUrls();
+  const usersPrefix = ArkimeConfig.usersPrefix();
 
   await Auth.initialize({ passwordSecretSection: 'default' });
 

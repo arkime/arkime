@@ -693,7 +693,7 @@ LOCAL char arkime_config_key_sep(const char *key)
     if (strcmp(key, "elasticsearch") == 0 ||
         strcmp(key, "usersElasticsearch") == 0 ||
         strcmp(key, "sessionsDbUrl") == 0 ||
-        strcmp(key, "clusterDbUrl") == 0 ||
+        strcmp(key, "dbUrl") == 0 ||
         strcmp(key, "usersDbUrl") == 0)
         return ',';
     return ';';
@@ -1266,8 +1266,11 @@ LOCAL void arkime_config_load()
         }
     }
 
-    config.prefix           = arkime_config_prefix(keyfile, "sessionsDbPrefix", arkime_config_str(keyfile, "prefix", "arkime_"));
-    config.clusterPrefix    = arkime_config_prefix(keyfile, "clusterDbPrefix", g_strdup(config.prefix));
+    // A db with its own url falls back to prefix, one in dbUrl to dbPrefix then prefix
+    config.clusterPrefix    = arkime_config_prefix(keyfile, "dbPrefix", arkime_config_str(keyfile, "prefix", "arkime_"));
+    char *sessionsDbUrl     = arkime_config_str(keyfile, "sessionsDbUrl", NULL);
+    config.prefix           = arkime_config_prefix(keyfile, "sessionsDbPrefix", sessionsDbUrl ? arkime_config_str(keyfile, "prefix", "arkime_") : g_strdup(config.clusterPrefix));
+    g_free(sessionsDbUrl);
 
     config.elasticsearch    = arkime_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = arkime_config_str_list(keyfile, "interface", NULL);

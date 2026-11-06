@@ -231,7 +231,7 @@ async function premain () {
   await Config.initialize({ initAuth: true });
 
   if (Config.nodeName() === 'cont3xt') {
-    const usersEs = ArkimeConfig.usersDbUrls() ?? Config.getArray('elasticsearch', 'http://localhost:9200');
+    const usersEs = ArkimeConfig.usersDbUrls() ?? ArkimeConfig.dbUrls();
     User.initialize({
       insecure: ArkimeConfig.isInsecure([usersEs]),
       requestTimeout: Config.get('elasticsearchTimeout', 300),
@@ -240,7 +240,7 @@ async function premain () {
       clientKey: Config.get('esClientKey'),
       clientCert: Config.get('esClientCert'),
       clientKeyPass: Config.get('esClientKeyPass'),
-      prefix: ArkimeConfig.usersDbPrefix(),
+      prefix: ArkimeConfig.usersPrefix(),
       apiKey: Config.get('usersElasticsearchAPIKey'),
       basicAuth: Config.get('usersElasticsearchBasicAuth', Config.get('elasticsearchBasicAuth')),
       noUsersCheck: true
@@ -251,16 +251,15 @@ async function premain () {
     await Db.initialize({
       host: escInfo,
       prefix: ArkimeConfig.sessionsDbPrefix(),
-      clusterPrefix: ArkimeConfig.clusterDbPrefix(),
+      clusterPrefix: ArkimeConfig.dbPrefix(),
       esClientKey: Config.get('esClientKey', null),
       esClientCert: Config.get('esClientCert', null),
       esClientKeyPass: Config.get('esClientKeyPass', null),
-      insecure: ArkimeConfig.isInsecure([escInfo, ArkimeConfig.usersDbUrls()]),
+      insecure: ArkimeConfig.insecure,
       caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
       usersHost: ArkimeConfig.usersDbUrls(),
-      usersFallbackHost: ArkimeConfig.usersFallbackEsUrls(),
-      usersFallbackPrefix: ArkimeConfig.usersFallbackPrefix(),
-      usersPrefix: ArkimeConfig.usersDbPrefix(Config.get('prefix', 'arkime_')),
+      usersFallbackHost: ArkimeConfig.dbUrls(),
+      usersPrefix: ArkimeConfig.usersPrefix(),
       esApiKey: Config.get('elasticsearchAPIKey', null),
       usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
       esBasicAuth: Config.get('elasticsearchBasicAuth', null),

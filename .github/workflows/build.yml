@@ -259,7 +259,7 @@ jobs:
             sleep 1
           done
           curl -fsS http://localhost:9200/_cat/health || (cat /tmp/os; exit 1)
-          (cd tests ; ARKIME_default__clusterDbUrl=postgres://arkime@127.0.0.1:5433/arkimecap G_SLICE=always-malloc ./tests.pl --viewer)
+          (cd tests ; ARKIME_default__dbUrl=postgres://arkime@127.0.0.1:5433/arkimecap G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: otherdb viewer test
         if: ${{ matrix.otherdbtest == 'true' }}

@@ -22,12 +22,8 @@ class Notifier {
   static #defaultAlerts = { esRed: false, esDown: false, esDropped: false, outOfDate: false, noPackets: false };
 
   static initialize (options) {
-    const url = options.url ?? User.getDbUrl();
-
     // Names match the layouts each backend used before collections
-    const conn = ArkimeUtil.dbIsES(url)
-      ? ArkimeUtil.dbConnect(url, { client: User.getClient(), prefix: ArkimeUtil.formatPrefix(options.prefix) })
-      : ArkimeUtil.dbConnect(url, { section: 'Notifier' });
+    const conn = User.dbConnect(options.prefix);
     Notifier.#notifiers = conn.collection('notifiers', {
       fields: {
         name: { type: 'keyword', indexed: true },

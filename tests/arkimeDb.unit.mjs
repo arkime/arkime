@@ -326,13 +326,43 @@ for (const backend of backends) {
 
     if (backend.name !== 'es') {
       test('rejects regexes RE2 can not run', async () => {
-        const where = { $regex: '(.*)(.*)\\2\\1' };
-        await assert.rejects(coll.find({ where: { name: where } }), /invalid escape sequence/);
-        await assert.rejects(coll.find({ where: { id: where } }), /invalid escape sequence/);
-        await assert.rejects(icoll.find({ where: { creator: where } }), /invalid escape sequence/);
-        if (backend.name === 'pg') {
-          await assert.rejects(conn.collection(`typedre${run}`, { typed: true, fields: { nodeName: 'keyword' } }).find({ where: { nodeName: where } }), /invalid escape sequence/);
+        const refused = /invalid escape sequence|invalid perl operator|aren't supported/;
+        for (const pattern of ['(.*)(.*)\\2\\1', 'a(?=b)', 'a(?!b)', '\\mword']) {
+          const where = { $regex: pattern };
+          await assert.rejects(coll.find({ where: { name: where } }), refused, pattern);
+          await assert.rejects(coll.find({ where: { id: where } }), refused, pattern);
+          await assert.rejects(icoll.find({ where: { creator: where } }), refused, pattern);
+          if (backend.name === 'pg') {
+            await assert.rejects(conn.collection(`typedre${run}`, { typed: true, fields: { nodeName: 'keyword' } }).find({ where: { nodeName: where } }), refused, pattern);
+          }
         }
+        // an escaped backslash before a digit is a literal, not a backreference
+        assert.equal((await coll.find({ where: { name: { $regex: 'x\\\\1|alpha' } } })).total, 1);
+      });
+
+      test('many regex searches at once all answer', async () => {
+        const results = await Promise.all(Array.from({ length: 12 }, () => coll.find({ where: { name: { $regex: 'g.*a' } } })));
+        for (const { total, data } of results) {
+          assert.equal(total, 1);
+          assert.equal(data[0].id, 'c');
+        }
+      });
+    }
+
+    if (backend.name === 'sqlite') {
+      test('a where with more regexes than the cache holds is refused', async () => {
+        const patterns = Array.from({ length: ArkimeDb.MAX_WHERE_REGEXES + 1 }, (v, i) => ({ name: { $regex: `x${i}` } }));
+        await assert.rejects(coll.find({ where: { $or: patterns } }), /different \$regex patterns/);
+        assert.equal((await coll.find({ where: { $or: patterns.slice(1) } })).total, 0);
+      });
+    }
+
+    if (backend.name === 'pg') {
+      test('a NUL or lone surrogate is stored as U+FFFD', async () => {
+        await coll.put('nul', { name: 'a\u0000b', s: '\ud800', ok: '\\u0000 \ud83d\ude00' });
+        assert.deepEqual(await coll.get('nul'), { name: 'a\ufffdb', s: '\ufffd', ok: '\\u0000 \ud83d\ude00' });
+        assert.equal((await coll.find({ where: { name: 'a\u0000b' } })).total, 1);
+        await coll.delete('nul');
       });
     }
 
@@ -530,6 +560,19 @@ describe('viewer users db', () => {
     assert.equal((await users.getViewByIdOrName('mine', 'bob', [])).name, 'mine');
     assert.equal(await users.getViewByIdOrName({ $wildcard: '*' }, 'bob', []), null);
     assert.equal(await users.getViewByIdOrName(['mine'], 'bob', []), null);
+  });
+
+  test('a view name shared by more than one other user is ambiguous', async () => {
+    const DbUsersImpl = cjsRequire('../viewer/db.users.js');
+    const users = new DbUsersImpl(ArkimeUtil.dbConnect(`sqlite://${tmp}/viewershare.db`));
+    await users.init();
+    await users.createView({ name: 'dup', user: 'alice', users: ['bob'], expression: 'port == 1' });
+    assert.equal((await users.getViewByIdOrName('dup', 'bob', [])).expression, 'port == 1');
+    await users.createView({ name: 'dup', user: 'carol', users: ['bob'], expression: 'port == 2' });
+    assert.equal(await users.getViewByIdOrName('dup', 'bob', []), null);
+    await users.createView({ name: 'dup', user: 'bob', expression: 'port == 3' });
+    assert.equal((await users.getViewByIdOrName('dup', 'bob', [])).expression, 'port == 3');
+    assert.equal(await users.getViewByIdOrName('dup', 'dave', []), null);
   });
 });
 

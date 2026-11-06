@@ -60,12 +60,12 @@ const internals = {
         { name: 'userNameHeader', required: true, help: 'the http header to use for username', ifField: 'authMode', ifValue: 'header' },
         { name: 'httpRealm', ifField: 'authMode', ifValue: 'digest', required: false, help: 'The realm to use for digest requests. Must be the same as viewer is using. Default Moloch' },
         { name: 'passwordSecret', ifField: 'authMode', ifValue: 'digest', required: false, password: true, help: 'The secret used to encrypt password hashes. Must be the same as viewer is using. Default password' },
-        { name: 'usersDbUrl', required: false, help: 'The users db: an OpenSearch/Elasticsearch url, sqlite:// or postgres://. Falls back to usersUrl, usersElasticsearch, then elasticsearch' },
+        { name: 'usersDbUrl', required: false, help: 'The users db: an OpenSearch/Elasticsearch url, sqlite:// or postgres://. Falls back to usersUrl, usersElasticsearch, dbUrl, then elasticsearch' },
         { name: 'usersElasticsearch', required: false, help: 'Older name for usersDbUrl' },
         { name: 'usersElasticsearchAPIKey', required: false, help: 'OpenSearch/Elasticsearch API key for users DB access', password: true },
         { name: 'usersElasticsearchBasicAuth', required: false, help: 'OpenSearch/Elasticsearch Basic Auth', password: true },
         { name: 'userAuthIps', required: false, help: 'Comma separated list of CIDRs to allow authed requests from' },
-        { name: 'usersDbPrefix', required: false, help: 'The prefix used with db.pl --prefix for the users db. Falls back to usersPrefix, then prefix, then arkime_' },
+        { name: 'usersDbPrefix', required: false, help: 'The prefix used with db.pl --prefix for the users db. Falls back to usersPrefix, then prefix with a users url or dbPrefix without one, then arkime_' },
         { name: 'usersPrefix', required: false, help: 'Older name for usersDbPrefix' },
         { name: 'sourcePath', required: false, help: 'Where to look for the source files. Defaults to "./"' },
         { name: 'webBasePath', required: false, help: 'The base URL to wise requests, must end with slash. Defaults to "/"' }
@@ -246,13 +246,13 @@ async function setupAuth () {
       clientKey: ArkimeConfig.get('esClientKey'),
       clientCert: ArkimeConfig.get('esClientCert'),
       clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
-      prefix: ArkimeConfig.usersDbPrefix(),
+      prefix: ArkimeConfig.usersPrefix(),
       apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
       basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
       getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
     });
   } else {
-    const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
+    const es = ArkimeConfig.dbUrls();
     User.initialize({
       insecure: ArkimeConfig.isInsecure([es]),
       node: es,
@@ -260,7 +260,7 @@ async function setupAuth () {
       clientKey: ArkimeConfig.get('esClientKey'),
       clientCert: ArkimeConfig.get('esClientCert'),
       clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
-      prefix: ArkimeConfig.get('usersDbPrefix') ?? ArkimeConfig.get('prefix'),
+      prefix: ArkimeConfig.usersPrefix(),
       apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
       basicAuth: ArkimeConfig.get('elasticsearchBasicAuth'),
       getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
@@ -1655,11 +1655,19 @@ if (internals.webconfig) {
         obj[key] = JSON.parse(JSON.stringify(ArkimeConfig.getSection(key)));
 
         // Replace passwords
-        internals.configDefs[key.split(':')[0]].fields.forEach((item) => {
+        const fields = internals.configDefs[key.split(':')[0]].fields;
+        fields.forEach((item) => {
           if (item.password !== true) { return; }
           if (obj[key][item.name] === undefined || obj[key][item.name].length === 0) { return; }
           obj[key][item.name] = '********';
         });
+
+        // and the password in any other value, like a postgres:// usersDbUrl
+        for (const [fieldName, value] of Object.entries(obj[key])) {
+          if (fields.find(f => f.name === fieldName)?.password === true) { continue; }
+          const redacted = ViewConfig.redactValue(fieldName, value);
+          if (redacted.redacted) { obj[key][fieldName] = redacted.value; }
+        }
         return obj;
       }, {});
 
@@ -1719,6 +1727,13 @@ if (internals.webconfig) {
         } else if (field.password === true) {
           if (config[section][key] === '********') {
             config[section][key] = ArkimeConfig.getFull(section, key);
+          }
+        } else {
+          // A value comes back the way /config/get redacted it
+          try {
+            config[section][key] = ViewConfig.unredactValue(key, config[section][key], ArkimeConfig.getSection(section)?.[key]);
+          } catch (err) {
+            return res.send({ success: false, text: `Section ${section} ${err.message}` });
           }
         }
       }

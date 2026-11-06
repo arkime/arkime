@@ -2533,7 +2533,8 @@
       "needAdminPrivileges": "Necessário privilégios de admin",
       "retrieveFailed": "Erro ao recuperar histórico",
       "deletedSuccessfully": "Item de histórico excluído com sucesso",
-      "deleteFailed": "Erro ao excluir item de histórico"
+      "deleteFailed": "Erro ao excluir item de histórico",
+      "notFound": "Item de histórico não encontrado"
     },
     "shareables": {
       "missingName": "Nome do compartilhável ausente",

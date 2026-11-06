@@ -94,7 +94,9 @@ internals.initialize = (app) => {
 
 ArkimeConfig.loaded(() => {
   // build internals
-  internals.elasticBase = ArkimeConfig.sessionsEsUrls();
+  internals.multiES = Config.getBool('multiES', false);
+  // A multi viewer only talks to multies, its clusters' dbs are set in multiESNodes
+  internals.elasticBase = internals.multiES ? Config.getArray('elasticsearch', 'http://localhost:9200') : ArkimeConfig.sessionsEsUrls();
   internals.remoteClusters = Config.configMap('remote-clusters', 'moloch-clusters');
   internals.esQueryTimeout = Config.get('elasticsearchTimeout', 5 * 60) + 's';
   internals.esScrollTimeout = Config.get('elasticsearchScrollTimeout', 5 * 60) + 's';
@@ -111,8 +113,7 @@ ArkimeConfig.loaded(() => {
                            60 + // How long before ES reindexes
                            20; // Transmit and extra time
   internals.prefix = ArkimeUtil.formatPrefix(ArkimeConfig.sessionsDbPrefix());
-  internals.clusterPrefix = ArkimeUtil.formatPrefix(ArkimeConfig.clusterDbPrefix());
-  internals.multiES = Config.getBool('multiES', false);
+  internals.clusterPrefix = ArkimeUtil.formatPrefix(ArkimeConfig.dbPrefix());
 
   internals.uploadLimits.fileSize = Config.getInt('uploadFileSizeLimit', 2147483648);
 

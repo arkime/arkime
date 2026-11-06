@@ -2667,7 +2667,7 @@ async function premain () {
   await Config.initialize({ initAuth: true });
 
   const usersHost = ArkimeConfig.usersDbUrls();
-  const usersPrefix = ArkimeConfig.usersDbPrefix(internals.multiES ? '' : Config.get('prefix', 'arkime_'));
+  const usersPrefix = ArkimeConfig.usersPrefix(internals.multiES ? '' : undefined);
 
   await Db.initialize({
     host: internals.elasticBase,
@@ -2675,8 +2675,7 @@ async function premain () {
     clusterPrefix: internals.clusterPrefix,
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
     usersHost,
-    usersFallbackHost: ArkimeConfig.usersFallbackEsUrls(),
-    usersFallbackPrefix: ArkimeConfig.usersFallbackPrefix(),
+    usersFallbackHost: internals.multiES ? internals.elasticBase : ArkimeConfig.dbUrls(),
     usersPrefix,
     nodeName: Config.nodeName(),
     hostName: Config.hostName(),
@@ -2684,7 +2683,7 @@ async function premain () {
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
     multiES: internals.multiES,
-    insecure: ArkimeConfig.isInsecure([internals.elasticBase, usersHost]),
+    insecure: ArkimeConfig.insecure,
     caTrustFile: Config.get('caTrustFile', null),
     requestTimeout: Config.get('elasticsearchTimeout', 300),
     esProfile: Config.esProfile,

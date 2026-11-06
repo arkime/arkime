@@ -151,8 +151,8 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
   /**
    * Should certificate verification be skipped for these urls: --insecure, or
-   * every https url is a loopback host. The urls share one TLS setting, so a
-   * single remote host means verifying all of them.
+   * every url that uses TLS is to a loopback host, see ArkimeDb.tlsHost. The urls share one TLS
+   * setting, so pass only the urls of the one connection it is for.
    * @param {Array<string|string[]>} [urls] - urls or arrays of urls, falsy entries are skipped
    * @returns {boolean}
    */
@@ -170,16 +170,25 @@ class ArkimeConfig {
       if (!url) {
         continue;
       }
-      const u = ArkimeUtil.parseUrl(url);
-      if (u === undefined) { continue; } // reported by the config validation
-      if (u.protocol !== 'https:') { continue; }
-      if (u.hostname !== 'localhost' && u.hostname !== '[::1]' && !/^127\.\d+\.\d+\.\d+$/.test(u.hostname)) {
+      const host = require('./arkimeDb').tlsHost(url);
+      if (host === undefined) { continue; }
+      if (!ArkimeConfig.isLoopbackHost(host)) {
         return false;
       }
       loopback = true;
     }
 
     return loopback;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Is the host a url names this machine: localhost, 127.x, ::1 or a postgres unix socket directory
+   * @param {string} host - a url's hostname, or a postgres host parameter
+   * @returns {boolean}
+   */
+  static isLoopbackHost (host) {
+    return !!host && (host.startsWith('/') || ['localhost', '[::1]', '::1'].includes(host) || /^127\.\d+\.\d+\.\d+$/.test(host));
   }
 
   // ----------------------------------------------------------------------------
@@ -321,28 +330,42 @@ class ArkimeConfig {
   // Where each group of indices lives, every setting falls back to the older or broader ones
   // ----------------------------------------------------------------------------
   /**
-   * The sessions OpenSearch/Elasticsearch urls, sessionsDbUrl unless it's ClickHouse, then elasticsearch
+   * The db urls for everything without its own setting: dbUrl or else elasticsearch. Exits when neither is set
+   * but sessionsDbUrl is, since only the sessions db follows sessionsDbUrl.
    */
-  static sessionsEsUrls () {
-    if (ArkimeConfig.sessionsDbIsES()) {
-      return ArkimeConfig.getArray('sessionsDbUrl', undefined, ',').map(u => ArkimeConfig.esUrl(u));
+  static dbUrls () {
+    const urls = ArkimeConfig.getArray('dbUrl', undefined, ',') ?? ArkimeConfig.getArray('elasticsearch');
+    if (!urls && ArkimeConfig.get('sessionsDbUrl')) {
+      console.log('ERROR - set dbUrl, only the sessions db uses sessionsDbUrl');
+      process.exit(1);
     }
-    return ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
+    return (urls ?? ['http://localhost:9200']).map(u => ArkimeConfig.esUrl(u));
   }
 
   /**
-   * sessionsDbUrl is set and is OpenSearch/Elasticsearch, not ClickHouse or a capture plugin's scheme
+   * The sessions db urls, sessionsDbUrl or else dbUrls
    */
-  static sessionsDbIsES () {
-    const url = ArkimeConfig.get('sessionsDbUrl');
-    return !!url && ArkimeConfig.isEsUrl(url);
+  static sessionsDbUrls () {
+    return ArkimeConfig.getArray('sessionsDbUrl', undefined, ',')?.map(u => ArkimeConfig.esUrl(u)) ?? ArkimeConfig.dbUrls();
+  }
+
+  /**
+   * The OpenSearch/Elasticsearch for the sessions and everything else ES only: the sessions db when it is one,
+   * else dbUrl when it is one, else elasticsearch
+   */
+  static sessionsEsUrls () {
+    const sessions = ArkimeConfig.sessionsDbUrls();
+    if (ArkimeConfig.isEsUrl(sessions[0])) { return sessions; }
+    const db = ArkimeConfig.dbUrls();
+    if (ArkimeConfig.isEsUrl(db[0])) { return db; }
+    return ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
   }
 
   /**
    * No scheme, http(s) or the elasticsearch:// and opensearch:// style ones
    */
   static isEsUrl (url) {
-    return !url.includes('://') || /^(https?|elasticsearchs?|opensearchs?):\/\//i.test(url);
+    return require('./arkimeDb').isES(url);
   }
 
   /**
@@ -352,18 +375,21 @@ class ArkimeConfig {
     return url.replace(/^(elasticsearch|opensearch)/i, 'http');
   }
 
+  // Prefixes: a db with its own url uses its own prefix then prefix, a db that lives in dbUrl uses its own prefix
+  // then dbPrefix then prefix. usersPrefix is the older name for usersDbPrefix.
+
   /**
-   * The sessions prefix, sessionsDbPrefix or prefix
+   * The prefix for what lives in dbUrl, dbPrefix or prefix
    */
-  static sessionsDbPrefix () {
-    return ArkimeConfig.get('sessionsDbPrefix') ?? ArkimeConfig.get('prefix', 'arkime_');
+  static dbPrefix () {
+    return ArkimeConfig.get('dbPrefix') ?? ArkimeConfig.get('prefix', 'arkime_');
   }
 
   /**
-   * The cluster db prefix, clusterDbPrefix or the sessions one
+   * The sessions prefix, sessionsDbPrefix, then prefix with a sessionsDbUrl or dbPrefix without one
    */
-  static clusterDbPrefix () {
-    return ArkimeConfig.get('clusterDbPrefix') ?? ArkimeConfig.sessionsDbPrefix();
+  static sessionsDbPrefix () {
+    return ArkimeConfig.get('sessionsDbPrefix') ?? (ArkimeConfig.get('sessionsDbUrl') ? ArkimeConfig.get('prefix', 'arkime_') : ArkimeConfig.dbPrefix());
   }
 
   /**
@@ -375,31 +401,18 @@ class ArkimeConfig {
   }
 
   /**
-   * The OpenSearch/Elasticsearch the users db falls back to without usersDbUrl: elasticsearch, never sessionsDbUrl
-   * since the users db is shared with the other apps. Exits when there's nothing to fall back to.
-   */
-  static usersFallbackEsUrls () {
-    const urls = ArkimeConfig.getArray('elasticsearch');
-    if (!urls && ArkimeConfig.sessionsDbIsES() && !ArkimeConfig.usersDbUrls()) {
-      console.log('ERROR - set usersDbUrl, the users db does not follow sessionsDbUrl');
-      process.exit(1);
-    }
-    return urls ?? ['http://localhost:9200'];
-  }
-
-  /**
-   * The users db prefix, usersDbPrefix, usersPrefix or else d
+   * The users prefix setting, usersDbPrefix or usersPrefix, else d
    */
   static usersDbPrefix (d) {
     return ArkimeConfig.get('usersDbPrefix') ?? ArkimeConfig.get('usersPrefix') ?? d;
   }
 
   /**
-   * The users prefix when the users db falls back to elasticsearch without a users url: usersDbPrefix then prefix.
-   * usersPrefix only ever went with a users url, without one the users have always used prefix.
+   * The users prefix, the users prefix setting, then prefix with a users url or dbPrefix without one.
+   * d replaces prefix with a users url, the multi viewer's is ''.
    */
-  static usersFallbackPrefix (d = 'arkime_') {
-    return ArkimeConfig.get('usersDbPrefix') ?? ArkimeConfig.get('prefix', d);
+  static usersPrefix (d) {
+    return ArkimeConfig.usersDbPrefix(ArkimeConfig.usersDbUrls() ? (d ?? ArkimeConfig.get('prefix', 'arkime_')) : ArkimeConfig.dbPrefix());
   }
 
   // ----------------------------------------------------------------------------
@@ -750,6 +763,13 @@ class ArkimeConfig {
 
   // ----------------------------------------------------------------------------
   static #loadedCbs = [];
+  /**
+   * Has the config finished loading
+   */
+  static isLoaded () {
+    return ArkimeConfig.#loadedCbs === undefined;
+  }
+
   static loaded (cb, front) {
     if (ArkimeConfig.#loadedCbs === undefined) {
       cb(); // Loaded already, call right away
@@ -1040,7 +1060,8 @@ ArkimeConfig.registerSettings({
   usersElasticsearch: { type: 'urls' },
   usersDbUrl: { type: 'urls' },
   sessionsDbUrl: { type: 'urls' },
-  clusterDbUrl: { type: 'urls' }
+  dbUrl: { type: 'urls' },
+  postgresPatternTimeout: { type: 'int', min: 0 }
 });
 
 module.exports = ArkimeConfig;

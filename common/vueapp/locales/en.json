@@ -2533,7 +2533,8 @@
       "needAdminPrivileges": "Need admin privileges",
       "retrieveFailed": "Error retrieving history",
       "deletedSuccessfully": "Deleted history item successfully",
-      "deleteFailed": "Error deleting history item"
+      "deleteFailed": "Error deleting history item",
+      "notFound": "History item not found"
     },
     "shareables": {
       "missingName": "Missing shareable name",

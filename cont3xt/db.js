@@ -90,7 +90,8 @@ class Db {
   static #linkGroups;
   static #views;
   static #audits;
-  static #maxIndicatorBytes = 8000;
+  // Fits a Postgres btree index entry (2704 bytes), the most any db layer can index
+  static #maxIndicatorBytes = 2000;
   static #overviews;
 
   static async initialize (options) {
@@ -99,9 +100,7 @@ class Db {
     }
 
     const url = options.url ?? [options.node].flat()[0];
-    // A Postgres btree index entry is at most 2704 bytes, longer indicators would fail the audit insert
-    if (/^postgres(ql)?:/i.test(url)) { Db.#maxIndicatorBytes = 2000; }
-    const conn = ArkimeUtil.dbConnect(url, { ...options, section: 'cont3xt' });
+    const conn = ArkimeUtil.dbConnect(url, options);
     Db.#linkGroups = conn.collection('cont3xt_links', collections.cont3xt_links);
     Db.#views = conn.collection('cont3xt_views', collections.cont3xt_views);
     Db.#audits = conn.collection('cont3xt_history', collections.cont3xt_history);
@@ -212,15 +211,19 @@ class Db {
     return Db.#delete(Db.#views, id);
   }
 
-  /**
-   * Update a single audit entry
-   */
-  static get maxIndicatorBytes () {
-    return Db.#maxIndicatorBytes;
+  static async putAudit (id, audit, options) {
+    // A bulk search joins every indicator, only the history entry is cut, on a separator so a replay runs whole indicators
+    const max = Db.#maxIndicatorBytes;
+    if (Buffer.byteLength(audit.indicator) > max) {
+      const head = Buffer.from(audit.indicator).subarray(0, max).toString().replace(/�+$/, '');
+      const cut = head.lastIndexOf(', ');
+      audit.indicator = cut > 0 ? head.slice(0, cut) : head;
+    }
+    return Db.#audits.put(id, audit, options);
   }
 
-  static async putAudit (id, audit) {
-    return Db.#audits.put(id, audit);
+  static async updateAudit (id, fields) {
+    return Db.#audits.update(id, fields);
   }
 
   /**

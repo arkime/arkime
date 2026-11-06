@@ -150,15 +150,6 @@ class User {
     User.#usersCache.delete(userId);
   }
 
-  // Get the ES client for viewer, will remove someday
-  // Used for shortcuts and views index
-  static getClient () {
-    if (User.#implementation.getClient) {
-      return User.#implementation.getClient();
-    }
-    return null;
-  }
-
   // Users db schema version, undefined when unknown (non-ES implementations)
   static getSchemaVersion () {
     if (User.#implementation.getSchemaVersion) {
@@ -172,7 +163,7 @@ class User {
   }
 
   /**
-   * The prefix the users db indices use, undefined when it isn't OpenSearch/Elasticsearch
+   * The prefix the users db tables use
    */
   static getDbPrefix () {
     return User.#implementation?.getPrefix();
@@ -180,15 +171,17 @@ class User {
 
   /**
    * A connection to the users db for another module's collections, undefined when there is no users db
-   * @param prefix the users prefix, ES index names use it, defaults to the one the users index uses
-   * @param section names the SQL connection
+   * @param prefix defaults to the users prefix
    */
-  static dbConnect (prefix, section) {
-    if (!User.#implementation) { return undefined; }
-    const url = User.#dbUrl;
-    return ArkimeUtil.dbIsES(url)
-      ? ArkimeUtil.dbConnect(url, { client: User.getClient(), prefix: prefix === undefined ? User.getDbPrefix() : ArkimeUtil.formatPrefix(prefix) })
-      : ArkimeUtil.dbConnect(url, { section });
+  static dbConnect (prefix) {
+    return User.#implementation?.connection(prefix === undefined ? undefined : ArkimeUtil.formatPrefix(prefix));
+  }
+
+  /**
+   * Exits when the users db's schema is older than minVersion, a db without a schema version passes
+   */
+  static async checkSchemaVersion (minVersion) {
+    return User.#implementation?.connection().schemaVersion?.(minVersion);
   }
 
   /**
@@ -2039,16 +2032,12 @@ const VERSION_CONFLICT = { meta: { body: { error: { type: 'version_conflict_engi
 class UserDbImplementation {
   #conn;
   #users;
-  #isES;
   #prefix;
   #schemaVersion;
 
   constructor (options) {
-    const url = options.url;
-    this.#isES = ArkimeUtil.dbIsES(url);
-    const prefix = this.#isES ? ArkimeUtil.formatPrefix(options.prefix) : undefined;
-    this.#prefix = prefix;
-    this.#conn = ArkimeUtil.dbConnect(this.#isES ? (url ?? 'http://localhost:9200') : url, { ...options, prefix, section: 'User' });
+    this.#prefix = ArkimeUtil.formatPrefix(options.prefix);
+    this.#conn = ArkimeUtil.dbConnect(options.url, { ...options, prefix: this.#prefix });
 
     // Names match the layouts each backend used before collections
     this.#users = this.#conn.collection('users', {
@@ -2068,26 +2057,24 @@ class UserDbImplementation {
       sqlite: { idColumn: 'userId' }
     });
 
-    if (!this.#isES) { return; }
-
-    // soft fetch (no minVersion): the users es may not have the sessions3 template
-    ArkimeUtil.checkArkimeSchemaVersion(this.#conn.client, options.prefix)
+    // soft fetch (no minVersion): the users db may not have the sessions3 template
+    this.#conn.schemaVersion?.()
       .then((version) => { this.#schemaVersion = version; });
 
     if (!Auth.isAnonymousMode()) {
       process.nextTick(async () => {
         try {
-          await this.#conn.client.indices.stats({ index: this.#users.index });
+          await this.#users.check();
         } catch (err) {
-          ArkimeUtil.searchErrorMsg(err, options.node, `Issue with OpenSearch/Elasticsearch '${this.#users.index}' index`);
+          console.log(`ERROR - ${err.message}`, err.cause?.message ?? '');
           process.exit(1);
         }
       });
     }
   }
 
-  getClient () {
-    return this.#isES ? this.#conn.client : null;
+  connection (prefix) {
+    return prefix === undefined ? this.#conn : (this.#conn.withPrefix?.(prefix) ?? this.#conn);
   }
 
   getPrefix () {
@@ -2099,9 +2086,8 @@ class UserDbImplementation {
   }
 
   async flush (cluster) {
-    if (!this.#isES) { return; }
-    await this.#conn.client.indices.flush({ index: this.#users.index, cluster });
-    await this.#conn.client.indices.refresh({ index: this.#users.index, cluster });
+    await this.#users.flush({ cluster });
+    await this.#users.refresh({ cluster });
   }
 
   async close () {

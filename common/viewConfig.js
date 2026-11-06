@@ -54,6 +54,9 @@ const WHOLE_USERINFO_SCHEMES = new Set(['redis-sentinel://']);
 // Some settings pack their own key:value pairs into one value, and those pairs
 // hold credentials too, eg a remote cluster's
 // `url:http://host:8124;passwordSecret:secret;name:Test`
+// Where #redactString held a secret's place
+const HOLE_RE = /\u0000(\d+)\u0000/g;
+
 const INNER_SECRET_RE = /([\w.-]*(?:secret|password|token|apikey|basicauth)[\w.-]*|\b(?:pass|passwd|pwd))(\s*[:=]\s*)([^;]*)/gi;
 
 // what the browser must send back after verifying a totp code
@@ -135,15 +138,34 @@ class ViewConfig {
    * `redis://user:pass@host` becomes `redis://user:[redacted]@host`, and a
    * userinfo with no `:` is a bare credential, so all of it goes.
    */
-  static redactUrls (str) {
+  static redactUrls (str, hide = () => REDACTED) {
     return str.replace(URL_USERINFO_RE, (match, scheme, userinfo) => {
       if (WHOLE_USERINFO_SCHEMES.has(scheme.toLowerCase())) {
-        return `${scheme}${REDACTED}@`;
+        return `${scheme}${hide(userinfo)}@`;
       }
       const colon = userinfo.indexOf(':');
-      if (colon === -1) { return `${scheme}${REDACTED}@`; }
-      return `${scheme}${userinfo.slice(0, colon)}:${REDACTED}@`;
+      if (colon === -1) { return `${scheme}${hide(userinfo)}@`; }
+      return `${scheme}${userinfo.slice(0, colon)}:${hide(userinfo.slice(colon + 1))}@`;
     });
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * @ignore
+   * A string setting with each secret redacted, and the secrets in the order they appear
+   */
+  static #redactString (value) {
+    const secrets = [];
+    const hide = (secret) => { secrets.push(secret); return `\u0000${secrets.length - 1}\u0000`; };
+    const unhide = (str) => str.replace(HOLE_RE, (m, i) => secrets[i]);
+    const holed = ViewConfig.redactUrls(value, hide)
+      .replace(INNER_SECRET_RE, (match, innerKey, sep, innerValue) => {
+        return innerValue === '' ? match : `${innerKey}${sep}${hide(unhide(innerValue))}`;
+      });
+    return {
+      value: holed.replace(HOLE_RE, REDACTED),
+      secrets: [...holed.matchAll(HOLE_RE)].map(m => secrets[m[1]])
+    };
   }
 
   // --------------------------------------------------------------------------
@@ -202,12 +224,30 @@ class ViewConfig {
 
     if (typeof value !== 'string') { return { value: `${value}`, redacted: false }; }
 
-    const redactedValue = ViewConfig.redactUrls(value)
-      .replace(INNER_SECRET_RE, (match, innerKey, sep, innerValue) => {
-        return innerValue === '' ? match : `${innerKey}${sep}${REDACTED}`;
-      });
-
+    const redactedValue = ViewConfig.#redactString(value).value;
     return { value: redactedValue, redacted: redactedValue !== value };
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * @ignore
+   * The value to save for a setting the UI sent back after redactValue: the stored value when
+   * unchanged, else each [redacted] refilled with the secret it hid. Throws when they don't line up.
+   */
+  static unredactValue (key, value, stored, alwaysSecret) {
+    if (typeof value !== 'string' || !value.includes(REDACTED)) { return value; }
+    const redacted = ViewConfig.redactValue(key, stored, alwaysSecret);
+    if (!redacted.redacted) { return value; }
+    if (value === redacted.value) { return stored; }
+
+    const secrets = typeof stored === 'string' && !alwaysSecret && !ViewConfig.#isSecretKey(key)
+      ? ViewConfig.#redactString(stored).secrets
+      : [];
+    const parts = value.split(REDACTED);
+    if (parts.length - 1 !== secrets.length) {
+      throw new Error(`${key} has a ${REDACTED} that can't be matched to a secret, type the secret in instead`);
+    }
+    return parts.reduce((out, part, i) => out + secrets[i - 1] + part);
   }
 
   // --------------------------------------------------------------------------

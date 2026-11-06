@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag esGet esPost esPut esDelete clusterSearch clusterPut clusterDelete clusterDeleteWhere clusterCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
+@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag esGet esPost esPut esDelete clusterSearch clusterPut clusterDelete clusterDeleteWhere clusterCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 multiDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -39,16 +39,18 @@ if (!$ArkimeTest::sessionsDbUrl && open my $cfgFh, '<', "config.test.ini") {
     close $cfgFh;
 }
 
-# A Postgres clusterDbUrl from the environment or config.test.ini, otherwise
+# A Postgres dbUrl from the environment or config.test.ini, otherwise
 # capture's stats, dstats, files, fields and sequence are in Elasticsearch.
-$ArkimeTest::clusterDbUrl = $ENV{ARKIME_default__clusterDbUrl} // "";
-if (!$ArkimeTest::clusterDbUrl && open my $cfgFh, '<', "config.test.ini") {
+# Only the sessions follow sessionsDbUrl, so a Postgres dbUrl keeps them in Elasticsearch.
+$ArkimeTest::dbUrl = $ENV{ARKIME_default__dbUrl} // "";
+if (!$ArkimeTest::dbUrl && open my $cfgFh, '<', "config.test.ini") {
     while (<$cfgFh>) {
-        if (/^clusterDbUrl\s*=\s*(.*?)\s*$/) { $ArkimeTest::clusterDbUrl = $1; last; }
+        if (/^dbUrl\s*=\s*(.*?)\s*$/) { $ArkimeTest::dbUrl = $1; last; }
     }
     close $cfgFh;
 }
-$ArkimeTest::clusterDbPG = $ArkimeTest::clusterDbUrl =~ m{^postgres(ql)?://};
+$ArkimeTest::clusterDbPG = $ArkimeTest::dbUrl =~ m{^postgres(ql)?://};
+$ENV{ARKIME_default__sessionsDbUrl} //= $ArkimeTest::elasticsearch if ($ArkimeTest::clusterDbPG);
 
 ################################################################################
 sub my_from_json
@@ -128,6 +130,14 @@ sub viewerDeleteToken2 {
 my ($url, $token, $debug) = @_;
 
     my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:8124$url", "x-arkime-cookie" => $token));
+    diag $url, " response:", $response->content if ($debug);
+    return my_from_json($url, $response->content, $debug);
+}
+################################################################################
+sub multiDeleteToken {
+my ($url, $token, $debug) = @_;
+
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:8125$url", "x-arkime-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     return my_from_json($url, $response->content, $debug);
 }

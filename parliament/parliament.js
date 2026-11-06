@@ -121,8 +121,9 @@ if (ArkimeConfig.regressionTests) {
 
 // issues object! the working set, saved to the db once per poll and on every api change
 let issues = [];
-// ids of the issues last saved to the db, so issues that went away get deleted
-let savedIssueIds = new Set();
+// id -> json of each issue as last saved to the db, so unchanged issues aren't rewritten
+// and issues that went away get deleted
+let savedIssues = new Map();
 
 // save noPackets issues so that the time of issue can be compared to the
 // noPacketsLength user setting (only issue alerts when the time the issue
@@ -287,10 +288,7 @@ class Parliament {
   static async initialize (options) {
     Parliament.name = options.name;
 
-    const url = options.url ?? User.getDbUrl();
-    const conn = ArkimeUtil.dbIsES(url)
-      ? ArkimeUtil.dbConnect(url, { client: User.getClient(), prefix: ArkimeUtil.formatPrefix(options.prefix) })
-      : ArkimeUtil.dbConnect(url, { section: 'Parliament' });
+    const conn = User.dbConnect(options.prefix);
 
     // Names match the layouts each backend used before collections
     Parliament.#parliaments = conn.collection('parliament', {
@@ -1058,20 +1056,18 @@ function findIssue (clusterId, issueType, node) {
 
 // Initializes the parliament, creating it in the DB if it doesn't exist
 async function initializeParliament () {
-  if (User.getClient()) {
-    ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), ArkimeConfig.usersDbPrefix(), MIN_DB_VERSION);
-  }
+  User.checkSchemaVersion(MIN_DB_VERSION);
   Notifier.initialize({
     issueTypes,
-    prefix: ArkimeConfig.usersDbPrefix()
+    prefix: ArkimeConfig.usersPrefix()
   });
 
   ViewConfig.initialize({ appAdminRole: 'parliamentAdmin' });
-  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.usersDbPrefix() });
+  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.usersPrefix() });
 
   await Parliament.initialize({
     name: internals.parliamentName,
-    prefix: ArkimeConfig.usersDbPrefix()
+    prefix: ArkimeConfig.usersPrefix()
   });
 
   let existing;
@@ -1464,7 +1460,7 @@ function issueId (issue) {
 async function loadIssues () {
   const { data } = await Parliament.issues.find({ where: { parliament: Parliament.name } });
   issues = data.map(({ doc }) => { delete doc.parliament; return doc; });
-  savedIssueIds = new Set(data.map(h => h.id));
+  savedIssues = new Map(data.map(({ id, doc }) => [id, JSON.stringify(issueDoc(doc))]));
   if (issues.length > 0) { return; }
 
   const configFile = ArkimeConfig.get('file');
@@ -1484,14 +1480,33 @@ async function loadIssues () {
   }
 }
 
+function issueDoc (issue) {
+  return { ...issue, parliament: Parliament.name };
+}
+
 // Saves the issues to the db. The dirty flag is cleared before the async writes so
 // a setIssue that lands mid-save stays dirty, and set again if the save fails.
-// Saves run one at a time, the poll and the api can both ask for one.
-let savingIssues = Promise.resolve();
+// One save runs at a time, the poll and the api can both ask for one. Asking while
+// one runs gets the next save, shared by everyone who asked, so requests can't queue up saves.
+let savingIssues = false;
+let nextSave;
 function saveIssues () {
-  const save = savingIssues.then(doSaveIssues);
-  savingIssues = save.catch(() => {});
-  return save;
+  if (!savingIssues) { return runSaveIssues(); }
+  nextSave ??= Promise.withResolvers();
+  return nextSave.promise;
+}
+
+// The next save starts before this one's finally returns, so two never overlap
+async function runSaveIssues () {
+  savingIssues = true;
+  try {
+    await doSaveIssues();
+  } finally {
+    const waiting = nextSave;
+    nextSave = undefined;
+    savingIssues = false;
+    if (waiting) { runSaveIssues().then(waiting.resolve, waiting.reject); }
+  }
 }
 
 // Each doc saves on its own, so one doc the db rejects can't block the rest.
@@ -1503,30 +1518,36 @@ async function doSaveIssues () {
     console.log('Unable to save issue:', err.message ?? err);
   };
 
-  const ids = new Set();
-  for (const issue of [...issues]) {
-    const id = issueId(issue);
-    ids.add(id);
+  // The last of any issues with the same id is the one saved, as when each one was written
+  const latest = new Map(issues.map(issue => [issueId(issue), issue]));
+  let changed = false;
+  for (const [id, issue] of latest) {
+    const doc = issueDoc(issue);
+    const json = JSON.stringify(doc);
+    if (savedIssues.get(id) === json) { continue; }
     try {
-      await Parliament.issues.put(id, { ...issue, parliament: Parliament.name }, { refresh: false });
+      await Parliament.issues.put(id, doc, { refresh: false });
+      savedIssues.set(id, json);
+      changed = true;
     } catch (err) {
+      // it may have landed anyway, so it's tracked for a delete if the issue goes away
+      if (!savedIssues.has(id)) { savedIssues.set(id, null); }
       failed(err);
     }
   }
-  const stillSaved = new Set(ids);
-  for (const id of savedIssueIds) {
-    if (ids.has(id)) { continue; }
+  for (const id of [...savedIssues.keys()]) {
+    if (latest.has(id)) { continue; }
     try {
       await Parliament.issues.delete(id, { refresh: false });
+      savedIssues.delete(id);
+      changed = true;
     } catch (err) {
-      stillSaved.add(id); // try the delete again next save
-      failed(err);
+      failed(err); // tried again next save
     }
   }
-  savedIssueIds = stillSaved;
 
   try {
-    await Parliament.issues.refresh();
+    if (changed) { await Parliament.issues.refresh(); }
   } catch (err) {
     failed(err);
   }
@@ -2090,9 +2111,9 @@ async function setupAuth () {
   });
 
   User.initialize({
-    insecure: ArkimeConfig.isInsecure([ArkimeConfig.usersDbUrls() ?? 'http://localhost:9200']),
-    node: ArkimeConfig.usersDbUrls() ?? ['http://localhost:9200'],
-    prefix: ArkimeConfig.usersDbPrefix(),
+    insecure: ArkimeConfig.isInsecure([ArkimeConfig.usersDbUrls() ?? ArkimeConfig.dbUrls()]),
+    node: ArkimeConfig.usersDbUrls() ?? ArkimeConfig.dbUrls(),
+    prefix: ArkimeConfig.usersPrefix(),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
     basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
     getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
@@ -2184,20 +2205,21 @@ async function main () {
 
   await setupAuth();
 
+  if (ArkimeConfig.debug) {
+    console.log('Parliament file:', ArkimeConfig.get('file'));
+  }
+
+  // Before listening, a request that lands first would see no issues and its changes would be lost to loadIssues
+  try {
+    await initializeParliament();
+  } catch (err) {
+    console.log(`ERROR - never mind, couldn't initialize Parliament\n`, err);
+    process.exit(1);
+  }
+
   const parliamentHost = ArkimeConfig.get('parliamentHost');
 
-  ArkimeUtil.createHttpServer(app, parliamentHost, ArkimeConfig.get('port', 8008), async () => {
-    if (ArkimeConfig.debug) {
-      console.log('Parliament file:', ArkimeConfig.get('file'));
-    }
-
-    try {
-      await initializeParliament();
-    } catch (err) {
-      console.log(`ERROR - never mind, couldn't initialize Parliament\n`, err);
-      process.exit(1);
-    }
-
+  ArkimeUtil.createHttpServer(app, parliamentHost, ArkimeConfig.get('port', 8008), () => {
     setInterval(() => {
       // a slow cluster can make an update outlast the interval, don't stack them
       if (!internals.updateInProgress) {

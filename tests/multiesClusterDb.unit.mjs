@@ -3,7 +3,7 @@ Copyright Andy Wick
 SPDX-License-Identifier: Apache-2.0
 
 Unit tests for multies answering a multi viewer's cluster db requests from a
-cluster's Postgres clusterDbUrl, SQLite stands in since answer only uses the
+cluster's Postgres dbUrl, SQLite stands in since answer only uses the
 collection api. Run with `npm run test:unit`.
 */
 import { test, describe, before } from 'node:test';
