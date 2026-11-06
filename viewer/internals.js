@@ -61,6 +61,8 @@ const internals = {
   // default settings for users with no settings
   settingDefaults: {
     timezone: 'local',
+    startPage: 'sessions',
+    sessionDetailTab: 'details',
     detailFormat: 'last',
     showTimestamps: 'last',
     sortColumn: 'firstPacket',

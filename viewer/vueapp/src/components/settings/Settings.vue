@@ -245,6 +245,74 @@ SPDX-License-Identifier: Apache-2.0
             </v-col>
           </v-row> <!-- /timezone -->
 
+          <!-- start page -->
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
+              {{ $t('settings.general.startPage') }}
+            </v-col>
+            <v-col
+              cols="12"
+              sm="9">
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
+                :model-value="settings.startPage"
+                @update:model-value="updateStartPage"
+                mandatory>
+                <v-btn value="arkime">
+                  {{ $t('navigation.arkime') }}
+                </v-btn>
+                <v-btn value="sessions">
+                  {{ $t('navigation.sessions') }}
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row> <!-- /start page -->
+
+          <!-- session detail tab -->
+          <v-row>
+            <v-col
+              tag="label"
+              cols="12"
+              sm="3"
+              class="text-end font-weight-bold align-self-center">
+              {{ $t('settings.general.sessionDetailTab') }}
+            </v-col>
+            <v-col
+              cols="12"
+              sm="9">
+              <v-btn-toggle
+                density="compact"
+                divided
+                variant="outlined"
+                color="secondary"
+                class="d-inline-flex"
+                :model-value="settings.sessionDetailTab"
+                @update:model-value="updateSessionDetailTab"
+                mandatory>
+                <v-btn value="last">
+                  {{ $t('settings.general.lastUsed') }}
+                </v-btn>
+                <v-btn value="details">
+                  {{ $t('settings.general.tab-details') }}
+                </v-btn>
+                <v-btn value="packets">
+                  {{ $t('settings.general.tab-packets') }}
+                </v-btn>
+                <v-btn value="tshark">
+                  {{ $t('settings.general.tab-shark') }}
+                </v-btn>
+              </v-btn-toggle>
+            </v-col>
+          </v-row> <!-- /session detail tab -->
+
           <!-- session detail format -->
           <v-row>
             <v-col
@@ -1696,6 +1764,14 @@ export default {
       this.tick();
       this.update();
     },
+    updateStartPage: function (newStartPage) {
+      this.settings.startPage = newStartPage;
+      this.update();
+    },
+    updateSessionDetailTab: function (newSessionDetailTab) {
+      this.settings.sessionDetailTab = newSessionDetailTab;
+      this.update();
+    },
     updateSessionDetailFormat: function (newDetailFormat) {
       this.settings.detailFormat = newDetailFormat;
       this.update();
@@ -2006,6 +2082,12 @@ export default {
         // so that radio buttons show the default value
         if (!response.timezone) {
           this.settings.timezone = 'local';
+        }
+        if (!response.startPage) {
+          this.settings.startPage = 'sessions';
+        }
+        if (!response.sessionDetailTab) {
+          this.settings.sessionDetailTab = 'details';
         }
         if (!response.detailFormat) {
           this.settings.detailFormat = 'last';

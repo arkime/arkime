@@ -74,7 +74,7 @@ class UserAPIs {
   // versions still write it), while vuetifyTheme / vuetifyCustomTheme is
   // where v7+ persists its preference -- the two stay independent across
   // version round-trips.
-  static #settingsAllowlist = ['ms', 'logo', 'theme', 'customTheme', ...User.USER_SETTINGS_KEYS, 'timezone', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
+  static #settingsAllowlist = ['ms', 'logo', 'theme', 'customTheme', ...User.USER_SETTINGS_KEYS, 'timezone', 'startPage', 'sessionDetailTab', 'spiGraph', 'numPackets', 'infoFields', 'manualQuery', 'detailFormat',
     'connSrcField', 'connDstField', 'sortColumn', 'sortDirection', 'showTimestamps', 'connNodeFields',
     'connLinkFields', 'timelineDataFilters', 'hideTags', 'shiftyEyes', 'defaultDashboardId', 'infoFieldsConfigId'];
 
@@ -88,7 +88,8 @@ class UserAPIs {
    */
   static updateUserSettings = User.apiUpdateSettingsHandler(
     UserAPIs.#settingsAllowlist,
-    ['customTheme', ...User.USER_SETTINGS_OBJECT_KEYS]
+    ['customTheme', ...User.USER_SETTINGS_OBJECT_KEYS],
+    { startPage: ['arkime', 'sessions'], sessionDetailTab: ['last', 'details', 'packets', 'tshark'] }
   );
   static acknowledgeMsg (req, res) {
     const { noteId } = req.body;

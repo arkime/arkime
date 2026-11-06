@@ -92,8 +92,19 @@ const router = createRouter({
     {
       path: '/sessions',
       name: 'Sessions',
-      alias: '/',
       component: Sessions
+    },
+    {
+      path: '/',
+      component: Sessions,
+      // a sync redirect can run before the user loads, so fetch it first
+      beforeEnter: async (to) => {
+        let user = store.state.user;
+        if (!user) {
+          try { user = await UserService.getCurrent(); } catch { /* use the default */ }
+        }
+        return { path: user?.settings?.startPage === 'arkime' ? '/arkime' : '/sessions', query: to.query, hash: to.hash };
+      }
     },
     {
       path: '/help',
