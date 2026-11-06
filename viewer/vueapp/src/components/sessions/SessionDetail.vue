@@ -149,7 +149,7 @@ SPDX-License-Identifier: Apache-2.0
             </template>
             <v-list density="compact">
               <v-list-item
-                v-for="n in [50, 200, 500, 1000, 2000]"
+                v-for="n in PACKET_COUNTS"
                 :key="n"
                 :active="tsharkLength === n"
                 @click="tsharkLength = n">
@@ -564,6 +564,7 @@ import {
   SHARK_LAYOUTS, loadSharkLayout, saveSharkLayout,
   loadSharkSizes, saveSharkSizes, loadSharkHeight, saveSharkHeight
 } from './sharkLayouts.js';
+import { PACKET_COUNTS, defaultPacketCount, rememberPacketCount } from './packetCount.js';
 import ArkimeTagSessions from './Tags.vue';
 import ArkimeRemoveData from './Remove.vue';
 import ArkimeSendSessions from './Send.vue';
@@ -620,7 +621,8 @@ const tsharkLoading = ref(false);
 const tsharkLoaded = ref(false);
 const tsharkError = ref('');
 const tsharkPackets = ref([]);
-const tsharkLength = ref(50);
+// same default as the Packets tab: the numPackets setting or the last used count
+const tsharkLength = ref(defaultPacketCount(user.value?.settings));
 let tsharkRunId = 0;
 const tsharkPromise = ref();
 
@@ -857,6 +859,7 @@ const updateBase = (value) => {
 
 const updateNumPackets = (value) => {
   params.value.packets = value;
+  rememberPacketCount(user.value.settings, value);
   getPackets();
 };
 
@@ -980,11 +983,7 @@ const setUserParams = () => {
       params.value.base = user.value.settings.detailFormat;
     }
 
-    if (user.value.settings.numPackets === 'last') {
-      params.value.packets = localStorage['moloch-packets'] || 200;
-    } else {
-      params.value.packets = user.value.settings.numPackets || 200;
-    }
+    params.value.packets = defaultPacketCount(user.value.settings);
 
     if (user.value.settings.showTimestamps === 'last' && localStorage['moloch-ts']) {
       params.value.ts = localStorage['moloch-ts'] === 'true';
@@ -1042,9 +1041,6 @@ const getPackets = async () => {
   if (localStorage) { // update browser saved options
     if (user.value.settings.detailFormat === 'last') {
       localStorage['moloch-base'] = params.value.base;
-    }
-    if (user.value.settings.numPackets === 'last') {
-      localStorage['moloch-packets'] = params.value.packets || 200;
     }
     localStorage['moloch-line'] = params.value.line;
     localStorage['moloch-gzip'] = params.value.gzip;
@@ -1170,7 +1166,7 @@ const getTshark = async () => {
       props.session.node,
       props.session.cluster,
       {
-        length: tsharkLength.value || 50
+        length: tsharkLength.value
       }
     );
     tsharkPromise.value = { controller };
@@ -1643,7 +1639,8 @@ watch(() => tabAvailable(activeTab.value), (available) => {
 
 // picking a different packet count has to re-run the dissection, otherwise the
 // menu label changes and nothing else does
-watch(tsharkLength, () => {
+watch(tsharkLength, (value) => {
+  rememberPacketCount(user.value.settings, value);
   if (hasTshark.value && activeTab.value === 'tshark') { getTshark(); }
 });
 
