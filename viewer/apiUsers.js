@@ -88,7 +88,8 @@ class UserAPIs {
    */
   static updateUserSettings = User.apiUpdateSettingsHandler(
     UserAPIs.#settingsAllowlist,
-    ['customTheme', ...User.USER_SETTINGS_OBJECT_KEYS]
+    ['customTheme', ...User.USER_SETTINGS_OBJECT_KEYS],
+    { startPage: ['arkime', 'sessions'], sessionDetailTab: ['last', 'details', 'packets', 'tshark'] }
   );
   static acknowledgeMsg (req, res) {
     const { noteId } = req.body;

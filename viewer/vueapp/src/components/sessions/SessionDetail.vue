@@ -668,13 +668,20 @@ const initialTab = () => {
   }
   return tabAvailable(tab) ? tab : 'details';
 };
-const activeTab = ref(initialTab());
+const preferredTab = initialTab();
+// opens on Details until the detail loads and says whether there are packets
+const activeTab = ref('details');
+let tabClicked = false;
 
 // Only a click is remembered, not a fall back to Details, so a session
 // without packets doesn't reset the last used tab
 const rememberTab = (tab) => {
-  if (user.value?.settings?.sessionDetailTab !== 'last') { return; }
+  tabClicked = true;
   try { localStorage[DETAIL_TAB_KEY] = tab; } catch (e) { /* private mode */ }
+};
+const applyPreferredTab = () => {
+  if (hidePackets.value) { cancelTshark(); }
+  if (!tabClicked && tabAvailable(preferredTab)) { activeTab.value = preferredTab; }
 };
 const tsharkFilter = ref('');
 const tsharkSelectedIdx = ref(0);
@@ -786,20 +793,22 @@ const props = defineProps({
 // methods
 // fetch and render the session detail data
 // this is an async component that will be injected into the template
-const createDetailDataComponent = () => {
+const createDetailDataComponent = (firstLoad = false) => {
   return defineAsyncComponent(async () => {
     try {
       const response = await SessionsService.getDetail(props.session.id, props.session.node, props.session.cluster);
       hidePackets.value = /hidepackets="true"/i.test(response.html);
       actions.value = response.info;
+      if (firstLoad) { applyPreferredTab(); }
       return sessionDetailData.getVueInstance(response.html, props.session); // render the session detail data
     } catch (err) {
       console.log('Error loading session detail data', err);
       error.value = t('sessions.detail.loadingErr');
+      if (firstLoad) { applyPreferredTab(); }
     }
   });
 };
-SessionDetailDataComponent = createDetailDataComponent();
+SessionDetailDataComponent = createDetailDataComponent(true);
 
 const reload = async () => {
   error.value = '';
@@ -1615,18 +1624,19 @@ const packetProtoStyle = (proto) => {
   return { background: color, color: '#000' };
 };
 
-// Auto-run tshark the first time the user clicks the tshark tab. No manual
+// Auto-run tshark the first time the tshark tab is shown. No manual
 // run/refresh button -- the user opens the tab, results stream in.
-watch(activeTab, (newTab) => {
-  if (newTab === 'tshark' && hasTshark.value && !tsharkLoaded.value && !tsharkLoading.value) {
+const autoRunTshark = () => {
+  if (activeTab.value === 'tshark' && tabAvailable('tshark') && !tsharkLoaded.value && !tsharkLoading.value) {
     getTshark();
   }
-});
+};
+watch(activeTab, autoRunTshark);
 
-// a session with no packets hides the Packets and Shark tabs once its detail
-// loads, so one that opened on either moves to Details
-watch(hidePackets, (hidden) => {
-  if (!hidden || activeTab.value === 'details') { return; }
+// a tab can disappear after the session opens on it (e.g. no packets), so
+// move to Details
+watch(() => tabAvailable(activeTab.value), (available) => {
+  if (available) { return; }
   cancelTshark();
   activeTab.value = 'details';
 });
@@ -1645,14 +1655,13 @@ watch(tsharkSelectedIdx, () => { nextTick(() => tsharkFind.reapply()); });
 
 // mounted
 onMounted(async () => {
+  // start the dissection alongside the detail fetch instead of after it
+  if (preferredTab === 'tshark') { getTshark(); }
   setUserParams();
   const response = await SessionsService.getDecodings();
   decodings.value = response;
   setBrowserParams();
   getPackets();
-  // opening on the Shark tab doesn't change activeTab, so its watcher won't
-  // start the dissection
-  if (activeTab.value === 'tshark') { getTshark(); }
 });
 
 onUnmounted(() => {
