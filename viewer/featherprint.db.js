@@ -152,8 +152,10 @@ class FeatherprintDb {
   }
 
   static async upsertMac (doc) {
-    const value = doc.mac?.value;
-    await FeatherprintDb.#devices().put(`${FeatherprintDb.MAC_ID_PREFIX}${value}`, doc, { refresh: false });
+    const body = { ...doc };
+    delete body._id;
+    const value = body.mac?.value;
+    await FeatherprintDb.#devices().put(`${FeatherprintDb.MAC_ID_PREFIX}${value}`, body, { refresh: false });
     return value;
   }
 
