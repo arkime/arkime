@@ -242,6 +242,8 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { PACKET_COUNTS } from './packetCount.js';
+
 export default {
   name: 'PacketOptions',
   props: {
@@ -284,7 +286,7 @@ export default {
   },
   computed: {
     packetCountItems () {
-      return [50, 200, 500, 1000, 2000].map(opt => ({
+      return PACKET_COUNTS.map(opt => ({
         value: opt,
         title: this.$t('common.packetCount', opt)
       }));
