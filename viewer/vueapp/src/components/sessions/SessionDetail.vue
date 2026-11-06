@@ -1653,10 +1653,14 @@ watch(componentKey, () => { nextTick(() => detailFind.reapply()); });
 // selecting a packet re-renders the tree → re-mark
 watch(tsharkSelectedIdx, () => { nextTick(() => tsharkFind.reapply()); });
 
+// Start the dissection alongside the detail fetch. This has to happen in setup:
+// the detail suspends this component, so onMounted only runs once the detail
+// has loaded. When the tab switches to Shark, the watcher sees the run in
+// flight and doesn't start a second one.
+if (preferredTab === 'tshark') { getTshark(); }
+
 // mounted
 onMounted(async () => {
-  // start the dissection alongside the detail fetch instead of after it
-  if (preferredTab === 'tshark') { getTshark(); }
   setUserParams();
   const response = await SessionsService.getDecodings();
   decodings.value = response;
@@ -1666,6 +1670,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   cancelPacketLoad();
+  cancelTshark();
   if (packetContainerRef.value) {
     const srcBytes = packetContainerRef.value.getElementsByClassName('srccol');
     if (srcBytes && srcBytes.length) {
