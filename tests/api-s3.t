@@ -8,6 +8,9 @@ use Data::Dumper;
 use strict;
 use Time::HiRes ();
 
+# Without a region the aws cli asks the instance metadata service on every call, which hangs where it isn't reachable
+my $aws = "AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=us-east-1 aws --endpoint-url http://localhost:4566";
+
 # Debug slow CI runs: capture runs with --debug, each capture and aws command is timed with diag,
 # and one that took over 3s also shows the end of its log
 sub timedSystem {
@@ -59,7 +62,7 @@ my ($tag, $compression, $extension, $gap, $input) = @_;
     my $s3url = join('/', @parts);
     unlink("/tmp/arkime.file.$compression.$gap");
     unlink("/tmp/arkime.file.$compression.$gap$extension");
-    timedSystem("AWS_ACCESS_KEY_ID='foo'  AWS_SECRET_ACCESS_KEY='foo' aws --endpoint-url http://localhost:4566 s3 cp $s3url /tmp/arkime.file.$compression.$gap$extension");
+    timedSystem("AWS_ACCESS_KEY_ID='foo'  AWS_SECRET_ACCESS_KEY='foo' $aws s3 cp $s3url /tmp/arkime.file.$compression.$gap$extension");
     return $s3url;
 }
 
@@ -94,7 +97,7 @@ timedSystem(qq(curl -s -X PUT "http://localhost:4566/sqsbucket?notification" --d
 
 # Upload the pcap using the real AWS CLI; mini-aws will publish an S3 event to SQS.
 my $s3key = "bt-tcp-$sqsvalue.pcap";
-timedSystem("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap s3://sqsbucket/$s3key > /dev/null 2>&1");
+timedSystem("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo $aws s3 cp pcap/bt-tcp.pcap s3://sqsbucket/$s3key > /dev/null 2>&1");
 
 # Run capture pointing at the SQS queue; it should receive the event, fetch the
 # pcap back from S3 (mini-aws), index it, and delete the SQS message.
@@ -108,7 +111,7 @@ my $specialKey = "$specialDir/a?b&c d+e#f%g'h.pcap";
 my $encodedKey = "$specialDir/a%3Fb%26c%20d%2Be%23f%25g%27h.pcap";
 
 # From a bucket listing (XML escaped keys)
-timedSystem(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap "s3://testbucket/$specialKey" > /dev/null 2>&1));
+timedSystem(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo $aws s3 cp pcap/bt-tcp.pcap "s3://testbucket/$specialKey" > /dev/null 2>&1));
 my $listtag = "s3list-$sqsvalue";
 timedSystem("../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n sqs-test --tag $listtag -r s3http://127.0.0.1:4566/testbucket/$specialDir/ > /tmp/arkime.capture.s3list.log 2>&1");
 countTest2($expected, "date=-1&expression=" . uri_escape("tags=$listtag"));
@@ -119,20 +122,20 @@ is ($fjson->{hits}->{total}, 1, "files record name has the encoded key");
 is ($fjson->{hits}->{hits}->[0]->{_source}->{extra}->{path}, "/$specialKey", "files record extra.path has the raw key");
 
 # A listing prefix with special characters
-timedSystem(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap "s3://testbucket/pre fix&$sqsvalue/x.pcap" > /dev/null 2>&1));
+timedSystem(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo $aws s3 cp pcap/bt-tcp.pcap "s3://testbucket/pre fix&$sqsvalue/x.pcap" > /dev/null 2>&1));
 my $prefixtag = "s3prefix-$sqsvalue";
 timedSystem("../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n sqs-test --tag $prefixtag -r 's3http://127.0.0.1:4566/testbucket/pre%20fix%26$sqsvalue/' > /tmp/arkime.capture.s3prefix.log 2>&1");
 countTest2($expected, "date=-1&expression=" . uri_escape("tags=$prefixtag"));
 
 # From an SQS bucket notification (URL encoded keys)
 my $sqsspecialtag = "sqsspecial-$sqsvalue";
-timedSystem(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap "s3://sqsbucket/$specialKey" > /dev/null 2>&1));
+timedSystem(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo $aws s3 cp pcap/bt-tcp.pcap "s3://sqsbucket/$specialKey" > /dev/null 2>&1));
 timedSystem("../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n sqs-test --tag $sqsspecialtag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.sqsspecial.log 2>&1");
 countTest2($expected, "date=-1&expression=" . uri_escape("tags=$sqsspecialtag"));
 
 # A key with .. segments must not reach another bucket
 my $travtag = "sqstrav-$sqsvalue";
-timedSystem(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap "s3://testbucket/$specialDir/plain.pcap" > /dev/null 2>&1));
+timedSystem(qq(AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo $aws s3 cp pcap/bt-tcp.pcap "s3://testbucket/$specialDir/plain.pcap" > /dev/null 2>&1));
 timedSystem("curl -s -X POST 'http://localhost:4566/_sqs_enqueue/000000000000/sqsqueue?bucket=sqsbucket&key=" . uri_escape("x/../../testbucket/$specialDir/plain.pcap") . "' > /dev/null");
 timedSystem("../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n sqs-test --tag $travtag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.sqstrav.log 2>&1");
 countTest2(0, "date=-1&expression=" . uri_escape("tags=$travtag"));
@@ -199,7 +202,7 @@ is (timedSystem("grep -q 's3UseECSEnv is no longer needed' /tmp/arkime.capture.e
 
 # s3 reader through the aws credentials chain
 my $ekskey = "eks-$eksvalue.pcap";
-timedSystem("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap s3://testbucket/$ekskey > /dev/null 2>&1");
+timedSystem("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo $aws s3 cp pcap/bt-tcp.pcap s3://testbucket/$ekskey > /dev/null 2>&1");
 
 sub eksReader {
 my ($name, $env, $opts, $key, $token) = @_;
@@ -215,7 +218,7 @@ eksReader("irsa", "$irsaEnv=/tmp/arkime.eks.web", $blankOpts, "ASIAMINIIRSA", "m
 
 # The s3 writer's s3AccessKeyId and the sqs reader's sqsAccessKeyId are kept apart, even though the writer starts first
 my $sqsekstag = "ekssqs-$eksvalue";
-timedSystem("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo aws --endpoint-url http://localhost:4566 s3 cp pcap/bt-tcp.pcap s3://sqsbucket/$sqsekstag.pcap > /dev/null 2>&1");
+timedSystem("AWS_ACCESS_KEY_ID=foo AWS_SECRET_ACCESS_KEY=foo $aws s3 cp pcap/bt-tcp.pcap s3://sqsbucket/$sqsekstag.pcap > /dev/null 2>&1");
 authSeen(1);
 timedSystem("$eksBase ../capture/capture $ArkimeTest::es -o disablePython=true -c config.test.ini -n s3-test -o sqsAccessKeyId=AKIAMINISQS -o sqsSecretAccessKey=mini/sqs+secret= --copy --tag $sqsekstag -r sqshttp://127.0.0.1:4566/000000000000/sqsqueue > /tmp/arkime.capture.$sqsekstag.log 2>&1");
 $seen = authSeen();
@@ -252,7 +255,7 @@ $esjson = esPost("/tests2_files/_search?rest_total_hits_as_int=true", $filesQuer
 is($esjson->{hits}->{total}, 0, "all s3 files expired");
 
 # The S3 object itself should be gone
-isnt(timedSystem("AWS_ACCESS_KEY_ID='foo' AWS_SECRET_ACCESS_KEY='foo' aws --endpoint-url http://localhost:4566 s3 cp $s3url /tmp/arkime.file.expired > /dev/null 2>&1"), 0, "s3 object deleted");
+isnt(timedSystem("AWS_ACCESS_KEY_ID='foo' AWS_SECRET_ACCESS_KEY='foo' $aws s3 cp $s3url /tmp/arkime.file.expired > /dev/null 2>&1"), 0, "s3 object deleted");
 unlink("/tmp/arkime.file.expired");
 
 esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
