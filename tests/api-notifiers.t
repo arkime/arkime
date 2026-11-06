@@ -1,4 +1,4 @@
-use Test::More tests => 132;
+use Test::More tests => 140;
 use Cwd;
 use IO::Socket::INET;
 use IO::Select;
@@ -21,6 +21,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
 # notifier types
   my $notifierTypes = viewerGetToken("/api/notifiertypes", $token);
   ok(exists $notifierTypes->{email}, "email notifier exists");
+  ok(exists $notifierTypes->{pushover}, "pushover notifier exists");
   ok(exists $notifierTypes->{slack}, "slack notifier exists");
   ok(exists $notifierTypes->{snmp}, "snmp notifier exists");
   ok(exists $notifierTypes->{syslog}, "syslog notifier exists");
@@ -114,6 +115,24 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   my $teamsId = $json->{notifier}->{id};
   $json = viewerDeleteToken("/api/notifier/$teamsId", $token);
   ok($json->{success}, "teams notifier delete success");
+
+# pushover notifier
+  my $pushoverFields = '{"name":"appToken","value":"azGDORePK8gMaC0QOYAMyEEuzJnyUi"},{"name":"userKey","value":"uQiRzpo4DXghDmr9QzzfQu27cmVRsG"}';
+  $json = viewerPostToken("/api/notifier", '{"name":"pushover1","type":"pushover","fields":[{"name":"userKey","value":"uQiRzpo4DXghDmr9QzzfQu27cmVRsG"}]}', $token);
+  is($json->{text}, "Missing a value for appToken", "pushover required field caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"priority\",\"value\":\"3\"}]}", $token);
+  is($json->{text}, "Priority must be -2, -1, 0, 1, or 2", "pushover bad priority caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"priority\",\"value\":\"2\"},{\"name\":\"retry\",\"value\":\"10\"}]}", $token);
+  is($json->{text}, "Retry must be a number of seconds, at least 30", "pushover short emergency retry caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"priority\",\"value\":\"2\"},{\"name\":\"expire\",\"value\":\"3600\"}]}", $token);
+  is($json->{text}, "Pushover stops an emergency alert after 50 repeats, so expire can be at most 50 times retry (3000)", "pushover emergency expire past 50 repeats caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"encryptionKey\",\"value\":\"notahexkey\"}]}", $token);
+  is($json->{text}, "Encryption key must be 64 hex characters", "pushover bad encryption key caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"priority\",\"value\":\"2\"},{\"name\":\"encryptionKey\",\"value\":\"4f3c2a1b0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a39281706f5e4d3c2b1a090\"}]}", $token);
+  ok($json->{success}, "pushover notifier create success");
+  my $pushoverId = $json->{notifier}->{id};
+  $json = viewerDeleteToken("/api/notifier/$pushoverId", $token);
+  ok($json->{success}, "pushover notifier delete success");
 
 # roles validation - create with non-array roles should fail
   $json = viewerPostToken("/api/notifier", '{"name":"badroles","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"roles":"notanarray"}', $token);

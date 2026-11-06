@@ -621,7 +621,9 @@ my ($check, $timeout) = @_;
 sub waitFor {
 my ($host, $port, $extraSleep) = @_;
     print "Connecting $host:$port\n" if ($main::debug);
+    my $deadline = time() + 20;
     while (1) {
+        die "Nothing listening on $host:$port after 20s, it probably failed to start\n" if (time() > $deadline);
         my $sock = IO::Socket::INET->new(
 	    PeerAddr => $host,
 	    PeerPort => $port,

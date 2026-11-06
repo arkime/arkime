@@ -122,7 +122,7 @@ like($out, qr/Skipping \S+featherprint\.rules\.yaml, it isn't used anymore and s
 ok($tags->{"fp-local"}, "rules next to featherprint.rules.yaml still load");
 
 ################################################################################
-# Live reloads. Capture waits on the command socket so the 10 second reload check runs.
+# Live reloads. Capture waits on the command socket so the reload check runs, every second with --tests.
 # - An empty file in the dir doesn't stop reloads
 # - A new file is only loaded once it stops changing, a half written one never is
 # - A same size rewrite during or right after a reload is still picked up
@@ -184,7 +184,7 @@ SKIP: {
     open($lfh, '>', "$live/new.rules.yml") or die;
     print $lfh "version: 1\nrules:\n  - name: \"n\"\n    when: \"afterClassify\"\n    expression: \"protocols == tls";
     close($lfh);
-    sleep(3);
+    select(undef, undef, undef, 0.3);
     open($lfh, '>', "$live/new.rules.yml") or die;
     print $lfh "version: 1\nrules:\n" . rule("n", "live-n1");
     close($lfh);

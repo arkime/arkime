@@ -13,8 +13,10 @@ use Test::Differences;
 use Cwd;
 use URI::Escape;
 use TAP::Harness;
+use TAP::Formatter::Session;
 use File::Temp qw(tempdir);
 use POSIX ();
+use Time::HiRes ();
 use ArkimeTest;
 use Socket6 qw(AF_INET6 inet_pton);
 
@@ -233,13 +235,18 @@ sub doTests {
                 # skip Test::More's END block in the child
                 POSIX::_exit(0);
             }
+            $runs[$started]->{start} = Time::HiRes::time();
             $running{$pid} = $started++;
         }
 
         while (!$finished[$i]) {
             my $pid = waitpid(-1, 0);
             die "waitpid failed: $!" if ($pid == -1);
-            $finished[delete $running{$pid}] = 1 if (exists $running{$pid});
+            if (exists $running{$pid}) {
+                my $done = delete $running{$pid};
+                $finished[$done] = 1;
+                $runs[$done]->{ms} = int((Time::HiRes::time() - $runs[$done]->{start}) * 1000);
+            }
         }
 
         my $filename = $runs[$i]->{filename};
@@ -261,8 +268,26 @@ sub doTests {
             exit 1;
         };
 
-        eq_or_diff($testJson, $savedJson, "$filename", { context => 3 });
+        eq_or_diff($testJson, $savedJson, "$filename [$runs[$i]->{ms}ms]", { context => 3 });
     }
+}
+################################################################################
+# Timestamped progress, "[time] msg" is printed when a step starts and " [Nms]" when it ends.
+# With --debug other output comes in between, so each gets its own line.
+my ($stepName, $stepStart);
+sub stepEnd {
+    return if (!defined $stepName);
+    my $ms = int((Time::HiRes::time() - $stepStart) * 1000);
+    local $| = 1;
+    print $main::debug ? POSIX::strftime("[%H:%M:%S] ", localtime()) . "$stepName [${ms}ms]\n" : " [${ms}ms]\n";
+    undef $stepName;
+}
+sub step {
+my ($msg) = @_;
+    stepEnd();
+    ($stepName, $stepStart) = ($msg, Time::HiRes::time());
+    local $| = 1;
+    print POSIX::strftime("[%H:%M:%S] ", localtime($stepStart)) . $msg . ($main::debug ? "\n" : "");
 }
 ################################################################################
 sub doFix {
@@ -414,7 +439,7 @@ my ($cmd) = @_;
     $node = "c8 node" if ($main::c8);
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
-        print ("Initializing ES\n");
+        step("Initializing ES");
         if ($main::debug) {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt");
             system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression");
@@ -431,7 +456,7 @@ my ($cmd) = @_;
         my $sessionsDbUrl = $ArkimeTest::sessionsDbUrl;
         if ($sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$}) {
             my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
-            print ("Initializing ClickHouse at $chUrl\n");
+            step("Initializing ClickHouse at $chUrl");
             # Test pcaps span two decades; partition none keeps the table at a
             # handful of parts so per-part query overhead stays negligible.
             my $chRc;
@@ -443,26 +468,25 @@ my ($cmd) = @_;
             die "ClickHouse init failed (is ClickHouse running at $chUrl?), aborting so tests don't run against stale sessions\n" if ($chRc != 0);
         }
 
-        print ("Loading tagger\n");
-        print("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1\n");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH host host.tagger1.json hosttaggertest1");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH md5 md5.tagger1.json md5taggertest1");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger2.json iptaggertest2");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH host host.tagger2.json hosttaggertest2");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH md5 md5.tagger2.json md5taggertest2");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH email email.tagger2.json emailtaggertest2");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH uri uri.tagger2.json uritaggertest2");
+        step("Loading tagger");
+        my $tagQuiet = $main::debug ? "" : " > /dev/null";
+        for my $t (["ip", "ip.tagger1.json", "iptaggertest1"], ["host", "host.tagger1.json", "hosttaggertest1"],
+                   ["md5", "md5.tagger1.json", "md5taggertest1"], ["ip", "ip.tagger2.json", "iptaggertest2"],
+                   ["host", "host.tagger2.json", "hosttaggertest2"], ["md5", "md5.tagger2.json", "md5taggertest2"],
+                   ["email", "email.tagger2.json", "emailtaggertest2"], ["uri", "uri.tagger2.json", "uritaggertest2"]) {
+            system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH @$t$tagQuiet");
+        }
     }
 
     if ($cmd ne "--viewernostart") {
+        step("Starting mock servers");
         if ($main::debug) {
             system("perl mini-redis.pl --debug 7379 > /tmp/arkime.redis 2>&1 &");
             system("perl mini-aws.pl --debug 4566 > /tmp/arkime.aws 2>&1 &");
             system("node mini-wise-source.js --debug 9998 > /tmp/arkime.wisesource 2>&1 &");
         } else {
-            system("perl mini-redis.pl 7379 &");
-            system("perl mini-aws.pl 4566 &");
+            system("perl mini-redis.pl 7379 > /dev/null &");
+            system("perl mini-aws.pl 4566 > /dev/null &");
             system("node mini-wise-source.js 9998 > /dev/null &");
         }
 
@@ -470,7 +494,7 @@ my ($cmd) = @_;
         waitFor($ArkimeTest::host, 9998, 1);
 
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
-        print ("Starting WISE\n");
+        step("Starting WISE");
         if ($main::debug) {
             system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /tmp/arkime.wise &");
         } else {
@@ -495,7 +519,7 @@ my ($cmd) = @_;
         $main::userAgent->get("$ELASTICSEARCH/_flush");
         $main::userAgent->get("$ELASTICSEARCH/_refresh");
 
-        print ("Loading PCAP\n");
+        step("Loading PCAP");
 
         my $mcmd = "../capture/capture $es $INSECURE $SCHEME $main::copy -c config.test.ini -n test -R pcap --flush";
         if (!$main::debug) {
@@ -516,7 +540,7 @@ my ($cmd) = @_;
     }
 
     if ($cmd ne "--viewernostart") {
-        print ("Starting viewer\n");
+        step("Starting viewers");
         if ($main::debug) {
             system("cd ../viewer ; $node --trace-warnings multies.js --regressionTests $mes -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/arkime.multies &");
             waitFor($ArkimeTest::host, 8200, 1);
@@ -552,6 +576,7 @@ my ($cmd) = @_;
         }
     }
 
+    step("Waiting for viewers") if ($cmd eq "--viewernostart");
     waitFor($ArkimeTest::host, 8123);
     waitFor($ArkimeTest::host, 8124);
     waitFor($ArkimeTest::host, 8125);
@@ -561,6 +586,7 @@ my ($cmd) = @_;
     waitFor($ArkimeTest::host, 7200);
     waitFor($ArkimeTest::host, 7379);
     waitFor($ArkimeTest::host, 4566);
+    step("Preparing tests");
     sleep 1;
 
     # tests2 viewers need the fields capture added to tests
@@ -573,7 +599,17 @@ my ($cmd) = @_;
     $main::userAgent->get("$ELASTICSEARCH/_refresh");
     sleep 1;
 
-    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0), timer => ($ENV{HARNESS_TIMER} ? 1 : 0) });
+    stepEnd();
+    # timer prints each test's start time and how long it took, HARNESS_TIMER=0 turns it off
+    {
+        no warnings 'redefine';
+        *TAP::Formatter::Session::time_report = sub {
+            my ($self, $formatter, $parser) = @_;
+            return "" if (!$formatter->timer || !defined $parser->start_time || !defined $parser->end_time);
+            return sprintf(" [%dms]", ($parser->end_time - $parser->start_time) * 1000);
+        };
+    }
+    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0), timer => (($ENV{HARNESS_TIMER} // 1) ? 1 : 0) });
 
     my @tests = @ARGV;
     @tests = glob ("*.t") if ($#tests == -1);
@@ -583,8 +619,10 @@ my ($cmd) = @_;
 
 # Cleanup
     if ($cmd ne "--viewernostart") {
+        step("Shutting down");
         doShutdown();
     }
+    stepEnd();
 
 # Coverage
     if ($main::c8) {

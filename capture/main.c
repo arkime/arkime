@@ -992,7 +992,8 @@ void arkime_quit()
         LOG("Quitting");
 
     config.quitting = TRUE;
-    g_timeout_add(100, arkime_quit_gfunc, 0);
+    // --tests runs capture over and over, don't sit idle at each exit
+    g_timeout_add(config.tests ? 10 : 100, arkime_quit_gfunc, 0);
 }
 /******************************************************************************/
 /*
@@ -1078,6 +1079,13 @@ char *arkime_ip4tostr(uint32_t ip, char *str, int len)
 /******************************************************************************/
 LOCAL ArkimeCredentials_t *currentCredentials;
 LOCAL GHashTable          *credentialProviders;
+
+// Credentials from a service's own settings (s3AccessKeyId, sqsAccessKeyId) never rotate and are
+// kept per service, so the s3 writer and an sqs reader with different keys don't share them.
+// noServiceCredentials marks a service that was looked up and has none.
+LOCAL GHashTable          *serviceCredentials;
+LOCAL ArkimeCredentials_t  noServiceCredentials;
+LOCAL ARKIME_LOCK_DEFINE(serviceCredentials);
 /******************************************************************************/
 LOCAL void arkime_credentials_free(ArkimeCredentials_t *creds)
 {
@@ -1108,17 +1116,38 @@ void arkime_credentials_set(const char *id, const char *key, const char *token)
 /******************************************************************************/
 ArkimeCredentials_t *arkime_credentials_get(const char *service, const char *idName, const char *keyName)
 {
+    if (idName && keyName) {
+        ARKIME_LOCK(serviceCredentials);
+        if (!serviceCredentials)
+            serviceCredentials = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+        ArkimeCredentials_t *creds = g_hash_table_lookup(serviceCredentials, service);
+        if (!creds) {
+            // An empty setting, eg from ARKIME_<node>__s3AccessKeyId=, is the same as unset
+            char *id = arkime_config_str(NULL, idName, NULL);
+            char *key = arkime_config_str(NULL, keyName, NULL);
+            if (id && id[0] && key && key[0]) {
+                creds = ARKIME_TYPE_ALLOC0(ArkimeCredentials_t);
+                creds->id = g_strdup(id);
+                creds->key = g_strdup(key);
+                // The first service with settings also covers services without any, like before
+                if (!currentCredentials)
+                    arkime_credentials_set(id, key, NULL);
+            } else {
+                creds = &noServiceCredentials;
+            }
+            g_free(id);
+            g_free(key);
+            g_hash_table_insert(serviceCredentials, g_strdup(service), creds);
+        }
+        ARKIME_UNLOCK(serviceCredentials);
+
+        if (creds != &noServiceCredentials)
+            return creds;
+    }
+
     if (currentCredentials)
         return currentCredentials;
-
-    if (idName && keyName) {
-        const char *id = arkime_config_str(NULL, idName, NULL);
-        const char *key = arkime_config_str(NULL, keyName, NULL);;
-        if (id && key) {
-            arkime_credentials_set(id, key, NULL);
-            return currentCredentials;
-        }
-    }
 
     if (!config.provider) {
         config.provider = g_strdup("aws");

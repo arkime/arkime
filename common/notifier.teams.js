@@ -7,6 +7,8 @@
  */
 'use strict';
 
+const NotifierHttp = require('./notifierHttp');
+
 // Teams renders a TextBlock as Markdown, and the message is built from strings
 // the sender doesn't control (hunt and periodic query names, what monitored
 // clusters report to Parliament). safeStr doesn't touch Markdown, so a [text](url)
@@ -78,25 +80,12 @@ exports.sendTeamsAlert = function (config, message, links, cb) {
     return;
   }
 
-  fetch(config.teamsWebhookUrl, {
-    method: 'POST',
+  return NotifierHttp.postAlert('teams', 'Teams webhook', config.teamsWebhookUrl, {
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(exports.buildTeamsMessage(message, links)),
-    signal: AbortSignal.timeout(10000)
-  })
-    .then(async (response) => {
-      if (!response.ok) {
-        const text = await response.text().catch(() => '');
-        const error = `Teams webhook returned ${response.status}${text ? `: ${text.slice(0, 200)}` : ''}`;
-        console.error(error);
-        if (cb) { cb({ errors: { teams: error } }); }
-        return;
-      }
-      if (cb) { cb({}); }
-    })
-    .catch((err) => {
-      const error = err.name === 'TimeoutError' ? 'Teams webhook request timed out' : (err.message || String(err));
-      console.error('Teams webhook error:', error);
-      if (cb) { cb({ errors: { teams: error } }); }
-    });
+    body: JSON.stringify(exports.buildTeamsMessage(message, links))
+  }, async (response) => {
+    if (response.ok) { return; }
+    const text = await response.text().catch(() => '');
+    return `Teams webhook returned ${response.status}${text ? `: ${text.slice(0, 200)}` : ''}`;
+  }, cb);
 };

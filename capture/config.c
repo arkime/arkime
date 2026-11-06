@@ -2238,7 +2238,7 @@ void arkime_config_init()
 
     // A long running dry run still picks up changed files
     if (!config.dryRun || config.commandWait || config.pcapMonitor) {
-        g_timeout_add_seconds(10, arkime_config_reload_files, 0);
+        g_timeout_add_seconds(config.tests ? 1 : 10, arkime_config_reload_files, 0);
     }
 
     arkime_command_register("set", arkime_config_cmd_set, "Set/Get a config value - set [<name> [<value>]]");
