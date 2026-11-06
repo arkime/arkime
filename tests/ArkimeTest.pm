@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag esGet esPost esPut esDelete esCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
+@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag esGet esPost esPut esDelete clusterSearch clusterPut clusterDelete clusterDeleteWhere clusterCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 multiDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -38,6 +38,19 @@ if (!$ArkimeTest::sessionsDbUrl && open my $cfgFh, '<', "config.test.ini") {
     }
     close $cfgFh;
 }
+
+# A Postgres dbUrl from the environment or config.test.ini, otherwise
+# capture's stats, dstats, files, fields and sequence are in Elasticsearch.
+# Only the sessions follow sessionsDbUrl, so a Postgres dbUrl keeps them in Elasticsearch.
+$ArkimeTest::dbUrl = $ENV{ARKIME_default__dbUrl} // "";
+if (!$ArkimeTest::dbUrl && open my $cfgFh, '<', "config.test.ini") {
+    while (<$cfgFh>) {
+        if (/^dbUrl\s*=\s*(.*?)\s*$/) { $ArkimeTest::dbUrl = $1; last; }
+    }
+    close $cfgFh;
+}
+$ArkimeTest::clusterDbPG = $ArkimeTest::dbUrl =~ m{^postgres(ql)?://};
+$ENV{ARKIME_default__sessionsDbUrl} //= $ArkimeTest::elasticsearch if ($ArkimeTest::clusterDbPG);
 
 ################################################################################
 sub my_from_json
@@ -117,6 +130,14 @@ sub viewerDeleteToken2 {
 my ($url, $token, $debug) = @_;
 
     my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:8124$url", "x-arkime-cookie" => $token));
+    diag $url, " response:", $response->content if ($debug);
+    return my_from_json($url, $response->content, $debug);
+}
+################################################################################
+sub multiDeleteToken {
+my ($url, $token, $debug) = @_;
+
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:8125$url", "x-arkime-cookie" => $token));
     diag $url, " response:", $response->content if ($debug);
     return my_from_json($url, $response->content, $debug);
 }
@@ -320,33 +341,44 @@ my ($url, $debug) = @_;
     return my_from_json($url, $response->content, $debug);
 }
 ################################################################################
-sub esCopy
-{
-    my ($srci, $dsti) = @_;
+# capture's collections (files, stats, dstats, fields, sequence) in whatever the
+# cluster db is, through a viewer: 8123 for the tests prefix, 8124 for tests2
+sub clusterPost {
+    my ($port, $path, $body) = @_;
 
-    my $id = "";
-    while (1) {
-        my $url;
-        if ($id eq "") {
-            $url = "/$srci/_search?scroll=10m&size=500";
-        } else {
-            $url = "/_search/scroll?scroll=10m&scroll_id=$id";
-        }
-
-        my $incoming = esGet($url);
-        my $out = "";
-        last if (@{$incoming->{hits}->{hits}} == 0);
-
-        foreach my $hit (@{$incoming->{hits}->{hits}}) {
-            $out .= "{\"index\": {\"_index\": \"$dsti\", \"_id\": \"" . $hit->{_id} . "\"}}\n";
-            $out .= to_json($hit->{_source}) . "\n";
-        }
-
-        $id = $incoming->{_scroll_id};
-
-        esPost("/_bulk?refresh=true", $out);
-    }
+    my $response = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:$port/regressionTests/clusterDb/$path", Content => to_json($body), "Content-Type" => "application/json;charset=UTF-8");
+    return my_from_json($path, $response->content);
 }
+
+# { where, sort, size }, the result is shaped like an ES search
+sub clusterSearch {
+    my ($port, $coll, $query) = @_;
+    my $result = clusterPost($port, "$coll/find", $query // {});
+    return {hits => {total => $result->{total}, hits => [map { {_id => $_->{id}, _source => $_->{doc}} } @{$result->{data}}]}};
+}
+
+sub clusterPut {
+    my ($port, $coll, $id, $doc) = @_;
+    return clusterPost($port, "$coll/put", [{id => $id, doc => (ref $doc ? $doc : from_json($doc))}]);
+}
+
+sub clusterDelete {
+    my ($port, $coll, $id) = @_;
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:$port/regressionTests/clusterDb/$coll/$id"));
+    return my_from_json("$coll/$id", $response->content);
+}
+
+sub clusterDeleteWhere {
+    my ($port, $coll, $where) = @_;
+    return clusterPost($port, "$coll/deleteWhere", {where => $where});
+}
+
+sub clusterCopy {
+    my ($srcPort, $dstPort, $coll) = @_;
+    my $docs = clusterPost($srcPort, "$coll/find", {})->{data};
+    return clusterPost($dstPort, "$coll/put", [map { {id => $_->{id}, doc => $_->{doc}} } @{$docs}]);
+}
+
 ################################################################################
 sub countTest {
 my ($count, $test, $debug) = @_;
@@ -664,6 +696,8 @@ sub changePasswordSecret {
 ################################################################################
 sub clearIndex {
 my ($index) = @_;
+    # tests.pl --splitprefix gives the cluster db indices <prefix>cl_
+    $index =~ s/^(tests2?)_(files|stats|dstats|fields|sequence|hunts|queries|history|featherprint)/$1cl_$2/ if ($ENV{ARKIME_TEST_SPLIT});
     esGet("/_flush");
     esGet("/_refresh");
     return esPost("/$index/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "match_all": {} } }');

@@ -271,16 +271,17 @@ if (ArkimeConfig.regressionTests) {
 
   // the exact body expiry's files search sends, so esProxy.t can check its validator
   app.get('/regressionTests/expireQuery', (req, res) => {
-    res.send(Db.searchBody(buildExpireQuery(`${req.query.nodes}`.split(','), `${req.query.dirs}`.split(','))));
+    res.send(Db.filesSearchBody(buildExpireQuery(`${req.query.nodes}`.split(','), `${req.query.dirs}`.split(','))));
   });
 
   app.post('/regressionTests/shutdown', function (req, res) {
     Db.close();
     process.exit(0);
   });
-  app.post('/regressionTests/flushCache', function (req, res) {
+  app.post('/regressionTests/flushCache', async function (req, res) {
     User.flushCache();
     Db.flushCache();
+    await setFieldLocals();
     res.send('{}');
   });
   app.get('/regressionTests/processCronQueries', async function (req, res) {
@@ -306,8 +307,8 @@ if (ArkimeConfig.regressionTests) {
       if (HuntAPIs.isHuntJobRunning()) {
         setTimeout(checkHuntFinished, 1000);
       } else {
-        const result = await Db.search('hunts', { query: { terms: { status: ['running', 'queued'] } } });
-        if (result.hits.total > 0) {
+        const active = await Db.countHunts({ status: { $in: ['running', 'queued'] } });
+        if (active > 0) {
           HuntAPIs.processHuntJobs();
           await Db.refresh();
           setTimeout(checkHuntFinished, 1000);
@@ -334,6 +335,51 @@ if (ArkimeConfig.regressionTests) {
     await Db.deleteAllShareables();
     res.send('{}');
   });
+  // The stats a malicious cluster could send a parliament polling it
+  app.get('/regressionTests/hostileCluster/api/parliament', (req, res) => {
+    const big = (c) => c.repeat(40000);
+    res.send({
+      data: [{ nodeName: big('n'), currentTime: 1, deltaPacketsPerSec: big('0'), freeSpaceP: big('0'), freeSpaceM: big('2') }],
+      esNodes: [{ nodeName: big('e'), roles: ['data'], freeSpaceP: big('0'), freeSpaceM: big('3') }]
+    });
+  });
+  app.get('/regressionTests/deleteAllHistory', async (req, res) => {
+    await Db.deleteAllHistory();
+    res.send('{}');
+  });
+  // Change a periodic query the way older versions or other tooling could have saved it
+  app.post('/regressionTests/updateQuery/:id', async (req, res) => {
+    const updated = await Db.updateQuery(req.params.id, req.body);
+    res.send({ result: updated ? 'updated' : 'not_found' });
+  });
+  // capture's collections in whatever the cluster db is, so tests don't need to know
+  const clusterDbRoute = (fn) => async (req, res) => {
+    const coll = Db.clusterCollection(req.params.coll);
+    if (!coll) { return res.status(404).send({ error: 'unknown collection' }); }
+    try {
+      res.send(await fn(coll, req));
+    } catch (err) {
+      res.status(500).send({ error: err.message });
+    }
+  };
+  // { where, sort, size } => { total, data: [{ id, doc }] }
+  app.post('/regressionTests/clusterDb/:coll/find', clusterDbRoute((coll, req) => {
+    return coll.find({ where: req.body.where, sort: req.body.sort, size: req.body.size ?? 10000 });
+  }));
+  // [{ id, doc }]
+  app.post('/regressionTests/clusterDb/:coll/put', clusterDbRoute(async (coll, req) => {
+    await Promise.all(req.body.map(({ id, doc }) => coll.put(id, doc)));
+    if (req.params.coll === 'fields') { await setFieldLocals(); }
+    return { count: req.body.length };
+  }));
+  // { where }
+  app.post('/regressionTests/clusterDb/:coll/deleteWhere', clusterDbRoute(async (coll, req) => {
+    if (!req.body.where) { throw new Error('missing where'); }
+    return { deleted: await coll.deleteWhere(req.body.where) };
+  }));
+  app.delete('/regressionTests/clusterDb/:coll/:id', clusterDbRoute(async (coll, req) => {
+    return { deleted: await coll.delete(req.params.id) };
+  }));
   app.get('/regressionTests/getUser/:user', (req, res) => {
     User.getUser(req.params.user, (err, user) => {
       // Shallow copy
@@ -712,11 +758,11 @@ async function checkHuntAccess (req, res, next) {
     return next();
   } else {
     try {
-      const { body: huntHit } = await Db.getHunt(req.params.id);
+      const hunt = await Db.getHunt(req.params.id);
 
-      if (!huntHit || !huntHit.found) { throw new Error('Hunt not found'); }
+      if (!hunt) { throw new Error('Hunt not found'); }
 
-      if (huntHit._source.userId === req.user.userId) {
+      if (hunt.userId === req.user.userId) {
         return next();
       }
 
@@ -805,7 +851,7 @@ function logAction (uiPage) {
 
     // Views live in their own index now; resolve async and let finish() await it
     let viewPromise;
-    if (req.query.view) {
+    if (ArkimeUtil.isString(req.query.view)) {
       viewPromise = (async () => {
         try {
           const roles = [...await req.user.getRoles()];
@@ -973,7 +1019,7 @@ function sanitizeViewName (req, res, next) {
 // ============================================================================
 // app helpers ----------------------------------------------------------------
 function setFieldLocals () {
-  ViewerUtils.loadFields()
+  return ViewerUtils.loadFields()
     .then((result) => {
       internals.fieldsMap = result.fieldsMap;
       internals.fieldsArr = result.fieldsArr;
@@ -1158,34 +1204,18 @@ function isInDirs (file, dirs) {
   return false;
 }
 
-// The oldest 500 files on a set of nodes in a set of directories
+// The oldest 500 files on a set of nodes in a set of directories, node must be the first condition for esProxy
 function buildExpireQuery (nodes, dirs) {
-  const query = {
-    _source: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
-    size: 500,
-    query: {
-      bool: {
-        filter: [
-          { terms: { node: nodes } },
-          { bool: { should: [] } }
-        ],
-        must_not: { term: { locked: 1 } }
-      }
+  return {
+    where: {
+      node: { $in: nodes },
+      $or: [...dirs].map(dir => ({ name: { $prefix: dir.endsWith('/') ? dir : dir + '/' } })),
+      locked: { $ne: 1 }
     },
-    sort: { first: { order: 'asc' } }
+    fields: ['num', 'name', 'first', 'size', 'node', 'indexFilename'],
+    size: 500,
+    sort: { first: 'asc' }
   };
-
-  for (const pcapDir of dirs) {
-    const obj = { wildcard: {} };
-    if (pcapDir.endsWith('/')) {
-      obj.wildcard.name = pcapDir + '*';
-    } else {
-      obj.wildcard.name = pcapDir + '/*';
-    }
-    query.query.bool.filter[1].bool.should.push(obj);
-  }
-
-  return query;
 }
 
 // Search the oldest 500 files on a set of nodes in a set of directories.
@@ -1203,32 +1233,34 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
   }
 
   try {
-    const data = await Db.search('files', query);
-    // Always log, if expiry can't search files the disk fills up
-    if (data.error || !data.hits) {
-      console.log('EXPIRE ERROR - searching files', data.error || 'no data.hits');
+    let data;
+    try {
+      data = await Db.searchFiles(query);
+    } catch (err) {
+      // Always log, if expiry can't search files the disk fills up
+      console.log('EXPIRE ERROR - searching files', err?.message ?? err);
       return;
     }
 
     if (Config.debug === 1) {
-      console.log('EXPIRE - device results hits:', data.hits.hits.length);
+      console.log('EXPIRE - device results hits:', data.data.length);
     } else if (Config.debug > 1) {
-      console.log('EXPIRE - device results', data.hits.hits.length, JSON.stringify(data, null, 2));
+      console.log('EXPIRE - device results', data.data.length, JSON.stringify(data, null, 2));
     }
 
-    if (data.hits.total <= 10) {
-      console.log(`EXPIRE WARNING - not deleting any files since ${data.hits.total} <= 10 minimum files per node. (Nodes: ${nodes} Directories: ${Array.from(dirs).join(',')}) Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
+    if (data.total <= 10) {
+      console.log(`EXPIRE WARNING - not deleting any files since ${data.total} <= 10 minimum files per node. (Nodes: ${nodes} Directories: ${Array.from(dirs).join(',')}) Your disk(s) may fill!!! See https://arkime.com/faq#pcap-deletion`);
       return;
     }
 
     // Keep 10 most recent files by truncating array
-    data.hits.hits.length -= 10;
+    data.data.length -= 10;
 
     // The index file lives in the node's first pcapDir, which may be on another device
     const indexDirs = nodes.flatMap(node => Config.getFullArray(node, 'pcapDir', '/opt/arkime/raw'));
 
-    for (const item of data.hits.hits) {
-      const fields = item._source || item.fields;
+    for (const item of data.data) {
+      const fields = item.doc;
 
       // The wildcard query matches strings, so a name can still climb out with ..
       // Drop the doc instead of skipping it so bogus docs can't fill the oldest 500 and stall expiry
@@ -1236,9 +1268,9 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
         console.log('EXPIRE WARNING - not deleting file outside pcapDir', ArkimeUtil.sanitizeStr(fields.name));
         // Keep expiring the rest if the doc can't be removed, through esProxy only own docs can be
         try {
-          await Db.deleteDocument('files', item._id);
+          await Db.deleteFileDoc(item.id);
         } catch (err) {
-          console.log('EXPIRE ERROR - deleting files doc', ArkimeUtil.sanitizeStr(item._id), ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
+          console.log('EXPIRE ERROR - deleting files doc', ArkimeUtil.sanitizeStr(item.id), ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
         }
         continue;
       }
@@ -1263,7 +1295,7 @@ async function expireDevice (nodes, dirs, minFreeSpaceG) {
             }
           });
         }
-        await Db.deleteFile(fields.node, item._id, fields.name);
+        await Db.deleteFile(fields.node, item.id, fields.name);
       } else {
         if (Config.debug > 0) {
           console.log('EXPIRE - device not deleting', freeG, minFreeSpaceG, fields.name);
@@ -2509,7 +2541,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     path: Config.basePath(),
     version: version.version,
     multiViewer: internals.multiES,
-    hasUsersES: !!Config.get('usersElasticsearch', false),
+    hasUsersES: !!ArkimeConfig.usersDbUrls(),
     hasTshark: !!internals.tsharkPath,
     huntWarn: Config.getInt('huntWarn', 100000),
     huntLimit: limit,
@@ -2636,20 +2668,24 @@ process.on('unhandledRejection', (reason, p) => {
 async function premain () {
   await Config.initialize({ initAuth: true });
 
+  const usersHost = ArkimeConfig.usersDbUrls();
+  const usersPrefix = ArkimeConfig.usersPrefix(internals.multiES ? '' : undefined);
+
   await Db.initialize({
     host: internals.elasticBase,
     prefix: internals.prefix,
+    clusterPrefix: internals.clusterPrefix,
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
-    usersHost: Config.getArray('usersElasticsearch'),
-    // The default for usersPrefix should be '' if this is a multiviewer, otherwise Db.initialize will figure out
-    usersPrefix: Config.get('usersPrefix', internals.multiES ? '' : undefined),
+    usersHost,
+    usersFallbackHost: internals.multiES ? internals.elasticBase : ArkimeConfig.dbUrls(),
+    usersPrefix,
     nodeName: Config.nodeName(),
     hostName: Config.hostName(),
     esClientKey: Config.get('esClientKey', null),
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
     multiES: internals.multiES,
-    insecure: ArkimeConfig.isInsecure([internals.elasticBase, Config.getArray('usersElasticsearch')]),
+    insecure: ArkimeConfig.insecure,
     caTrustFile: Config.get('caTrustFile', null),
     requestTimeout: Config.get('elasticsearchTimeout', 300),
     esProfile: Config.esProfile,
@@ -2664,15 +2700,16 @@ async function premain () {
     regressionTests: ArkimeConfig.regressionTests
   });
 
+  // The same prefix the users index ended up with, whether or not there is a users url
   Notifier.initialize({
-    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
+    prefix: User.getDbPrefix()
   });
 
   ViewConfig.initialize({ appAdminRole: 'arkimeAdmin' });
 
   Banner.initialize({
     app: 'viewer',
-    prefix: Config.get('usersPrefix', Config.get('prefix', 'arkime'))
+    prefix: User.getDbPrefix()
   });
 
   CronAPIs.initialize({

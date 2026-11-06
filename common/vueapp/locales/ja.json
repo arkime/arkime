@@ -2537,9 +2537,9 @@
     "history": {
       "needAdminPrivileges": "管理者権限が必要です",
       "retrieveFailed": "履歴の取得エラー",
-      "missingIndex": "履歴インデックスがありません",
       "deletedSuccessfully": "履歴項目を正常に削除しました",
-      "deleteFailed": "履歴項目の削除エラー"
+      "deleteFailed": "履歴項目の削除エラー",
+      "notFound": "履歴項目が見つかりません"
     },
     "shareables": {
       "missingName": "共有アイテム名が未入力です",
@@ -2585,6 +2585,7 @@
       "rolesMustBeArray": "ロールフィールドは文字列の配列である必要があります",
       "editRolesMustBeArray": "編集ロールフィールドは文字列の配列である必要があります",
       "usersMustBeString": "ユーザーフィールドは文字列である必要があります",
+      "viewMustBeString": "ビューは文字列である必要があります",
       "nameExists": "名前 {name} のショートカットは既に存在します",
       "created": "新しいショートカットを作成しました！",
       "errorCreating": "ショートカットの作成エラー",

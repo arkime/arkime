@@ -16,17 +16,6 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const ViewerUtils = require('./viewerUtils');
 const BuildQuery = require('./buildQuery');
 
-let fieldsMap;
-
-ArkimeConfig.loaded(() => {
-  if (!fieldsMap) {
-    setTimeout(async () => { // make sure db.js loads before fetching fields
-      const result = await ViewerUtils.loadFields();
-      fieldsMap = result.fieldsMap;
-    });
-  }
-});
-
 class ConnectionAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
@@ -553,7 +542,7 @@ class ConnectionAPIs {
 
       res.write(`Source${separator} Destination${separator} Sessions`);
       const displayFields = {};
-      const map = JSON.parse(fieldsMap);
+      const map = Config.getFieldsMap();
       for (const field of fields) {
         for (const f in map) {
           if (map[f].dbField === field) {

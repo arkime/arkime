@@ -58,6 +58,7 @@ ArkimeConfig.loaded(() => {
   elasticsearch = Config.get('elasticsearch');
   sensors = Config.configMap('esproxy-sensors');
   prefix = ArkimeUtil.formatPrefix(Config.get('prefix', 'arkime_'));
+  // Arkime 6 and older sensor viewers still name sessions2 indices, which had no arkime_ prefix
   oldprefix = prefix === 'arkime_' ? '' : prefix;
   // Sessions indices only, with our configured prefix
   const esc = str => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -196,9 +197,11 @@ const putExact = {
 
 ArkimeConfig.loaded(() => {
   getExact[`/_template/${prefix}sessions3_template`] = 1;
+  getExact[`/${prefix}sessions3-*/_alias`] = 1;
+  getExact[`/partial-${prefix}sessions3-*,${prefix}sessions3-*/_alias`] = 1;
+  // Arkime 6 and older sensor viewers, remove with Arkime 8
   getExact[`/_template/${oldprefix}sessions2_template`] = 1;
   getExact[`/${oldprefix}sessions2-*/_alias`] = 1;
-  getExact[`/${prefix}sessions3-*/_alias`] = 1;
   getExact[`/${oldprefix}sessions2-*,${prefix}sessions3-*/_alias`] = 1;
   getExact[`/${oldprefix}sessions2-*,partial-${prefix}sessions3-*,${prefix}sessions3-*/_alias`] = 1;
   getExact[`/${prefix}*/_refresh`] = 1;
@@ -748,8 +751,8 @@ async function validateBulk (req) {
 
 // Validate Files Search, the shapes capture and the sensor viewer's expiry send.
 // Only top level keys that can't widen the node filter, aggs global ignores the query.
-// Db.search adds profile when esProfile is set.
-const filesSearchKeys = ['size', 'sort', 'query', '_source', 'profile'];
+// Db.search adds profile when esProfile is set, collection searches add from and track_total_hits.
+const filesSearchKeys = ['size', 'sort', 'query', '_source', 'profile', 'from', 'track_total_hits'];
 async function validateFilesSearch (req) {
   try {
     const json = parseDocBody(req);

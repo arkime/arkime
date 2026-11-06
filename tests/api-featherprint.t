@@ -1,4 +1,4 @@
-use Test::More tests => 58;
+use Test::More tests => 59;
 use ArkimeTest;
 use JSON;
 use Data::Dumper;
@@ -74,6 +74,13 @@ my $al = viewerGet("/api/featherprint/alerts?limit=10000");
 ok($al->{success} && ref($al->{alerts}) eq 'ARRAY',      "alerts list returns array");
 ok((grep { $_->{kind} eq 'changeIp' } @{$al->{alerts}}), "changeIp alert fired for moved mac");
 ok((grep { $_->{kind} eq 'newIp' } @{$al->{alerts}}),    "newIp alerts fired");
+
+SKIP: {
+    skip "a Postgres cluster db keeps the mac doc out of ES", 1 if $ArkimeTest::clusterDbPG;
+    my $fpIndex = $ENV{ARKIME_TEST_SPLIT} ? "testscl_featherprint" : "tests_featherprint";
+    my $macDoc = esGet("/$fpIndex/_doc/mac:aa:bb:cc:00:00:01");
+    is(scalar(@{$macDoc->{_source}->{ipHistory}}), 2,    "moved mac doc saved with both ips");
+}
 
 # Ack flow: ack one open alert, then find it via the server-side acked filter.
 my ($openAlert) = grep { !$_->{acked} } @{$al->{alerts}};

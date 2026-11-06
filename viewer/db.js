@@ -15,10 +15,12 @@ const async = require('async');
 const { Client } = require('@elastic/elasticsearch');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
 const { LRUCache } = require('lru-cache');
 const Config = require('./config.js');
 const DbESImpl = require('./db.es');
-const DbSQLiteImpl = require('./db.sqlite');
+const DbUsersImpl = require('./db.users');
+const DbClusterImpl = require('./db.cluster');
 const DbCHImpl = require('./db.ch');
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
@@ -33,7 +35,7 @@ const internals = {
   fileName2File: new Map(),
   shortcutsCache: new Map(),
   shortcutsCacheTS: new Map(),
-  sessionIndices: ['sessions2-*', 'partial-sessions3-*', 'sessions3-*'],
+  sessionIndices: ['partial-sessions3-*', 'sessions3-*'],
   queryExtraIndicesRegex: [],
   remoteShortcutsIndex: undefined,
   localShortcutsIndex: undefined,
@@ -90,6 +92,7 @@ Db.initialize = async (info) => {
   checkURLs(info.usersHost);
 
   internals.prefix = ArkimeUtil.formatPrefix(info.prefix);
+  internals.clusterPrefix = ArkimeUtil.formatPrefix(info.clusterPrefix ?? info.prefix);
   internals.usersPrefix = ArkimeUtil.formatPrefix(info.usersPrefix ?? info.prefix);
 
   internals.nodeName = info.nodeName;
@@ -102,8 +105,11 @@ Db.initialize = async (info) => {
 
   internals.regressionTests = info.regressionTests ?? false;
 
+  // Each connection's loopback rule comes from its own urls
+  const insecure = (urls) => !!info.insecure || ArkimeConfig.isInsecure([urls]);
+
   const esSSLOptions = ArkimeUtil.tlsOptionsOrExit({
-    insecure: internals.info.insecure,
+    insecure: insecure(info.host),
     caTrustFile: internals.info.caTrustFile,
     clientKey: info.esClientKey,
     clientCert: info.esClientCert,
@@ -137,7 +143,7 @@ Db.initialize = async (info) => {
 
   if (info.usersHost) {
     User.initialize({
-      insecure: info.insecure,
+      insecure: insecure(info.usersHost),
       caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
       node: info.usersHost,
@@ -152,45 +158,36 @@ Db.initialize = async (info) => {
     });
   } else {
     User.initialize({
-      insecure: info.insecure,
+      insecure: insecure(info.usersFallbackHost ?? info.host),
       caTrustFile: info.caTrustFile,
       requestTimeout: info.requestTimeout,
-      node: info.host,
+      node: info.usersFallbackHost ?? info.host,
       clientKey: info.esClientKey,
       clientCert: info.esClientCert,
       clientKeyPass: info.esClientKeyPass,
       apiKey: info.esApiKey,
       basicAuth: info.esBasicAuth,
-      prefix: internals.prefix,
+      prefix: internals.multiES ? internals.prefix : internals.usersPrefix,
       readOnly: internals.multiES,
       getCurrentUserCB: info.getCurrentUserCB,
       noUsersCheck: info.noUsersCheck
     });
   }
 
-  internals.usersClient7 = User.getClient();
-
-  // Initialize the users DB backend for views, shareables, etc.
-  if (internals.usersClient7) {
-    internals.usersImpl = new DbESImpl(internals.usersClient7, internals.usersPrefix);
-  } else {
-    const dbUrl = User.getDbUrl();
-    if (dbUrl?.startsWith('sqlite')) {
-      internals.usersImpl = new DbSQLiteImpl(ArkimeUtil.createSQLiteDB(dbUrl));
-    } else if (dbUrl?.startsWith('redis') || dbUrl?.startsWith('lmdb')) {
-      console.log(`WARN - views/shareables not yet supported for '${dbUrl}', using ES only`);
-    } else {
-      console.log(`ERROR - Don't understand users db impl for '${dbUrl}'`);
-      process.exit(1);
-    }
-  }
+  // views, shareables and shortcuts live in the users db, whatever backend it is
+  internals.usersImpl = new DbUsersImpl(User.dbConnect(internals.usersPrefix));
+  await internals.usersImpl.init();
 
   // Initialize the sessions DB backend. sessionsImpl serves sessions indices
   // (ClickHouse when sessionsDbUrl says so, otherwise Elasticsearch); esImpl
   // always exists and serves everything else.
-  internals.esImpl = new DbESImpl(internals.client7, internals.prefix, { Db, internals, fixIndex });
+  internals.esImpl = new DbESImpl({ Db, internals, fixIndex });
 
-  const sessionsDbUrl = info.sessionsDbUrl || Config.get('sessionsDbUrl');
+  const sessionsDbUrl = info.sessionsDbUrl || ArkimeConfig.sessionsDbUrls().join(',');
+  if (!internals.multiES && !isClickHouseSessionsUrl(sessionsDbUrl) && !ArkimeConfig.isEsUrl(sessionsDbUrl)) {
+    console.log(`ERROR - the sessions db can't be '${sessionsDbUrl.split(':')[0]}', set sessionsDbUrl to OpenSearch/Elasticsearch or ClickHouse`);
+    process.exit(1);
+  }
   if (isClickHouseSessionsUrl(sessionsDbUrl) && !internals.multiES) {
     info.sessionsDbUrl = sessionsDbUrl;
     // The caller's info doesn't carry the clickhouse* options; capture reads
@@ -198,7 +195,7 @@ Db.initialize = async (info) => {
     for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable']) {
       info[opt] ??= Config.get(opt);
     }
-    internals.sessionsImpl = new DbCHImpl(info);
+    internals.sessionsImpl = new DbCHImpl({ ...info, insecure: insecure(sessionsDbUrl.replace(/^(clickhouses|chttps):/i, 'https:')) });
   } else {
     internals.sessionsImpl = internals.esImpl;
   }
@@ -207,6 +204,7 @@ Db.initialize = async (info) => {
   if (internals.multiES) {
     Db.isLocalView = (node) => { return false; };
     internals.prefix = 'MULTIPREFIX_';
+    internals.clusterPrefix = 'MULTIPREFIX_';
   }
 
   if (internals.debug) {
@@ -215,7 +213,7 @@ Db.initialize = async (info) => {
 
   // build regular expressions for the user-specified extra query index patterns
   if (Array.isArray(info.queryExtraIndices)) {
-    internals.sessionIndices = [...new Set([...['sessions2-*', 'partial-sessions3-*', 'sessions3-*'], ...info.queryExtraIndices])];
+    internals.sessionIndices = [...new Set([...['partial-sessions3-*', 'sessions3-*'], ...info.queryExtraIndices])];
     delete internals.aliasesCache;
     for (const pattern of info.queryExtraIndices) {
       internals.queryExtraIndicesRegex.push(ArkimeUtil.wildcardToRegexp(pattern));
@@ -242,6 +240,50 @@ Db.initialize = async (info) => {
     console.log(`remoteShortcutsIndex: ${internals.remoteShortcutsIndex} localShortcutsIndex: ${internals.localShortcutsIndex}`);
   }
 
+  // What capture writes plus hunts, queries, history and featherprint live in the cluster db, dbUrl, which shares
+  // the sessions ES connection when it is the same ES. Another ES uses the sessions ES credentials and needs db.pl init too.
+  // Every backend names its tables with the cluster's prefix, like the ES indices, so clusters can share one db.
+  // A multi viewer gets every cluster's cluster db through multies, see multiESNodes dbUrl
+  let clusterDbUrl;
+  if (!internals.multiES) {
+    const urls = ArkimeConfig.dbUrls();
+    const norm = (list) => [list].flat().map(u => (u.includes('://') ? u : 'http://' + u).replace(/\/+$/, '')).join(',');
+    if (!ArkimeConfig.isEsUrl(urls[0]) || norm(urls) !== norm(internals.info.host)) {
+      clusterDbUrl = urls.join(',');
+    }
+  }
+  // capture has to write to it too, from every sensor
+  if (clusterDbUrl && !ArkimeUtil.dbHoldsCluster(clusterDbUrl)) {
+    console.log(`ERROR - dbUrl '${clusterDbUrl.split(':')[0]}' can't hold the cluster db, use Elasticsearch/OpenSearch, postgres:// or a dbPlugins cluster scheme, or set sessionsDbUrl and dbUrl`);
+    process.exit(1);
+  }
+  const esConn = ArkimeUtil.dbConnect(undefined, { client: internals.client7, multiES: internals.multiES });
+  // Each backend takes the options it understands
+  const clusterConn = !clusterDbUrl
+    ? esConn
+    : ArkimeUtil.dbConnect(clusterDbUrl, {
+      prefix: internals.clusterPrefix,
+      insecure: insecure(clusterDbUrl),
+      caTrustFile: info.caTrustFile,
+      requestTimeout: info.requestTimeout,
+      clientKey: info.esClientKey,
+      clientCert: info.esClientCert,
+      clientKeyPass: info.esClientKeyPass,
+      apiKey: info.esApiKey,
+      basicAuth: info.esBasicAuth
+    });
+  internals.clusterShared = clusterConn === esConn;
+  // The flush and refresh admin calls also reach a separate OpenSearch/Elasticsearch cluster db
+  internals.clusterEsClient = clusterConn.client;
+  internals.clusterImpl = new DbClusterImpl({
+    conn: clusterConn,
+    esConn,
+    prefix: internals.clusterPrefix,
+    fixIndex,
+    multiES: internals.multiES
+  });
+  await internals.clusterImpl.init();
+
   try {
     const { body: data } = await internals.client7.info();
     if (data.version.distribution === 'opensearch') {
@@ -264,15 +306,13 @@ Db.initialize = async (info) => {
 /// ///////////////////////////////////////////////////////////////////////////////
 /// / Low level functions to convert from no prefix to having a prefix
 /// ///////////////////////////////////////////////////////////////////////////////
+const CLUSTER_INDEX_RE = new RegExp(`^(${DbClusterImpl.INDEX_NAMES.join('|')})(?![a-z])`);
+
 function fixIndex (index) {
   if (index === undefined || index === '_all') { return index; }
 
   if (index === 'sessions*') {
-    // Didn't used to have a prefix, don't use one for sessions2
-    if (internals.prefix === 'arkime_') {
-      return `sessions2*,${internals.prefix}sessions3*`;
-    }
-    return `${internals.prefix}sessions2*,${internals.prefix}sessions3*`;
+    return `${internals.prefix}sessions3*`;
   }
 
   // Turn into array if comma separated
@@ -281,13 +321,7 @@ function fixIndex (index) {
   }
 
   if (Array.isArray(index)) {
-    return index.map((val) => {
-      if (val.startsWith(internals.prefix)) {
-        return val;
-      } else {
-        return fixIndex(val);
-      }
-    }).join(',');
+    return index.map(val => fixIndex(val)).join(',');
   }
 
   // Don't fix extra user-specified indexes from the queryExtraIndices
@@ -303,8 +337,17 @@ function fixIndex (index) {
     return index;
   }
 
-  // If prefix isn't there, add it. But don't add it for sessions2 unless really set.
-  if (!index.startsWith(internals.prefix) && (!index.startsWith('sessions2') || internals.prefix !== 'arkime_')) {
+  // The cluster db indices can have their own prefix, a name with the sessions one is moved to it
+  if (internals.clusterPrefix && index.startsWith(internals.clusterPrefix) && CLUSTER_INDEX_RE.test(index.substring(internals.clusterPrefix.length))) {
+    return index;
+  }
+  const bare = internals.prefix && index.startsWith(internals.prefix) ? index.substring(internals.prefix.length) : index;
+  if (CLUSTER_INDEX_RE.test(bare)) {
+    return internals.clusterPrefix + bare;
+  }
+
+  // If prefix isn't there, add it
+  if (!index.startsWith(internals.prefix)) {
     index = internals.prefix + index;
   }
 
@@ -613,7 +656,7 @@ Db.getSession = async (id, options, cb) => {
     delete params.arkime_unflatten;
     delete params.final;
 
-    const index = Db.sid2Index(id, { multiple: true });
+    const index = Db.sid2Index(id);
 
     let results = await internals.sessionsImpl.searchSessions(index, query, params);
     if (internals.debug > 2) {
@@ -906,9 +949,11 @@ Db.indicesSettings = async (index, cluster) => {
 
 Db.setIndexSettings = async (index, options) => {
   // Users might be on a different cluster
-  if ((index === '*' || index.includes('users')) && internals.info.usersHost) {
+  // The ES index settings page also reaches a users db on its own OpenSearch/Elasticsearch
+  const usersClient = User.dbConnect()?.client;
+  if ((index === '*' || index.includes('users')) && internals.info.usersHost && usersClient) {
     try {
-      await internals.usersClient7.indices.putSettings({
+      await usersClient.indices.putSettings({
         index,
         body: options.body,
         timeout: '10m',
@@ -1025,6 +1070,7 @@ Db.updateSession = async (index, id, doc) => {
 Db.close = async () => {
   User.close();
   internals.sessionsImpl.close();
+  await ArkimeUtil.dbCloseAll();
   return internals.client7.close();
 };
 
@@ -1053,13 +1099,33 @@ Db.allocationExplain = async (cluster, index, shard, primary) => {
   return internals.client7.cluster.allocationExplain(params);
 };
 
+// A flush or refresh of everything, or of a cluster db index, also has to reach a separate cluster db ES
+function clusterDbIndices (op, index, cluster) {
+  const separate = internals.clusterEsClient && internals.clusterEsClient !== internals.client7;
+  if (index !== undefined && index !== '*') {
+    if (separate && CLUSTER_INDEX_RE.test(index)) {
+      return internals.clusterEsClient.indices[op]({ index: fixIndex(index) });
+    }
+    return internals.client7.indices[op]({ index: fixIndex(index), cluster });
+  }
+  const sessions = internals.client7.indices[op]({ index: fixIndex(index), cluster });
+  // No index is every index on the sessions ES, * is just the sessions prefix
+  if (separate) {
+    return Promise.all([sessions, internals.clusterEsClient.indices[op]({ index: `${internals.clusterPrefix}*` })]);
+  }
+  if (index === '*' && internals.clusterPrefix !== internals.prefix) {
+    return Promise.all([sessions, internals.client7.indices[op]({ index: `${internals.clusterPrefix}*`, cluster })]);
+  }
+  return sessions;
+}
+
 Db.flush = async (index, cluster) => {
   if (index === 'users') {
     return User.flush(cluster);
   } else if (index === 'lookups' || index === 'views' || index === 'shareables') {
     return internals.usersImpl.flush(index, cluster);
   } else {
-    return internals.client7.indices.flush({ index: fixIndex(index), cluster });
+    return clusterDbIndices('flush', index, cluster);
   }
 };
 
@@ -1069,7 +1135,7 @@ Db.refresh = async (index, cluster) => {
   } else if (index === 'lookups' || index === 'views' || index === 'shareables') {
     return internals.usersImpl.refresh(index, cluster);
   } else {
-    return internals.client7.indices.refresh({ index: fixIndex(index), cluster });
+    return clusterDbIndices('refresh', index, cluster);
   }
 };
 
@@ -1103,76 +1169,47 @@ Db.flushCache = function () {
   cache60.clear();
 };
 
-function twoDigitString (value) {
-  return (value < 10) ? ('0' + value) : value.toString();
-}
-
 // History DB interactions
-Db.historyIt = async function (doc, cluster) {
-  const d = new Date(Date.now());
-  const jan = new Date(d.getUTCFullYear(), 0, 0);
-  const iname = internals.prefix + 'history_v1-' +
-    twoDigitString(d.getUTCFullYear() % 100) + 'w' +
-    twoDigitString(Math.floor((d - jan) / 604800000));
-
-  return internals.client7.index({
-    index: iname, body: doc, refresh: true, timeout: '10m', cluster
-  });
+Db.historyIt = async (doc, cluster) => {
+  return internals.clusterImpl.addHistory(doc, cluster);
 };
-Db.searchHistory = async (query) => {
-  return internals.client7.search({
-    index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
-    body: query,
-    rest_total_hits_as_int: true
-  });
+// params are collection find params, returns { total, data: [{ id, doc, index }] }
+Db.searchHistory = async (params, cluster) => {
+  return internals.clusterImpl.searchHistory(params, cluster);
 };
 Db.countHistory = async (cluster) => {
-  return internals.client7.count({
-    index: internals.prefix === 'arkime_' ? 'history_v1-*,arkime_history_v1-*' : fixIndex('history_v1-*'),
-    ignore_unavailable: true,
-    cluster
-  });
+  return internals.clusterImpl.countHistory(cluster);
 };
-Db.deleteHistory = async (id, index, cluster) => {
-  return internals.client7.delete({
-    index, id, refresh: true, cluster
-  });
+Db.deleteHistory = async (id, cluster) => {
+  return internals.clusterImpl.deleteHistory(id, cluster);
+};
+Db.deleteAllHistory = async () => {
+  return internals.clusterImpl.deleteAllHistory();
 };
 
 // Hunt DB interactions
+// { devices, history, alerts } collections
+Db.featherprint = () => internals.clusterImpl.featherprint;
+
 Db.createHunt = async (doc, cluster) => {
-  return internals.client7.index({
-    index: fixIndex('hunts'), body: doc, refresh: true, timeout: '10m', cluster
-  });
+  return internals.clusterImpl.createHunt(doc, cluster);
 };
-Db.searchHunt = async (query, cluster) => {
-  return internals.client7.search({
-    index: fixIndex('hunts'), body: query, rest_total_hits_as_int: true, cluster
-  });
+// params are collection find params, returns { total, data: [{ id, doc, index }] }
+Db.searchHunts = async (params, cluster) => {
+  return internals.clusterImpl.searchHunts(params, cluster);
 };
-Db.countHunts = async (cluster) => {
-  return internals.client7.count({ index: fixIndex('hunts'), cluster });
+Db.countHunts = async (where, cluster) => {
+  return internals.clusterImpl.countHunts(where, cluster);
 };
 Db.deleteHunt = async (id, cluster) => {
-  return internals.client7.delete({
-    index: fixIndex('hunts'), id, refresh: true, cluster
-  });
+  return internals.clusterImpl.deleteHunt(id, cluster);
 };
-Db.updateHunt = async (id, doc, cluster) => {
-  const params = {
-    refresh: true,
-    retry_on_conflict: 3,
-    index: fixIndex('hunts'),
-    body: { doc },
-    id,
-    timeout: '10m',
-    cluster
-  };
-
-  return internals.client7.update(params);
+Db.updateHunt = async (id, fields, cluster) => {
+  return internals.clusterImpl.updateHunt(id, fields, cluster);
 };
+// returns the hunt or null
 Db.getHunt = async (id, cluster) => {
-  return internals.client7.get({ index: fixIndex('hunts'), id, cluster });
+  return internals.clusterImpl.getHunt(id, cluster);
 };
 
 // fetches the version of the shortcuts from the users backend
@@ -1430,12 +1467,9 @@ Db.getShareableVersioned = async (id) => {
 };
 
 Db.arkimeNodeStats = async (nodeName) => {
-  try {
-    const { body: stat } = await Db.get('stats', nodeName);
-    return stat._source;
-  } catch (err) {
-    throw new Error('Unknown node');
-  }
+  const stat = await internals.clusterImpl.stats.get(nodeName);
+  if (!stat) { throw new Error('Unknown node'); }
+  return stat;
 };
 
 Db.arkimeNodeStatsCache = async function (nodeName) {
@@ -1500,22 +1534,11 @@ Db.masterCache = async (cluster) => {
 Db.loadESId2Info = async (cluster) => {
   if (esId2InfoLoadedCluster.has(cluster)) { return; }
 
-  const query = {
-    size: 10000,
-    query: {
-      wildcard: {
-        nodeName: 'es:*'
-      }
-    },
-    cluster
-  };
-
-  const data = await Db.search('dstats', query);
-  if (!data.hits) { return; }
-  for (const hit of data.hits.hits) {
-    const id = hit._id.substring(3);
-    const nodeName = hit._source.nodeName.substring(3);
-    const hostname = hit._source.hostname.substring(3);
+  const { data } = await internals.clusterImpl.dstats.find({ where: { nodeName: { $prefix: 'es:' } }, size: 10000, cluster });
+  for (const hit of data) {
+    const id = hit.id.substring(3);
+    const nodeName = hit.doc.nodeName.substring(3);
+    const hostname = hit.doc.hostname.substring(3);
     esId2Info.set(`${cluster}-${id}`, { nodeName, hostname });
   }
   esId2InfoLoadedCluster.set(cluster, true);
@@ -1534,7 +1557,7 @@ Db.updateESId2Info = async (id, nodeName, hostname, cluster) => {
   }
 
   esId2Info.set(key, { nodeName, hostname });
-  await Db.index('dstats', `es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` });
+  await internals.clusterImpl.dstats.put(`es:${id}`, { nodeName: `es:${nodeName}`, hostname: `es:${hostname}` }, { refresh: false });
 };
 
 Db.nodesStatsCache = async (cluster) => {
@@ -1587,10 +1610,8 @@ Db.indicesSettingsCache = async (cluster) => {
 };
 
 Db.hostnameToNodeids = async (hostname) => {
-  const query = { query: { match: { hostname } } };
-  const sdata = await Db.search('stats', query);
-  // If results, return array of _id, otherwise empty array
-  return sdata?.hits?.hits?.map(hit => hit._id) ?? [];
+  const { data } = await internals.clusterImpl.stats.find({ where: { hostname }, fields: ['hostname'], size: 10000 });
+  return data.map(hit => hit.id);
 };
 
 Db.fileIdToFile = async (node, num) => {
@@ -1602,40 +1623,41 @@ Db.fileIdToFile = async (node, num) => {
 
   let file = null;
   try {
-    const { body: fresult } = await Db.get('files', node + '-' + num);
-    file = fresult._source;
+    file = await internals.clusterImpl.files.get(node + '-' + num);
+  } catch (err) {
+  }
+  if (file) {
     internals.fileId2File.set(key, file);
     internals.fileName2File.set(file.name, file);
-  } catch (err) { // Cache file is unknown
+  } else { // Cache file is unknown
     internals.fileId2File.delete(key);
   }
   return file;
 };
 
 Db.fileNameToFiles = async (fileName) => {
-  let query;
+  let where;
+  let size = 10;
   if (fileName[0] === '/' && fileName[fileName.length - 1] === '/') {
-    query = { query: { regexp: { name: fileName.substring(1, fileName.length - 1) } }, sort: [{ num: { order: 'desc' } }] };
+    where = { name: { $regex: fileName.substring(1, fileName.length - 1) } };
   } else if (fileName.indexOf('*') !== -1) {
-    query = { query: { wildcard: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
+    where = { name: { $wildcard: fileName } };
   }
 
   // Not wildcard/regex check the cache
-  if (!query) {
+  if (!where) {
     if (internals.fileName2File.has(fileName)) {
       return [internals.fileName2File.get(fileName)];
     }
-    query = { size: 100, query: { term: { name: fileName } }, sort: [{ num: { order: 'desc' } }] };
+    where = { name: fileName };
+    size = 100;
   }
 
   try {
-    const data = await Db.search('files', query);
-    if (!data.hits) {
-      return null;
-    }
+    const { data } = await internals.clusterImpl.files.find({ where, sort: { num: 'desc' }, size });
     const files = [];
-    for (const hit of data.hits.hits) {
-      const file = hit._source;
+    for (const hit of data) {
+      const file = hit.doc;
       const key = file.node + '!' + file.num;
       internals.fileId2File.set(key, file);
       internals.fileName2File.set(file.name, file);
@@ -1648,8 +1670,34 @@ Db.fileNameToFiles = async (fileName) => {
 };
 
 Db.getSequenceNumber = async (sName) => {
-  const { body: sinfo } = await Db.index('sequence', sName, {});
-  return sinfo._version;
+  return internals.clusterImpl.sequence.nextSequence(sName);
+};
+
+// Files, stats and dstats, params are collection find params
+Db.searchFiles = async (params, cluster) => {
+  return internals.clusterImpl.files.find({ ...params, cluster });
+};
+Db.filesSearchBody = (params) => {
+  return internals.clusterImpl.files.searchBody?.(params);
+};
+Db.countFiles = async (cluster) => {
+  return internals.clusterImpl.files.count(null, { cluster });
+};
+Db.putFile = async (id, doc) => {
+  return internals.clusterImpl.files.put(id, doc);
+};
+// [{ key: node, count, first }] the oldest file per node
+Db.filesRetention = async (cluster) => {
+  return internals.clusterImpl.files.aggregate({ where: { locked: 0 }, groupBy: 'node', metrics: { first: { min: 'first' } }, cluster });
+};
+Db.searchStats = async (params, cluster) => {
+  return internals.clusterImpl.stats.find({ ...params, cluster });
+};
+Db.countStats = async (cluster) => {
+  return internals.clusterImpl.stats.count(null, { cluster });
+};
+Db.searchDStats = async (params, cluster) => {
+  return internals.clusterImpl.dstats.find({ ...params, cluster });
 };
 
 Db.numberOfDocuments = async (index, options) => {
@@ -1668,28 +1716,13 @@ Db.checkVersion = async function (minVersion) {
     process.exit(1);
   }
 
-  for (const index of ['stats', 'dstats', 'sequence']) {
-    try {
-      await Db.indexStats(index);
-    } catch (err) {
-      console.log(`ERROR - Issue with '${fixIndex(index)}' index, make sure 'db/db.pl <host:port> init' has been run.\n`, err);
-      process.exit(1);
-    }
-  }
-
-  if (!internals.multiES) {
-    const { body: doc } = await internals.client7.indices.getMapping({
-      index: fixIndex('files'),
-    });
-
-    const fname = fixIndex('files_v30');
-    if (doc[fname]?.mappings?.properties?.name?.type !== 'keyword') {
-      console.log(`ERROR - Issue with '${fixIndex('files')}' index, use 'db/db.pl http://<host:port> repair' to fix.\n`);
-      if (internals.debug) {
-        console.log(JSON.stringify(doc, null, 2));
-      }
-      process.exit(1);
-    }
+  try {
+    await internals.clusterImpl.check();
+  } catch (err) {
+    // A separate cluster db needs its own init with its prefix
+    const where = internals.clusterShared ? '' : `, for the cluster db use 'db/db.pl --prefix ${internals.clusterPrefix} <dbUrl> init'`;
+    console.log(`ERROR - ${err.message}${where}\n`, err.cause?.message ?? '');
+    process.exit(1);
   }
 
   await ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
@@ -1730,21 +1763,22 @@ Db.deleteFile = async (node, id, path) => {
   } catch (err) {
     console.log('EXPIRE - error deleting file', node, id, path, err);
   }
-  await Db.deleteDocument('files', id);
+  await Db.deleteFileDoc(id);
+};
+
+// Only the files doc, not the pcap
+Db.deleteFileDoc = async (id) => {
+  return internals.clusterImpl.files.delete(id);
 };
 
 Db.session2Sid = function (item) {
-  // ver can be 2@ (sessions2), 3@ (sessions3), or x@ (user-specified queryExtraIndices)
-  const ver = internals.queryExtraIndicesRegex.some(re => re.test(item._index)) ? 'x@' : item._index.includes('sessions2') ? '2@' : '3@';
+  // ver can be 3@ (sessions3) or x@ (user-specified queryExtraIndices)
+  const ver = internals.queryExtraIndicesRegex.some(re => re.test(item._index)) ? 'x@' : '3@';
   if (ver === 'x@') {
     // document from queryExtraIndices, format Sid as x@_index:_id
     return ver + item._index + ':' + item._id;
   } else if (item._id.length < 31) {
-    // sessions2 didn't have new arkime_ prefix
-    if (ver === '2@' && internals.prefix === 'arkime_') {
-      // sessions2-191021 191021-abcd => 2@191021:191021-abcd
-      return ver + item._index.substring(10) + ':' + item._id;
-    } else if (item._index.startsWith('partial-')) {
+    if (item._index.startsWith('partial-')) {
       // partial-tests_sessions3-191021 191021-abcd => 3@191021:191021-abcd
       return ver + item._index.substring(internals.prefix.length + 18) + ':' + item._id;
     } else {
@@ -1770,7 +1804,7 @@ Db.sid2Id = function (id) {
   return id;
 };
 
-Db.sid2Index = function (id, options) {
+Db.sid2Index = function (id) {
   const colon = id.indexOf(':');
 
   if (id[1] === '@') {
@@ -1786,7 +1820,7 @@ Db.sid2Index = function (id, options) {
     }
 
     const indexDate = (colon > 0) ? id.substr(2, colon - 2) : id.substr(2, id.indexOf('-') - 2);
-    if ((id[0] !== '2' && id[0] !== '3') || !/^[\w-]+$/.test(indexDate)) {
+    if (id[0] !== '3' || !/^[\w-]+$/.test(indexDate)) {
       throw new Error('Db.sid2Index: ERROR - invalid session id');
     }
     return 'sessions' + id[0] + '-' + indexDate;
@@ -1798,34 +1832,17 @@ Db.sid2Index = function (id, options) {
   }
 
   const s3 = 'sessions3-' + date;
-  const s2 = 'sessions2-' + date;
-
-  if (!internals.aliasesCache) {
-    return s3;
-  }
-
-  const fs2 = fixIndex(s2);
-
-  const results = [];
-
-  if (internals.aliasesCache[fs2] || internals.aliasesCache[fs2 + '-reindex'] || internals.aliasesCache[fs2 + '-shrink']) {
-    results.push(fs2);
-  }
-
-  const fs3 = fixIndex(s3);
-  if (internals.aliasesCache[fs3] || internals.aliasesCache['partial-' + fs3] || internals.aliasesCache[fs3 + '-reindex'] || internals.aliasesCache[fs3 + '-shrink']) {
-    results.push(fs3);
-  }
-
-  if (results.length > 1 && options?.multiple) {
-    return results;
-  }
-
-  return results[0] ?? fs3;
+  return internals.aliasesCache ? fixIndex(s3) : s3;
 };
 
+// regression tests read and write the collections capture writes
+Db.clusterCollection = (collName) => {
+  return ['files', 'stats', 'dstats', 'fields', 'sequence'].includes(collName) ? internals.clusterImpl[collName] : undefined;
+};
+
+// [{ id, doc }] every field definition
 Db.loadFields = async () => {
-  return Db.search('fields', { size: 10000 });
+  return (await internals.clusterImpl.fields.find({ size: 10000 })).data;
 };
 
 Db.getSessionIndices = function (excludeExtra) {
@@ -1878,90 +1895,29 @@ Db.putTemplate = async (templateName, body, cluster) => {
   return internals.client7.indices.putTemplate({ name: fixIndex(templateName), body, cluster });
 };
 
+// Queries (crons) DB interactions
 Db.setQueriesNode = async (node, force) => {
-  const namePid = `${node}-${process.pid}`;
-
-  // force is true we just rewrite the primary-viewer entry every time
-  if (force) {
-    await internals.client7.index({
-      id: 'primary-viewer',
-      index: fixIndex('queries'),
-      body: { name: namePid, lastRun: Date.now(), enabled: false }
-    });
-    return true;
-  }
-
-  // force is false. Try and update the previous record. If our record
-  // just update the time stamp. If not our record then take the record if
-  // timestamp is 1 min old. Otherwise noop.
-
-  const script = `
-    if (ctx._source.name == params.name) {
-      ctx._source.lastRun = ctx['_now'];
-    } else if (ctx['_now'] - ctx._source.lastRun >= 60000) {
-      ctx._source.lastRun = ctx['_now'];
-      ctx._source.name = params.name;
-    } else {
-      ctx.op = "none";
-    }
-  `;
-
-  const body = {
-    script: {
-      source: script,
-      lang: 'painless',
-      params: {
-        name: namePid
-      }
-    }
-  };
-  try {
-    const result = await internals.client7.update({
-      id: 'primary-viewer',
-      index: fixIndex('queries'),
-      body
-    });
-    return result.body.result === 'updated';
-  } catch (e) {
-    // There was no entry to update, just try and create a new record as ourself
-    try {
-      const result = await internals.client7.index({
-        id: 'primary-viewer',
-        index: fixIndex('queries'),
-        body: { name: namePid, lastRun: Date.now(), enabled: false },
-        op_type: 'create'
-      });
-      return result.body.result === 'created';
-    } catch (e2) {
-      return false;
-    }
-  }
+  return internals.clusterImpl.setQueriesNode(node, force);
 };
 
 Db.getQueriesNode = async () => {
-  try {
-    const { body: doc } = await internals.client7.get({
-      id: 'primary-viewer',
-      index: fixIndex('queries')
-    });
-    return {
-      node: doc._source?.name,
-      updateTime: doc._source?.lastRun
-    };
-  } catch (e) {
-    const { body: doc } = await internals.client7.indices.getMapping({
-      index: fixIndex('queries')
-    });
-    // Since queries is an alias we don't know the real index name here
-    const meta = doc[Object.keys(doc)[0]].mappings._meta;
-
-    return {
-      node: meta?.node,
-      updateTime: meta?.updateTime
-    };
-  }
+  return internals.clusterImpl.getQueriesNode();
 };
 
+// returns the query or null
 Db.getQuery = async (id) => {
-  return internals.client7.get({ index: fixIndex('queries'), id });
+  return internals.clusterImpl.getQuery(id);
+};
+Db.createQuery = async (doc) => {
+  return internals.clusterImpl.createQuery(doc);
+};
+Db.updateQuery = async (id, fields) => {
+  return internals.clusterImpl.updateQuery(id, fields);
+};
+Db.deleteQuery = async (id) => {
+  return internals.clusterImpl.deleteQuery(id);
+};
+// params are collection find params, returns { total, data: [{ id, doc }] }
+Db.searchQueries = async (params) => {
+  return internals.clusterImpl.searchQueries(params);
 };

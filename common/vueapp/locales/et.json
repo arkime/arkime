@@ -2537,9 +2537,9 @@
     "history": {
       "needAdminPrivileges": "Vajalikud administraatoriõigused",
       "retrieveFailed": "Ajaloo toomine ebaõnnestus",
-      "missingIndex": "Ajaloo indeks puudub",
       "deletedSuccessfully": "Ajaloo kirje edukalt kustutatud",
-      "deleteFailed": "Viga ajaloo kirje kustutamisel"
+      "deleteFailed": "Viga ajaloo kirje kustutamisel",
+      "notFound": "Ajaloo kirjet ei leitud"
     },
     "shareables": {
       "missingName": "Jagatud elemendi nimi puudub",
@@ -2585,6 +2585,7 @@
       "rolesMustBeArray": "Rollide väli peab olema sõnede massiiv",
       "editRolesMustBeArray": "Muutmisrollide väli peab olema sõnede massiiv",
       "usersMustBeString": "Kasutajate väli peab olema sõne",
+      "viewMustBeString": "Vaade peab olema sõne",
       "nameExists": "Otsetee nimega {name} on juba olemas",
       "created": "Uus otsetee loodud!",
       "errorCreating": "Viga otsetee loomisel",

@@ -136,7 +136,7 @@ foreach my $e (undef, "xor-2048", "aes-256-ctr") {
 }
 
 # Test decode by finding the last encrypted non compressed file
-$json = esGet("/tests_files/_search?q=node:test&sort=num:desc&size=40");
+$json = clusterSearch(8123, "files", {where => {node => "test"}, sort => {num => "desc"}, size => 40});
 foreach my $item (@{$json->{hits}->{hits}}) {
     next if (exists $item->{_source}->{uncompressedBits});
     next if (!exists $item->{_source}->{dek});
@@ -152,5 +152,5 @@ foreach my $item (@{$json->{hits}->{hits}}) {
 }
 
 # Delete the files entries
-esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "wildcard": { "name": "/tmp/test-*" } } }');
+clusterDeleteWhere(8123, "files", {name => {'$wildcard' => "/tmp/test-*"}});
 system("rm -f /tmp/test-161019* /tmp/test-131203-*");

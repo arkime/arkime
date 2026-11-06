@@ -2537,9 +2537,9 @@
     "history": {
       "needAdminPrivileges": "관리자 권한이 필요합니다",
       "retrieveFailed": "기록 조회 오류",
-      "missingIndex": "기록 인덱스가 없습니다",
       "deletedSuccessfully": "기록 항목이 성공적으로 삭제되었습니다",
-      "deleteFailed": "기록 항목 삭제 오류"
+      "deleteFailed": "기록 항목 삭제 오류",
+      "notFound": "기록 항목을 찾을 수 없습니다"
     },
     "shareables": {
       "missingName": "공유 항목 이름이 없습니다",
@@ -2585,6 +2585,7 @@
       "rolesMustBeArray": "역할 필드는 문자열 배열이어야 합니다",
       "editRolesMustBeArray": "편집 역할 필드는 문자열 배열이어야 합니다",
       "usersMustBeString": "사용자 필드는 문자열이어야 합니다",
+      "viewMustBeString": "뷰는 문자열이어야 합니다",
       "nameExists": "이름이 {name}인 바로가기가 이미 존재합니다",
       "created": "새 바로가기가 생성되었습니다!",
       "errorCreating": "바로가기 생성 오류",

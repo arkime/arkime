@@ -112,7 +112,7 @@ timedSystem("../capture/capture $ArkimeTest::es -o disablePython=true -c config.
 countTest2($expected, "date=-1&expression=" . uri_escape("tags=$listtag"));
 
 esGet("/tests2_files/_refresh");
-my $fjson = esPost("/tests2_files/_search?rest_total_hits_as_int=true", to_json({query => {term => {name => "s3http://127.0.0.1:4566/testbucket/$encodedKey"}}}));
+my $fjson = clusterSearch(8124, "files", {where => {name => "s3http://127.0.0.1:4566/testbucket/$encodedKey"}});
 is ($fjson->{hits}->{total}, 1, "files record name has the encoded key");
 is ($fjson->{hits}->{hits}->[0]->{_source}->{extra}->{path}, "/$specialKey", "files record extra.path has the raw key");
 
@@ -230,23 +230,23 @@ is (timedSystem("grep -q 'Container credentials request failed 401' $badlog"), 0
 unlink("/tmp/arkime.eks.$_") foreach (keys %eksTokens);
 
 # --- s3Expire (issue #4099): force expire via regressionTests endpoint ---
-my $filesQuery = '{"query":{"bool":{"must":[{"prefix":{"name":"s3://"}}],"must_not":{"term":{"locked":1}}}}}';
+my $filesQuery = {where => {name => {'$prefix' => "s3://"}, locked => {'$ne' => 1}}};
 
 esGet("/tests2_files/_refresh");
-my $esjson = esPost("/tests2_files/_search?rest_total_hits_as_int=true", $filesQuery);
+my $esjson = clusterSearch(8124, "files", $filesQuery);
 my $before = $esjson->{hits}->{total};
 cmp_ok($before, '>', 0, "s3 files exist before expire");
 
 # A huge expireDays shouldn't expire anything
 viewerPost2("/plugin/regressionTests/s3Expire?days=36500", "");
 esGet("/tests2_files/_refresh");
-$esjson = esPost("/tests2_files/_search?rest_total_hits_as_int=true", $filesQuery);
+$esjson = clusterSearch(8124, "files", $filesQuery);
 is($esjson->{hits}->{total}, $before, "no s3 files expired with large expire days");
 
 # Test pcaps have old packet times for first, so everything should expire
 viewerPost2("/plugin/regressionTests/s3Expire?days=1", "");
 esGet("/tests2_files/_refresh");
-$esjson = esPost("/tests2_files/_search?rest_total_hits_as_int=true", $filesQuery);
+$esjson = clusterSearch(8124, "files", $filesQuery);
 is($esjson->{hits}->{total}, 0, "all s3 files expired");
 
 # The S3 object itself should be gone

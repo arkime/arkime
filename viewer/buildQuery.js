@@ -555,7 +555,7 @@ class BuildQuery {
       }
     }
 
-    if (!err && reqQuery.view) {
+    if (!err && reqQuery.view !== undefined && reqQuery.view !== '') {
       try {
         await BuildQuery.#addViewToQuery(req, query, queryOverride);
       } catch (e) {

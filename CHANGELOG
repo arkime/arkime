@@ -44,6 +44,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Removed the /api/user/layouts/:type APIs, layouts are shareables now. /api/user/config/sessions no longer
           returns colConfigs or infoConfigs and /api/user/config/spiview no longer returns fieldConfigs
   - wiseService no longer generates a random config pin code, use --webcode <code> or each user's own TOTP code.
+  - #4430 Viewer no longer reads sessions2 indices (Arkime 2 and earlier), run db.pl <host:port> reindex-sessions2 before
+          upgrading to keep that data. 2@ session ids, which only sessions2 used, are no longer accepted.
+          esProxy still accepts the sessions2 requests Arkime 6 sensor viewers send
+  - #4430 Viewer no longer reads the unprefixed history_v1-* indices from before Arkime 3, only <prefix>history_v1-*
+  - #4430 lmdb:// and redis:// are no longer supported for usersUrl, cont3xt dbUrl, parliament or notifiers, there is no
+          migration, use sqlite:// or postgres://. Redis and LMDB are still supported for caches and config
   - Removed the simpleDEKEncoding setting, the DEK is now always encrypted with aes-256-gcm.
   - Removed the userAutoCreateTmpl setting, use the [user-auto-create] section instead.
   - offlineFilenameRegex default now also matches .pcapng files (previously .pcap/.cap only)
@@ -71,6 +77,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4403 userNameHeader no longer selects the auth mode, authMode must be set or it defaults to digest. Header auth now needs
           authMode=header, and a userNameHeader that is an auth mode name (digest, basic, oidc, ...) is ignored, so replace
           userNameHeader=digest from older cont3xt and wise sample configs with authMode=digest
+  - #4430 Capture's stats no longer have totalPackets, totalK, totalSessions or totalDropped, which nothing displayed, so
+          /api/stats no longer returns them
   - #4432 The s3 writer now finds AWS credentials the same way as the s3/sqs readers: s3AccessKeyId, then AWS_ACCESS_KEY_ID,
           ~/.aws credentials/config (--profile), EKS, ECS and finally instance metadata. A host with an instance role
           and AWS env variables or ~/.aws files now uses those instead. s3UseECSEnv is no longer needed
@@ -102,6 +110,19 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - Icons switched from Font Awesome to Material Design Icons
   - #3992 Theme choice is saved per user and follows you between all four apps
   - #4424 /api/users/min without a roleId now requires usersAdmin, it was listing every user to any logged in user
+  - #4430 New dbUrl setting holds everything, with sessionsDbUrl and usersDbUrl moving those dbs elsewhere:
+          sessions: sessionsDbUrl -> dbUrl -> elasticsearch
+          cluster: dbUrl -> elasticsearch
+          users: usersDbUrl -> usersUrl -> usersElasticsearch -> dbUrl -> elasticsearch
+          A db with its own url uses its own prefix setting then prefix, one in dbUrl uses its own then dbPrefix
+          then prefix
+          multiESNodes entries take sessionsDbUrl, sessionsDbPrefix, dbUrl and dbPrefix
+  - #4430 Sessions supports OpenSearch/Elasticsearch or ClickHouse, cluster supports OpenSearch/Elasticsearch or Postgres,
+          users supports OpenSearch/Elasticsearch, SQLite or Postgres
+  - #4430 New dbPlugins setting loads plugins that add more db url schemes for viewer, cont3xt, parliament and wise
+  - #4430 A multiES viewer only uses elasticsearch, its multies, sessionsDbUrl and dbUrl are ignored
+  - #4430 cont3xt dbUrl is the db for an OpenSearch/Elasticsearch url too, it used to be ignored in favor of elasticsearch.
+          Without a users url the cont3xt, parliament and wise users db is dbUrl, then elasticsearch
   - Add Pushover notifier, with priority (including emergency alerts that repeat until acknowledged), sound,
           device and optional end-to-end encryption settings
 ## Capture/Viewer

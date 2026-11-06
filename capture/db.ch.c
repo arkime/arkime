@@ -16,7 +16,6 @@ LOCAL uint64_t chDocsSent;
 LOCAL uint64_t chDocsAcked;
 LOCAL uint64_t chDocsFailed;
 
-LOCAL int arkime_db_ch_can_quit(void);
 /******************************************************************************/
 LOCAL void arkime_db_ch_send_bulk_cb(int code, uint8_t *data, int data_len, gpointer uw)
 {
@@ -115,23 +114,28 @@ LOCAL gboolean arkime_db_ch_parse_url(const char *url, char **hostUrl, char **us
     return TRUE;
 }
 /******************************************************************************/
-void arkime_db_ch_init(void)
+LOCAL int arkime_db_ch_queue_length()
 {
-    const char *sessionsDbUrl = arkime_config_str(NULL, "sessionsDbUrl", NULL);
-
-    if (!sessionsDbUrl ||
-        (!g_str_has_prefix(sessionsDbUrl, "clickhouse://") &&
-         !g_str_has_prefix(sessionsDbUrl, "clickhouses://") &&
-         !g_str_has_prefix(sessionsDbUrl, "chttp://") &&
-         !g_str_has_prefix(sessionsDbUrl, "chttps://"))) {
-        return;
-    }
-
+    return arkime_http_queue_length(chServer);
+}
+/******************************************************************************/
+LOCAL uint64_t arkime_db_ch_dropped()
+{
+    return arkime_http_dropped_count(chServer);
+}
+/******************************************************************************/
+LOCAL const ArkimeSessionsDb_t chSessionsDb = {
+    .queue_length = arkime_db_ch_queue_length,
+    .dropped      = arkime_db_ch_dropped
+};
+/******************************************************************************/
+LOCAL const ArkimeSessionsDb_t *arkime_db_ch_sessions_init(const char *sessionsDbUrl)
+{
     char *hostUrl = NULL;
     char *userpwd = NULL;
     if (!arkime_db_ch_parse_url(sessionsDbUrl, &hostUrl, &userpwd)) {
         LOG("ERROR - Couldn't parse sessionsDbUrl '%s'", sessionsDbUrl);
-        return;
+        return NULL;
     }
 
     const char *clickhouseUser = arkime_config_str(NULL, "clickhouseUser", "");
@@ -161,7 +165,6 @@ void arkime_db_ch_init(void)
 
     config.dbBulkSize = maxBatchBytes; // clickhouseMaxBatchBytes replaces dbBulkSize for CH
     arkime_db_set_send_bulk2(arkime_db_ch_send_bulk, FALSE, TRUE, (uint16_t)maxBatchDocs);
-    arkime_add_can_quit(arkime_db_ch_can_quit, "ClickHouse");
 
     // ClickHouse has no equivalent of ES's copy_to+analyzer, so capture emits
     // the *Tokens fields itself (see db.c)
@@ -174,16 +177,12 @@ void arkime_db_ch_init(void)
     g_free(insert);
     g_free(hostUrl);
     g_free(userpwd);
+    return &chSessionsDb;
 }
 /******************************************************************************/
-/* Don't let capture exit while the final session batch is still in flight */
-LOCAL int arkime_db_ch_can_quit(void)
+void arkime_db_ch_init(void)
 {
-    const int queueLen = chServer ? arkime_http_queue_length(chServer) : 0;
-    if (queueLen > 0) {
-        if (config.debug)
-            LOG("Can't quit, ClickHouse queue length %d", queueLen);
-        return 1;
-    }
-    return 0;
+    const char *schemes[] = {"clickhouse", "clickhouses", "chttp", "chttps"};
+    for (int i = 0; i < ARRAY_LEN(schemes); i++)
+        arkime_db_sessions_register((char *)schemes[i], arkime_db_ch_sessions_init);
 }

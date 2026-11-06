@@ -2537,9 +2537,9 @@
     "history": {
       "needAdminPrivileges": "Need admin privileges",
       "retrieveFailed": "Error retrieving history",
-      "missingIndex": "Missing history index",
       "deletedSuccessfully": "Deleted history item successfully",
-      "deleteFailed": "Error deleting history item"
+      "deleteFailed": "Error deleting history item",
+      "notFound": "History item not found"
     },
     "shareables": {
       "missingName": "Missing shareable name",
@@ -2585,6 +2585,7 @@
       "rolesMustBeArray": "Roles field must be an array of strings",
       "editRolesMustBeArray": "Edit roles field must be an array of strings",
       "usersMustBeString": "Users field must be a string",
+      "viewMustBeString": "View must be a string",
       "nameExists": "A shortcut with the name, {name}, already exists",
       "created": "Created new shortcut!",
       "errorCreating": "Error creating shortcut",
