@@ -23,6 +23,10 @@
       "3d1e"
      ],
      "idCnt" : 2,
+     "leaseTime" : [
+      3600
+     ],
+     "leaseTimeCnt" : 1,
      "mac" : [
       "00:0b:82:01:fc:42"
      ],
@@ -50,6 +54,19 @@
      "requestIpCnt" : 2,
      "requestRIR" : [
       "",
+      "ARIN"
+     ],
+     "serverASN" : [
+      "---"
+     ],
+     "serverGEO" : [
+      "---"
+     ],
+     "serverIp" : [
+      "192.168.0.1"
+     ],
+     "serverIpCnt" : 1,
+     "serverRIR" : [
       "ARIN"
      ],
      "type" : [

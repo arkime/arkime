@@ -46,6 +46,17 @@
       "rc4-hmac-exp"
      ],
      "etypeCnt" : 3,
+     "msgType" : [
+      "AS-REQ"
+     ],
+     "msgTypeCnt" : 1,
+     "options" : [
+      "canonicalize",
+      "forwardable",
+      "renewable",
+      "renewable-ok"
+     ],
+     "optionsCnt" : 4,
      "realm" : [
       "xxxxxxxxxxxxxx.xxxxxx.xxx.COM"
      ],

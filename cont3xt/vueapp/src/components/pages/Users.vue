@@ -3,13 +3,15 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <UsersCommon
-    v-if="getUser"
-    :roles="getRoles"
-    parent-app="Cont3xt"
-    :current-user="getUser"
-    @update-roles="updateRoles"
-    @update-current-user="updateCurrentUser" />
+  <div class="arkime-container-fluid">
+    <UsersCommon
+      v-if="getUser"
+      :roles="getRoles"
+      parent-app="Cont3xt"
+      :current-user="getUser"
+      @update-roles="updateRoles"
+      @update-current-user="updateCurrentUser" />
+  </div>
 </template>
 
 <script>

@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <div class="no-wrap d-flex flex-row w-100 mw-100 justify-space-between align-center">
     <v-icon
-      class="mr-2"
+      class="me-2"
       v-if="showITypeIcon"
       v-tooltip="overview.iType"
       :icon="iTypeIconMap[overview.iType]" />
@@ -16,7 +16,9 @@ SPDX-License-Identifier: Apache-2.0
       @click.stop="setAsDefaultOverview"
       :icon="isSetAsDefault ? 'mdi-star' : 'mdi-star-outline'"
       :style="iTypeColorStyleMap[overview.iType]"
-      v-tooltip:end="isSetAsDefault ? `Default for ${overview.iType} iType` : `Set as default for ${overview.iType} iType`" />
+      v-tooltip:end="isSetAsDefault
+        ? $t('cont3xt.overviews.defaultForItype', { itype: overview.iType })
+        : $t('cont3xt.overviews.setDefaultForItype', { itype: overview.iType })" />
   </div>
 </template>
 

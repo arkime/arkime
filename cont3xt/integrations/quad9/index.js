@@ -8,6 +8,7 @@ const axios = require('axios');
 
 class Quad9 extends Integration {
   name = 'Quad9';
+  icon = 'integrations/quad9/icon.png';
   itypes = {
     ip: 'fetch',
     domain: 'fetch'

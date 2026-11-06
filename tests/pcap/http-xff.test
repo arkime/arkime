@@ -75,6 +75,10 @@
       "http://www.xxxxx.xxx/xxxx/xxxxxxxxxxxx"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept-encoding",
       "connection",
@@ -93,6 +97,10 @@
       "gzip"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      195
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "cf-ray",
       "connection",

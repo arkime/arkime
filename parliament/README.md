@@ -102,10 +102,10 @@ Please use a [fork](https://guides.github.com/activities/forking/) to submit a [
 
 
 ### Parliament Definition
-`parliament.json` (or whatever you supply as `file=` in the config when starting Parliament) is the file that describes your parliament. You can create this by hand or use the Parliament UI to create, edit, and delete groups and clusters. View the supplied `parliament.example.json` to view an example parliament configuration.
+The parliament (groups, clusters and settings) is stored in the users DB, use the Parliament UI to create, edit, and delete groups and clusters. Pre Arkime 5 `parliament.json` files are no longer upgraded, upgrade with Arkime 6.x first.
 
 ### Issues
-`parliament.issues.json` will be created to store issues pertaining to the clusters in your parliament.
+`parliament.issues.json` (named after the `file=` setting) will be created to store issues pertaining to the clusters in your parliament.
 
 ##### Parliament model:
 ```javascript

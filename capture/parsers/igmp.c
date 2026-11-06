@@ -8,16 +8,22 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int igmpMProtocol;
+LOCAL int mProtocolIgmp;
 
 /******************************************************************************/
-LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
+SUPPRESS_ALIGNMENT
+LOCAL void igmp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    sessionId[0] = 4;
-    sessionId[1] = igmpMProtocol;
-    sessionId[2] = sessionId[3] = 0;
+    const struct ip           *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    const struct ip6_hdr      *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
 
-    // for now, lump all igmp into the same session
+    if (packet->v6) {
+        arkime_session_id6(sessionId, ip6->ip6_src.s6_addr, 0,
+                           ip6->ip6_dst.s6_addr, 0, packet->vlan, packet->vni);
+    } else {
+        arkime_session_id(sessionId, ip4->ip_src.s_addr, 0,
+                          ip4->ip_dst.s_addr, 0, packet->vlan, packet->vni);
+    }
 }
 /******************************************************************************/
 LOCAL int igmp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
@@ -45,7 +51,7 @@ LOCAL ArkimePacketRC igmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     igmp_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = igmpMProtocol;
+    packet->mProtocol = mProtocolIgmp;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -53,8 +59,8 @@ LOCAL ArkimePacketRC igmp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 void arkime_parser_init()
 {
     arkime_packet_set_ip_cb(IPPROTO_IGMP, igmp_packet_enqueue);
-    igmpMProtocol = arkime_mprotocol_register("igmp",
-                                              SESSION_OTHER,
+    mProtocolIgmp = arkime_mprotocol_register("igmp",
+                                              0,
                                               igmp_create_sessionid,
                                               igmp_pre_process,
                                               igmp_process,

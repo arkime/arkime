@@ -42,6 +42,14 @@
       "rc4-hmac"
      ],
      "etypeCnt" : 4,
+     "msgType" : [
+      "AS-REQ"
+     ],
+     "msgTypeCnt" : 1,
+     "options" : [
+      "forwardable"
+     ],
+     "optionsCnt" : 1,
      "realm" : [
       "xx.xxx.xxxxx.NET"
      ],

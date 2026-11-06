@@ -1,10 +1,20 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import store from '@/store';
 import setReqHeaders from './setReqHeaders';
 
 export class ArkimeError extends Error {
+  /**
+   * @param {string} message - the error text
+   * @param {object} [data] - the error body ({ text, i18n, i18nParams })
+   * (status, the HTTP status code, is set when the response had one)
+   */
   constructor (message, data) {
     super(message);
     this.text = message;
+    if (data) { this.data = data; }
     if (data?.i18n) { this.i18n = data.i18n; }
     if (data?.i18nParams) { this.i18nParams = data.i18nParams; }
   }
@@ -86,7 +96,19 @@ export async function fetchWrapper (options) {
 
   // catch bad status codes and throw an error
   if (response.status < 200 || response.status >= 300) {
-    throw new ArkimeError(data?.text || response.statusText || 'bad response status', data);
+    // Error bodies aren't always JSON-typed (e.g. text/plain or
+    // application/x-ndjson), so a { success, text } body can arrive as a
+    // string. Parse it so the specific message survives instead of falling
+    // back to a bare "Internal Server Error".
+    let errData = data;
+    if (typeof errData === 'string' && /^\s*[[{]/.test(errData)) {
+      try { errData = JSON.parse(errData); } catch (e) { /* not JSON, keep the text */ }
+    }
+    const errText = (errData && typeof errData === 'object' ? errData.text : errData) ||
+      response.statusText || 'bad response status';
+    const error = new ArkimeError(errText, (errData && typeof errData === 'object') ? errData : undefined);
+    error.status = response.status;
+    throw error;
   }
 
   if (data?.data?.bsqErr) { // check for a bsq error

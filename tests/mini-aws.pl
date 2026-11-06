@@ -19,6 +19,14 @@
 #   GET /{bucket}?notification
 # Plus a test helper to enqueue an S3-event message directly:
 #   POST /_sqs_enqueue/{account}/{queue}?bucket=B&key=K
+# Plus EKS credential sources, which hand out fixed temporary credentials:
+#   GET  /_eks/credentials  -- Pod Identity agent, Authorization must be $EKS_POD_TOKEN
+#   POST /  body Action=AssumeRoleWithWebIdentity -- STS, WebIdentityToken must be $EKS_WEB_TOKEN
+#   GET  /_ecs/credentials  -- ECS container credentials (AWS_CONTAINER_CREDENTIALS_RELATIVE_URI)
+#   PUT  /latest/api/token  -- 404, only counted so tests can check no IMDSv2 token is requested
+# Plus a record of which access key and session token signed each request:
+#   GET /_auth_seen      -- {"keys":{AccessKeyId:{token:count}},"sts":{RoleSessionName:count},"imdsToken":count}
+#   DELETE /_auth_seen   -- reset it
 
 use strict;
 use warnings;
@@ -31,6 +39,7 @@ use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK);
 use Digest::MD5 qw(md5_hex);
 use POSIX qw(strftime);
 use File::Path qw(make_path);
+use JSON::PP;
 
 my $debug = 0;
 if (@ARGV && $ARGV[0] eq '--debug') {
@@ -56,6 +65,17 @@ my $nextMsgId   = 1;
 
 # Bucket notification configs: $bucket_notifications{$bucket} = [ { queue => "acct/queue", events => [...] }, ... ]
 my %bucket_notifications;
+
+# EKS tokens the tests write to their token files, and the credentials handed out for them
+my $EKS_POD_TOKEN = 'mini-aws-pod-identity-token';
+my $EKS_WEB_TOKEN = 'mini.aws-web+identity/token=';
+my %EKS_POD_CREDS = (AccessKeyId => 'ASIAMINIPODIDENTITY', SecretAccessKey => 'mini/pod+secret=', Token => 'mini/pod+session+token=');
+my %EKS_STS_CREDS = (AccessKeyId => 'ASIAMINIIRSA', SecretAccessKey => 'mini/irsa+secret=', SessionToken => 'mini/irsa+session+token=');
+my %ECS_CREDS = (AccessKeyId => 'ASIAMINIECS', SecretAccessKey => 'mini/ecs+secret=', Token => 'mini/ecs+session+token=', RoleArn => 'arn:aws:iam::000000000000:role/arkime');
+
+# $auth_seen{keys}{$accessKeyId}{$sessionToken} = count, $auth_seen{sts}{$roleSessionName} = count,
+# $auth_seen{imdsToken} = count of IMDSv2 token requests
+my %auth_seen = (keys => {}, sts => {});
 
 # Per-connection state
 my %conn_buf;    # fileno => raw read buffer
@@ -261,6 +281,34 @@ sub handle_request {
     # SQS test helper: enqueue an S3-event style message
     if ($method eq 'POST' && $uri =~ m{^/_sqs_enqueue/([^/]+)/([^/]+)/?$}) {
         return sqs_enqueue_resp($1, $2, $query, $body);
+    }
+
+    if ($uri eq '/_auth_seen') {
+        %auth_seen = (keys => {}, sts => {}) if ($method eq 'DELETE');
+        return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, encode_json(\%auth_seen));
+    }
+
+    if ($method eq 'GET' && $uri eq '/_eks/credentials') {
+        return eks_pod_identity_resp($headers);
+    }
+
+    if ($method eq 'GET' && $uri eq '/_ecs/credentials') {
+        my %creds = (%ECS_CREDS, Expiration => strftime("%Y-%m-%dT%H:%M:%SZ", gmtime(time() + 3600)));
+        return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, encode_json(\%creds));
+    }
+
+    # Not the instance metadata service, just count IMDSv2 token requests so tests can check none are sent
+    if ($uri eq '/latest/api/token') {
+        $auth_seen{imdsToken}++;
+        return build_response(404, 'Not Found', { 'Content-Type' => 'text/plain' }, 'not here');
+    }
+
+    if ($method eq 'POST' && $uri eq '/' && $body =~ /(?:^|&)Action=AssumeRoleWithWebIdentity(?:&|$)/) {
+        return sts_assume_role_with_web_identity_resp($body);
+    }
+
+    if (($headers->{'authorization'} // '') =~ /Credential=([^\/,\s]+)\//) {
+        $auth_seen{keys}{$1}{$headers->{'x-amz-security-token'} // ''}++;
     }
 
     # SQS: detect Action in query (ReceiveMessage) or body (Delete/Send)
@@ -669,6 +717,37 @@ sub json_escape_string {
     $s =~ s/\t/\\t/g;
     $s =~ s/([\x00-\x1f])/sprintf("\\u%04x", ord($1))/ge;
     return $s;
+}
+
+sub eks_pod_identity_resp {
+    my ($headers) = @_;
+    if (($headers->{'authorization'} // '') ne $EKS_POD_TOKEN) {
+        return build_response(401, 'Unauthorized', { 'Content-Type' => 'application/json' }, '{"Message":"invalid pod identity token"}');
+    }
+    my %creds = (%EKS_POD_CREDS, AccountId => '000000000000', Expiration => strftime("%Y-%m-%dT%H:%M:%SZ", gmtime(time() + 3600)));
+    return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, encode_json(\%creds));
+}
+
+sub sts_assume_role_with_web_identity_resp {
+    my ($body) = @_;
+    my %params = parse_form($body);
+    if (($params{WebIdentityToken} // '') ne $EKS_WEB_TOKEN || !$params{RoleArn} || !$params{RoleSessionName}) {
+        return build_response(400, 'Bad Request', { 'Content-Type' => 'text/xml' },
+            '<ErrorResponse><Error><Type>Sender</Type><Code>InvalidIdentityToken</Code><Message>invalid web identity token</Message></Error></ErrorResponse>');
+    }
+    $auth_seen{sts}{$params{RoleSessionName}}++;
+    my $expiration = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime(time() + ($params{DurationSeconds} // 3600)));
+    my $xml = qq(<AssumeRoleWithWebIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
+  <AssumeRoleWithWebIdentityResult>
+    <Credentials>
+      <AccessKeyId>$EKS_STS_CREDS{AccessKeyId}</AccessKeyId>
+      <SecretAccessKey>$EKS_STS_CREDS{SecretAccessKey}</SecretAccessKey>
+      <SessionToken>$EKS_STS_CREDS{SessionToken}</SessionToken>
+      <Expiration>$expiration</Expiration>
+    </Credentials>
+  </AssumeRoleWithWebIdentityResult>
+</AssumeRoleWithWebIdentityResponse>);
+    return build_response(200, 'OK', { 'Content-Type' => 'text/xml' }, $xml);
 }
 
 sub sqs_receive_resp {

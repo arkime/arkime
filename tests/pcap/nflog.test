@@ -54,6 +54,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "host",
@@ -70,6 +74,10 @@
      "response-location" : [
       "https://www.aol.com/"
      ],
+     "responseBodyLen" : [
+      104
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "cache-control",
       "connection",

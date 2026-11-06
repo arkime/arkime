@@ -18,6 +18,7 @@ SOS=$(SRCS:.c=.so)
 	$(CC) -pthread @SHARED_FLAGS@ $(EXTRA_CFLAGS) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fno-strict-aliasing -g -fPIC $(INCLUDE_PCAP) $(INCLUDE_OTHER) $<
 
 all:$(SOS)
+	(cd zeeklog; $(MAKE) EXTRA_CFLAGS="$(EXTRA_CFLAGS)")
 
 check:
 
@@ -25,8 +26,10 @@ install:
 	$(INSTALL) taggerUpload.pl $(BINDIR)
 	$(MKDIR_P) "$(PLUGINDIR)"
 	$(INSTALL) *.so *.jade *.js $(PLUGINDIR)
+	$(INSTALL) -m 644 *.dashboard.json $(PLUGINDIR)
 	$(MKDIR_P) "$(PLUGINDIR)/writer-s3"
 	$(INSTALL) writer-s3/*.js $(PLUGINDIR)/writer-s3
 
 distclean realclean clean:
 	rm -f *.o *.so
+	(cd zeeklog; $(MAKE) clean)

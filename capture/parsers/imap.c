@@ -11,6 +11,7 @@ extern ArkimeConfig_t   config;
 LOCAL  int srcField;
 LOCAL  int dstField;
 LOCAL  int subjectField;
+LOCAL  int idField;
 LOCAL  int folderField;
 
 typedef struct {
@@ -79,6 +80,15 @@ LOCAL void imap_parse_header_line(IMAPInfo_t UNUSED(*imap), ArkimeSession_t *ses
         const char *end = line + len;
         while (s < end && isspace((uint8_t) *s)) s++;
         arkime_field_string_add(subjectField, session, s, len - (s - line), TRUE);
+    }
+    /* Message-ID: header, stored without the angle brackets like smtp */
+    else if (len > 11 && strncasecmp(line, "Message-ID:", 11) == 0) {
+        const char *s = line + 11;
+        const char *end = line + len;
+        while (s < end && (isspace((uint8_t) *s) || *s == '<')) s++;
+        while (end > s && (isspace((uint8_t) end[-1]) || end[-1] == '>')) end--;
+        if (end > s)
+            arkime_field_string_add(idField, session, s, end - s, TRUE);
     }
 }
 /******************************************************************************/
@@ -258,6 +268,13 @@ void arkime_parser_init()
                                    "requiredRight", "emailSearch",
                                    "category", "user",
                                    (char *)NULL);
+
+    idField = arkime_field_define("email", "termfield",
+                                  "email.message-id", "Id", "email.id",
+                                  "Email Message-Id header",
+                                  ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                  "requiredRight", "emailSearch",
+                                  (char *)NULL);
 
     subjectField = arkime_field_define("email", "termfield",
                                        "email.subject", "Subject", "email.subject",

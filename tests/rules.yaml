@@ -11,7 +11,7 @@
 #     beforeFinalSave  - before doing a final save
 #     beforeBothSave    - before either a mid or final save
 #
-#One of the following 2:
+#One of the following 3:
 #   bpf:               - A bpf expression
 #   fields:            - A list of field expressions and values for each field,
 #                        one from each field expression must be set
@@ -21,6 +21,11 @@
 #   <field expression2>:
 #     - <value1>
 #     - <value2>
+#   expression:        - A search expression like the viewer's, with && || ! ( ),
+#                        lists, wildcards, regex, cidrs, math and functions,
+#                        see capture/RULES.md
+#
+#   log: true          - Log each match, expressions log what matched
 #
 #   ops:                          - List of ops, 1 per line
 #     _dontSaveSPI                - Don't save SPI data for session
@@ -163,3 +168,43 @@ rules:
     bpf: "host 10.89.85.15 and port 49570"
     ops:
       _maxPackets: 40
+
+  # Expression versions of the fields: rules above with the same ops, so they can't change
+  # the results, but any session they match that the original doesn't fails the tests
+  - name: "Don't save fields example2 expression"
+    when: "fieldSet"
+    expression: "protocols == tls && host.http == [www.aol.com, mail.yandex.com, foo.bar.com, *ample.com, *b.c*, bl.a*]"
+    ops:
+      "protocols": "tlsrulestest"
+
+  - name: "socks test expression"
+    when: "fieldSet"
+    expression: "ip.socks == 74.125.131.103"
+    ops:
+      "protocols": "socksipset"
+
+  - name: "0 test expression"
+    when: "beforeFinalSave"
+    expression: "packets.src == 2 && packets.dst == 0 && databytes.src == 176"
+    ops:
+      tags: "src-2-dst-0"
+
+  - name: "not 1 test expression"
+    when: "beforeFinalSave"
+    expression: "packets.src == 2 && packets.dst != 1 && databytes.src == 176"
+    ops:
+      tags: "src-2-not-dst-1"
+
+  - name: "not 0 test expression"
+    when: "beforeFinalSave"
+    expression: |
+      databytes.src == 176 &&
+      !(packets.src == 0 || packets.dst == 1)
+    ops:
+      tags: "not-src-0-not-dst-1"
+
+  - name: "not rule expression"
+    when: "beforeFinalSave"
+    expression: 'communityId != "FuiRMncy2mhAkCJ4mYumMiRK0uw=" && protocols != [tcp, http, dns] && ip.src == 10.0.0.2 && ip.dst == 10.0.0.1'
+    ops:
+      "tags": "communityId not test"

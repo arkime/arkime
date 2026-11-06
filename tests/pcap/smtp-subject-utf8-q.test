@@ -78,6 +78,10 @@
       "1.0"
      ],
      "mimeVersionCnt" : 1,
+     "reply" : [
+      "250 Ok: queued as 9623B1308018"
+     ],
+     "replyCnt" : 1,
      "sha256" : [
       "8d4b2e39ccf34cff2147c7b6896f4bd5ce0a209d0cd87ca75035b4c8243bf865"
      ],

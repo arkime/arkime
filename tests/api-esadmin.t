@@ -1,4 +1,4 @@
-use Test::More tests => 66;
+use Test::More tests => 77;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -7,8 +7,20 @@ use Test::Differences;
 use Data::Dumper;
 use strict;
 
-    my $token = getTokenCookie('adminuser1');
+    my $superAdminToken = getTokenCookie('superAdmin');
+    my $token = getTokenCookie('sac-esadmin-db');
+    my $arkimeAdminToken = getTokenCookie('sac-esadmin-arkime');
     my $json;
+
+# es admin access requires the dbAdmin role, so make a user with it and one without.
+# Both need arkimeUser since viewer gates the whole app on it and dbAdmin implies
+# nothing, arkimeAdmin brings arkimeUser along itself.
+# Only a superAdmin may assign admin roles.
+    $json = viewerPostToken("/api/user?arkimeRegressionUser=superAdmin", '{"userId": "sac-esadmin-db", "userName": "dbAdmin", "enabled":true, "password":"password", "roles":["arkimeUser","dbAdmin"]}', $superAdminToken);
+    is($json->{success}, 1, "created dbAdmin user");
+
+    $json = viewerPostToken("/api/user?arkimeRegressionUser=superAdmin", '{"userId": "sac-esadmin-arkime", "userName": "arkimeAdmin", "enabled":true, "password":"password", "roles":["arkimeAdmin"]}', $superAdminToken);
+    is($json->{success}, 1, "created arkimeAdmin user");
 
 # Clear any old setting and make sure nothing set
     $json = esPut('/_cluster/settings', '{"persistent" : {"cluster.max_shards_per_node" : null}}');
@@ -40,52 +52,73 @@ use strict;
     is($json->{success}, 0, "esadmin allocation no permission");
     is($json->{i18n}, "api.viewer.noPermission", "esadmin allocation no permission i18n");
 
+# arkimeAdmin alone doesn't grant es admin, only dbAdmin does. Cover the action
+# endpoints too, they used to accept arkimeAdmin.
+    $json = viewerGet("/api/esadmin?arkimeRegressionUser=sac-esadmin-arkime");
+    is($json->{success}, 0, "esadmin get arkimeAdmin no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esadmin get arkimeAdmin no permission i18n");
+
+    $json = viewerPostToken("/api/esindices/tests_users/optimize?arkimeRegressionUser=sac-esadmin-arkime", "", $arkimeAdminToken);
+    is($json->{success}, 0, "esindices optimize arkimeAdmin no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esindices optimize arkimeAdmin no permission i18n");
+
+    $json = viewerPostToken("/api/esshards/name/thenode/exclude?arkimeRegressionUser=sac-esadmin-arkime", "", $arkimeAdminToken);
+    is($json->{success}, 0, "esshards exclude arkimeAdmin no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "esshards exclude arkimeAdmin no permission i18n");
+
+    $json = viewerPostToken("/api/estasks/cancelall?arkimeRegressionUser=sac-esadmin-arkime", "", $arkimeAdminToken);
+    is($json->{success}, 0, "estasks cancelall arkimeAdmin no permission");
+    is($json->{i18n}, "api.viewer.noPermission", "estasks cancelall arkimeAdmin no permission i18n");
+
+    $json = viewerPostToken("/api/esindices/tests_users/optimize?arkimeRegressionUser=sac-esadmin-db", "", $token);
+    is($json->{success}, 1, "esindices optimize dbAdmin success");
+
 # Missing token
-    $json = viewerPost("/api/esadmin/set?arkimeRegressionUser=adminuser1");
+    $json = viewerPost("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db");
     is($json->{success}, 0, "esadmin set missing token");
     is($json->{i18n}, "api.viewer.missingToken", "esadmin set missing token i18n");
 
-    $json = viewerPost("/api/esadmin/reroute?arkimeRegressionUser=adminuser1");
+    $json = viewerPost("/api/esadmin/reroute?arkimeRegressionUser=sac-esadmin-db");
     is($json->{success}, 0, "esadmin reroute missing token");
     is($json->{i18n}, "api.viewer.missingToken", "esadmin reroute missing token i18n");
 
-    $json = viewerPost("/api/esadmin/flush?arkimeRegressionUser=adminuser1");
+    $json = viewerPost("/api/esadmin/flush?arkimeRegressionUser=sac-esadmin-db");
     is($json->{success}, 0, "esadmin flush missing token");
     is($json->{i18n}, "api.viewer.missingToken", "esadmin flush missing token i18n");
 
-    $json = viewerPost("/api/esadmin/unflood?arkimeRegressionUser=adminuser1");
+    $json = viewerPost("/api/esadmin/unflood?arkimeRegressionUser=sac-esadmin-db");
     is($json->{success}, 0, "esadmin unflood missing token");
     is($json->{i18n}, "api.viewer.missingToken", "esadmin unflood missing token i18n");
 
 # good
-    $json = viewerPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1", "", $token);
+    $json = viewerPostToken("/api/esadmin/reroute?arkimeRegressionUser=sac-esadmin-db", "", $token);
     is($json->{success}, 1, "esadmin reroute success");
     is($json->{i18n}, "api.stats.rerouteSuccessful", "esadmin reroute success i18n");
 
-    $json = viewerPostToken("/api/esadmin/flush?arkimeRegressionUser=adminuser1", "", $token);
+    $json = viewerPostToken("/api/esadmin/flush?arkimeRegressionUser=sac-esadmin-db", "", $token);
     is($json->{success}, 1, "esadmin flush success");
     is($json->{i18n}, "api.stats.flushed", "esadmin flush success i18n");
 
-    $json = viewerPostToken("/api/esadmin/unflood?arkimeRegressionUser=adminuser1", "", $token);
+    $json = viewerPostToken("/api/esadmin/unflood?arkimeRegressionUser=sac-esadmin-db", "", $token);
     is($json->{success}, 1, "esadmin unflood success");
     is($json->{i18n}, "api.stats.unflooded", "esadmin unflood success i18n");
 
 # set tests
-    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "", $token);
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db", "", $token);
     is($json->{success}, 0, "esadmin set missing key");
     is($json->{i18n}, "api.stats.missingKey", "esadmin set missing key i18n");
 
-    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=foo", $token);
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db", "key=foo", $token);
     is($json->{success}, 0, "esadmin set missing value");
     is($json->{i18n}, "api.stats.missingValue", "esadmin set missing value i18n");
 
-    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=foo&value=bar", $token);
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db", "key=foo&value=bar", $token);
     is($json->{success}, 0, "esadmin set failed");
     is($json->{i18n}, "api.stats.setFailed", "esadmin set failed i18n");
 
 
     # set to 1234
-    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=1234", $token);
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db", "key=cluster.max_shards_per_node&value=1234", $token);
     is($json->{success}, 1, "esadmin set settings success");
     is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
@@ -93,7 +126,7 @@ use strict;
     is ($json->{persistent}->{'cluster.max_shards_per_node'}, 1234);
 
     # clear with space
-    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.max_shards_per_node&value=", $token);
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db", "key=cluster.max_shards_per_node&value=", $token);
     is($json->{success}, 1, "esadmin set settings success");
     is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
@@ -107,7 +140,7 @@ use strict;
     ok (!exists $json->{persistent}->{'cluster.routing.allocation.enable'});
 
     # Set to "primaries" (something other than "all")
-    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.routing.allocation.enable&value=primaries", $token);
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db", "key=cluster.routing.allocation.enable&value=primaries", $token);
     is($json->{success}, 1, "esadmin set settings success");
     is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
@@ -115,7 +148,7 @@ use strict;
     is ($json->{persistent}->{'cluster.routing.allocation.enable'}, "primaries");
 
     # Restore to "all"
-    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1", "key=cluster.routing.allocation.enable&value=all", $token);
+    $json = viewerPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db", "key=cluster.routing.allocation.enable&value=all", $token);
     is($json->{success}, 1, "esadmin set settings success");
     is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
@@ -127,51 +160,55 @@ use strict;
 
 # allocation explain tests
     # General allocation explanation (no specific shard)
-    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=adminuser1");
+    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=sac-esadmin-db");
     ok(exists $json->{index} || exists $json->{allocate_explanation}, "Allocation explain returns valid response");
 
     # Allocation explanation with specific index/shard parameters
     # Note: This may fail if there are no unassigned shards, so we just check it doesn't error
-    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=adminuser1&index=sessions2-*&shard=0&primary=true");
+    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=sac-esadmin-db&index=sessions2-*&shard=0&primary=true");
     ok(defined $json, "Allocation explain with parameters returns response");
 
 # multiviewer
     # test cluster
-    $json = multiPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1&cluster=test", "key=cluster.max_shards_per_node&value=4321", $token);
+    $json = multiPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db&cluster=test", "key=cluster.max_shards_per_node&value=4321", $token);
     is($json->{success}, 1, "esadmin set settings success");
     is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
-    $json = multiGetToken("/api/esadmin?arkimeRegressionUser=adminuser1&cluster=test", $token);
+    $json = multiGetToken("/api/esadmin?arkimeRegressionUser=sac-esadmin-db&cluster=test", $token);
     is ($json->[7]->{'current'}, "4321");
 
-    $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
+    $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=sac-esadmin-db&cluster=test", "", $token);
     is($json->{success}, 1, "esadmin reroute success");
     is($json->{i18n}, "api.stats.rerouteSuccessful", "esadmin reroute i18n");
 
-    $json = multiPostToken("/api/esadmin/flush?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
+    $json = multiPostToken("/api/esadmin/flush?arkimeRegressionUser=sac-esadmin-db&cluster=test", "", $token);
     is($json->{success}, 1, "esadmin flush success");
     is($json->{i18n}, "api.stats.flushed", "esadmin flush i18n");
 
-    $json = multiPostToken("/api/esadmin/unflood?arkimeRegressionUser=adminuser1&cluster=test", "", $token);
+    $json = multiPostToken("/api/esadmin/unflood?arkimeRegressionUser=sac-esadmin-db&cluster=test", "", $token);
     is($json->{success}, 1, "esadmin unflood success");
     is($json->{i18n}, "api.stats.unflooded", "esadmin unflood i18n");
 
     # test2 cluster
-    $json = multiPostToken("/api/esadmin/set?arkimeRegressionUser=adminuser1&cluster=test2", "key=cluster.max_shards_per_node&value=31453", $token);
+    $json = multiPostToken("/api/esadmin/set?arkimeRegressionUser=sac-esadmin-db&cluster=test2", "key=cluster.max_shards_per_node&value=31453", $token);
     is($json->{success}, 1, "esadmin set settings success");
     is($json->{i18n}, "api.stats.settingsSet", "esadmin set settings i18n");
 
-    $json = multiGetToken("/api/esadmin?arkimeRegressionUser=adminuser1&cluster=test2", $token);
+    $json = multiGetToken("/api/esadmin?arkimeRegressionUser=sac-esadmin-db&cluster=test2", $token);
     is ($json->[7]->{'current'}, "31453");
 
-    $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
+    $json = multiPostToken("/api/esadmin/reroute?arkimeRegressionUser=sac-esadmin-db&cluster=test2", "", $token);
     is($json->{success}, 1, "esadmin reroute success");
     is($json->{i18n}, "api.stats.rerouteSuccessful", "esadmin reroute i18n");
 
-    $json = multiPostToken("/api/esadmin/flush?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
+    $json = multiPostToken("/api/esadmin/flush?arkimeRegressionUser=sac-esadmin-db&cluster=test2", "", $token);
     is($json->{success}, 1, "esadmin flush success");
     is($json->{i18n}, "api.stats.flushed", "esadmin flush i18n");
 
-    $json = multiPostToken("/api/esadmin/unflood?arkimeRegressionUser=adminuser1&cluster=test2", "", $token);
+    $json = multiPostToken("/api/esadmin/unflood?arkimeRegressionUser=sac-esadmin-db&cluster=test2", "", $token);
     is($json->{success}, 1, "esadmin unflood success");
     is($json->{i18n}, "api.stats.unflooded", "esadmin unflood i18n");
+
+# remove added users
+    viewerDeleteToken("/api/user/sac-esadmin-db?arkimeRegressionUser=superAdmin", $superAdminToken);
+    viewerDeleteToken("/api/user/sac-esadmin-arkime?arkimeRegressionUser=superAdmin", $superAdminToken);

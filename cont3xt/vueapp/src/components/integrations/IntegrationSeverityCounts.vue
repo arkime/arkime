@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <div class="d-flex flex-row text-no-wrap severity-badge-container">
     <span
       v-if="severityTypes.some(severity => severityCounts[severity])"
-      class="mr-1">
+      class="me-1">
       <span :id="`${indicatorId}-severity-counts`">
         <template v-for="severity in severityTypes">
           <c3-badge
@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="severityCounts[severity]"
               :key="severity"
               class="d-flex flex-row align-center">
-              <span class="severity-emoji align-self-center mr-2">
+              <span class="severity-emoji align-self-center me-2">
                 {{ severityEmojiMap[severity] }}
               </span>
               <integration-btns

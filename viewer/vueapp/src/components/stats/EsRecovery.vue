@@ -3,7 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="container-fluid mt-2">
+  <div class="arkime-container-fluid mt-2">
     <arkime-loading v-if="initialLoading && !error" />
 
     <arkime-error
@@ -31,7 +31,7 @@ SPDX-License-Identifier: Apache-2.0
         page="esRecovery"
         table-state-name="esRecoveryCols"
         table-widths-state-name="esRecoveryColWidths"
-        table-classes="table-sm table-hover text-end small mt-2" />
+        table-classes="text-end small mt-2" />
     </div>
   </div>
 </template>
@@ -41,7 +41,7 @@ import Utils from '../utils/utils';
 import ArkimeTable from '../utils/Table.vue';
 import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import StatsService from './StatsService.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 
@@ -111,7 +111,7 @@ export default {
       return [ // es recovery table columns
         // default columns
         intl({ id: 'index', classes: 'text-start', sort: 'index', default: true, width: 200 }),
-        intl({ id: 'shard', sort: 'shard', default: true, width: 80 }),
+        intl({ id: 'shard', sort: 'shard', default: true, width: 85 }),
         intl({ id: 'time', sort: 'time', default: true, width: 80 }),
         intl({ id: 'type', sort: 'type', default: true, width: 100 }),
         intl({ id: 'stage', sort: 'stage', default: true, width: 100 }),
@@ -121,15 +121,15 @@ export default {
         intl({ id: 'target_node', classes: 'text-start', sort: 'target_node', default: true, width: 120 }),
         intl({ id: 'files', sort: 'files', default: false, width: 100 }),
         intl({ id: 'files_recovered', sort: 'files_recovered', default: false, width: 100 }),
-        intl({ id: 'files_percent', sort: 'files_percent', default: true, width: 80 }),
+        intl({ id: 'files_percent', sort: 'files_percent', default: true, width: 90 }),
         intl({ id: 'files_total', sort: 'files_total', default: false, width: 100 }),
         intl({ id: 'bytes', sort: 'bytes', default: false, width: 100 }),
         intl({ id: 'bytes_recovered', sort: 'bytes_recovered', default: false, width: 100 }),
-        intl({ id: 'bytes_percent', sort: 'bytes_percent', default: true, width: 80 }),
+        intl({ id: 'bytes_percent', sort: 'bytes_percent', default: true, width: 100 }),
         intl({ id: 'bytes_total', sort: 'bytes_total', default: false, width: 100 }),
         intl({ id: 'translog_ops', sort: 'translog_ops', default: false, width: 100 }),
         intl({ id: 'translog_ops_recovered', sort: 'translog_ops_recovered', default: false, width: 100 }),
-        intl({ id: 'translog_ops_percent', sort: 'translog_ops_percent', default: true, width: 100 })
+        intl({ id: 'translog_ops_percent', sort: 'translog_ops_percent', default: true, width: 125 })
       ];
     },
     loading: {

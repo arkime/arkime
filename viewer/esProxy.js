@@ -13,7 +13,6 @@ const express = require('express');
 const cryptoLib = require('crypto');
 const http = require('http');
 const https = require('https');
-const fs = require('fs');
 const basicAuth = require('basic-auth');
 const zlib = require('zlib');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -48,7 +47,7 @@ let sessionsIndexRe;
 let historyDocRe;
 let usersDocRe;
 let huntsDocRe;
-const esSSLOptions = { rejectUnauthorized: !ArkimeConfig.insecure };
+let esSSLOptions; // set once the config is loaded
 let authHeader;
 let sigV4Signer = null;
 let sigV4Credentials = null;
@@ -93,18 +92,13 @@ ArkimeConfig.loaded(() => {
   }
   console.log(`PREFIX: ${prefix} OLDPREFIX: ${oldprefix}`);
 
-  const esClientKey = Config.get('esClientKey');
-  const esClientCert = Config.get('esClientCert');
-  const caTrustFile = Config.getFull(Config.nodeName(), 'caTrustFile');
-  if (caTrustFile) { esSSLOptions.ca = ArkimeUtil.certificateFileToArray(caTrustFile); }
-  if (esClientKey) {
-    esSSLOptions.key = fs.readFileSync(esClientKey);
-    esSSLOptions.cert = fs.readFileSync(esClientCert);
-    const esClientKeyPass = Config.get('esClientKeyPass');
-    if (esClientKeyPass) {
-      esSSLOptions.passphrase = esClientKeyPass;
-    }
-  }
+  esSSLOptions = ArkimeUtil.tlsOptionsOrExit({
+    insecure: ArkimeConfig.insecure,
+    caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
+    clientKey: Config.get('esClientKey'),
+    clientCert: Config.get('esClientCert'),
+    clientKeyPass: Config.get('esClientKeyPass')
+  }, 'OpenSearch/Elasticsearch');
 
   const esAPIKey = Config.get('elasticsearchAPIKey');
   const esBasicAuth = Config.get('elasticsearchBasicAuth');
@@ -119,7 +113,8 @@ ArkimeConfig.loaded(() => {
     }
   }
 
-  const sigV4Enabled = Config.get('esProxySigV4', false) === 'true' || Config.get('esProxySigV4', false) === true;
+  // getFull turns 'true'/'false' into booleans, anything else stays a string
+  const sigV4Enabled = Config.get('esProxySigV4', false) === true;
   if (sigV4Enabled) {
     const region = Config.get('esProxySigV4Region');
     const service = Config.get('esProxySigV4Service', 'es');
@@ -160,7 +155,7 @@ ArkimeConfig.loaded(() => {
     }
   }
 
-  const teeSigV4Enabled = Config.sectionGet('tee', 'esProxySigV4', false) === 'true' || Config.sectionGet('tee', 'esProxySigV4', false) === true;
+  const teeSigV4Enabled = Config.sectionGet('tee', 'esProxySigV4', false) === true;
   if (teeSigV4Enabled) {
     const teeRegion = Config.sectionGet('tee', 'esProxySigV4Region');
     const teeService = Config.sectionGet('tee', 'esProxySigV4Service', 'es');

@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 class C3Observable {
   constructor (func) {
     this.obsFunc = func;

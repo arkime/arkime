@@ -415,6 +415,11 @@ function formatQuery (yy, field, op, value, completed) {
     throw field + ' - permission denied, ask your Arkime admin to give you access using + on Users tab';
   }
 
+  // A quoted value is one literal string, a , inside it doesn't start a $shortcut
+  if (value[0] === '"' && value[value.length - 1] === '"') {
+    return formatNormalQuery(yy, field, op, value, completed);
+  }
+
   const nonShortcuts = ListToArray(value, true);
 
   const shortcutsObj = formatShortcutsQuery(yy, field, op, value);

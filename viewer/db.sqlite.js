@@ -119,8 +119,7 @@ class DbSQLiteImpl {
     hits = this.#filterShareables(hits, params);
     const total = hits.length;
 
-    // Sort by name ascending
-    this.#sortHits(hits, 'name', 'asc');
+    this.#sortHits(hits, params.sortField || 'name', params.sortOrder || 'asc');
 
     const from = params.from || 0;
     const size = params.size || 50;
@@ -142,6 +141,12 @@ class DbSQLiteImpl {
     return JSON.parse(row.json);
   }
 
+  async getShareableVersioned (id) {
+    const row = this.#db.prepare('SELECT json FROM shareables WHERE id = ?').get(id);
+    if (!row) { throw new Error('Shareable not found'); }
+    return { shareable: JSON.parse(row.json), version: row.json };
+  }
+
   async createShareable (doc) {
     const id = uuidv4();
     this.#db.prepare('INSERT INTO shareables (id, json) VALUES (?, ?)').run(id, JSON.stringify(doc));
@@ -156,8 +161,18 @@ class DbSQLiteImpl {
     this.#db.prepare('DELETE FROM shareables').run();
   }
 
-  async setShareable (id, doc) {
-    this.#db.prepare('INSERT OR REPLACE INTO shareables (id, json) VALUES (?, ?)').run(id, JSON.stringify(doc));
+  async setShareable (id, doc, version) {
+    if (version === undefined) {
+      this.#db.prepare('INSERT OR REPLACE INTO shareables (id, json) VALUES (?, ?)').run(id, JSON.stringify(doc));
+      return;
+    }
+    // only replace the row as it was read, like ES if_seq_no
+    const { changes } = this.#db.prepare('UPDATE shareables SET json = ? WHERE id = ? AND json = ?').run(JSON.stringify(doc), id, version);
+    if (changes !== 1) {
+      const err = new Error('Shareable version conflict');
+      err.statusCode = 409;
+      throw err;
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -259,8 +274,10 @@ class DbSQLiteImpl {
   }
 
   #filterShareables (hits, params) {
-    // Filter by type
-    hits = hits.filter(h => h.source.type === params.type);
+    // Filter by type, no type means every type the user can see
+    if (params.type) {
+      hits = hits.filter(h => h.source.type === params.type);
+    }
 
     // Filter by permissions
     hits = hits.filter(h => {
@@ -279,6 +296,12 @@ class DbSQLiteImpl {
 
       return false;
     });
+
+    if (params.searchTerm) {
+      const term = params.searchTerm.toLowerCase();
+      hits = hits.filter(h => ['name', 'description', 'type', 'creator']
+        .some(f => (h.source[f] || '').toLowerCase().includes(term)));
+    }
 
     return hits;
   }

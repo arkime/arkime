@@ -5,6 +5,10 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "altEmail" : [
+       "www@snakeoil.dom"
+      ],
+      "exponent" : 65537,
       "hash" : "10:99:10:99:fc:73:97:ad:b4:bf:67:fb:19:9a:39:b1:be:d8:97:4c",
       "issuerCN" : [
        "snake oil ca"
@@ -15,12 +19,15 @@
       "issuerOU" : [
        "Certificate Authority"
       ],
+      "keyLength" : 1024,
       "notAfter" : 1204562865000,
       "notBefore" : 1046882865000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 630,
       "remainingSeconds" : 54441796,
       "serial" : "01",
+      "sha256" : "de8f38faec1be5667274e3df0b6ef86a308e8f77e48fcdee3bb16d80b11939c3",
+      "signatureAlgorithm" : "md5WithRSAEncryption",
       "subjectCN" : [
        "www.snakeoil.dom"
       ],
@@ -31,7 +38,8 @@
        "Webserver Team"
       ],
       "validDays" : 1825,
-      "validSeconds" : 157680000
+      "validSeconds" : 157680000,
+      "version" : 3
      }
     ],
     "certCnt" : 1,

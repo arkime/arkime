@@ -4,109 +4,74 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <!-- container -->
-  <div class="container-fluid">
-    <div class="d-flex flex-row">
+  <v-container fluid>
+    <div class="d-flex flex-row align-center arkime-toolbar ga-2">
       <!-- source select -->
-      <div class="form-group">
-        <div class="input-group">
-          <span
-            class="input-group-text"
-            id="source-selection">
-            {{ $t('wise.query.source') }}
-          </span>
-          <BTooltip target="source-selection">
-            {{ $t('wise.query.sourceTip') }}
-          </BTooltip>
-          <select
-            class="form-control"
-            v-model="chosenSource"
-            @change="debounceSearch"
-            tabindex="1">
-            <option value="">
-              {{ $t('wise.query.any') }}
-            </option>
-            <option
-              v-for="source in sources"
-              :value="source"
-              :key="source">
-              {{ source }}
-            </option>
-          </select>
-        </div>
-      </div> <!-- /source select -->
+      <v-select
+        v-model="chosenSource"
+        :items="['', ...sources]"
+        :label="$t('wise.query.source')"
+        density="compact"
+        style="max-width: 220px;"
+        tabindex="1"
+        @update:model-value="debounceSearch">
+        <template #selection="{ item }">
+          <span>{{ item.value || $t('wise.query.any') }}</span>
+        </template>
+        <template #item="{ item, props: itemProps }">
+          <v-list-item
+            v-bind="itemProps"
+            :title="item.value || $t('wise.query.any')" />
+        </template>
+      </v-select>
 
       <!-- type select -->
-      <div class="form-group ms-3">
-        <div class="input-group">
-          <span
-            class="input-group-text"
-            id="type-selection">
-            {{ $t('wise.query.type') }}
-          </span>
-          <BTooltip target="type-selection">
-            {{ $t('wise.query.typeTip') }}
-          </BTooltip>
-          <select
-            class="form-control"
-            @change="sendSearchQuery"
-            v-model="chosenType"
-            tabindex="2">
-            <option
-              v-for="type in types"
-              :value="type"
-              :key="type">
-              {{ type }}
-            </option>
-          </select>
-        </div>
-      </div> <!-- /type select -->
+      <v-select
+        v-model="chosenType"
+        :items="types"
+        :label="$t('wise.query.type')"
+        density="compact"
+        class="ms-3"
+        style="max-width: 220px;"
+        tabindex="2"
+        @update:model-value="sendSearchQuery" />
 
       <!-- search -->
-      <div class=" flex-grow-1 ms-3">
-        <div class="input-group">
-          <span class="input-group-text">
-            <span
-              v-if="!loading"
-              class="fa fa-search fa-fw" />
-            <span
-              v-else
-              class="fa fa-spinner fa-spin fa-fw" />
-          </span>
-          <input
-            type="text"
-            tabindex="3"
-            v-model="searchTerm"
-            class="form-control"
-            :placeholder="$t('wise.query.searchTermPlaceholder', { type: chosenType })"
-            @input="debounceSearch"
-            @keyup.enter="sendSearchQuery">
-          <button
-            type="button"
-            @click="clear"
-            :disabled="!searchTerm"
-            class="btn btn-outline-secondary btn-clear-input">
-            <span class="fa fa-close" />
-          </button>
-        </div>
-      </div> <!-- /search -->
+      <v-text-field
+        v-model="searchTerm"
+        :placeholder="$t('wise.query.searchTermPlaceholder', { type: chosenType })"
+        :prepend-inner-icon="loading ? 'mdi-loading mdi-spin' : 'mdi-magnify'"
+        clearable
+        density="compact"
+        class="ms-3 flex-grow-1"
+        tabindex="3"
+        @input="debounceSearch"
+        @keyup.enter="sendSearchQuery"
+        @click:clear="clear" />
     </div>
 
-    <div
-      v-if="alertMessage"
-      style="z-index: 2000;"
-      class="alert alert-danger position-fixed fixed-bottom m-0 rounded-0">
+    <v-snackbar
+      :model-value="!!alertMessage"
+      color="error"
+      location="bottom"
+      :timeout="-1"
+      @update:model-value="(v) => { if (!v) alertMessage = '' }">
       {{ alertMessage }}
-      <button
-        type="button"
-        class="btn-close pull-right"
-        @click="alertMessage = ''" />
-    </div>
+      <template #actions>
+        <v-btn
+          variant="text"
+          icon="mdi-close"
+          @click="alertMessage = ''" />
+      </template>
+    </v-snackbar>
 
     <!-- empty search -->
     <div v-if="!hasMadeASearch">
       <div class="vertical-center info-area mt-5">
         <div>
-          <span class="fa fa-3x fa-search" />
+          <v-icon
+            icon="mdi-magnify"
+            size="x-large" />
           {{ $t('wise.query.noSearchTerm') }}
           <span
             v-if="!sources.length"
@@ -116,41 +81,47 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /empty search -->
 
     <!-- tabbed view options -->
-    <b-tabs
-      small
-      class="mt-3"
-      v-else-if="searchResult.length > 0">
-      <b-tab
-        :title="$t('wise.query.tableView')"
-        active>
-        <b-table
-          striped
-          hover
-          small
-          borderless
-          must-sort
-          :dark="getTheme === 'dark'"
+    <div
+      v-else-if="searchResult.length > 0"
+      class="mt-3">
+      <v-tabs
+        v-model="resultTab"
+        density="compact"
+        color="primary">
+        <v-tab value="table">
+          {{ $t('wise.query.tableView') }}
+        </v-tab>
+        <v-tab value="json">
+          {{ $t('wise.query.jsonView') }}
+        </v-tab>
+        <v-tab value="csv">
+          {{ $t('wise.query.csvView') }}
+        </v-tab>
+      </v-tabs>
+      <div v-if="resultTab === 'table'">
+        <v-data-table
+          density="compact"
           :items="searchResult"
-          :fields="tableFields" />
-      </b-tab>
-
-      <b-tab :title="$t('wise.query.jsonView')">
+          :headers="tableHeaders" />
+      </div>
+      <div v-if="resultTab === 'json'">
         <vue-json-pretty
           :data="searchResult"
           :show-line-number="true"
           :show-double-quotes="false" />
-      </b-tab>
-
-      <b-tab :title="$t('wise.query.csvView')">
+      </div>
+      <div v-if="resultTab === 'csv'">
         <pre>{{ calcCSV() }}</pre>
-      </b-tab>
-    </b-tabs> <!-- /tabbed view options -->
+      </div>
+    </div> <!-- /tabbed view options -->
 
     <!-- no results -->
     <div v-else>
       <div class="vertical-center info-area mt-5">
         <div>
-          <span class="fa fa-3x fa-search-minus" />
+          <v-icon
+            icon="mdi-magnify-minus"
+            size="x-large" />
           {{ $t('wise.query.noResults') }}
           <span
             v-if="!sources.length"
@@ -158,7 +129,7 @@ SPDX-License-Identifier: Apache-2.0
         </div>
       </div>
     </div> <!-- /no results -->
-  </div>  <!-- /container -->
+  </v-container>  <!-- /container -->
 </template>
 
 <script>
@@ -180,7 +151,8 @@ export default {
       loading: false,
       hasMadeASearch: false,
       searchResult: [],
-      tableFields: [],
+      tableHeaders: [],
+      resultTab: 'table',
       searchTerm: this.$route.query.searchTerm || '',
       chosenType: this.$route.query.searchType || localStorage.getItem('search-type') || 'ip',
       chosenSource: this.$route.query.searchSource || localStorage.getItem('search-source') || '',
@@ -272,7 +244,7 @@ export default {
       if (!this.searchTerm) {
         if (this.hasMadeASearch) {
           this.searchResult = [];
-          this.tableFields = [];
+          this.tableHeaders = [];
           this.hasMadeASearch = false;
         }
         return;
@@ -309,8 +281,8 @@ export default {
           // this.loading = false;
           this.searchResult = data;
           if (data.length >= 1) {
-            this.tableFields = Object.keys(data[0]).map(key => {
-              return { key, sortable: true };
+            this.tableHeaders = Object.keys(data[0]).map(key => {
+              return { title: key, key };
             });
           }
         })

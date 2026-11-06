@@ -14,6 +14,7 @@ extern ArkimeConfig_t        config;
 
 
 LOCAL char                  *s3Host;
+LOCAL gboolean              s3UseHttp;
 LOCAL gboolean               inited;
 
 typedef struct sqs_item {
@@ -68,6 +69,7 @@ LOCAL void sqs_init()
 {
     inited = TRUE;
     s3Host = arkime_config_str(NULL, "s3Host", NULL);
+    s3UseHttp = arkime_config_boolean(NULL, "s3UseHttp", FALSE);
 }
 /******************************************************************************/
 LOCAL void sqs_delete_done(int UNUSED(code), uint8_t *data, int data_len, gpointer UNUSED(uw))
@@ -102,8 +104,9 @@ LOCAL void sqs_done(int UNUSED(code), uint8_t *data, int data_len, gpointer uw)
     if (!messages || (messagesLen == 4 && memcmp(messages, "null", 4) == 0)) {
         if (!config.pcapMonitor)
             req->done = 1;
-        ARKIME_UNLOCK(waitingsqs);
+        // Signal before unlocking, once unlocked the scheme thread can leave its loop and free req
         ARKIME_COND_SIGNAL(req->items->lock);
+        ARKIME_UNLOCK(waitingsqs);
         return;
     }
 
@@ -292,7 +295,7 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
     g_strfreev(uris);
     g_strfreev(dots);
 
-    while (!req->done || DLL_COUNT(item_, req->items) > 0) {
+    while (!config.quitting && (!req->done || DLL_COUNT(item_, req->items) > 0)) {
         if (!req->done && DLL_COUNT(item_, req->items) == 0) {
             creds = arkime_credentials_get("sqs", "sqsAccessKeyId", "sqsSecretAccessKey");
             // Update the keys and tokenHeader, they rotate
@@ -319,29 +322,49 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
         DLL_POP_HEAD(item_, req->items, item);
         ARKIME_UNLOCK(req->items->lock);
 
-        if (item->bucket && item->key) {
+        // Once quitting a load that hasn't started is skipped and its message is left in the
+        // queue, it becomes visible again after the visibility timeout and is read next run.
+        // A load stopped mid object already recorded it as processed, like the other readers,
+        // so its message is deleted and --reprocess is the way to read the rest.
+        gboolean batched = FALSE;
+        if (item->bucket && item->key && !config.quitting) {
             char s3url[1600];
             if (isaws) {
                 snprintf(s3url, sizeof(s3url), "s3://%s/%s", item->bucket, item->key);
             } else if (s3Host) {
-                snprintf(s3url, sizeof(s3url), "s3https://%s/%s/%s", s3Host, item->bucket, item->key);
+                snprintf(s3url, sizeof(s3url), "s3%s://%s/%s/%s", s3UseHttp ? "http" : "https", s3Host, item->bucket, item->key);
             } else {
                 snprintf(s3url, sizeof(s3url), "s3%s/%s/%s", schemehostport, item->bucket, item->key);
             }
             if (config.debug)
                 LOG("SQS S3 URL: %s", s3url);
             arkime_reader_scheme_load(s3url, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
+            batched = arkime_reader_scheme_last_load_batched();
         }
 
-        // Delete the message
-        char *receiptHandle = g_uri_escape_string(item->receiptHandle, NULL, FALSE);
-        int needed = sizeof("Action=DeleteMessage&ReceiptHandle=") + strlen(receiptHandle);
-        char *deletePost = arkime_http_get_buffer(needed);
-        snprintf(deletePost, needed, "Action=DeleteMessage&ReceiptHandle=%s", receiptHandle);
-        g_free(receiptHandle);
+        if (config.quitting && !batched) {
+            LOG("Quitting, leaving SQS message for %s/%s in the queue", item->bucket ? item->bucket : "", item->key ? item->key : "");
+        } else {
+            // Delete the message
+            char *receiptHandle = g_uri_escape_string(item->receiptHandle, NULL, FALSE);
+            int needed = sizeof("Action=DeleteMessage&ReceiptHandle=") + strlen(receiptHandle);
+            char *deletePost = arkime_http_get_buffer(needed);
+            snprintf(deletePost, needed, "Action=DeleteMessage&ReceiptHandle=%s", receiptHandle);
+            g_free(receiptHandle);
 
-        arkime_http_schedule(server, "POST", deleteFullPath, -1, deletePost, strlen(deletePost), headers, ARKIME_HTTP_PRIORITY_DROPABLE, sqs_delete_done, NULL);
+            arkime_http_schedule(server, "POST", deleteFullPath, -1, deletePost, strlen(deletePost), headers, ARKIME_HTTP_PRIORITY_DROPPABLE, sqs_delete_done, NULL);
+        }
 
+        g_free(item->receiptHandle);
+        g_free(item->bucket);
+        g_free(item->key);
+        ARKIME_TYPE_FREE(SQSItem, item);
+    }
+
+    // Anything still queued when quitting stays in SQS for the next run
+    while (DLL_COUNT(item_, req->items) > 0) {
+        SQSItem *item;
+        DLL_POP_HEAD(item_, req->items, item);
         g_free(item->receiptHandle);
         g_free(item->bucket);
         g_free(item->key);

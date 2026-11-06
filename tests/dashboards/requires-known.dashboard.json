@@ -1,0 +1,12 @@
+{
+  "name": "Test requires known",
+  "description": "Requires fields that exist, so it is listed (api-dashboards.t)",
+  "requires": ["protocols", "ip.src"],
+  "data": {
+    "version": 1,
+    "folder": "Test",
+    "widgets": [
+      { "id": "w0", "field": "protocols", "viewMode": "bar", "width": 4, "height": 3 }
+    ]
+  }
+}

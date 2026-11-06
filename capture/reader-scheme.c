@@ -9,7 +9,6 @@
 #include "arkime.h"
 #include "pcap.h"
 
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 
 LOCAL struct bpf_program     bpf;
 LOCAL pcap_t                *deadPcap;
@@ -35,6 +34,7 @@ ARKIME_COND_DEFINE(laterLock);
 ARKIME_LOCK_DEFINE(laterLock);
 LOCAL char *currentProcessingUri;
 LOCAL GThread *schemeThread;
+LOCAL int      schemeThreadRunning;
 
 LOCAL  ArkimeStringHashStd_t  schemesHash;
 LOCAL  ArkimeScheme_t        *fileScheme;
@@ -60,8 +60,8 @@ enum ArkimeSchemeMode {
 LOCAL int                    offlineDispatchAfter;
 extern void                 *esServer;
 
-extern ArkimeOfflineInfo_t   offlineInfo[256];
-extern ARKIME_LOCK_EXTERN(offlineInfoLock);
+extern ArkimeFileInfo_t   fileInfo[256];
+extern ARKIME_LOCK_EXTERN(fileInfoLock);
 
 extern ArkimeFieldOps_t     readerFieldOps[256];
 ArkimeSchemeAction_t       *schemeActions[256];
@@ -87,12 +87,13 @@ LOCAL struct {
     int                    tmpBufferLen;
     int32_t                blockSize;
     int                    haveInterface;
-    uint64_t               tsresol;
+    uint64_t               tsresol[ARKIME_MAX_INTERFACES_PER_FILE];
     int                    gotHeader; // current load claimed readerPos
+    int                    quitStopped; // process stopped the current load because of quitting
 } readerState;
 
 LOCAL void reader_scheme_pause();
-LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
+LOCAL gboolean arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions);
 
 /******************************************************************************/
 void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
@@ -100,7 +101,8 @@ void arkime_reader_scheme_actions_ref(ArkimeSchemeAction_t *actions)
     if (!actions)
         return;
 
-    actions->refs++;
+    // actions are shared between the main thread (monitor watches, enqueue) and the scheme thread
+    ARKIME_THREAD_INCR(actions->refs);
 }
 /******************************************************************************/
 void arkime_reader_scheme_actions_deref(ArkimeSchemeAction_t *actions)
@@ -108,9 +110,7 @@ void arkime_reader_scheme_actions_deref(ArkimeSchemeAction_t *actions)
     if (!actions)
         return;
 
-    actions->refs--;
-
-    if (actions->refs)
+    if (ARKIME_THREAD_DECRNEW(actions->refs))
         return;
 
     arkime_field_ops_free(&actions->ops);
@@ -144,10 +144,21 @@ LOCAL ArkimeScheme_t *uri2scheme(const char *uri)
  * when reading a directory: outer load_thread(DIRHINT) -> readerScheme->load
  * -> arkime_reader_scheme_load(file) -> inner load_thread(no DIRHINT). */
 LOCAL int loadThreadDepth;
+LOCAL gboolean lastLoadBatched; // Did the most recent load_thread call hand any packets to the packet threads
 /* Actually call the scheme load function. This is guaranteed to be on the scheme thread */
 LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     loadThreadDepth++;
+    lastLoadBatched = FALSE;
+
+    // Don't start any new files once quitting, this also covers files from s3 listings and sqs.
+    // Still tell a --notify client so it gets an explicit error instead of just EOF.
+    if (config.quitting) {
+        if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef)
+            arkime_command_notify_file_error(actions->notifyClientRef, uri);
+        goto cleanup;
+    }
+
     reader_scheme_pause();
 
     LOG("Processing %s", uri);
@@ -166,23 +177,43 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     readerState.isPcapNG = 0;
     readerState.haveInterface = -1;
     readerState.gotHeader = 0;
+    readerState.quitStopped = 0;
     if (readerState.packet) {
         arkime_packet_free(readerState.packet);
         readerState.packet = 0;
     }
 
     int rcl = readerScheme->load(uri, flags, actions);
+    lastLoadBatched = readerState.gotHeader && fileInfo[readerState.readerPos].didBatch;
+
+    // Stopped mid file because of quitting. Like libpcap-file the packets read so far are kept,
+    // the loaders don't delete the file, and a --notify client gets an error. Cleared here so a
+    // nested load (directory, sqs) doesn't make its parent look stopped too.
+    if (readerState.quitStopped) {
+        readerState.quitStopped = 0;
+        gboolean didBatch = readerState.gotHeader && fileInfo[readerState.readerPos].didBatch;
+        if (didBatch && !config.dryRun && !config.copyPcap) {
+            // The files record already exists so --skip would skip this file next time
+            LOG("Quitting, skipping rest of %s - it is recorded as processed, use --reprocess to read it again", uri);
+        } else {
+            LOG("Quitting, skipping rest of %s", uri);
+        }
+        if (didBatch) {
+            arkime_packet_batch_end_of_file(readerState.readerPos);
+        }
+        rcl = 1;
+    }
 
     gboolean notifyHandedOff = FALSE;
     // An empty or header-less file never claims a slot, readerPos is still the previous file's
-    if (rcl == 0 && readerState.gotHeader && offlineInfo[readerState.readerPos].didBatch) {
-        // Stash an async file-done notification on the offlineInfo slot. The
+    if (rcl == 0 && readerState.gotHeader && fileInfo[readerState.readerPos].didBatch) {
+        // Stash an async file-done notification on the fileInfo slot. The
         // packet thread will fire file-done + decref when the last packet of
         // this file has been processed.
         if (!(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef) {
             arkime_command_client_incref(actions->notifyClientRef);
-            offlineInfo[readerState.readerPos].notifyClientRef = actions->notifyClientRef;
-            offlineInfo[readerState.readerPos].notifyFilename = g_strdup(uri);
+            fileInfo[readerState.readerPos].notifyClientRef = actions->notifyClientRef;
+            fileInfo[readerState.readerPos].notifyFilename = g_strdup(uri);
             notifyHandedOff = TRUE;
         }
         arkime_packet_batch_end_of_file(readerState.readerPos);
@@ -209,15 +240,15 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
             arkime_command_notify_file_error(actions->notifyClientRef, uri);
         } else {
             arkime_command_notify_file_done(actions->notifyClientRef, uri,
-                                            readerState.gotHeader ? offlineInfo[readerState.readerPos].lastBytes : 0,
-                                            readerState.gotHeader ? offlineInfo[readerState.readerPos].lastPackets : 0);
+                                            readerState.gotHeader ? fileInfo[readerState.readerPos].lastBytes : 0,
+                                            readerState.gotHeader ? fileInfo[readerState.readerPos].lastPackets : 0);
         }
     }
 
 cleanup:
     // Outermost load_thread call (depth==1 going to 0): release the client ref
     // that was attached to actions when --notify was specified. Per-file
-    // notifications already incref'd their own copy onto offlineInfo, so it's
+    // notifications already incref'd their own copy onto fileInfo, so it's
     // safe to drop the actions-held ref here. Done at outermost depth so that
     // recursive directory iteration can continue using actions->notifyClientRef.
     if (loadThreadDepth == 1 && actions && actions->notifyClientRef) {
@@ -225,6 +256,13 @@ cleanup:
         actions->notifyClientRef = NULL;
     }
     loadThreadDepth--;
+}
+/******************************************************************************/
+// Whether the most recent load handed packets to the packet threads, so a caller like sqs can
+// tell a load that was stopped mid object (recorded as processed) from one that never started
+gboolean arkime_reader_scheme_last_load_batched()
+{
+    return lastLoadBatched;
 }
 /******************************************************************************/
 void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
@@ -244,7 +282,7 @@ void arkime_reader_scheme_load(const char *uri, ArkimeSchemeFlags flags, ArkimeS
     arkime_reader_scheme_enqueue(uri, flags, actions);
 }
 /******************************************************************************/
-LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
+LOCAL gboolean arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags, ArkimeSchemeAction_t *actions)
 {
     ArkimeSchemeLater_t *item = ARKIME_TYPE_ALLOC(ArkimeSchemeLater_t);
     item->next = 0;
@@ -253,6 +291,20 @@ LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags
     item->actions = actions;
     arkime_reader_scheme_actions_ref(actions);
     ARKIME_LOCK(laterLock);
+    // Once quitting the scheme thread has drained the queue and won't look at it again,
+    // checked under the lock so nothing can slip in between the drain and the quit
+    if (config.quitting) {
+        ARKIME_UNLOCK(laterLock);
+        // Only the scheme thread may read actions->notifyClientRef, it drops and frees that
+        // client ref at the end of the outer load. Monitor events get here on the main thread
+        // with actions shared with that load, and cmd_add reports its own reject.
+        if (g_thread_self() == schemeThread && !(flags & ARKIME_SCHEME_FLAG_DIRHINT) && actions && actions->notifyClientRef)
+            arkime_command_notify_file_error(actions->notifyClientRef, uri);
+        g_free(item->uri);
+        arkime_reader_scheme_actions_deref(actions);
+        ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
+        return FALSE;
+    }
     if (laterHead) {
         laterTail->next = item;
         laterTail = item;
@@ -261,6 +313,7 @@ LOCAL void arkime_reader_scheme_enqueue(const char *uri, ArkimeSchemeFlags flags
     }
     ARKIME_COND_SIGNAL(laterLock);
     ARKIME_UNLOCK(laterLock);
+    return TRUE;
 }
 /******************************************************************************/
 LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, const char *extraInfo, ArkimeSchemeAction_t *actions)
@@ -270,39 +323,47 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
     // readerPos is uint8_t (wraps at 256). Before reusing a slot, wait until
     // the prior file occupying it has been fully drained: packet threads
     // have processed FILE_DONE (finishWaiting==0) AND the FILE_DONE handler
-    // has released the lock. Hold offlineInfoLock across the wait + cleanup
+    // has released the lock. Hold fileInfoLock across the wait + cleanup
     // so we can't race with the FILE_DONE handler in arkime_packet_thread,
     // which also touches notifyClientRef/notifyFilename under this lock and
     // does a slow arkime_db_update_file before the decref.
-    ARKIME_LOCK(offlineInfoLock);
-    while (!config.quitting && offlineInfo[nextPos].finishWaiting > 0) {
-        ARKIME_UNLOCK(offlineInfoLock);
+    ARKIME_LOCK(fileInfoLock);
+    while (fileInfo[nextPos].finishWaiting > 0) {
+        // Once quitting don't wait, but don't claim a slot that is still draining either since
+        // its pending FILE_DONEs would decrement the new file's count. Treat the load as quit
+        // stopped, the same as arkime_reader_scheme_process does.
+        if (config.quitting) {
+            ARKIME_UNLOCK(fileInfoLock);
+            readerState.quitStopped = 1;
+            return 1;
+        }
+        ARKIME_UNLOCK(fileInfoLock);
         LOG_RATE(5, "Waiting for reader slot %u to drain, finishWaiting=%u",
-                 nextPos, offlineInfo[nextPos].finishWaiting);
+                 nextPos, fileInfo[nextPos].finishWaiting);
         usleep(5000);
-        ARKIME_LOCK(offlineInfoLock);
+        ARKIME_LOCK(fileInfoLock);
     }
 
     readerState.readerPos = nextPos;
     readerState.gotHeader = 1;
     // We've wrapped around all 256 reader items, clear the previous file information
-    if (offlineInfo[readerState.readerPos].filename) {
-        g_free(offlineInfo[readerState.readerPos].filename);
-        g_free(offlineInfo[readerState.readerPos].extra);
-        if (offlineInfo[readerState.readerPos].notifyFilename) {
-            g_free(offlineInfo[readerState.readerPos].notifyFilename);
+    if (fileInfo[readerState.readerPos].filename) {
+        g_free(fileInfo[readerState.readerPos].filename);
+        g_free(fileInfo[readerState.readerPos].extra);
+        if (fileInfo[readerState.readerPos].notifyFilename) {
+            g_free(fileInfo[readerState.readerPos].notifyFilename);
         }
-        if (offlineInfo[readerState.readerPos].notifyClientRef) {
-            arkime_command_client_decref(offlineInfo[readerState.readerPos].notifyClientRef);
+        if (fileInfo[readerState.readerPos].notifyClientRef) {
+            arkime_command_client_decref(fileInfo[readerState.readerPos].notifyClientRef);
         }
-        memset(&offlineInfo[readerState.readerPos], 0, sizeof(ArkimeOfflineInfo_t));
+        memset(&fileInfo[readerState.readerPos], 0, sizeof(ArkimeFileInfo_t));
     }
-    ARKIME_UNLOCK(offlineInfoLock);
-    offlineInfo[readerState.readerPos].filename = g_strdup(uri);
+    ARKIME_UNLOCK(fileInfoLock);
+    fileInfo[readerState.readerPos].filename = g_strdup(uri);
 
     ArkimeScheme_t *readerScheme = uri2scheme(uri);
-    offlineInfo[readerState.readerPos].scheme = readerScheme->name;
-    offlineInfo[readerState.readerPos].extra = g_strdup(extraInfo);
+    fileInfo[readerState.readerPos].scheme = readerScheme->name;
+    fileInfo[readerState.readerPos].extra = g_strdup(extraInfo);
 
     if (schemeActions[readerState.readerPos])
         arkime_reader_scheme_actions_deref(schemeActions[readerState.readerPos]);
@@ -337,14 +398,14 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
         }
     }
 
-    arkime_packet_set_dltsnap(dlt, snaplen);
+    arkime_packet_set_interface(readerState.readerPos, 0, dlt, snaplen);
 
-    if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
+    if (config.bpf && dlt != DLT_NFLOG) {
         if (deadPcap) {
             pcap_freecode(&bpf);
             pcap_close(deadPcap);
         }
-        deadPcap = pcap_open_dead(pcapFileHeader.dlt, pcapFileHeader.snaplen);
+        deadPcap = pcap_open_dead(dlt, fileInfo[readerState.readerPos].interfaces[0].snaplen);
         if (pcap_compile(deadPcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
             CONFIGEXIT("Couldn't compile bpf filter: '%s' with %s", config.bpf, pcap_geterr(deadPcap));
         }
@@ -413,7 +474,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     }
 
     // Load list of files
-    for (int i = 0; config.pcapFileLists && config.pcapFileLists[i]; i++) {
+    for (int i = 0; !config.quitting && config.pcapFileLists && config.pcapFileLists[i]; i++) {
         FILE *file;
         char line[PATH_MAX];
 
@@ -426,7 +487,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
             continue;
         }
 
-        while (!feof(file)) {
+        while (!config.quitting && !feof(file)) {
             if (!fgets(line, sizeof(line), file)) {
                 if (file != stdin)
                     fclose(file);
@@ -453,7 +514,7 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
         arkime_reader_scheme_load_thread(config.pcapReadDirs[i], flags | ARKIME_SCHEME_FLAG_DIRHINT, NULL);
     }
 
-    while (config.commandWait || config.pcapMonitor || laterHead) {
+    while (!config.quitting && (config.commandWait || config.pcapMonitor || laterHead)) {
         ARKIME_LOCK(laterLock);
         while (!laterHead) {
             struct timespec ts;
@@ -479,15 +540,61 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     }
 
 quitting:
+    // Set quitting before draining so an enqueue that takes laterLock after the drain is rejected
     arkime_quit();
+
+    // Queued files will never be processed, tell any --notify client instead of leaving it waiting for EOF.
+    // Directories never produce their own notification, matching the load_thread paths.
+    // Detach the queue under the lock but notify and free outside it.
+    ARKIME_LOCK(laterLock);
+    ArkimeSchemeLater_t *later = laterHead;
+    laterHead = laterTail = NULL;
+    ARKIME_UNLOCK(laterLock);
+    while (later) {
+        ArkimeSchemeLater_t *item = later;
+        later = later->next;
+        if (!(item->flags & ARKIME_SCHEME_FLAG_DIRHINT) && item->actions && item->actions->notifyClientRef)
+            arkime_command_notify_file_error(item->actions->notifyClientRef, item->uri);
+        g_free(item->uri);
+        arkime_reader_scheme_actions_deref(item->actions);
+        ARKIME_TYPE_FREE(ArkimeSchemeLater_t, item);
+    }
+
     int exitFunc = arkime_get_named_func("arkime_reader_thread_exit");
     arkime_call_named_func(exitFunc, 0, NULL);
+    ARKIME_THREAD_ATOMIC_STORE_RELAXED(schemeThreadRunning, 0);
     return NULL;
 }
 
 /******************************************************************************/
+// Keep the main loop and packet threads alive until the scheme thread has stopped, a load
+// stopped mid file still has packets and a FILE_DONE to hand to the packet threads.
+// Don't wait forever though, a stuck thread would otherwise block the writer exit.
+#define SCHEME_THREAD_WAIT_SECS 10
+LOCAL int reader_scheme_outstanding()
+{
+    LOCAL int ticks; // arkime_quit_gfunc runs every 100ms
+
+    if (!ARKIME_THREAD_ATOMIC_LOAD_RELAXED(schemeThreadRunning)) {
+        return 0;
+    }
+
+    if (ticks < SCHEME_THREAD_WAIT_SECS * 10) {
+        ticks++;
+        return 1;
+    }
+
+    if (ticks == SCHEME_THREAD_WAIT_SECS * 10) {
+        ticks++;
+        LOG("WARNING - scheme reader thread still running after %d seconds, continuing shutdown without it", SCHEME_THREAD_WAIT_SECS);
+    }
+    return 0;
+}
+/******************************************************************************/
 LOCAL void reader_scheme_start()
 {
+    // Set before the thread exists so the can quit never sees a gap
+    ARKIME_THREAD_ATOMIC_STORE_RELAXED(schemeThreadRunning, 1);
     g_thread_unref((schemeThread = g_thread_new("arkime-scheme", &reader_scheme_thread, NULL)));
 }
 
@@ -565,9 +672,9 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
     // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
     if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
-        offlineInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
+        fileInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
     } else {
-        offlineInfo[readerState.readerPos].lastBytes += len;
+        fileInfo[readerState.readerPos].lastBytes += len;
     }
 
     while (len > 0) {
@@ -594,7 +701,6 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             }
 
             readerState.needSwap = h->byte_order_magic != 0x1A2B3C4D;
-            readerState.tsresol = 1000000; // default to microsecond resolution
 
             if (readerState.needSwap) {
                 readerState.fileHeaderLen = SWAP32(h->block_total_length);
@@ -675,9 +781,9 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 }
                 readerState.state = ARKIME_SCHEME_NG_INTERFACE;
             } else if (blockHeader->block_type == 0x0A0D0D0A) {
-                // New Section Header Block - reset interface and tsresol state
+                // New Section Header Block - restart interface numbering. The
+                // next IDB opens a fresh fileInfo slot via header_common.
                 readerState.haveInterface = -1;
-                readerState.tsresol = 1000000;
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
             } else {
                 readerState.state = ARKIME_SCHEME_NG_SKIP;
@@ -706,12 +812,13 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 snaplen = SWAP32(snaplen);
             }
 
-            // ALW TODO: Currently we don't support multiple different interface linktypes
-            if (readerState.haveInterface != -1 && readerState.haveInterface != linkType) {
-                LOG("ERROR - Multiple interfaces in pcapNG file '%s', not supported", uri);
-                return 1;
-            }
+            // The interface index for this IDB within the current section. The
+            // first IDB (index 0) opens the fileInfo slot via header_common, the
+            // rest are registered as additional interfaces. EPB interface_id
+            // selects between them.
+            const int ifaceIndex = readerState.haveInterface + 1;
 
+            uint64_t tsresol = 1000000; // default microsecond resolution
             uint8_t *options = readerState.tmpBuffer + 8;
             const uint8_t *optionsEnd = options + readerState.tmpBufferLen - 8 - 4; // exclude trailing block_total_length
 
@@ -743,12 +850,12 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                         continue;
                     }
                     if (options[0] & 0x80) {
-                        readerState.tsresol = 1ULL << MIN((options[0] & 0x7F), 63);
+                        tsresol = 1ULL << MIN((options[0] & 0x7F), 63);
                     } else {
-                        readerState.tsresol = 1;
+                        tsresol = 1;
                         const int exp = MIN(options[0], 19);
                         for (int i = 0; i < exp; i++)
-                            readerState.tsresol *= 10;
+                            tsresol *= 10;
                     }
                 }
 
@@ -756,11 +863,33 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 options += (4 - (olen & 3)) & 3; // align to 32 bits
             }
 
-            if (readerState.haveInterface == -1)
-                reader_scheme_header_common(uri, arkime_packet_linktype_to_dlt(linkType), snaplen, extraInfo, actions);
+            if (ifaceIndex >= ARKIME_MAX_INTERFACES_PER_FILE) {
+                LOG("WARNING - pcapNG file '%s' has more than %d interfaces, ignoring interface %d",
+                    uri, ARKIME_MAX_INTERFACES_PER_FILE, ifaceIndex);
+            } else if (ifaceIndex == 0) {
+                // First interface of the section sets up the fileInfo slot
+                if (reader_scheme_header_common(uri, arkime_packet_linktype_to_dlt(linkType), snaplen, extraInfo, actions)) {
+                    // Keep the packets batched from an earlier section, and record that this slot got them
+                    if (batch.count > 0) {
+                        fileInfo[readerState.readerPos].didBatch = 1;
+                        arkime_packet_batch_flush(&batch);
+                    }
+                    return 1;
+                }
+                readerState.tsresol[0] = tsresol;
+                fileInfo[readerState.readerPos].isPcapNG = 1;
+            } else {
+                // Additional interface within the same file/section
+                arkime_packet_set_interface(readerState.readerPos, ifaceIndex, arkime_packet_linktype_to_dlt(linkType), snaplen);
+                readerState.tsresol[ifaceIndex] = tsresol;
+            }
 
-            readerState.haveInterface = linkType;
+            // Record this interface's IDB file offset so read-back can find it
+            // without rescanning, and export can copy the IDB verbatim.
+            if (ifaceIndex < ARKIME_MAX_INTERFACES_PER_FILE)
+                fileInfo[readerState.readerPos].interfaces[ifaceIndex].blockOffset = readerState.startPos;
 
+            readerState.haveInterface = ifaceIndex;
             readerState.state = ARKIME_SCHEME_NG_HEADER;
             readerState.tmpBufferLen = 0;
             continue;
@@ -848,6 +977,22 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
             readerState.packet->readerFilePos = readerState.startPos;
             readerState.packet->readerPos = readerState.readerPos;
 
+            // EPB interface_id selects which interface (IDB) the packet was
+            // captured on; it indexes fileInfo[readerPos].interfaces[].
+            uint32_t interfaceId;
+            memcpy(&interfaceId, readerState.tmpBuffer, 4);
+            if (readerState.needSwap) {
+                interfaceId = SWAP32(interfaceId);
+            }
+            if (interfaceId >= fileInfo[readerState.readerPos].numInterfaces) {
+                // Reference to an interface we never saw an IDB for; skip.
+                arkime_packet_free(readerState.packet);
+                readerState.packet = 0;
+                readerState.state = ARKIME_SCHEME_NG_SKIP;
+                continue;
+            }
+            readerState.packet->interfaceIndex = interfaceId;
+
             uint32_t tsh, tsl;
             memcpy(&tsh, readerState.tmpBuffer + 4, 4);
             memcpy(&tsl, readerState.tmpBuffer + 8, 4);
@@ -859,8 +1004,11 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
             uint64_t ts = ((uint64_t)tsh << 32) | tsl;
 
-            readerState.packet->ts.tv_sec = ts / readerState.tsresol;
-            readerState.packet->ts.tv_usec = (ts % readerState.tsresol) * 1000000 / readerState.tsresol;
+            uint64_t tsresol = readerState.tsresol[interfaceId];
+            if (tsresol == 0)
+                tsresol = 1000000;
+            readerState.packet->ts.tv_sec = ts / tsresol;
+            readerState.packet->ts.tv_usec = (ts % tsresol) * 1000000 / tsresol;
 
             readerState.state = ARKIME_SCHEME_NG_PACKET;
             continue;
@@ -893,8 +1041,8 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                 readerState.tmpBufferLen = 0;
             }
             packets++;
-            offlineInfo[readerState.readerPos].lastPackets++;
-            offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
+            fileInfo[readerState.readerPos].lastPackets++;
+            fileInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
             if (deadPcap && !bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
                 arkime_packet_free(readerState.packet);
             } else {
@@ -923,7 +1071,7 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 processNG:
     // Record if any packets were batched
     if (batch.count > 0) {
-        offlineInfo[readerState.readerPos].didBatch = 1;
+        fileInfo[readerState.readerPos].didBatch = 1;
         arkime_packet_batch_flush(&batch);
     }
     return 0;
@@ -932,6 +1080,13 @@ processNG:
 SUPPRESS_ALIGNMENT
 int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const char *extraInfo, ArkimeSchemeAction_t *actions)
 {
+    // Stop mid file once quitting, the file and http/s3 loaders all stop on a non zero return
+    // and load_thread handles the partial file
+    if (config.quitting) {
+        readerState.quitStopped = 1;
+        return 1;
+    }
+
     if (readerState.isPcapNG) {
         return arkime_reader_scheme_processNG(uri, data, len, extraInfo, actions);
     }
@@ -943,9 +1098,9 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
 
     // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
     if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
-        offlineInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
+        fileInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
     } else {
-        offlineInfo[readerState.readerPos].lastBytes += len;
+        fileInfo[readerState.readerPos].lastBytes += len;
     }
 
     while (len > 0) {
@@ -1077,8 +1232,8 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
                 readerState.tmpBufferLen = 0;
             }
             packets++;
-            offlineInfo[readerState.readerPos].lastPackets++;
-            offlineInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
+            fileInfo[readerState.readerPos].lastPackets++;
+            fileInfo[readerState.readerPos].lastPacketTime = readerState.packet->ts;
             if (deadPcap && !bpf_filter(bpf.bf_insns, readerState.packet->pkt, readerState.pktlen, readerState.pktlen)) {
                 arkime_packet_free(readerState.packet);
             } else {
@@ -1107,7 +1262,7 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
 process:
     // Record if any packets were batched
     if (batch.count > 0) {
-        offlineInfo[readerState.readerPos].didBatch = 1;
+        fileInfo[readerState.readerPos].didBatch = 1;
         arkime_packet_batch_flush(&batch);
     }
     return 0;
@@ -1130,6 +1285,12 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
     int opsNum = 0;
     char *ops[11];
     gboolean notify = FALSE;
+
+    // Nothing queued now would be processed
+    if (config.quitting) {
+        arkime_command_respond(cc, "Quitting, not adding\n", -1);
+        return 1;
+    }
 
     if (config.pcapMonitor) {
         flags |= ARKIME_SCHEME_FLAG_MONITOR;
@@ -1225,7 +1386,11 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
         actions->notifyClientRef = cc;
     }
 
-    arkime_reader_scheme_enqueue(argv[argc - 1], flags, actions);
+    if (!arkime_reader_scheme_enqueue(argv[argc - 1], flags, actions)) {
+        // Quitting started after the check above, cc is this live connection
+        arkime_command_respond(cc, "Quitting, not adding\n", -1);
+        return 1;
+    }
     return 0;
 }
 
@@ -1280,6 +1445,8 @@ void arkime_reader_scheme_init()
 
     arkime_reader_start         = reader_scheme_start;
     arkime_reader_stats         = reader_scheme_stats;
+
+    arkime_add_can_quit(reader_scheme_outstanding, "scheme reader thread");
 
     offlineDispatchAfter        = arkime_config_int(NULL, "offlineDispatchAfter", 2500, 1, 0x7fff);
 

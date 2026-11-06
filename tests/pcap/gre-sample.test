@@ -232,24 +232,72 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client",
       "server"
      ],
      "modeCnt" : 2,
+     "orgTime" : [
+      "1055289927.417650",
+      "1055289973.849818"
+     ],
+     "orgTimeCnt" : 2,
+     "poll" : [
+      64
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      "3815",
+      "7629"
+     ],
+     "precisionCnt" : 2,
+     "recTime" : [
+      "1055289910.992244",
+      "1055289993.233993"
+     ],
+     "recTimeCnt" : 2,
      "refId" : [
-      "7f7f0101",
-      "cdbcb921"
+      "127.127.1.1",
+      "205.188.185.33"
      ],
      "refIdCnt" : 2,
+     "refTime" : [
+      "1055289880.891367",
+      "1055289964.850213"
+     ],
+     "refTimeCnt" : 2,
+     "rootDelay" : [
+      "0",
+      "14587"
+     ],
+     "rootDelayCnt" : 2,
+     "rootDispersion" : [
+      "11078",
+      "11292"
+     ],
+     "rootDispersionCnt" : 2,
      "stratum" : [
       "secondary"
      ],
      "stratumCnt" : 1,
+     "stratumNum" : [
+      "11",
+      "2"
+     ],
+     "stratumNumCnt" : 2,
      "version" : [
       4
      ],
-     "versionCnt" : 1
+     "versionCnt" : 1,
+     "xmtTime" : [
+      "1055289973.849818",
+      "1055289993.234261"
+     ],
+     "xmtTimeCnt" : 2
     },
     "packetLen" : [
      130,
@@ -507,6 +555,18 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "cipher" : [
+      "blowfish-cbc"
+     ],
+     "cipherCnt" : 1,
+     "clientVersion" : [
+      "ssh-2.0-openssh_3.6.1p1"
+     ],
+     "clientVersionCnt" : 1,
+     "compression" : [
+      "zlib"
+     ],
+     "compressionCnt" : 1,
      "hassh" : [
       "5ef6678a6b060094834599ca16581b05"
      ],
@@ -515,10 +575,26 @@
       "6e3242d64766f4154c11858bbd654415"
      ],
      "hasshServerCnt" : 1,
+     "hostKeyAlg" : [
+      "ssh-rsa"
+     ],
+     "hostKeyAlgCnt" : 1,
+     "kex" : [
+      "diffie-hellman-group-exchange-sha1"
+     ],
+     "kexCnt" : 1,
      "key" : [
       "AAAAB3NzaC1yc2EAAAABIwAAAIEApsEyRdoxEZ/Xmehe9Oo6s0uuroriAKOqim32L2V9DZbzt101U41iUHjI8ESaANQZd73O7uop7tIfK6ZMq/cshMcuuI1YxqYxCBuCFLsiomlYq7+7cURJEClVtSyPmtijvhnaJKAlN4P3iXZDCnUQkKrWC+XhBZT8E5DxSSIRAhk="
      ],
      "keyCnt" : 1,
+     "mac" : [
+      "hmac-md5"
+     ],
+     "macCnt" : 1,
+     "serverVersion" : [
+      "ssh-1.99-openssh_3.1p1"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-1.99-openssh_3.1p1",
       "ssh-2.0-openssh_3.6.1p1"
@@ -763,24 +839,71 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client",
       "server"
      ],
      "modeCnt" : 2,
+     "orgTime" : [
+      "1055289944.034335",
+      "1055289992.849176"
+     ],
+     "orgTimeCnt" : 2,
+     "poll" : [
+      64
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      7629
+     ],
+     "precisionCnt" : 1,
+     "recTime" : [
+      "1055289926.897559",
+      "1055290013.090432"
+     ],
+     "recTimeCnt" : 2,
      "refId" : [
-      "121a0469",
-      "7f7f0101"
+      "127.127.1.1",
+      "18.26.4.105"
      ],
      "refIdCnt" : 2,
+     "refTime" : [
+      "1055289663.620223",
+      "1055289964.850213"
+     ],
+     "refTimeCnt" : 2,
+     "rootDelay" : [
+      "0",
+      "34409"
+     ],
+     "rootDelayCnt" : 2,
+     "rootDispersion" : [
+      "11368",
+      "33829"
+     ],
+     "rootDispersionCnt" : 2,
      "stratum" : [
       "secondary"
      ],
      "stratumCnt" : 1,
+     "stratumNum" : [
+      "11",
+      "3"
+     ],
+     "stratumNumCnt" : 2,
      "version" : [
       4
      ],
-     "versionCnt" : 1
+     "versionCnt" : 1,
+     "xmtTime" : [
+      "1055289992.849176",
+      "1055290013.090613"
+     ],
+     "xmtTimeCnt" : 2
     },
     "packetLen" : [
      130,
@@ -937,24 +1060,72 @@
     },
     "node" : "test",
     "ntp" : {
+     "extensions" : [
+      0
+     ],
+     "extensionsCnt" : 1,
      "mode" : [
       "client",
       "server"
      ],
      "modeCnt" : 2,
+     "orgTime" : [
+      "1055289948.300107",
+      "1055289996.849044"
+     ],
+     "orgTimeCnt" : 2,
+     "poll" : [
+      64
+     ],
+     "pollCnt" : 1,
+     "precision" : [
+      "488281",
+      "7629"
+     ],
+     "precisionCnt" : 2,
+     "recTime" : [
+      "1055289931.010340",
+      "1055290017.096870"
+     ],
+     "recTimeCnt" : 2,
      "refId" : [
-      "7f7f0101",
-      "c00529d1"
+      "127.127.1.1",
+      "192.5.41.209"
      ],
      "refIdCnt" : 2,
+     "refTime" : [
+      "1055289569.090258",
+      "1055289964.850213"
+     ],
+     "refTimeCnt" : 2,
+     "rootDelay" : [
+      "0",
+      "22308"
+     ],
+     "rootDelayCnt" : 2,
+     "rootDispersion" : [
+      "11414",
+      "47394"
+     ],
+     "rootDispersionCnt" : 2,
      "stratum" : [
       "secondary"
      ],
      "stratumCnt" : 1,
+     "stratumNum" : [
+      "11",
+      "2"
+     ],
+     "stratumNumCnt" : 2,
      "version" : [
       4
      ],
-     "versionCnt" : 1
+     "versionCnt" : 1,
+     "xmtTime" : [
+      "1055289996.849044",
+      "1055290017.096870"
+     ],
+     "xmtTimeCnt" : 2
     },
     "packetLen" : [
      130,

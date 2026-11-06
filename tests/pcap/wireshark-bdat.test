@@ -26,6 +26,10 @@
     ],
     "dstTTLCnt" : 1,
     "email" : {
+     "date" : [
+      "Wed, 19 Oct 2016 13:08:05 +0100"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "p@test.ex"
      ],
@@ -38,13 +42,6 @@
       "subject"
      ],
      "headerCnt" : 5,
-     "headerField" : [
-      "date"
-     ],
-     "headerValue" : [
-      "Wed, 19 Oct 2016 13:08:05 +0100"
-     ],
-     "headerValueCnt" : 1,
      "host" : [
       "root",
       "testhost.test.ex"
@@ -71,6 +68,12 @@
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1476878885946,
+    "ftp" : {
+     "responseMsg" : [
+      "220 Greetings"
+     ],
+     "responseMsgCnt" : 1
+    },
     "initRTT" : 0,
     "ipProtocol" : 6,
     "lastPacket" : 1476878885949,

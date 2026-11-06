@@ -294,6 +294,15 @@ LOCAL void dcerpc_classify(ArkimeSession_t *session, const uint8_t *data, int le
     if (data[2] > 19)
         return;
 
+    // Byte 4: data representation, integer order 0/1 in the high nibble, char set 0/1 in the low nibble
+    if (data[4] & 0xee)
+        return;
+
+    // Bytes 8-9: frag_length covers at least the 16 byte header
+    uint16_t fragLen = (data[4] & 0x10) ? (data[9] << 8 | data[8]) : (data[8] << 8 | data[9]);
+    if (fragLen < 16)
+        return;
+
     if (arkime_session_has_protocol(session, "dcerpc"))
         return;
 

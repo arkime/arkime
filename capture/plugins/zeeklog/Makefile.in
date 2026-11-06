@@ -1,0 +1,18 @@
+CC            = @CC@
+
+INCLUDE_PCAP  = @PCAP_CFLAGS@
+
+INCLUDE_OTHER = -I../.. -I../../thirdparty \
+                @GLIB2_CFLAGS@
+
+SRCS=$(wildcard *.c)
+
+../zeeklog.so : $(SRCS) ../../arkime.h ../../hash.h ../../dll.h ../../bsb.h ../../parsers/dns_info.h ../../parsers/certs_info.h
+	$(CC) -pthread @SHARED_FLAGS@ $(EXTRA_CFLAGS) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fno-strict-aliasing -g -fPIC $(INCLUDE_PCAP) $(INCLUDE_OTHER) $(SRCS)
+
+all:../zeeklog.so
+
+check:
+
+distclean realclean clean:
+	rm -f *.o ../zeeklog.so

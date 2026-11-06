@@ -49,6 +49,10 @@
       "multipart/alternative; boundary=\"_000_CEC7902D1A0EDxxxxxxxxxxxxxxxxxx_\""
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Fri, 6 Dec 2013 19:31:10 +0000"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "xxxxxxxx@gmail.com"
      ],
@@ -75,7 +79,6 @@
      "headerField" : [
       "accept-language",
       "content-language",
-      "date",
       "thread-index",
       "thread-topic",
       "x-ms-has-attach",
@@ -86,11 +89,10 @@
       "",
       "=?iso-8859-1?B?dGVzdCDlIOkg7iD4IPw=?=",
       "AQHO8rm3qDteILz53Uu2U8DmQ4nDRg==",
-      "Fri, 6 Dec 2013 19:31:10 +0000",
       "en-US",
       "en-US"
      ],
-     "headerValueCnt" : 7,
+     "headerValueCnt" : 6,
      "host" : [
       "xxxxxxxxxxxxxxxxx1.xxxxx.net",
       "xxxxxxxxxxxxxxxxx2.xxxxx.net"
@@ -110,6 +112,10 @@
       "1.0"
      ],
      "mimeVersionCnt" : 1,
+     "reply" : [
+      "250 Ok: queued as 6635752C077"
+     ],
+     "replyCnt" : 1,
      "smtpHello" : [
       "xxxxxxxxxxxxxxxxx1.xxxxx.net"
      ],

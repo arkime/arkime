@@ -95,6 +95,10 @@
       "http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=0&num=10&hl=en&gl=us&uule=w+CAIQICINVW5pdGVkIFN0YXRlcw"
      ],
      "request-refererCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -122,6 +126,11 @@
      "response-location" : [
       "http://ipv4.google.com/sorry/IndexRedirect?continue=http://www.google.com/search?client=firefox&rls=en&q=sheepskin%20boots&start=10&num=10&hl=en&gl=us&uule=xxxxxxxxxxxxxxxxxxxxxxxxxxxx"
      ],
+     "responseBodyLen" : [
+      "21552",
+      "409"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "alternate-protocol",
       "cache-control",
@@ -362,8 +371,33 @@
      "ASN" : "AS15169 Google LLC",
      "GEO" : "US",
      "RIR" : "ARIN",
+     "boundASN" : [
+      "AS15169 Google LLC"
+     ],
+     "boundGEO" : [
+      "US"
+     ],
+     "boundIp" : [
+      "74.125.131.103"
+     ],
+     "boundIpCnt" : 1,
+     "boundPort" : [
+      80
+     ],
+     "boundPortCnt" : 1,
+     "boundRIR" : [
+      "ARIN"
+     ],
      "ip" : "74.125.131.103",
-     "port" : 80
+     "port" : 80,
+     "status" : [
+      "succeeded"
+     ],
+     "statusCnt" : 1,
+     "version" : [
+      5
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "as" : {

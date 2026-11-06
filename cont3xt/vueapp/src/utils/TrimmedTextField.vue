@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <v-text-field
     :model-value="upstreamHasBetter ? vueModel.trim() : internalValue"

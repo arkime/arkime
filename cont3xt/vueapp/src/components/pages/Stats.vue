@@ -13,7 +13,7 @@ SPDX-License-Identifier: Apache-2.0
           color="info"
           size="64"
           indeterminate />
-        <p>Loading stats...</p>
+        <p>{{ $t('cont3xt.stats.loading') }}</p>
       </div>
     </v-overlay>
 
@@ -24,27 +24,27 @@ SPDX-License-Identifier: Apache-2.0
         variant="outlined"
         v-debounce="value => search = value"
         class="mx-4 medium-input"
-        :placeholder="activeTab === 'itypes' ? 'Search by itype' : 'Search by name'"
+        :placeholder="activeTab === 'itypes' ? $t('cont3xt.stats.searchByItype') : $t('cont3xt.stats.searchByName')"
         clearable />
     </div>
     <!-- /search -->
 
-    <div class="d-flex flex-row align-center ml-4">
+    <div class="d-flex flex-row align-center ms-4">
       <v-tabs
         content-class="mt-3"
         :model-value="activeTab"
         @update:model-value="setTab">
         <v-tab value="integrations">
-          Integrations
+          {{ $t('cont3xt.stats.integrations') }}
         </v-tab>
         <v-tab value="itypes">
-          ITypes
+          {{ $t('cont3xt.stats.itypes') }}
         </v-tab>
       </v-tabs>
       <li
         role="presentation"
         class="nav-item align-self-center startup-time">
-        Started at
+        {{ $t('cont3xt.stats.startedAt') }}
         <strong>{{ dateString(data.startTime) }}</strong>
       </li>
     </div>
@@ -52,30 +52,27 @@ SPDX-License-Identifier: Apache-2.0
     <v-data-table
       hover
       must-sort
-      class="table-striped"
       hide-default-footer
       :search="search"
       :loading="loading"
       :headers="headers"
       :items="statItems"
       v-model:sort-by="sortBy"
-      :no-data-text="(statItems == null || statItems.length === 0) ? `There are no ${tableSubjects} to show stats for` : `There are no ${tableSubjects} that match the name: ${search}`"
+      :no-data-text="noDataText"
       :items-per-page="-1"
-      :header-props="{ class: 'text-right' }" />
+      :header-props="{ class: 'text-end' }" />
 
     <!-- stats error -->
-    <div
+    <v-alert
       v-if="error.length"
-      class="mt-2 alert alert-warning">
-      <v-icon icon="mdi-alert" />&nbsp;
+      type="warning"
+      variant="tonal"
+      density="compact"
+      closable
+      class="mt-2"
+      @click:close="error = ''">
       {{ error }}
-      <button
-        type="button"
-        @click="error = ''"
-        class="close cursor-pointer">
-        <span>&times;</span>
-      </button>
-    </div> <!-- /stats error -->
+    </v-alert> <!-- /stats error -->
   </div>
 </template>
 
@@ -84,6 +81,9 @@ import Cont3xtService from '@/components/services/Cont3xtService';
 import { dateString } from '@/utils/filters.js';
 import { commaString, roundCommaString } from '@common/vueFilters.js';
 import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const data = ref({});
 const error = ref('');
@@ -97,7 +97,13 @@ const statItems = computed(() => {
   if (activeTab.value === 'integrations') { return data.value.stats; }
   return data.value.stats; // integration stats in case of invalid type
 });
-const tableSubjects = computed(() => activeTab.value);
+const noDataText = computed(() => {
+  const empty = statItems.value == null || statItems.value.length === 0;
+  if (activeTab.value === 'itypes') {
+    return empty ? t('cont3xt.stats.noItypes') : t('cont3xt.stats.noItypesMatch', { search: search.value });
+  }
+  return empty ? t('cont3xt.stats.noIntegrations') : t('cont3xt.stats.noIntegrationsMatch', { search: search.value });
+});
 
 onMounted(() => {
   // set active tab
@@ -125,99 +131,99 @@ function commaStringRound (val) {
 function format (key, formatterFn) {
   return (item) => formatterFn(item[key]);
 }
-const headers = [{
-  title: 'Name',
+const headers = computed(() => [{
+  title: t('cont3xt.stats.name'),
   key: 'name',
   sortable: true
 }, {
-  title: 'Cache Lookup',
+  title: t('cont3xt.stats.cacheLookup'),
   key: 'cacheLookup',
   value: format('cacheLookup', commaString),
   sortable: true,
   filterable: false,
   align: 'end'
 }, {
-  title: 'Cache Found',
+  title: t('cont3xt.stats.cacheFound'),
   key: 'cacheFound',
   value: format('cacheFound', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
-  title: 'Cache Good',
+  title: t('cont3xt.stats.cacheGood'),
   key: 'cacheGood',
   value: format('cacheGood', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
-  title: 'Cache Recent Avg MS',
+  title: t('cont3xt.stats.cacheRecentAvgMS'),
   key: 'cacheRecentAvgMS',
   value: format('cacheRecentAvgMS', commaStringRound),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
-  title: 'Direct Lookup',
+  title: t('cont3xt.stats.directLookup'),
   key: 'directLookup',
   value: format('directLookup', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
-  title: 'Direct Found',
+  title: t('cont3xt.stats.directFound'),
   key: 'directFound',
   value: format('directFound', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
-  title: 'Direct Good',
+  title: t('cont3xt.stats.directGood'),
   key: 'directGood',
   value: format('directGood', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
-  title: 'Direct Error',
+  title: t('cont3xt.stats.directError'),
   key: 'directError',
   value: format('directError', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
-  title: 'Direct Recent Avg MS',
+  title: t('cont3xt.stats.directRecentAvgMS'),
   key: 'directRecentAvgMS',
   value: format('directRecentAvgMS', commaStringRound),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
 }, {
-  title: 'Total',
+  title: t('cont3xt.stats.total'),
   key: 'total',
   value: format('total', commaString),
   sortable: true,
-  tdClass: 'text-right',
-  thClass: 'text-right',
+  tdClass: 'text-end',
+  thClass: 'text-end',
   filterable: false,
   align: 'end'
-}];
+}]);
 </script>
 
 <style scoped>

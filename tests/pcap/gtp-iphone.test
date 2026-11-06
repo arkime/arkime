@@ -1301,15 +1301,20 @@
       "Ibayc7qnh1PkQzsM6S0TeFJ6"
      ],
      "callidCnt" : 2,
+     "contact" : [
+      "<sip:[fd00:183:1:1:1886:9040:8605:32b8]:5060>;+g.3gpp.icsi-ref=\"urn%3Aurn-7%3A3gpp-service.ims.icsi.mmtel\";+g.3gpp.smsip"
+     ],
+     "contactCnt" : 1,
      "from" : [
       "<tel:+88270006>;tag=9Q5V3XeXXf",
       "<tel:+88270006>;tag=HKLjSxeVsP"
      ],
      "fromCnt" : 2,
      "method" : [
-      "MESSAGE"
+      "MESSAGE",
+      "SUBSCRIBE"
      ],
-     "methodCnt" : 1,
+     "methodCnt" : 2,
      "statuscode" : [
       "202",
       "405"
@@ -1318,19 +1323,21 @@
      "to" : [
       "<tel:+7>",
       "<tel:+7>;tag=210896220",
+      "<tel:+88270006>",
       "<tel:+88270006>;tag=659592208"
      ],
-     "toCnt" : 3,
+     "toCnt" : 4,
      "useragent" : [
       "iOS/8.1 (12B411) iPhone"
      ],
      "useragentCnt" : 1,
      "via" : [
+      "SIP/2.0/UDP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKOJ5umQnnq16M2Cr;rport",
       "SIP/2.0/UDP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKOJ5umQnnq16M2Cr;rport=5060;received=fd00:183:1:1:1886:9040:8605:32b8",
       "SIP/2.0/UDP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKtbyL8nYMjSubgv5;rport",
       "SIP/2.0/UDP [fd00:183:1:1:1886:9040:8605:32b8]:5060;branch=z9hG4bKtbyL8nYMjSubgv5;rport=5060;received=fd00:183:1:1:1886:9040:8605:32b8"
      ],
-     "viaCnt" : 3
+     "viaCnt" : 4
     },
     "source" : {
      "bytes" : 1629,
@@ -1494,9 +1501,10 @@
      "fromCnt" : 2,
      "method" : [
       "ACK",
-      "BYE"
+      "BYE",
+      "INVITE"
      ],
-     "methodCnt" : 2,
+     "methodCnt" : 3,
      "statuscode" : [
       "100",
       "180",

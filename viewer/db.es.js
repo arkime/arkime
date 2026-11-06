@@ -161,7 +161,7 @@ class DbESImpl {
     const { body } = await this.#client.index({
       index: `${this.#prefix}views`,
       body: doc,
-      refresh: 'wait_for',
+      refresh: true,
       timeout: '10m'
     });
     return body._id;
@@ -199,7 +199,7 @@ class DbESImpl {
   // --------------------------------------------------------------------------
   async searchShareables (params) {
     const query = this.#buildShareablesQuery(params);
-    query.sort = { name: { order: 'asc' } };
+    query.sort = { [params.sortField || 'name']: { order: params.sortOrder || 'asc' } };
     query.from = params.from || 0;
     query.size = params.size || 50;
 
@@ -232,11 +232,19 @@ class DbESImpl {
     return body._source;
   }
 
+  async getShareableVersioned (id) {
+    const { body } = await this.#client.get({
+      index: `${this.#prefix}shareables`,
+      id
+    });
+    return { shareable: body._source, version: { seqNo: body._seq_no, primaryTerm: body._primary_term } };
+  }
+
   async createShareable (doc) {
     const { body } = await this.#client.index({
       index: `${this.#prefix}shareables`,
       body: doc,
-      refresh: 'wait_for',
+      refresh: true,
       timeout: '10m'
     });
     return body._id;
@@ -259,13 +267,15 @@ class DbESImpl {
     });
   }
 
-  async setShareable (id, doc) {
+  async setShareable (id, doc, version) {
     await this.#client.index({
       index: `${this.#prefix}shareables`,
       body: doc,
       id,
       refresh: true,
-      timeout: '10m'
+      timeout: '10m',
+      // a missing doc or a newer write is a 409 version conflict
+      ...(version ? { if_seq_no: version.seqNo, if_primary_term: version.primaryTerm } : {})
     });
   }
 
@@ -311,7 +321,7 @@ class DbESImpl {
     const { body } = await this.#client.index({
       index: `${this.#prefix}lookups`,
       body: doc,
-      refresh: 'wait_for',
+      refresh: true,
       timeout: '10m'
     });
     return body._id;
@@ -408,7 +418,8 @@ class DbESImpl {
   }
 
   #buildShareablesQuery (params) {
-    const must = [{ term: { type: params.type } }];
+    // no type means list every type the user can see
+    const must = params.type ? [{ term: { type: params.type } }] : [];
 
     const permissionFilters = [];
     permissionFilters.push({ term: { creator: params.user } });
@@ -432,6 +443,21 @@ class DbESImpl {
     const filter = [{
       bool: { should: permissionFilters, minimum_should_match: 1 }
     }];
+
+    // Every field is a keyword, so substring search needs wildcards.
+    // case_insensitive is best effort: it is documented as supported but is
+    // not honoured on every OpenSearch, so do not rely on it or test for it.
+    if (params.searchTerm) {
+      const value = `*${params.searchTerm}*`;
+      filter.push({
+        bool: {
+          should: ['name', 'description', 'type', 'creator'].map(f => ({
+            wildcard: { [f]: { value, case_insensitive: true } }
+          })),
+          minimum_should_match: 1
+        }
+      });
+    }
 
     return { query: { bool: { must, filter } } };
   }

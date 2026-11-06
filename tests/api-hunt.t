@@ -14,6 +14,10 @@ my $json;
 
 
 
+# The hunt api tests below only search socks-https-example.pcap and dns-mx.pcap
+# (v6.pcap for coconut), hunting all sessions would also read the 72 encoded
+# sessions api-encodings.t makes and takes about 15 seconds each time
+
 # Delete old hunts and users
 clearIndex("tests_hunts");
 viewerGet("/regressionTests/deleteAllUsers");
@@ -56,7 +60,7 @@ my $hToken = getTokenCookie('sac-huntuser');
 
 # An array size used to wedge the hunt worker, so only a positive integer is allowed
   foreach my $size ('[5,6]', '"abc"', '1.5', '0', '-1') {
-    $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt bad size","size":' . $size . ',"search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+    $json = viewerPostToken("/api/hunt", '{"totalSessions":1,"name":"test hunt bad size","size":' . $size . ',"search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}}', $token);
     is($json->{i18n}, "api.hunts.invalidSize", "bad hunt size $size");
   }
 
@@ -124,30 +128,30 @@ my $hToken = getTokenCookie('sac-huntuser');
   is($json->{i18n}, "api.hunts.missingFullQuery", "missing start time i18n");
 
 # Bad roles
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 17","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": false}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 17","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}, "roles": false}', $token);
   is($json->{success}, 0, "roles not array");
   is($json->{i18n}, "api.hunts.rolesMustBeArray", "roles not array i18n");
 
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "roles": [false]}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}, "roles": [false]}', $token);
   is($json->{success}, 0, "roles array of non-strings");
   is($json->{i18n}, "api.hunts.rolesMustBeArray", "roles array of non-strings i18n");
 
 # Bad users
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": false}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}, "users": false}', $token);
   is($json->{success}, 0, "users not string");
   is($json->{i18n}, "api.hunts.usersMustBeString", "users not string i18n");
 
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}, "users": [false]}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 18","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}, "users": [false]}', $token);
   is($json->{success}, 0, "users array not string");
   is($json->{i18n}, "api.hunts.usersMustBeString", "users array not string i18n");
 
 # Bad description (object)
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt desc1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891},"description":{"evil":"object"}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt desc1","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"},"description":{"evil":"object"}}', $token);
   is($json->{success}, 0, "create hunt with object description fails");
   is($json->{text}, "Description must be a string", "create hunt object description error message");
 
 # Bad description (array)
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt desc2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891},"description":["arr"]}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt desc2","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"},"description":["arr"]}', $token);
   is($json->{success}, 0, "create hunt with array description fails");
   is($json->{text}, "Description must be a string", "create hunt array description error message");
 
@@ -159,7 +163,7 @@ my $hToken = getTokenCookie('sac-huntuser');
 ##### GOOD
 
 # Add a valid hunt, and it should immediately run
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}}', $token);
   is ($json->{success}, 1);
   my $id1 = $json->{hunt}->{id};
 
@@ -197,7 +201,7 @@ my $hToken = getTokenCookie('sac-huntuser');
   $hunts = viewerGet("/api/hunts?history=true&searchTerm=zzznomatch");
   is (@{$hunts->{data}}, 0, "searchTerm no match");
 
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 14","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}}', $otherToken);
 
   viewerGet("/regressionTests/processHuntJobs");
 
@@ -214,7 +218,7 @@ my $hToken = getTokenCookie('sac-huntuser');
   is (@{$hunts->{data}}, 1, "User can remove their own hunt");
 
 # If the user is not an admin they can only pause their own hunts
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 15~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt 15~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}}', $token);
   my $id3 = $json->{hunt}->{id};
 
   $json = viewerPutToken("/api/hunt/$id3/pause?arkimeRegressionUser=user2", "{}", $otherToken);
@@ -231,7 +235,7 @@ my $hToken = getTokenCookie('sac-huntuser');
   is ($json->{text}, "Deleted hunt successfully");
 
 # Admin can delete any hunt
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"test hunt 16","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}}', $otherToken);
   my $id4 = $json->{hunt}->{id};
 
   viewerGet("/regressionTests/processHuntJobs");
@@ -258,7 +262,7 @@ my $hToken = getTokenCookie('sac-huntuser');
   my $id5 = $json->{hunt}->{id};
 
 # hunt bad regex
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $otherToken);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=user2", '{"totalSessions":1,"name":"badhunt","size":"50","search":"bad[","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}}', $otherToken);
   my $id6 = $json->{hunt}->{id};
 
   viewerGet("/regressionTests/processHuntJobs");
@@ -282,7 +286,7 @@ my $hToken = getTokenCookie('sac-huntuser');
   is($badHunt->{unrunnable}, 1, "hunt should be unrunnable");
 
 # add a hunt that is shared with another user
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"users":"sac-huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"users":"sac-huntuser","totalSessions":1,"name":"test hunt 13~`!@#$%^&*()[]{};<>?/`","size":"50","search":"test search text","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *socks-https-example.pcap || file == *dns-mx.pcap"}}', $token);
   is ($json->{hunt}->{users}->[0], "sac-huntuser", "hunt should have a user on creation");
   my $id7 = $json->{hunt}->{id};
   viewerGet("/regressionTests/processHuntJobs");
@@ -336,7 +340,7 @@ my $hToken = getTokenCookie('sac-huntuser');
 # remove hunt id and name from sessions
   $json = viewerPutToken("/api/hunt/$id7/removefromsessions?arkimeRegressionUser=anonymous", "{}", $token);
   is ($json->{success}, 0, "can't remove hunt name and id from hunts with no matches");
-  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt","size":"50","search":"coconut","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891}}', $token);
+  $json = viewerPostToken("/api/hunt?arkimeRegressionUser=anonymous", '{"totalSessions":1,"name":"test hunt","size":"50","search":"coconut","searchType":"ascii","type":"raw","src":true,"dst":true,"query":{"startTime":18000,"stopTime":1536872891,"expression":"file == *v6.pcap"}}', $token);
   my $id8 = $json->{hunt}->{id};
   cmp_ok($json->{hunt}->{totalSessions}, '>', 1, "hunt totalSessions is counted by the server");
   viewerGet("/regressionTests/processHuntJobs");

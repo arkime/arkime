@@ -1,5 +1,5 @@
 [parliament]
-# Where to store issues
+# Issues are stored in parliament.issues.json next to this path
 file=../etc/parliament.json
 
 # Port to listen on

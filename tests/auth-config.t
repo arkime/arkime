@@ -1,4 +1,4 @@
-use Test::More tests => 59;
+use Test::More tests => 68;
 use ArkimeTest;
 use JSON;
 use strict;
@@ -42,7 +42,7 @@ ArkimeConfig.initialize({ defaultConfigFile: iniFile, defaultSections: ['default
 
   // Same option viewer/config.js passes
   await Auth.initialize({ appAdminRole: 'arkimeAdmin', s2sRegressionTests: ArkimeConfig.getBool('s2sRegressionTests', false) });
-  console.log('AUTH OK');
+  console.log('AUTH OK', Auth.mode);
 
   if (mode === 'login') {
     await User.setUser('admin', { userId: 'admin', userName: 'admin', enabled: true, webEnabled: true, roles: ['arkimeUser'], passStore: Auth.pass2store('admin', 'secret') });
@@ -158,7 +158,25 @@ my ($code, $out);
 ################################################################################
 ($code, $out) = tryConfig("");
 is($code, 0, "default config starts");
-like($out, qr/AUTH OK/, "and auth initializes");
+like($out, qr/AUTH OK digest/, "and auth initializes in digest mode");
+
+################################################################################
+# userNameHeader no longer selects the auth mode, authMode defaults to digest
+################################################################################
+($code, $out) = tryConfig("userNameHeader=x-user", "ipgate");
+is($code, 0, "userNameHeader without authMode starts");
+like($out, qr/AUTH OK digest/, "and uses digest, not header");
+like($out, qr/userNameHeader alone no longer enables header auth/, "and says why");
+like($out, qr/^LOCAL 401 /m, "and doesn't trust the user header from loopback");
+
+($code, $out) = tryConfig("userNameHeader=oidc");
+is($code, 0, "an auth mode in userNameHeader starts");
+like($out, qr/AUTH OK digest/, "and uses digest, not that mode");
+like($out, qr/Ignoring userNameHeader=oidc/, "and says why");
+
+($code, $out) = tryConfig("mcpEnabled=true\nuserNameHeader=digest");
+is($code, 1, "an auth mode in userNameHeader isn't a header for the default header mcpAuthMode");
+like($out, qr/userNameHeader missing .* mcpAuthMode=header/, "and says why");
 
 ################################################################################
 # mcpAuthMode defaults to header, which needs userNameHeader even when authMode isn't a header mode

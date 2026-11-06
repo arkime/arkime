@@ -1,4 +1,4 @@
-use Test::More tests => 201;
+use Test::More tests => 280;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -323,22 +323,26 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is($response->code, 400, "proxy refuses dot segments");
     unlike($response->content, qr/Unknown cluster/, "proxy dot segments don't reach s2s only send");
 
-# bodyhash builds the proxied path from the hash, a / in it must not become a path separator
-    (my $bodyHashId = $id) =~ s/^\w\@(?:[^:]*:)?//; # session id to es _id
-    my $bodyHashHit = esGet("/tests_sessions3-*/_search?q=_id:$bodyHashId")->{hits}->{hits}->[0];
-    (my $bodyHashIndex = $bodyHashHit->{_index}) =~ s/^tests_/tests2_/;
-    esPost("/$bodyHashIndex/_doc/$bodyHashId?refresh=true", to_json($bodyHashHit->{_source}));
-    my $hash = "x" . ("%2F.." x 6) . "%2Fapi%2Fsession%2Ftest%2Fabc%2Fsend%3FsaveId%3Did%26remoteCluster%3Dnope";
-    $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions/bodyhash/$hash?date=-1&expression=" . uri_escape("id==$bodyHashId"));
-    unlike($response->content, qr/Unknown cluster/, "bodyhash hash doesn't reach s2s only send");
-    like($response->content, qr/No match/i, "bodyhash hash looked up as a hash on the peer");
+    SKIP: {
+        skip "sessions are not in Elasticsearch to read and duplicate", 4 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
 
-# test2 has postPcapFetch, so its pcap export POSTs the session to node test
-    my $remotePcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions.pcap?date=-1&expression=" . uri_escape("id==$bodyHashId"))->content;
-    my $directPcap = getBinary("/api/session/test/$id.pcap")->content;
-    ok(length($directPcap) > 24 && $remotePcap eq $directPcap, "postPcapFetch pcap export from a remote node")
-      or diag("remote pcap " . length($remotePcap) . " bytes, direct pcap " . length($directPcap) . " bytes");
-    esDelete("/$bodyHashIndex/_doc/$bodyHashId?refresh=true");
+        # bodyhash builds the proxied path from the hash, a / in it must not become a path separator
+        (my $bodyHashId = $id) =~ s/^\w\@(?:[^:]*:)?//; # session id to es _id
+        my $bodyHashHit = esPost("/tests_sessions3-*/_search", to_json({ query => { ids => { values => [$bodyHashId] } } }))->{hits}->{hits}->[0];
+        (my $bodyHashIndex = $bodyHashHit->{_index}) =~ s/^tests_/tests2_/;
+        esPost("/$bodyHashIndex/_doc/$bodyHashId?refresh=true", to_json($bodyHashHit->{_source}));
+        my $hash = "x" . ("%2F.." x 6) . "%2Fapi%2Fsession%2Ftest%2Fabc%2Fsend%3FsaveId%3Did%26remoteCluster%3Dnope";
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions/bodyhash/$hash?date=-1&expression=" . uri_escape("id==$bodyHashId"));
+        unlike($response->content, qr/Unknown cluster/, "bodyhash hash doesn't reach s2s only send");
+        like($response->content, qr/No match/i, "bodyhash hash looked up as a hash on the peer");
+
+        # test2 has postPcapFetch, so its pcap export POSTs the session to node test
+        my $remotePcap = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/sessions.pcap?date=-1&expression=" . uri_escape("id==$bodyHashId"))->content;
+        my $directPcap = getBinary("/api/session/test/$id.pcap")->content;
+        ok(length($directPcap) > 24 && $remotePcap eq $directPcap, "postPcapFetch pcap export from a remote node")
+          or diag("remote pcap " . length($remotePcap) . " bytes, direct pcap " . length($directPcap) . " bytes\nremote: " . unpack("H*", $remotePcap) . "\ndirect: " . unpack("H*", $directPcap));
+        esDelete("/$bodyHashIndex/_doc/$bodyHashId?refresh=true");
+    }
 
 sub s2sGet {
     my ($path) = @_;
@@ -526,3 +530,280 @@ sub s2sPost {
         is ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=hpBodyUser")->code,  403, "hidePcap blocks $url");
         is ($ArkimeTest::userAgent->get("$base$url?arkimeRegressionUser=dpdBodyUser")->code, 403, "disablePcapDownload blocks $url");
     }
+
+################################################################################
+# /api/sessions/summary - modular dashboard widgets (#3971)
+#   Responses stream as a JSON array: [ {stats}, {widget}, ..., {} ]
+#   The endpoint is token protected (checkHeaderToken) so POST with a token.
+#   The startTime/stopTime window below matches the "short" facets test (3 sessions).
+################################################################################
+    my $sumExpr = "file=$pwd/bigendian.pcap|file=$pwd/socks-http-example.pcap|file=$pwd/bt-tcp.pcap";
+
+    # --- legacy fields-string path (back compat) ---
+    my $sumLegacy = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr, fields => "protocols,ip.src"
+    }), $token);
+
+    is (ref($sumLegacy), "ARRAY", "summary streams a JSON array");
+    is ($sumLegacy->[0]->{sessions}, 3, "summary legacy stats sessions");
+    ok (defined $sumLegacy->[0]->{bytes}, "summary legacy stats has bytes");
+    ok (defined $sumLegacy->[0]->{graph}, "summary legacy stats has graph");
+
+    my ($protoW) = grep { ref($_) eq "HASH" && ($_->{field} // "") eq "protocols" } @$sumLegacy;
+    ok (defined $protoW, "summary legacy has protocols widget");
+    is ($protoW->{viewMode}, "pie", "summary legacy protocols default viewMode");
+    is ($protoW->{metricType}, "sessions", "summary legacy protocols default metricType");
+    is (ref($protoW->{data}), "ARRAY", "summary legacy protocols data is an array");
+
+    my ($srcW) = grep { ref($_) eq "HASH" && ($_->{field} // "") eq "ip.src" } @$sumLegacy;
+    ok (defined $srcW, "summary legacy has ip.src widget");
+    is ($srcW->{viewMode}, "bar", "summary legacy ip.src default viewMode");
+
+    # --- per-widget widgets[] path: per-widget length + two widgets on one field ---
+    my $sumWidgets = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr,
+        widgets => [
+            { id => "wAll", field => "protocols", length => 100, order => "desc" },
+            { id => "wOne", field => "protocols", length => 1,   order => "desc" }
+        ]
+    }), $token);
+
+    is ($sumWidgets->[0]->{sessions}, 3, "summary widgets stats sessions");
+    my ($wAll) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "wAll" } @$sumWidgets;
+    my ($wOne) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "wOne" } @$sumWidgets;
+    ok (defined $wAll, "summary widgets wAll chunk present");
+    ok (defined $wOne, "summary widgets wOne chunk present (same field, distinct id)");
+    is ($wAll->{field}, "protocols", "wAll echoes field");
+    is ($wOne->{length}, 1, "wOne echoes per-widget length");
+    cmp_ok (scalar(@{$wOne->{data}}), "<=", 1, "wOne honors per-widget length 1");
+    cmp_ok (scalar(@{$wAll->{data}}), ">=", scalar(@{$wOne->{data}}), "wAll returns at least as many items as wOne");
+
+    # --- per-widget local expression is ANDed with the global search ---
+    # global = socks only; the andFilter widget adds file=bigendian, so the
+    # combined query matches nothing (a session is never in two files)
+    my $sumExpr2 = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => "file=$pwd/socks-http-example.pcap",
+        widgets => [
+            { id => "noFilter",  field => "protocols", length => 100 },
+            { id => "andFilter", field => "protocols", length => 100, expression => "file=$pwd/bigendian.pcap" }
+        ]
+    }), $token);
+
+    my ($noF)  = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "noFilter" } @$sumExpr2;
+    my ($andF) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "andFilter" } @$sumExpr2;
+    cmp_ok (scalar(@{$noF->{data}}), ">=", 1, "unfiltered widget returns data");
+    is (scalar(@{$andF->{data}}), 0, "per-widget expression is ANDed with global (no session is in both files)");
+
+    # --- missing widgets/fields -> 400 ---
+    my $sumErr = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr
+    }), $token);
+    ok (defined $sumErr->{error}, "summary requires fields or widgets");
+
+    # --- empty widgets[] -> stats chunk only (no widget chunks) ---
+    my $sumStatsOnly = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, facets => 1,
+        expression => $sumExpr, widgets => []
+    }), $token);
+    is (ref($sumStatsOnly), "ARRAY", "summary empty widgets returns an array");
+    is ($sumStatsOnly->[0]->{sessions}, 3, "summary empty widgets still returns stats");
+    my @sumWidgetChunks = grep { ref($_) eq "HASH" && defined $_->{id} } @$sumStatsOnly;
+    is (scalar @sumWidgetChunks, 0, "summary empty widgets has no widget chunks");
+
+    # --- noStats skips the stats chunk (incremental single-widget fetch) ---
+    my $sumNoStats = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, noStats => \1,
+        expression => $sumExpr, widgets => [{ id => "n1", field => "protocols", length => 10 }]
+    }), $token);
+    is (ref($sumNoStats), "ARRAY", "summary noStats returns an array");
+    my @noStatsBands = grep { ref($_) eq "HASH" && defined $_->{sessions} } @$sumNoStats;
+    is (scalar @noStatsBands, 0, "summary noStats omits the stats chunk");
+    my ($n1) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "n1" } @$sumNoStats;
+    ok (defined $n1, "summary noStats still returns the widget chunk");
+
+    # --- per-widget metric basis: 'sessions' (count) vs a numeric field (summed) ---
+    my $sumMetric = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [
+            { id => "mSess",  field => "protocols", length => 100, metricType => "sessions" },
+            { id => "mBytes", field => "protocols", length => 100, metricType => "bytes", order => "desc" }
+        ]
+    }), $token);
+
+    my ($mSess)  = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mSess" }  @$sumMetric;
+    my ($mBytes) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mBytes" } @$sumMetric;
+    ok (defined $mSess,  "summary metric sessions widget present");
+    ok (defined $mBytes, "summary metric bytes widget present");
+    is ($mBytes->{metricType}, "bytes", "summary metric widget echoes selected metricType");
+    cmp_ok (scalar(@{$mSess->{data}}), ">", 0, "summary metric sessions widget has data");
+
+    # sessions metric: the visualized value mirrors the session (doc) count
+    is ($mSess->{data}->[0]->{value}, $mSess->{data}->[0]->{sessions}, "summary sessions metric value equals session count");
+
+    # numeric-field metric: each item carries a summed value, Top N ordered by it
+    ok (exists $mBytes->{data}->[0]->{value}, "summary numeric metric data item has value");
+    cmp_ok ($mBytes->{data}->[0]->{value}, ">=", 0, "summary numeric metric value is non-negative");
+    my $metricOrdered = 1;
+    for (my $k = 1; $k < scalar(@{$mBytes->{data}}); $k++) {
+        $metricOrdered = 0 if $mBytes->{data}->[$k]->{value} > $mBytes->{data}->[$k - 1]->{value};
+    }
+    ok ($metricOrdered, "summary numeric metric Top N ordered by metric value desc");
+
+    # --- a non-numeric metricType falls back to session count instead of erroring ---
+    my $sumBadMetric = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [{ id => "mBad", field => "protocols", length => 100, metricType => "protocols" }]
+    }), $token);
+    my ($mBad) = grep { ref($_) eq "HASH" && ($_->{id} // "") eq "mBad" } @$sumBadMetric;
+    ok (defined $mBad, "summary non-numeric metric widget present");
+    ok (!defined $mBad->{error}, "summary non-numeric metric does not error the widget");
+    cmp_ok (scalar(@{$mBad->{data}}), ">", 0, "summary non-numeric metric widget still returns data");
+    is ($mBad->{data}->[0]->{value}, $mBad->{data}->[0]->{sessions}, "summary non-numeric metric falls back to session count");
+
+    # --- an all-whitespace/comma fields string is rejected (dropped-guard regression) ---
+    my $sumBlankFields = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400, expression => $sumExpr, fields => " , "
+    }), $token);
+    ok (defined $sumBlankFields->{error}, "summary rejects an all-whitespace fields string");
+
+    # --- orderBy: 'key' ranks the buckets by the field's own value instead of the metric ---
+    my $sumKey = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [
+            { id => "kPlain",   field => "port.dst",    length => 5 },
+            { id => "kAsc",     field => "port.dst",    length => 5,   order => "asc",  orderBy => "key" },
+            { id => "kDesc",    field => "port.dst",    length => 5,   order => "desc", orderBy => "key" },
+            { id => "kText",    field => "protocols",   length => 100, order => "asc",  orderBy => "key" },
+            { id => "kBucket",  field => "port.dst",    length => 100, order => "asc",  orderBy => "key", bucketInterval => 1024 },
+            { id => "kSpecial", field => "ip.dst:port", length => 5,   order => "asc",  orderBy => "key" },
+            { id => "kBad",     field => "port.dst",    length => 5,   orderBy => "nope" }
+        ]
+    }), $token);
+    my %keyW = map { $_->{id} => $_ } grep { ref($_) eq "HASH" && defined $_->{id} } @$sumKey;
+    is ($keyW{kPlain}->{orderBy}, "value", "summary orderBy defaults to value");
+    is ($keyW{kAsc}->{orderBy}, "key", "summary orderBy key is echoed");
+    is ($keyW{kBad}->{orderBy}, "value", "summary unknown orderBy falls back to value");
+    is ($keyW{kBad}->{data}->[0]->{item}, $keyW{kPlain}->{data}->[0]->{item}, "summary unknown orderBy ranks like the plain widget");
+
+    my @kAsc = map { $_->{item} } @{$keyW{kAsc}->{data}};
+    my @kDesc = map { $_->{item} } @{$keyW{kDesc}->{data}};
+    ok (scalar(@kAsc) > 0 && scalar(@kAsc) <= 5, "summary key asc honors the limit");
+    is_deeply (\@kAsc, [sort { $a <=> $b } @kAsc], "summary key asc ports are numerically ascending");
+    is_deeply (\@kDesc, [sort { $b <=> $a } @kDesc], "summary key desc ports are numerically descending");
+    cmp_ok ($kAsc[0], "<=", $kDesc[-1], "summary key asc starts at or below the smallest port desc reaches");
+    my @plainPorts = sort { $a <=> $b } map { $_->{item} } @{$keyW{kPlain}->{data}};
+    cmp_ok ($kAsc[0], "<=", $plainPorts[0], "summary key asc starts at or below the top-by-count widget's smallest port");
+
+    my @kText = map { $_->{item} } @{$keyW{kText}->{data}};
+    cmp_ok (scalar(@kText), ">", 1, "summary key asc on a text field has data");
+    is_deeply (\@kText, [sort @kText], "summary key asc protocols are alphabetical");
+
+    my @kRanges = map { $_->{range}->[0] } @{$keyW{kBucket}->{data}};
+    cmp_ok (scalar(@kRanges), ">", 0, "summary key asc with bucketInterval has data");
+    is_deeply (\@kRanges, [sort { $a <=> $b } @kRanges], "summary key asc bucket ranges are ascending");
+    is ($keyW{kBucket}->{data}->[0]->{item}, "$kRanges[0]-" . ($kRanges[0] + 1023), "summary key asc first bucket item is its range");
+
+    is ($keyW{kSpecial}->{orderBy}, "key", "summary special field accepts orderBy key");
+    cmp_ok (scalar(@{$keyW{kSpecial}->{data}}), ">", 0, "summary special field key order has data");
+
+    # --- bucketInterval: an integer field's values grouped into ranges of a fixed width ---
+    my $sumBucket = viewerPostToken("/api/sessions/summary", to_json({
+        startTime => 1386004308, stopTime => 1386004400,
+        expression => $sumExpr,
+        widgets => [
+            { id => "bPlain",   field => "port.dst",    length => 100 },
+            { id => "bPort",    field => "port.dst",    length => 100, bucketInterval => 1024 },
+            { id => "bOne",     field => "port.dst",    length => 100, bucketInterval => 1 },
+            { id => "bText",    field => "protocols",   length => 100, bucketInterval => 1024 },
+            { id => "bSpecial", field => "ip.dst:port", length => 100, bucketInterval => 1024 },
+            { id => "bLimit",   field => "port.dst",    length => 1,   bucketInterval => 1 },
+            { id => "bBad",     field => "port.dst",    length => 100, bucketInterval => -5 }
+        ]
+    }), $token);
+    my %bucketW = map { $_->{id} => $_ } grep { ref($_) eq "HASH" && defined $_->{id} } @$sumBucket;
+    ok (defined $bucketW{bPlain}, "summary bucket plain port.dst widget present");
+    ok (defined $bucketW{bPort}, "summary bucket port.dst widget present");
+    is ($bucketW{bPort}->{bucketInterval}, 1024, "summary bucket widget echoes bucketInterval");
+    cmp_ok (scalar(@{$bucketW{bPort}->{data}}), ">", 0, "summary bucket widget has data");
+
+    # each item is a '<start>-<end>' range of the requested width, aligned to it
+    my $bucketItems = 1;
+    my $bucketRanges = 1;
+    my $bucketOrdered = 1;
+    my $bucketSessions = 0;
+    my $prevSessions;
+    foreach my $d (@{$bucketW{bPort}->{data}}) {
+        $bucketItems = 0 unless $d->{item} =~ /^\d+-\d+$/;
+        my $r = $d->{range};
+        $bucketRanges = 0 unless ref($r) eq "ARRAY" && @$r == 2 && $r->[1] - $r->[0] == 1023 && $r->[0] % 1024 == 0 && $d->{item} eq "$r->[0]-$r->[1]";
+        $bucketOrdered = 0 if defined $prevSessions && $d->{sessions} > $prevSessions;
+        $prevSessions = $d->{sessions};
+        $bucketSessions += $d->{sessions};
+    }
+    ok ($bucketItems, "summary bucket items are start-end ranges");
+    ok ($bucketRanges, "summary bucket ranges are aligned and bucketInterval wide");
+    ok ($bucketOrdered, "summary bucket ranges ordered by session count desc");
+    my $plainSessions = 0;
+    $plainSessions += $_->{sessions} foreach @{$bucketW{bPlain}->{data}};
+    is ($bucketSessions, $plainSessions, "summary bucket ranges cover the same sessions as the plain values");
+
+    # a width of 1 is one bucket per value, named by the value alone
+    is ($bucketW{bOne}->{bucketInterval}, 1, "summary bucket width 1 echoed");
+    my $oneItems = 1;
+    my $oneRanges = 1;
+    foreach my $d (@{$bucketW{bOne}->{data}}) {
+        $oneItems = 0 unless $d->{item} =~ /^\d+$/;
+        $oneRanges = 0 unless ref($d->{range}) eq "ARRAY" && $d->{range}->[0] == $d->{range}->[1] && $d->{item} eq $d->{range}->[0];
+    }
+    ok ($oneItems, "summary bucket width 1 items are plain values");
+    ok ($oneRanges, "summary bucket width 1 ranges are single values");
+    is (join(",", sort map { $_->{item} } @{$bucketW{bOne}->{data}}), join(",", sort map { $_->{item} } @{$bucketW{bPlain}->{data}}), "summary bucket width 1 lists the same values as the plain widget");
+
+    # only an integer field can be bucketed; others ignore bucketInterval
+    ok (!defined $bucketW{bText}->{bucketInterval}, "summary bucket ignored on a text field");
+    ok (!exists $bucketW{bText}->{data}->[0]->{range}, "summary bucket text field items have no range");
+    ok (!defined $bucketW{bSpecial}->{bucketInterval}, "summary bucket ignored on a special field");
+
+    # the Top N limit applies to the buckets
+    is (scalar(@{$bucketW{bLimit}->{data}}), 1, "summary bucket limit applied to the buckets");
+
+    # a non-positive width falls back to one bucket per value
+    ok (!defined $bucketW{bBad}->{bucketInterval}, "summary bucket non-positive width ignored");
+    ok ($bucketW{bBad}->{data}->[0]->{item} =~ /^\d+$/ && !exists $bucketW{bBad}->{data}->[0]->{range}, "summary bucket non-positive width lists plain values");
+
+# hostile fields param: a backtick in a field name must not break out of the
+# generated query, and __proto__ path segments must not be materialized
+    my $hostile = get("/api/sessions?date=-1&fields=" . uri_escape('source.ip,evil`--,__proto__.polluted') . "&expression=" . uri_escape("file=$pwd/socks-http-example.pcap"));
+    cmp_ok ($hostile->{recordsFiltered}, '>=', 1, "hostile fields param still returns sessions");
+    is ($hostile->{data}->[0]->{source}->{ip}, "10.180.156.185", "hostile fields param returns requested fields");
+
+# multi viewer must combine metric sub-aggregations across clusters instead of
+# keeping whichever cluster reached a histogram bucket first — the Sessions
+# timeline's bytes/packets series are built from those sub-aggregations, while
+# its sessions series comes from the bucket count and was always correct
+SKIP: {
+    skip "sessions are not in Elasticsearch to read and duplicate", 3 if $ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://};
+
+    my $mmWindow = "startTime=1386004308&stopTime=1386004400";
+    my $mmFound = esPost("/tests_sessions3-13m12/_search?size=1", to_json({
+        query => { range => { firstPacket => { gte => 1386004308000, lte => 1386004400000 } } }
+    }));
+    my $mmSrc = $mmFound->{hits}->{hits}->[0]->{_source};
+    ok (defined $mmSrc, "found a session to duplicate into the second cluster");
+
+    # the same session in the second cluster lands in the same histogram bucket
+    esPost("/tests2_sessions3-13m12/_doc/multimerge1?refresh=true", to_json($mmSrc));
+    my $mmSingle = viewerGet("/api/sessions?facets=1&$mmWindow")->{graph};
+    my $mmMulti = multiGet("/api/sessions?facets=1&$mmWindow")->{graph};
+    esDelete("/tests2_sessions3-13m12/_doc/multimerge1?refresh=true");
+
+    my $mmPackets = ($mmSrc->{source}->{packets} // 0) + ($mmSrc->{destination}->{packets} // 0);
+    is ($mmMulti->{sessionsTotal}, $mmSingle->{sessionsTotal} + 1, "multi viewer counts the second cluster's session");
+    is ($mmMulti->{"network.packetsTotal"}, $mmSingle->{"network.packetsTotal"} + $mmPackets, "multi viewer sums packets across clusters");
+}

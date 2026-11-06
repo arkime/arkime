@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 'use strict';
 
 import store from '../../store';
@@ -300,7 +304,7 @@ export default {
    * @returns {Promise<Object>} The response data parsed as JSON.
    */
   async cancelAllTasks (params) {
-    return fetchWrapper({ url: 'api/estasks/cancel', method: 'POST', params });
+    return fetchWrapper({ url: 'api/estasks/cancelall', method: 'POST', params });
   },
 
   /**

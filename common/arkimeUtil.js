@@ -6,8 +6,6 @@
  */
 'use strict';
 
-const Redis = require('ioredis');
-const memjs = require('memjs');
 const util = require('util');
 const fs = require('fs');
 const bodyParser = require('body-parser');
@@ -74,7 +72,7 @@ class ArkimeUtil {
   // ----------------------------------------------------------------------------
   /**
    * Add thousands separators to a number, linear time even for huge digit
-   * strings. Keep in sync with commaString in the vueFilters.js copies.
+   * strings. Keep in sync with commaString in common/vueapp/vueFilters.js.
    */
   static commaString (input) {
     if (input === null || isNaN(input)) { return 0; }
@@ -333,187 +331,6 @@ class ArkimeUtil {
   }
 
   // ----------------------------------------------------------------------------
-  /**
-   * Create a redis client from the provided url
-   * @param {string} url - The redis url to connect to.
-   * @param {string} section - The section this redis client is being created for
-   */
-  static createRedisClient (url, section) {
-    url = ArkimeUtil.sanitizeStr(url);
-    // redis://[:pass]@host:port/db
-    if (url.startsWith('redis://') || url.startsWith('rediss://')) {
-      const match = url.match(/(rediss?):\/\/(:[^@]+@)?([^:/]+)(:[0-9]+)?\/([0-9]+)/);
-      if (!match) {
-        console.log(`${section} - ERROR - can't parse redis url '%s' should be of form //[:pass@]redishost[:redisport]/redisDbNum`, url);
-        process.exit(1);
-      }
-
-      if (ArkimeConfig.debug > 1) {
-        console.log('REDIS:', url);
-      }
-      return new Redis(url);
-    }
-
-    // redis-sentinel://sentinelPassword:redisPassword@host:port[,hostN:portN]/name/db
-    if (url.startsWith('redis-sentinel://')) {
-      const match = url.match(/(redis-sentinel):\/\/(([^:]+)?:([^@]+)?@)?([^/]+)\/([^/]+)\/([0-9]+)(\/.+)?/);
-      if (!match) {
-        console.log(`${section} - ERROR - can't parse redis-sentinel url '%s' should be of form //[sentinelPassword:redisPassword@]sentinelHost[:sentinelPort][,sentinelHostN[:sentinelPortN]]/redisName/redisDbNum`, url);
-        process.exit(1);
-      }
-
-      const options = { sentinels: [], name: match[6], db: parseInt(match[7]) };
-      for (const hp of match[5].split(',')) {
-        const hostport = hp.split(':');
-        options.sentinels.push({ host: hostport[0], port: hostport[1] || 26379 });
-      }
-
-      if (match[3]) {
-        options.sentinelPassword = match[3];
-      }
-      if (match[4]) {
-        options.password = match[4];
-      }
-
-      if (ArkimeConfig.debug > 1) {
-        console.log('REDIS-SENTINEL:', options);
-      }
-      return new Redis(options);
-    }
-
-    // redis-cluster://[:pass]@host:port/db
-    if (url.startsWith('redis-cluster://')) {
-      const match = url.match(/(redis-cluster):\/\/(:([^@]+)@)?([^/]+)\/([0-9]+)(\/.+)?/);
-      if (!match) {
-        console.log(`${section} - ERROR - can't parse redis-cluster url '%s' should be of form //[:redisPassword@]redisHost[:redisPort][,redisHostN[:redisPortN]]/redisDbNum`, url);
-        process.exit(1);
-      }
-
-      const hosts = [];
-      for (const hp of match[4].split(',')) {
-        const hostport = hp.split(':');
-        hosts.push({ host: hostport[0], port: hostport[1] || 6379 });
-      }
-
-      const options = { db: parseInt(match[5]) };
-      if (match[3]) {
-        options.password = match[3];
-      }
-
-      if (ArkimeConfig.debug > 1) {
-        console.log('REDIS-CLUSTER: hosts', hosts, 'options', { redisOptions: options });
-      }
-      return new Redis.Cluster(hosts, { redisOptions: options });
-    }
-
-    console.log(`${section} - Unknown redis url '%s'`, url);
-    process.exit(1);
-  }
-
-  // ----------------------------------------------------------------------------
-  /**
-   * Parse the elasticsearch url and return the url and possible auth object
-   */
-  static createElasticsearchInfo (url) {
-    url = url.split(',')[0];
-    url = url.replace(/^elasticsearch/, 'http').replace(/^opensearch/, 'http');
-    let auth;
-    if (url.includes('://usersElasticsearch')) {
-      let es, basicAuth;
-
-      if (ArkimeConfig.get('usersElasticsearch')) {
-        es = ArkimeConfig.get('usersElasticsearch');
-        basicAuth = ArkimeConfig.get('usersElasticsearchBasicAuth');
-      }
-
-      if (!es) {
-        console.log(`ERROR - No usersElasticsearch defined but used in ${url}`);
-        process.exit(1);
-      }
-
-      url = url.replace(/^.*:\/\/usersElasticsearch/, es);
-
-      if (basicAuth) {
-        if (!basicAuth.includes(':')) {
-          basicAuth = Buffer.from(basicAuth, 'base64').toString();
-        }
-        basicAuth = ArkimeUtil.splitRemain(basicAuth, ':', 1);
-
-        auth = {
-          username: basicAuth[0],
-          password: basicAuth[1]
-        };
-      }
-    }
-
-    return { url, auth };
-  }
-
-  // ----------------------------------------------------------------------------
-  /**
-   * Create a memcached client from the provided url
-   * @param {string} url - The memcached url to connect to.
-   * @param {string} section - The section this memcached client is being created for
-   */
-  static createMemcachedClient (url, section) {
-    url = ArkimeUtil.sanitizeStr(url);
-    // memcached://[user:pass@]server1[:11211],[user:pass@]server2[:11211],...
-    if (url.startsWith('memcached://')) {
-      if (ArkimeConfig.debug > 0) {
-        console.log('MEMCACHED:', section, url);
-      }
-      return memjs.Client.create(url.substring(12));
-    }
-
-    console.log(`${section} - Unknown memcached url '%s'`, url);
-    process.exit(1);
-  }
-
-  // ----------------------------------------------------------------------------
-  /**
-   * Create a LMDB store from the provided url
-   * @param {string} url - The LMDB url to connect to.
-   * @param {string} section - The section this LMDB client is being created for
-   */
-  static createLMDBStore (url, section) {
-    // eslint-disable-next-line no-shadow
-    const { open } = require('lmdb');
-
-    try {
-      const root = open({
-        path: url.slice(7),
-        compression: true
-      });
-      if (section) {
-        return root.openDB(section);
-      }
-      return root;
-    } catch (err) {
-      console.log('ERROR -', err);
-      process.exit(1);
-    }
-  }
-
-  // ----------------------------------------------------------------------------
-  static createSQLiteDB (url) {
-    const Database = require('better-sqlite3');
-    let dbPath;
-    if (url.startsWith('sqlite3://')) {
-      dbPath = url.slice(10);
-    } else if (url.startsWith('sqlite://')) {
-      dbPath = url.slice(9);
-    } else {
-      dbPath = url;
-    }
-
-    const db = new Database(dbPath);
-    db.pragma('journal_mode = WAL');
-    db.pragma('synchronous = NORMAL');
-    db.pragma('busy_timeout = 5000');
-    return db;
-  }
-
-  // ----------------------------------------------------------------------------
   static wildcardToRegexp (wildcard) {
     // https://stackoverflow.com/revisions/57527468/5
     wildcard = wildcard.replace(/[.+^${}()|[\]\\]/g, '\\$&');
@@ -641,7 +458,128 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
-   * Check the Arkime Schema Version
+   * Build the TLS options shared by the OpenSearch/Elasticsearch client ssl
+   * setting and https.Agent from config values. The ca/key/cert files are read
+   * once, here, so a bad path fails at startup instead of on the first request.
+   * @param {object} options
+   * @param {boolean} [options.insecure] - skip server certificate verification
+   * @param {string} [options.caTrustFile] - PEM file with the CA certificates to trust, replaces the system ones
+   * @param {string} [options.clientKey] - PEM private key file presented to the server (mTLS), requires clientCert
+   * @param {string} [options.clientCert] - PEM certificate file presented to the server (mTLS), requires clientKey
+   * @param {string} [options.clientKeyPass] - passphrase for clientKey
+   * @returns {object} options for tls.connect, https.Agent or the ES client ssl setting
+   * @throws {Error} when caTrustFile has no certificates, only one of clientKey/clientCert is set or a file can't be read
+   */
+  static tlsOptions (options = {}) {
+    const tls = { rejectUnauthorized: !options.insecure };
+    if (options.caTrustFile) {
+      tls.ca = ArkimeUtil.certificateFileToArray(options.caTrustFile);
+      if (tls.ca === undefined) {
+        throw new Error(`caTrustFile ${options.caTrustFile} has no PEM certificates in it`);
+      }
+    }
+    if (options.clientKey || options.clientCert) {
+      if (!options.clientKey || !options.clientCert) {
+        throw new Error('clientKey and clientCert must both be set to use a client certificate');
+      }
+      tls.key = fs.readFileSync(options.clientKey);
+      tls.cert = fs.readFileSync(options.clientCert);
+      if (options.clientKeyPass) { tls.passphrase = options.clientKeyPass; }
+    }
+    return tls;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * tlsOptions for a connection the app can't run without, so a bad setting
+   * is a one line startup error instead of an unhandled exception.
+   * @param {object} options - see tlsOptions
+   * @param {string} what - names the connection in the error, eg OpenSearch/Elasticsearch
+   * @returns {object} see tlsOptions
+   */
+  static tlsOptionsOrExit (options, what) {
+    try {
+      return ArkimeUtil.tlsOptions(options);
+    } catch (err) {
+      console.log(`ERROR - ${what} TLS settings: ${err.message}`);
+      process.exit(1);
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The TLS options for a config section's outbound https calls, from its
+   * insecure, caTrustFile, clientKey, clientCert and clientKeyPass settings.
+   * --insecure applies to every section; without it the section's own insecure
+   * setting decides, and when that isn't set urls that are all loopback hosts
+   * skip verification like the OpenSearch/Elasticsearch connections do (see
+   * ArkimeConfig.isInsecure). caTrustFile does not fall back to the default
+   * section's, since it replaces the system CAs.
+   * @param {string} section - the config section name
+   * @param {string|string[]} [urls] - the url(s) the section calls, for the localhost rule
+   * @returns {object} see tlsOptions
+   * @throws {Error} see tlsOptions
+   */
+  static sectionTlsOptions (section, urls) {
+    if (!Array.isArray(urls)) { urls = [urls]; }
+    return ArkimeUtil.tlsOptions({
+      insecure: ArkimeConfig.insecure || (ArkimeConfig.getFullBool(section, 'insecure', undefined) ?? ArkimeConfig.isInsecure(urls)),
+      caTrustFile: ArkimeConfig.getFull(section, 'caTrustFile'),
+      clientKey: ArkimeConfig.getFull(section, 'clientKey'),
+      clientCert: ArkimeConfig.getFull(section, 'clientCert'),
+      clientKeyPass: ArkimeConfig.getFull(section, 'clientKeyPass')
+    });
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * An https.Agent for the tls options, with keepAlive like the global agent,
+   * or undefined when they are all the defaults so axios keeps using its global
+   * agent.
+   * @param {object} tls - from tlsOptions or sectionTlsOptions
+   * @returns {https.Agent|undefined}
+   */
+  static httpsAgent (tls) {
+    if (tls.rejectUnauthorized && !tls.ca && !tls.key) { return undefined; }
+    return new https.Agent({ keepAlive: true, ...tls });
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The axios options that use httpsAgent only for url's origin. The agent has
+   * the section's client certificate, caTrustFile and insecure settings, so a
+   * redirect to another origin gets the default agent and system CAs instead,
+   * the same way follow-redirects drops the Authorization header, and a later
+   * hop back to url's origin gets the agent again.
+   * @param {string} url - the url being requested
+   * @param {https.Agent} [httpsAgent] - from httpsAgent()
+   * @returns {object} httpsAgent and beforeRedirect to spread into the axios options
+   */
+  static axiosAgentOptions (url, httpsAgent) {
+    if (!httpsAgent) { return {}; }
+    const agentOrigin = ArkimeUtil.parseUrl(url)?.origin;
+    return {
+      httpsAgent,
+      beforeRedirect: (options) => {
+        if (agentOrigin && ArkimeUtil.parseUrl(options.href)?.origin === agentOrigin) {
+          // back on the configured origin, maybe after a hop elsewhere dropped the agent
+          if (options.agents && !options.agents.https) { options.agents.https = httpsAgent; }
+          return;
+        }
+        // Behind a proxy axios tunnels with an agent built from httpsAgent's
+        // options, which can't be swapped for the default one, so don't follow
+        if (options.protocol === 'https:' && options.agents?.https && options.agents.https !== httpsAgent) {
+          throw new Error(`Not following redirect to ${ArkimeUtil.parseUrl(options.href)?.origin} through a proxy with the TLS settings for ${agentOrigin}`);
+        }
+        options.agents = {};
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Check the Arkime Schema Version and return it. With minVersion it is a
+   * fatal startup check; without, failures just return undefined.
    */
   static async checkArkimeSchemaVersion (esClient, prefix, minVersion) {
     prefix = ArkimeUtil.formatPrefix(prefix);
@@ -655,18 +593,21 @@ class ArkimeUtil {
       try {
         const molochDbVersion = doc[`${prefix}sessions3_template`].mappings._meta.molochDbVersion;
 
-        if (molochDbVersion < minVersion) {
+        if (minVersion !== undefined && molochDbVersion < minVersion) {
           console.log(`ERROR - Current database version (${molochDbVersion}) is less than required version (${minVersion}) use 'db/db.pl <eshost:esport> upgrade' to upgrade`);
           if (doc._node) {
             console.log(`On node ${doc._node}`);
           }
           process.exit(1);
         }
+        return molochDbVersion;
       } catch (e) {
+        if (minVersion === undefined) { return undefined; }
         console.log("ERROR - Couldn't find database version.  Have you run ./db.pl host:port upgrade?", e);
         process.exit(1);
       }
     } catch (err) {
+      if (minVersion === undefined) { return undefined; }
       console.log("ERROR - Couldn't retrieve database version, is OpenSearch/Elasticsearch running?  Have you run ./db.pl host:port init?", err);
       process.exit(1);
     }
@@ -793,6 +734,40 @@ class ArkimeUtil {
     }
 
     return prefix + '_';
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Resolve the client side update check settings.
+   *
+   * Returns mode 'off' unless both settings are valid, so a typo fails closed
+   * rather than silently enabling off-origin requests. The origin is handed to
+   * CSP connect-src, which is what actually permits the browser to make them.
+   *
+   * @param {function} get a config getter, eg Config.get or ArkimeConfig.get
+   * @returns {object} { mode, url, origin }
+   */
+  static updateCheckConfig (get) {
+    const off = { mode: 'off', url: '', origin: undefined };
+
+    const mode = get('checkForUpdates', 'manual');
+    if (mode === 'off' || mode === false || mode === 'false') { return off; }
+
+    if (mode !== 'manual' && mode !== 'auto') {
+      console.log(`WARNING - unknown checkForUpdates value '${mode}', disabling update checks (expected off, manual, or auto)`);
+      return off;
+    }
+
+    const url = get('updateCheckUrl', 'https://versions.arkime.com');
+
+    try {
+      const parsed = new URL(url);
+      if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') { throw new Error('bad protocol'); }
+      return { mode, url, origin: parsed.origin };
+    } catch (err) {
+      console.log(`WARNING - invalid updateCheckUrl '${url}', disabling update checks`);
+      return off;
+    }
   }
 
   // ----------------------------------------------------------------------------
@@ -1181,3 +1156,11 @@ module.exports = ArkimeUtil;
 
 // At end because of circular require
 const ArkimeConfig = require('./arkimeConfig');
+const ArkimeDb = require('./arkimeDb');
+
+// Database helpers live in arkimeDb.js
+ArkimeUtil.createRedisClient = ArkimeDb.createRedisClient;
+ArkimeUtil.createElasticsearchInfo = ArkimeDb.createElasticsearchInfo;
+ArkimeUtil.createMemcachedClient = ArkimeDb.createMemcachedClient;
+ArkimeUtil.createLMDBStore = ArkimeDb.createLMDBStore;
+ArkimeUtil.createSQLiteDB = ArkimeDb.createSQLiteDB;

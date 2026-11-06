@@ -64,6 +64,10 @@
       "http://www.shangri-la.com/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -261,6 +265,10 @@
       "http://www.shangri-la.com/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -436,6 +444,10 @@
       "http://www.shangri-la.com/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -615,6 +627,10 @@
      "requestBody" : [
       "id=455187796&event=PAGEVIEW&pixel_version=1"
      ],
+     "requestBodyLen" : [
+      43
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -815,6 +831,10 @@
       "http://whc.unesco.org/en/interactive-map/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -1010,6 +1030,10 @@
       "http://whc.unesco.org/en/interactive-map/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -1197,6 +1221,10 @@
       "http://whc.unesco.org/en/interactive-map/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -1385,6 +1413,10 @@
       "http://www.sustainablesites.org/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -1513,7 +1545,7 @@
        "name" : "GoDaddy.com, LLC"
       }
      },
-     "bytes" : 0,
+     "bytes" : 243,
      "geo" : {
       "city_name" : "Scottsdale",
       "country_iso_code" : "US",
@@ -1521,10 +1553,10 @@
      },
      "ip" : "68.178.213.61",
      "mac" : [
-      "00:0c:29:6f:84:37"
+      "00:50:56:f4:62:21"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 1,
      "port" : 80
     },
     "dstOui" : [
@@ -1532,6 +1564,10 @@
     ],
     "dstOuiCnt" : 1,
     "dstRIR" : "ARIN",
+    "dstTTL" : [
+     128
+    ],
+    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1532525539024,
@@ -1547,6 +1583,10 @@
      "requestBody" : [
       "<html><body><h1>403 Forbidden</h1>\nRequest forbidden by administrative rules.\n</body></html>\n\n"
      ],
+     "requestBodyLen" : [
+      94
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "cache-control",
       "connection",
@@ -1606,13 +1646,13 @@
      "bytes" : 0
     },
     "source" : {
-     "bytes" : 243,
+     "bytes" : 0,
      "ip" : "192.168.25.150",
      "mac" : [
-      "00:50:56:f4:62:21"
+      "00:0c:29:6f:84:37"
      ],
      "mac-cnt" : 1,
-     "packets" : 1,
+     "packets" : 0,
      "port" : 49749
     },
     "srcOui" : [
@@ -1620,10 +1660,6 @@
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "ARIN",
-    "srcTTL" : [
-     128
-    ],
-    "srcTTLCnt" : 1,
     "tags" : [
      "flip test"
     ],

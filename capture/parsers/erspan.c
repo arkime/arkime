@@ -26,6 +26,7 @@ LOCAL ArkimePacketRC erspan_packet_enqueue(ArkimePacketBatch_t *batch, ArkimePac
     BSB_IMPORT_u16(bsb, packet->vlan);
     packet->vlan &= 0xfff; // clear the version bits
 
+    packet->tunnel |= ARKIME_PACKET_TUNNEL_ERSPAN;
     return arkime_packet_run_ethernet_cb(batch, packet, data + 8, len - 8, ARKIME_ETHERTYPE_ETHER, "ERSpan");
 }
 /******************************************************************************/
@@ -60,6 +61,7 @@ LOCAL ArkimePacketRC erspan_packet_enqueue3(ArkimePacketBatch_t *batch, ArkimePa
         return ARKIME_PACKET_CORRUPT;
     }
 
+    packet->tunnel |= ARKIME_PACKET_TUNNEL_ERSPAN;
     return arkime_packet_run_ethernet_cb(batch, packet, BSB_WORK_PTR(bsb), BSB_REMAINING(bsb), ARKIME_ETHERTYPE_ETHER, "ERSpan");
 }
 /******************************************************************************/

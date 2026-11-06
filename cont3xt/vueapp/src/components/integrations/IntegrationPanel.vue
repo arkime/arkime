@@ -15,7 +15,7 @@ SPDX-License-Identifier: Apache-2.0
       <div
         role="button"
         @click="toggleSidebar"
-        class="sidebar-btn py-1 pr-1 mt-2 cursor-pointer">
+        class="sidebar-btn py-1 pe-1 mt-2 cursor-pointer">
         <v-icon icon="mdi-chevron-right" />
       </div>
     </div>
@@ -27,7 +27,7 @@ SPDX-License-Identifier: Apache-2.0
         <div
           v-if="sidebarOpen"
           style="width: 250px;"
-          class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel bg-integration-panel">
+          class="d-flex flex-column justify-space-between h-100 pa-1 integration-panel">
           <div class="pa-1 d-flex flex-column h-100">
             <!-- header/toggle open -->
             <div class="d-flex flex-row justify-space-between">
@@ -39,7 +39,6 @@ SPDX-License-Identifier: Apache-2.0
                 tabindex="-1"
                 variant="text"
                 color="primary"
-                class="bg-integration-panel"
                 @click="toggleSidebar"
                 title="Toggle integration panel visibility">
                 <v-icon :icon="sidebarKeepOpen ? 'mdi-chevron-left' : 'mdi-chevron-right'" />
@@ -103,7 +102,6 @@ SPDX-License-Identifier: Apache-2.0
                 ms
               </template>
             </v-text-field>
-          <!-- </b-sidebar> -->
           </div>
         </div>
       </transition>
@@ -243,6 +241,7 @@ export default {
 }
 
 .integration-panel {
+  background-color: rgb(var(--v-theme-surface-panel));
   box-shadow: 4px 0px 5px 0px rgba(0,0,0,0.1);
 }
 

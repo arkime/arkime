@@ -18,6 +18,7 @@ LOCAL int versionField;
 LOCAL int typeField;
 LOCAL int userField;
 LOCAL int willTopicField;
+LOCAL int payloadLenField;
 LOCAL int qosField;
 LOCAL int flagsField;
 LOCAL int connackCodeField;
@@ -232,6 +233,7 @@ LOCAL int mqtt_parse_publish(ArkimeSession_t *session, const ArkimeParserBuf_t *
     if (qos <= 2) {
         arkime_field_int_add(qosField, session, qos);
     }
+    arkime_field_int_add(payloadLenField, session, remainingLen - headerNeeded);
     if (qos > 0) {
         BSB_IMPORT_skip(*bsb, 2); // packet ID only for QoS > 0
     }
@@ -487,6 +489,12 @@ void arkime_parser_init()
                                          "MQTT last will topic",
                                          ARKIME_FIELD_TYPE_STR_GHASH, ARKIME_FIELD_FLAG_CNT,
                                          (char *)NULL);
+
+    payloadLenField = arkime_field_define("mqtt", "integer",
+                                          "mqtt.payloadLen", "Payload Length", "mqtt.payloadLen",
+                                          "MQTT publish payload length in bytes",
+                                          ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                          (char *)NULL);
 
     qosField = arkime_field_define("mqtt", "integer",
                                    "mqtt.qos", "QoS", "mqtt.qos",

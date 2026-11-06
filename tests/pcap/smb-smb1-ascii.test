@@ -51,6 +51,18 @@
     },
     "node" : "test",
     "ntlm" : {
+     "dnsComputerName" : [
+      "dc3.lab.domain.ex"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "lab.domain.ex"
+     ],
+     "dnsDomainNameCnt" : 1,
+     "dnsTreeName" : [
+      "domain.ex"
+     ],
+     "dnsTreeNameCnt" : 1,
      "domain" : [
       "LAB"
      ],
@@ -59,14 +71,28 @@
       "THEHOSTNAMEHEREX"
      ],
      "hostCnt" : 1,
+     "nbComputerName" : [
+      "DC3"
+     ],
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "LAB"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "LAB"
+     ],
+     "targetNameCnt" : 1,
      "type" : [
-      3
+      "2",
+      "3"
      ],
-     "typeCnt" : 1,
+     "typeCnt" : 2,
      "version" : [
-      "0.0.0"
+      "0.0.0",
+      "6.1.7601"
      ],
-     "versionCnt" : 1
+     "versionCnt" : 2
     },
     "packetLen" : [
      82,

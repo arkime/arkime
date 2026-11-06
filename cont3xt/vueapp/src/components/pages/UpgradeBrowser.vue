@@ -11,8 +11,8 @@ SPDX-License-Identifier: Apache-2.0
           alt="hoot">
 
         <div class="well well-lg">
-          <h1>Incompatible Browser</h1>
-          <h4>Please upgrade!</h4>
+          <h1>{{ $t('cont3xt.upgradeBrowser.title') }}</h1>
+          <h4>{{ $t('cont3xt.upgradeBrowser.subtitle') }}</h4>
         </div>
 
         <br>
@@ -21,7 +21,7 @@ SPDX-License-Identifier: Apache-2.0
           <a
             href="https://arkime.com/faq#what-browsers-are-supported"
             class="no-decoration">
-            Which browsers are supported?
+            {{ $t('cont3xt.upgradeBrowser.supported') }}
           </a>
         </div>
       </div>

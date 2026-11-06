@@ -115,8 +115,33 @@
      "bytes" : 280
     },
     "socks" : {
+     "boundASN" : [
+      "AS0 This is neat"
+     ],
+     "boundGEO" : [
+      "RU"
+     ],
+     "boundIp" : [
+      "10.0.0.1"
+     ],
+     "boundIpCnt" : 1,
+     "boundPort" : [
+      53709
+     ],
+     "boundPortCnt" : 1,
+     "boundRIR" : [
+      ""
+     ],
      "host" : "010.000.00.003",
-     "port" : 25
+     "port" : 25,
+     "status" : [
+      "succeeded"
+     ],
+     "statusCnt" : 1,
+     "version" : [
+      5
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "as" : {
@@ -191,9 +216,16 @@
       "indicator_type" : "subnet",
       "source" : "arkime-test",
       "where" : "ip.src"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
+      "where" : "socks.bound.ip"
      }
     ],
-    "zeekintelCnt" : 2
+    "zeekintelCnt" : 3
    },
    "header" : {
     "index" : {

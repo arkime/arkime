@@ -1,6 +1,10 @@
 /******************************************************************************/
 /* source.phpipam.js  -- WISE source for phpIPAM IP address management
  *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Enriches IPs with hostname, subnet, VLAN, and VRF data from phpIPAM.
  *
  * Lookup behaviour:
