@@ -245,7 +245,8 @@ class PGCollection extends ArkimeDb.Collection {
 
 // jsonb can't hold a NUL or a lone surrogate, which would fail the whole write, JSON.stringify escapes both
 function jsonParam (value) {
-  return JSON.stringify(value)?.replace(/(?<!\\)((?:\\\\)*)\\u(?:0000|d[89a-f][0-9a-f]{2})/gi, '$1\\ufffd');
+  // The character, not a \u escape, which a SQL_ASCII db refuses above 7F
+  return JSON.stringify(value)?.replace(/(?<!\\)((?:\\\\)*)\\u(?:0000|d[89a-f][0-9a-f]{2})/gi, '$1\ufffd');
 }
 
 // * and ? to a LIKE pattern, LIKE's own % _ and \ are literal
