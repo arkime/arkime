@@ -20,7 +20,7 @@
 
 extern ArkimeConfig_t        config;
 
-extern void                 *esServer;
+LOCAL  void                 *esServer;
 
 LOCAL  int                   httpHostField;
 LOCAL  int                   httpXffField;
@@ -729,8 +729,9 @@ void arkime_plugin_init()
         LOG("Not enabling in dryRun mode");
         return;
     }
+    esServer = arkime_db_es_server();
     if (!esServer)
-        CONFIGEXIT("The tagger plugin needs an OpenSearch/Elasticsearch sessions db");
+        CONFIGEXIT("The tagger plugin needs an OpenSearch/Elasticsearch sessions db or dbUrl");
 
     HASH_INIT(s_, allFiles, arkime_string_hash, arkime_string_cmp);
     HASH_INIT(s_, allDomains, arkime_string_hash, arkime_string_cmp);

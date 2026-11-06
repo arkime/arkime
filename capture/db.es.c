@@ -11,8 +11,8 @@
 #include <inttypes.h>
 
 extern ArkimeConfig_t config;
-// The sessions ES, NULL when the sessions db isn't OpenSearch/Elasticsearch, the tagger plugin uses it too
-void                 *esServer;
+// The sessions ES, NULL when the sessions db isn't OpenSearch/Elasticsearch
+LOCAL void          *esServer;
 // esServer unless dbUrl is a different OpenSearch/Elasticsearch
 LOCAL void          *clusterServer;
 LOCAL const char    *clusterServerName;
@@ -28,21 +28,24 @@ LOCAL void *arkime_db_create_es_server(const char *url)
 {
     void *server = arkime_http_create_server(url, config.maxESConns, config.maxESRequests, config.compressES);
 
-    char **headers = g_new0(char *, 4);
-    headers[0] = "Content-Type: application/json";
-    headers[1] = "Expect:";
+    // The sessions and cluster servers share them, http servers don't free their headers
+    static char *headers[4];
+    if (!headers[0]) {
+        headers[0] = "Content-Type: application/json";
+        headers[1] = "Expect:";
 
-    const char *elasticsearchAPIKey = arkime_config_str(NULL, "elasticsearchAPIKey", NULL);
-    const char *elasticsearchBasicAuth = arkime_config_str(NULL, "elasticsearchBasicAuth", NULL);
-    if (elasticsearchAPIKey) {
-        headers[2] = g_strdup_printf("Authorization: ApiKey %s", elasticsearchAPIKey);
-    } else if (elasticsearchBasicAuth) {
-        if (strchr(elasticsearchBasicAuth, ':') != NULL) {
-            gchar *b64 = g_base64_encode((uint8_t *)elasticsearchBasicAuth, strlen(elasticsearchBasicAuth));
-            headers[2] = g_strdup_printf("Authorization: Basic %s", b64);
-            g_free(b64);
-        } else {
-            headers[2] = g_strdup_printf("Authorization: Basic %s", elasticsearchBasicAuth);
+        const char *elasticsearchAPIKey = arkime_config_str(NULL, "elasticsearchAPIKey", NULL);
+        const char *elasticsearchBasicAuth = arkime_config_str(NULL, "elasticsearchBasicAuth", NULL);
+        if (elasticsearchAPIKey) {
+            headers[2] = g_strdup_printf("Authorization: ApiKey %s", elasticsearchAPIKey);
+        } else if (elasticsearchBasicAuth) {
+            if (strchr(elasticsearchBasicAuth, ':') != NULL) {
+                gchar *b64 = g_base64_encode((uint8_t *)elasticsearchBasicAuth, strlen(elasticsearchBasicAuth));
+                headers[2] = g_strdup_printf("Authorization: Basic %s", b64);
+                g_free(b64);
+            } else {
+                headers[2] = g_strdup_printf("Authorization: Basic %s", elasticsearchBasicAuth);
+            }
         }
     }
 
@@ -716,6 +719,12 @@ LOCAL const ArkimeSessionsDb_t *arkime_db_es_sessions_init(const char *url)
     esBulkQueryLen = strlen(esBulkQuery);
     arkime_db_set_send_bulk2(arkime_db_es_send_bulk, TRUE, FALSE, 0xffff);
     return &esSessionsDb;
+}
+/******************************************************************************/
+// The sessions ES, else an ES cluster db, for plugins like tagger that keep their own indices
+void *arkime_db_es_server()
+{
+    return esServer ? esServer : clusterServer;
 }
 /******************************************************************************/
 void arkime_db_es_init()

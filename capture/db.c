@@ -2770,9 +2770,7 @@ int arkime_db_queue_length()
 // Important cluster db writes waiting, like a file create
 int arkime_db_queue_length_best()
 {
-    if (!clusterDb)
-        return 0;
-    return clusterDb->queue_length_best ? clusterDb->queue_length_best() : clusterDb->queue_length();
+    return clusterDb && clusterDb->queue_length_best ? clusterDb->queue_length_best() : 0;
 }
 /******************************************************************************/
 // Runs on main thread

@@ -1195,6 +1195,7 @@ void     arkime_db_sessions_register(char *scheme, ArkimeSessionsDbInit init);
 void     arkime_db_init();
 int      arkime_db_queue_length();
 int      arkime_db_queue_length_best();
+void    *arkime_db_es_server();
 void     arkime_db_set_tokens_enabled(gboolean enabled);
 gboolean arkime_db_tokens_enabled(void);
 void     arkime_db_set_tokens_field(int pos, const char *tokensKey);
