@@ -6,6 +6,7 @@ use ArkimeTest;
 use JSON;
 use MIME::Base64;
 use LWP::UserAgent;
+use POSIX ();
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -1076,11 +1077,16 @@ ok(!exists $json->{data}->{attributes});
 
 ################################################################################
 ### HISTORY
+# History entries a search finds, the db is refreshed first so recent writes show up
+sub auditCount {
+  my ($query) = @_;
+  esGet("/_refresh");
+  return scalar @{cont3xtGet("/api/audits$query")->{audits} // []};
+}
+
 # the single integration searches above are audited after their response is
-# sent, give those writes a moment to land
-sleep(1);
-esGet("/_flush");
-esGet("/_refresh");
+# sent, wait for all 13 to land
+waitUntil(sub { auditCount('') >= 13 });
 
 $json = cont3xtGet('/api/audits?searchTerm=goodtag');
 is($json->{success}, 1);
@@ -1204,9 +1210,7 @@ my $roleRemoveToken = getCont3xtTokenCookie('sac-roleremove');
 # each user searches so they own a log
 cont3xtPost('/api/integration/ip/csv:rir/search?arkimeRegressionUser=sac-noremove', to_json({ query => "8.8.4.4" }));
 cont3xtPost('/api/integration/ip/csv:rir/search?arkimeRegressionUser=sac-roleremove', to_json({ query => "8.8.4.4" }));
-sleep(1);
-esGet("/_flush");
-esGet("/_refresh");
+waitUntil(sub { auditCount('?arkimeRegressionUser=sac-noremove') && auditCount('?arkimeRegressionUser=sac-roleremove') });
 
 $json = cont3xtGet('/api/audits?arkimeRegressionUser=sac-noremove');
 is (scalar @{$json->{audits}}, 1, "sac-noremove owns one log");
@@ -1802,6 +1806,18 @@ SKIP: {
 ### Search history is written even when an integration doesn't answer in time
 my $slowVal = "slowaudit" . time();
 my $slowStart = time();
+# The single integration search waits out searchTimeout too, so it runs alongside the full search
+my $singleFile = "/tmp/cont3xt-single-$$.json";
+my $singlePid = fork();
+die "fork failed: $!" unless defined $singlePid;
+if ($singlePid == 0) {
+  my $response = LWP::UserAgent->new(timeout => 120)->post("http://$ArkimeTest::host:3218/api/integration/text/urlapi:slow/search",
+    Content => to_json({ query => $slowVal }), "Content-Type" => "application/json;charset=UTF-8");
+  open(my $fh, '>', $singleFile) or POSIX::_exit(1);
+  print $fh $response->content;
+  close($fh);
+  POSIX::_exit(0);
+}
 $json = cont3xtPost('/api/integration/search', to_json({
   query => $slowVal,
   doIntegrations => ["urlapi:slow"]
@@ -1809,7 +1825,15 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[-1]->{purpose}, "finish", "search finishes at searchTimeout");
 cmp_ok(time() - $slowStart, "<", 8, "search doesn't wait for the slow integration");
 
-$json = cont3xtPost('/api/integration/text/urlapi:slow/search', to_json({ query => $slowVal }));
+waitpid($singlePid, 0);
+my $singleContent = "{}";
+if (open(my $fh, '<', $singleFile)) {
+  local $/;
+  $singleContent = <$fh>;
+  close($fh);
+}
+unlink($singleFile);
+$json = from_json($singleContent);
 is($json->{purpose}, "fail", "single search fails at searchTimeout");
 my ($slowStats) = grep { $_->{name} eq "urlapi:slow" } @{cont3xtGet('/api/integration/stats')->{stats}};
 is($slowStats->{directError}, 1, "single search timeout counts as an integration error");
@@ -1852,9 +1876,7 @@ $json = cont3xtPost('/api/integration/search', to_json({
 }));
 is($json->[-1]->{purpose}, "finish", "long bulk search finishes");
 
-sleep(1);
-esGet("/_flush");
-esGet("/_refresh");
+waitUntil(sub { auditCount("?searchTerm=$slowVal") >= 2 && auditCount("?searchTerm=$leaveVal") && auditCount("?searchTerm=$longVal") });
 $json = cont3xtGet("/api/audits?searchTerm=$slowVal");
 is(scalar @{$json->{audits}}, 2, "timed out searches are in the history");
 $json = cont3xtGet("/api/audits?searchTerm=$leaveVal");

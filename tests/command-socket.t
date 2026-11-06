@@ -73,20 +73,19 @@ sub read_until {
     return $buf;
 }
 
-# Helper: drain all available data from socket with timeout
-sub read_all {
+# Helper: poll file-status until nothing is queued or processing, returns everything read on the way
+sub wait_idle {
     my ($sock, $sel, $timeout) = @_;
-    $timeout //= 10;
-    my $buf = delete $pending{fileno($sock)} // "";
-    my $deadline = time() + $timeout;
+    my $all = "";
+    my $deadline = time() + ($timeout // 30);
     while (time() < $deadline) {
-        last unless $sel->can_read($deadline - time());
-        my $chunk = "";
-        my $n = $sock->sysread($chunk, 4096);
-        last if (!defined $n || $n == 0);
-        $buf .= $chunk;
+        print $sock "file-status\n";
+        my $out = read_until($sock, $sel, qr/^file-status done\n/, 10);
+        $all .= $out;
+        return $all if ($out =~ /^file-status done\n/m && $out !~ /^file-status filename=/m);
+        select(undef, undef, undef, 0.05);
     }
-    return $buf;
+    return $all;
 }
 
 # Verify prerequisites
@@ -171,7 +170,8 @@ SKIP: {
     is($compat_ack, "Added file\n", "add-file without --notify returns plain ack");
 
     # Wait for processing, verify no async notification
-    ok(!$sel->can_read(3), "no async notification without --notify");
+    my $idle1 = wait_idle($sock, $sel);
+    ok($idle1 !~ /^file-(done|error)/m && !$sel->can_read(0.2), "no async notification without --notify");
 
     # Verify file-status is empty after completion
     print $sock "file-status\n";
@@ -203,7 +203,7 @@ SKIP: {
     is(scalar @dir_notifications, 2, "add-dir --notify produces file-done for each file");
 
     # Drain any remaining notifications from the directory
-    read_all($sock, $sel, 2);
+    wait_idle($sock, $sel);
 
     # --- Test 4: add-dir WITHOUT --notify (no notifications, status clears) ---
     print $sock "add-dir $pcapdir\n";
@@ -211,7 +211,8 @@ SKIP: {
     is($dir_ack2, "Added directory\n", "add-dir without --notify returns plain ack");
 
     # Wait for processing, verify no async notification
-    ok(!$sel->can_read(3), "no async notification for add-dir without --notify");
+    my $idle3 = wait_idle($sock, $sel);
+    ok($idle3 !~ /^file-(done|error)/m && !$sel->can_read(0.2), "no async notification for add-dir without --notify");
 
     # Verify file-status is empty after completion
     print $sock "file-status\n";
@@ -220,7 +221,7 @@ SKIP: {
 
     # --- Test 5: error case ---
     print $sock "add-file --notify /nonexistent/file.pcap\n";
-    my $err_all = read_all($sock, $sel, 10);
+    my $err_all = read_until($sock, $sel, qr/^file-error/, 10);
     like($err_all, qr/file-error/, "received file-error for nonexistent file");
 
     # --- Test 6: exit after --notify doesn't hang ---

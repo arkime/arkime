@@ -984,7 +984,8 @@ void arkime_quit()
         LOG("Quitting");
 
     config.quitting = TRUE;
-    g_timeout_add(100, arkime_quit_gfunc, 0);
+    // --tests runs capture over and over, don't sit idle at each exit
+    g_timeout_add(config.tests ? 10 : 100, arkime_quit_gfunc, 0);
 }
 /******************************************************************************/
 /*
