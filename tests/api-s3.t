@@ -11,21 +11,16 @@ use Time::HiRes ();
 # Without a region the aws cli asks the instance metadata service on every call, which hangs where it isn't reachable
 my $aws = "AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=us-east-1 aws --endpoint-url http://localhost:4566";
 
-# Debug slow CI runs: capture runs with --debug, each capture and aws command is timed with diag,
-# and one that took over 3s also shows the end of its log
+# Any command over 3s says so, a slow CI runner then shows which one
 sub timedSystem {
 my ($cmd) = @_;
-    $cmd =~ s{\.\./capture/capture }{../capture/capture --debug };
     my $start = Time::HiRes::time();
     my $rc = system($cmd);
     my $ms = int((Time::HiRes::time() - $start) * 1000);
-    if ($cmd =~ m{capture/capture|\baws } || $ms > 1000) {
+    if ($ms > 3000) {
         (my $short = $cmd) =~ s/^.*?(\.\.\/capture\/capture|aws |curl |grep |diff )/$1/;
-        $short =~ s/ (--debug|-o '?(users)?[Ee]lasticsearch=\S+|-o disablePython=true|-c config\.test\.ini)//g;
-        diag sprintf("[%dms] %s", $ms, substr($short, 0, 200));
-        if ($ms > 3000 && $cmd =~ m{>\s*(/tmp/\S+\.log)}) {
-            diag "---- end of $1 ----\n" . `tail -60 $1`;
-        }
+        $short =~ s/ (-o '?(users)?[Ee]lasticsearch=\S+|-o disablePython=true|-c config\.test\.ini)//g;
+        diag sprintf("SLOW [%dms] %s", $ms, substr($short, 0, 200));
     }
     return $rc;
 }
