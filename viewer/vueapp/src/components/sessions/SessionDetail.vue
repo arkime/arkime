@@ -26,7 +26,9 @@ SPDX-License-Identifier: Apache-2.0
       density="compact"
       color="primary"
       class="session-detail-tabs mt-1">
-      <v-tab value="details">
+      <v-tab
+        value="details"
+        @click="rememberTab('details')">
         <v-icon
           icon="mdi-information-outline"
           size="small"
@@ -35,7 +37,8 @@ SPDX-License-Identifier: Apache-2.0
       </v-tab>
       <v-tab
         v-if="!hidePackets && !user.hidePcap"
-        value="packets">
+        value="packets"
+        @click="rememberTab('packets')">
         <v-icon
           icon="mdi-package-variant-closed"
           size="small"
@@ -54,7 +57,8 @@ SPDX-License-Identifier: Apache-2.0
       </v-tab>
       <v-tab
         v-if="hasTshark && !hidePackets && !user.hidePcap"
-        value="tshark">
+        value="tshark"
+        @click="rememberTab('tshark')">
         <v-icon
           icon="mdi-magnify-scan"
           size="small"
@@ -145,7 +149,7 @@ SPDX-License-Identifier: Apache-2.0
             </template>
             <v-list density="compact">
               <v-list-item
-                v-for="n in [50, 200, 500, 1000, 2000]"
+                v-for="n in PACKET_COUNTS"
                 :key="n"
                 :active="tsharkLength === n"
                 @click="tsharkLength = n">
@@ -560,6 +564,7 @@ import {
   SHARK_LAYOUTS, loadSharkLayout, saveSharkLayout,
   loadSharkSizes, saveSharkSizes, loadSharkHeight, saveSharkHeight
 } from './sharkLayouts.js';
+import { PACKET_COUNTS, defaultPacketCount, rememberPacketCount } from './packetCount.js';
 import ArkimeTagSessions from './Tags.vue';
 import ArkimeRemoveData from './Remove.vue';
 import ArkimeSendSessions from './Send.vue';
@@ -575,6 +580,7 @@ import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 
 const defaultUserSettings = {
+  sessionDetailTab: 'details',
   detailFormat: 'last',
   numPackets: 'last',
   showTimestamps: 'last'
@@ -615,7 +621,8 @@ const tsharkLoading = ref(false);
 const tsharkLoaded = ref(false);
 const tsharkError = ref('');
 const tsharkPackets = ref([]);
-const tsharkLength = ref(50);
+// same default as the Packets tab: the numPackets setting or the last used count
+const tsharkLength = ref(defaultPacketCount(user.value?.settings));
 let tsharkRunId = 0;
 const tsharkPromise = ref();
 
@@ -646,7 +653,38 @@ const packetErrorResponse = (response) => {
   return null;
 };
 const tsharkOutputRef = ref(null);
+
+// The tab a session opens on comes from the sessionDetailTab setting, or for
+// 'last' the tab the user last clicked. One the user can't see (no pcap
+// access, no tshark) falls back to Details.
+const DETAIL_TAB_KEY = 'arkime-session-detail-tab';
+const tabAvailable = (tab) => {
+  if (tab === 'details') { return true; }
+  if (user.value?.hidePcap || hidePackets.value) { return false; }
+  return tab === 'packets' || (tab === 'tshark' && hasTshark.value);
+};
+const initialTab = () => {
+  let tab = user.value?.settings?.sessionDetailTab || 'details';
+  if (tab === 'last') {
+    try { tab = localStorage[DETAIL_TAB_KEY]; } catch (e) { tab = undefined; }
+  }
+  return tabAvailable(tab) ? tab : 'details';
+};
+const preferredTab = initialTab();
+// opens on Details until the detail loads and says whether there are packets
 const activeTab = ref('details');
+let tabClicked = false;
+
+// Only a click is remembered, not a fall back to Details, so a session
+// without packets doesn't reset the last used tab
+const rememberTab = (tab) => {
+  tabClicked = true;
+  try { localStorage[DETAIL_TAB_KEY] = tab; } catch (e) { /* private mode */ }
+};
+const applyPreferredTab = () => {
+  if (hidePackets.value) { cancelTshark(); }
+  if (!tabClicked && tabAvailable(preferredTab)) { activeTab.value = preferredTab; }
+};
 const tsharkFilter = ref('');
 const tsharkSelectedIdx = ref(0);
 const tsharkExpandSignal = ref(0);
@@ -757,20 +795,22 @@ const props = defineProps({
 // methods
 // fetch and render the session detail data
 // this is an async component that will be injected into the template
-const createDetailDataComponent = () => {
+const createDetailDataComponent = (firstLoad = false) => {
   return defineAsyncComponent(async () => {
     try {
       const response = await SessionsService.getDetail(props.session.id, props.session.node, props.session.cluster);
       hidePackets.value = /hidepackets="true"/i.test(response.html);
       actions.value = response.info;
+      if (firstLoad) { applyPreferredTab(); }
       return sessionDetailData.getVueInstance(response.html, props.session); // render the session detail data
     } catch (err) {
       console.log('Error loading session detail data', err);
       error.value = t('sessions.detail.loadingErr');
+      if (firstLoad) { applyPreferredTab(); }
     }
   });
 };
-SessionDetailDataComponent = createDetailDataComponent();
+SessionDetailDataComponent = createDetailDataComponent(true);
 
 const reload = async () => {
   error.value = '';
@@ -819,6 +859,7 @@ const updateBase = (value) => {
 
 const updateNumPackets = (value) => {
   params.value.packets = value;
+  rememberPacketCount(user.value.settings, value);
   getPackets();
 };
 
@@ -942,11 +983,7 @@ const setUserParams = () => {
       params.value.base = user.value.settings.detailFormat;
     }
 
-    if (user.value.settings.numPackets === 'last') {
-      params.value.packets = localStorage['moloch-packets'] || 200;
-    } else {
-      params.value.packets = user.value.settings.numPackets || 200;
-    }
+    params.value.packets = defaultPacketCount(user.value.settings);
 
     if (user.value.settings.showTimestamps === 'last' && localStorage['moloch-ts']) {
       params.value.ts = localStorage['moloch-ts'] === 'true';
@@ -1004,9 +1041,6 @@ const getPackets = async () => {
   if (localStorage) { // update browser saved options
     if (user.value.settings.detailFormat === 'last') {
       localStorage['moloch-base'] = params.value.base;
-    }
-    if (user.value.settings.numPackets === 'last') {
-      localStorage['moloch-packets'] = params.value.packets || 200;
     }
     localStorage['moloch-line'] = params.value.line;
     localStorage['moloch-gzip'] = params.value.gzip;
@@ -1132,7 +1166,7 @@ const getTshark = async () => {
       props.session.node,
       props.session.cluster,
       {
-        length: tsharkLength.value || 50
+        length: tsharkLength.value
       }
     );
     tsharkPromise.value = { controller };
@@ -1586,17 +1620,27 @@ const packetProtoStyle = (proto) => {
   return { background: color, color: '#000' };
 };
 
-// Auto-run tshark the first time the user clicks the tshark tab. No manual
+// Auto-run tshark the first time the tshark tab is shown. No manual
 // run/refresh button -- the user opens the tab, results stream in.
-watch(activeTab, (newTab) => {
-  if (newTab === 'tshark' && hasTshark.value && !tsharkLoaded.value && !tsharkLoading.value) {
+const autoRunTshark = () => {
+  if (activeTab.value === 'tshark' && tabAvailable('tshark') && !tsharkLoaded.value && !tsharkLoading.value) {
     getTshark();
   }
+};
+watch(activeTab, autoRunTshark);
+
+// a tab can disappear after the session opens on it (e.g. no packets), so
+// move to Details
+watch(() => tabAvailable(activeTab.value), (available) => {
+  if (available) { return; }
+  cancelTshark();
+  activeTab.value = 'details';
 });
 
 // picking a different packet count has to re-run the dissection, otherwise the
 // menu label changes and nothing else does
-watch(tsharkLength, () => {
+watch(tsharkLength, (value) => {
+  rememberPacketCount(user.value.settings, value);
   if (hasTshark.value && activeTab.value === 'tshark') { getTshark(); }
 });
 
@@ -1605,6 +1649,12 @@ watch(componentKey, () => { nextTick(() => detailFind.reapply()); });
 
 // selecting a packet re-renders the tree → re-mark
 watch(tsharkSelectedIdx, () => { nextTick(() => tsharkFind.reapply()); });
+
+// Start the dissection alongside the detail fetch. This has to happen in setup:
+// the detail suspends this component, so onMounted only runs once the detail
+// has loaded. When the tab switches to Shark, the watcher sees the run in
+// flight and doesn't start a second one.
+if (preferredTab === 'tshark') { getTshark(); }
 
 // mounted
 onMounted(async () => {
@@ -1617,6 +1667,7 @@ onMounted(async () => {
 
 onUnmounted(() => {
   cancelPacketLoad();
+  cancelTshark();
   if (packetContainerRef.value) {
     const srcBytes = packetContainerRef.value.getElementsByClassName('srccol');
     if (srcBytes && srcBytes.length) {

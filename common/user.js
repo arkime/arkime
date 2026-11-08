@@ -1267,7 +1267,7 @@ class User {
    * Build an Express settings-update handler shared by viewer / cont3xt /
    * parliament / wise. Each app passes in its own writable key list
    * (`allowlist`) and the subset of those keys whose values may be objects
-   * (`objectKeys`).
+   * (`objectKeys`), plus keys restricted to a fixed set of values (`enumKeys`).
    *
    * Body semantics, per allowlisted key: a value sets it, an explicit `null`
    * unsets (deletes) it, and an omitted key is left unchanged. The route must
@@ -1275,9 +1275,10 @@ class User {
    *
    * @param {string[]} allowlist - Settings keys this endpoint may write.
    * @param {string[]} [objectKeys] - Subset of allowlist whose values may be objects.
+   * @param {Object<string, string[]>} [enumKeys] - Map of allowlist keys to their allowed values; other values are ignored.
    * @returns {function} Express handler `(req, res) => void`.
    */
-  static apiUpdateSettingsHandler (allowlist, objectKeys = []) {
+  static apiUpdateSettingsHandler (allowlist, objectKeys = [], enumKeys = {}) {
     const allowed = new Set(allowlist);
     const objAllowed = new Set(objectKeys);
     return (req, res) => {
@@ -1297,6 +1298,7 @@ class User {
         // vuetifyCustomTheme `{ dark, colors }` record).
         if (typeof val === 'object' && !Array.isArray(val) && !objAllowed.has(key)) { continue; }
         if (key === 'theme' && typeof val !== 'string') { continue; }
+        if (Object.hasOwn(enumKeys, key) && !enumKeys[key].includes(val)) { continue; }
         merged[key] = val;
       }
 

@@ -223,6 +223,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #3971 The Arkime tab is now a modular dashboard of configurable visualization widgets
   - New Shark tab on session detail, a tshark dissection panel; requires tshark >= 4.6.4, see tsharkPath
   - Session detail is now three tabs, Details/Packets/Shark, behind one shared toolbar
+  - #4433 Add a Start Page setting, Arkime or Sessions (the default), for where the viewer opens when no page is given
+  - #4433 Add a Session Detail Tab setting for which tab an opened session shows: Details (the default), Packets, Shark or Last Used
   - #4062 Add find in content to session detail
   - #4069 Consolidate the time controls into the search row
   - #4039 Connections folded into SPI Graph as a graph type, /connections redirects there

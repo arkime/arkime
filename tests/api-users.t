@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 302;
+use Test::More tests => 313;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -130,7 +130,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
 
 # Check default user settings
     $json = viewerGetToken("/api/appInfo", $token);
-    eq_or_diff(sort($json->{userSettingDefaults}), from_json('{"timezone":"gmt", "detailFormat":"last", "showTimestamps":"last", "sortColumn":"firstPacket", "sortDirection":"desc", "spiGraph":"node", "connSrcField":"source.ip", "connDstField":"ip.dst:port", "numPackets":"last", "theme":"default-theme", "manualQuery":false, "timelineDataFilters":["network.packets","network.bytes","totDataBytes"], "hideTags": ""}'));
+    eq_or_diff(sort($json->{userSettingDefaults}), from_json('{"timezone":"gmt", "startPage":"sessions", "sessionDetailTab":"details", "detailFormat":"last", "showTimestamps":"last", "sortColumn":"firstPacket", "sortDirection":"desc", "spiGraph":"node", "connSrcField":"source.ip", "connDstField":"ip.dst:port", "numPackets":"last", "theme":"default-theme", "manualQuery":false, "timelineDataFilters":["network.packets","network.bytes","totDataBytes"], "hideTags": ""}'));
 
 # Can we create superAdmin
     $json = viewerPostToken("/api/user", '{"userId": "testSuper", "userName": "SUserName", "enabled":true, "password":"password", "roles":["superAdmin"]}', $token);
@@ -227,6 +227,28 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     is($json->{success}, 1, "unset infoFieldsConfigId succeeds");
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!exists $json->{infoFieldsConfigId}, "infoFieldsConfigId deleted by null");
+
+# startPage picks where / redirects to, sessions by default, keeping the query
+    my $noRedirectUA = LWP::UserAgent->new(timeout => 10, max_redirect => 0);
+    my $response = $noRedirectUA->get("http://$ArkimeTest::host:8123/?arkimeRegressionUser=sac-test1");
+    is($response->code, 302, "/ redirects");
+    is($response->header('Location'), "sessions?arkimeRegressionUser=sac-test1", "/ redirects to sessions by default");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"startPage":"arkime","sessionDetailTab":"tshark"}', $test1Token);
+    is($json->{success}, 1, "set startPage and sessionDetailTab succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{startPage}, "arkime", "startPage is persisted");
+    is($json->{sessionDetailTab}, "tshark", "sessionDetailTab is persisted");
+    $response = $noRedirectUA->get("http://$ArkimeTest::host:8123/?arkimeRegressionUser=sac-test1");
+    is($response->header('Location'), "arkime?arkimeRegressionUser=sac-test1", "/ redirects to arkime when startPage is arkime");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"startPage":"https://example.com","sessionDetailTab":"foo"}', $test1Token);
+    is($json->{success}, 1, "set unknown startPage and sessionDetailTab succeeds");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    is($json->{startPage}, "arkime", "unknown startPage is ignored");
+    is($json->{sessionDetailTab}, "tshark", "unknown sessionDetailTab is ignored");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"startPage":null,"sessionDetailTab":null}', $test1Token);
+    is($json->{success}, 1, "unset startPage and sessionDetailTab succeeds");
+    $response = $noRedirectUA->get("http://$ArkimeTest::host:8123/?arkimeRegressionUser=sac-test1");
+    is($response->header('Location'), "sessions?arkimeRegressionUser=sac-test1", "/ redirects to sessions after startPage is unset");
 
 # update user settings - a key omitted from the body is preserved (partial save must not wipe siblings)
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":false,"colors":{"primary":"#abcdef"}}}', $test1Token);

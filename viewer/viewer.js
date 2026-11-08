@@ -1400,13 +1400,15 @@ async function expireCheckAll () {
 // ============================================================================
 // REDIRECTS
 // ============================================================================
-// redirect to sessions page and conserve params
+// redirect to the user's start page (sessions by default) and conserve params
 app.get(['/', '/app'], (req, res) => {
+  const startPage = req.user?.settings?.startPage ?? internals.settingDefaults.startPage;
+  const page = startPage === 'arkime' ? 'arkime' : 'sessions';
   const question = req.url.indexOf('?');
   if (question === -1) {
-    res.redirect('sessions');
+    res.redirect(page);
   } else {
-    res.redirect('sessions' + req.url.substring(question));
+    res.redirect(page + req.url.substring(question));
   }
 });
 
