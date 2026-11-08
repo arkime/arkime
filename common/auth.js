@@ -870,7 +870,7 @@ class Auth {
           user.tableStates = dbUser.tableStates;
           user.cont3xt = dbUser.cont3xt;
         } else {
-          user.save();
+          User.setUser(user.userId, user).catch(err => console.log('ERROR - saving anonymous user', ArkimeUtil.sanitizeLine(err?.message ?? String(err))));
         }
         return done(null, user);
       });

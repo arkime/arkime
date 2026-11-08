@@ -601,6 +601,22 @@ class ArkimeDb {
     return metrics;
   }
 
+  // The db.pl schema version a backend that makes its own tables matches
+  static SCHEMA_VERSION = 89;
+
+  // An update field set to this is removed, an undefined one is left alone
+  static UNSET = Symbol('ArkimeDb.UNSET');
+
+  // update's fields as { set, unset }, undefined fields are in neither
+  static updateParts (fields) {
+    const set = {};
+    const unset = [];
+    for (const [k, v] of Object.entries(fields)) {
+      if (v === ArkimeDb.UNSET) { unset.push(k); } else if (v !== undefined) { set[k] = v; }
+    }
+    return { set, unset };
+  }
+
   static newId (idType) {
     return idType === 'hex' ? cryptoLib.randomBytes(16).toString('hex') : cryptoLib.randomUUID();
   }
@@ -627,7 +643,8 @@ class ArkimeDbConflictError extends Error {
  * aggregate returns [{ key, count, <metric names> }] like an ES terms aggregation, biggest first.
  * find returns { total, data: [{ id, doc, version? }] }, with no size it returns every match.
  * fields is a hint (ES only fetches those), callers still get whatever the backend returns.
- * update sets top level fields of an existing doc and returns false when there is no doc.
+ * update sets top level fields of an existing doc, replacing any old value whole. A field set to ArkimeDb.UNSET is
+ * removed and an undefined one is left alone. It returns false when there is no doc.
  * getVersioned returns { doc, version } or null, version is opaque. putIfVersion only writes
  * when the doc still has that version, else it throws a ConflictError, so it never recreates a deleted doc.
  * refresh: false skips the ES refresh after a write, other backends ignore it.

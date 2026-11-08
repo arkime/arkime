@@ -7,7 +7,6 @@
  */
 'use strict';
 
-const Config = require('./config.js');
 const util = require('util');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -105,7 +104,7 @@ class UserAPIs {
       return res.serverError(403, 'Can not change other users msg', 'api.users.cannotChangeOtherUsersMsg');
     }
 
-    User.getUser(req.params.userId, (err, user) => {
+    User.getUser(req.params.userId, async (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (getUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user);
         return res.serverError(403, 'User not found', 'api.users.userNotFound');
@@ -132,43 +131,40 @@ class UserAPIs {
         }
       }
 
-      User.setUser(req.params.userId, user, (err, info) => {
-        if (Config.debug) {
-          console.log(`${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50), user, info);
-        }
+      const fields = noteId !== undefined ? { dismissedHelpNotes: user.dismissedHelpNotes } : { welcomeMsgNum: user.welcomeMsgNum };
+      let saved;
+      try {
+        saved = await User.saveFields(user, fields);
+      } catch (e) {
+        console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(e, false, 50));
+      }
+      if (!saved) {
+        return noteId !== undefined
+          ? res.serverError(500, 'Note dismissal failed', 'api.users.dismissNoteFailed')
+          : res.serverError(500, 'Error dismissing message');
+      }
 
-        if (noteId !== undefined) {
-          if (err) {
-            console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50));
-            return res.serverError(500, 'Note dismissal failed', 'api.users.dismissNoteFailed');
-          }
-
-          return res.json({
-            success: true,
-            text: `User, ${req.user.userId}, dismissed help note ${noteId}`,
-            i18n: 'api.users.dismissedNote',
-            i18nParams: { userId: req.user.userId, noteId }
-          });
-        }
-
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/user/%s/acknowledge (setUser)`, ArkimeUtil.sanitizeStr(req.params.userId), util.inspect(err, false, 50));
-          return res.serverError(500, 'Error dismissing message');
-        }
-
+      if (noteId !== undefined) {
         return res.json({
           success: true,
-          text: `User, ${req.user.userId}, dismissed message ${user.welcomeMsgNum}`,
-          i18n: 'api.users.dismissedMessage',
-          i18nParams: { userId: req.user.userId, msgNum: user.welcomeMsgNum }
+          text: `User, ${req.user.userId}, dismissed help note ${noteId}`,
+          i18n: 'api.users.dismissedNote',
+          i18nParams: { userId: req.user.userId, noteId }
         });
+      }
+
+      return res.json({
+        success: true,
+        text: `User, ${req.user.userId}, dismissed message ${user.welcomeMsgNum}`,
+        i18n: 'api.users.dismissedMessage',
+        i18nParams: { userId: req.user.userId, msgNum: user.welcomeMsgNum }
       });
     });
   }
 
   // USER STATE --------------------------------------------------------------------------
-  // The user doc is fetched and parsed on every auth refresh and written whole on
-  // every change, so keep the per user UI data (table states) bounded
+  // The user doc is fetched and parsed on every auth refresh and every change writes
+  // all of tableStates, so keep the per user UI data (table states) bounded
   static #maxUiItems = 100;
   static #tooLarge (obj) {
     return JSON.stringify(obj ?? null).length > 64 * 1024;
@@ -198,7 +194,7 @@ class UserAPIs {
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static updateUserState (req, res) {
-    User.getUser(req.user.userId, (err, user) => {
+    User.getUser(req.user.userId, async (err, user) => {
       if (err || !user) {
         console.log(`ERROR - ${req.method} /api/user/state/%s (getUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), user);
         return res.serverError(403, 'Unknown user', 'api.users.unknownUser');
@@ -224,17 +220,20 @@ class UserAPIs {
         return res.serverError(400, 'Too much saved state');
       }
 
-      User.setUser(user.userId, user, (err, info) => {
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/user/state/%s (setUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(err, false, 50), info);
-          return res.serverError(403, 'state update failed', 'api.users.stateUpdateFailed');
-        }
+      let saved;
+      try {
+        saved = await User.saveFields(user, { tableStates: user.tableStates });
+      } catch (e) {
+        console.log(`ERROR - ${req.method} /api/user/state/%s (setUser)`, ArkimeUtil.sanitizeStr(req.params.name), util.inspect(e, false, 50));
+      }
+      if (!saved) {
+        return res.serverError(403, 'state update failed', 'api.users.stateUpdateFailed');
+      }
 
-        return res.json({
-          success: true,
-          text: 'updated state successfully',
-          i18n: 'api.users.stateUpdated'
-        });
+      return res.json({
+        success: true,
+        text: 'updated state successfully',
+        i18n: 'api.users.stateUpdated'
       });
     });
   }

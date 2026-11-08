@@ -151,6 +151,15 @@ for (const backend of backends) {
       assert.equal(await coll.delete('nope'), false);
     });
 
+    if (backend.name === 'mongodb') {
+      test('an undefined id matches no doc', async () => {
+        assert.equal(await coll.get(undefined), null);
+        assert.equal(await coll.update(undefined, { n: 1 }), false);
+        assert.equal(await coll.delete(undefined), false);
+        assert.deepEqual(await coll.get('c'), docs.c);
+      });
+    }
+
     for (const [label, c] of [['', () => coll], ['indexed ', () => icoll]]) {
       for (const [where, expected] of whereCases) {
         test(`${label}where ${JSON.stringify(where)}`, async () => {
@@ -257,6 +266,8 @@ for (const backend of backends) {
 
           assert.equal(await old.update('b-5', { cpu: 4, ver: '6.1' }), true);
           assert.deepEqual(await old.get('b-5'), { nodeName: 'b', interval: 5, currentTime: 200, cpu: 4, ver: '6.1' });
+          assert.equal(await old.update('b-5', { ver: ArkimeDb.UNSET, cpu: undefined }), true);
+          assert.deepEqual(await old.get('b-5'), { nodeName: 'b', interval: 5, currentTime: 200, cpu: 4 }, 'UNSET removes a typed field, undefined leaves one');
           await old.put('b-5', { nodeName: 'b', interval: 5 });
           assert.deepEqual(await old.get('b-5'), { nodeName: 'b', interval: 5 }, 'a put replaces the whole doc');
           await assert.rejects(old.put('c', { nodeName: 'c', bogus: 1 }), /no column for 'bogus'/);
@@ -405,6 +416,15 @@ for (const backend of backends) {
 
       assert.equal(await vcoll.update('missing', { lastUsed: 5 }), false);
       assert.equal(await vcoll.get('missing'), null);
+
+      await vcoll.put('nest', { name: 'n', settings: { a: 1, b: 2 }, gone: 'x', keep: true, skip: undefined, deep: { x: undefined, y: 1 } });
+      assert.deepEqual(await vcoll.get('nest'), { name: 'n', settings: { a: 1, b: 2 }, gone: 'x', keep: true, deep: { y: 1 } }, 'put leaves undefined out like JSON');
+      assert.equal(await vcoll.update('nest', { settings: { a: 3, z: undefined }, gone: ArkimeDb.UNSET, never: ArkimeDb.UNSET, keep: undefined }), true);
+      assert.deepEqual(await vcoll.get('nest'), { name: 'n', settings: { a: 3 }, keep: true, deep: { y: 1 } }, 'objects replace whole, UNSET removes and undefined leaves alone');
+      assert.equal(await vcoll.update('nest', { keep: ArkimeDb.UNSET, name: 'm' }), true);
+      assert.deepEqual(await vcoll.get('nest'), { name: 'm', settings: { a: 3 }, deep: { y: 1 } });
+      assert.equal(await vcoll.update('nest', { name: undefined }), true, 'nothing to change still finds the doc');
+      assert.equal(await vcoll.update('missing', { keep: ArkimeDb.UNSET }), false);
     });
 
     test('a hostile $wildcard runs in linear time', async () => {
@@ -621,6 +641,18 @@ describe('cont3xt db', () => {
 });
 
 describe('ArkimeDb', () => {
+  test('es update only sends a script when a plain doc update would be wrong', async () => {
+    const bodies = [];
+    const client = { update: async (params) => { bodies.push(params.body); return {}; } };
+    const coll = ArkimeDb.connect('http://127.0.0.1:1', { client, prefix: 'x_' }).collection('things');
+    await coll.update('a', { n: 1, list: [{ a: 1 }], skip: undefined });
+    await coll.update('a', { obj: { a: 1 } });
+    await coll.update('a', { gone: ArkimeDb.UNSET, n: 2 });
+    assert.deepEqual(bodies[0], { doc: { n: 1, list: [{ a: 1 }] } });
+    assert.deepEqual(bodies[1].script, { lang: 'painless', source: ESConnection.UPDATE_SCRIPT, params: { set: { obj: { a: 1 } }, unset: [] } });
+    assert.deepEqual(bodies[2].script.params, { set: { n: 2 }, unset: ['gone'] });
+  });
+
   test('connections are shared per url and connection options', () => {
     const url = `sqlite://${tmp}/shared.db`;
     assert.equal(ArkimeUtil.dbConnect(url), ArkimeUtil.dbConnect(url));

@@ -313,6 +313,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           a wider time range (or All) shows why and searches nothing
   - #4430 A viewer with no OpenSearch/Elasticsearch db (sessions, cluster and users elsewhere and no elasticsearch
           setting) no longer connects to one, its ES health, ES stats tabs and ES Admin page are hidden
+  - #4430 Fix saving user settings, password, table state or TOTP on a multi viewer removing the user's roles other
+          than usersAdmin
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

@@ -437,12 +437,11 @@ function apiPutSettings (req, res, next) {
       return res.send({ success: false, text: 'Nothing sent to change' });
     }
 
-    user.save((err) => {
-      if (err) {
-        console.log('ERROR - saving cont3xt settings', err);
-        return res.send({ success: false, text: 'Save failed' });
-      }
-      res.send({ success: true, text: 'Saved' });
+    User.saveFields(user, { cont3xt: user.cont3xt }).then((found) => {
+      res.send(found ? { success: true, text: 'Saved' } : { success: false, text: 'Save failed' });
+    }, (err) => {
+      console.log('ERROR - saving cont3xt settings', err);
+      res.send({ success: false, text: 'Save failed' });
     });
   });
 }
@@ -556,11 +555,8 @@ User.prototype.setCont3xtKeys = function (v) {
     this.cont3xt = {};
   }
   this.cont3xt.keys = Auth.obj2auth(v, Auth.passwordSecret256);
-  return new Promise((resolve, reject) => {
-    this.save((err) => {
-      if (err) { return reject(err); }
-      resolve();
-    });
+  return User.saveFields(this, { cont3xt: this.cont3xt }).then((found) => {
+    if (!found) { throw new Error('User not found'); }
   });
 };
 

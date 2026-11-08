@@ -101,9 +101,21 @@ function ipsOf (doc, path = '', out = []) {
   return out;
 }
 
+// Like JSON, an undefined field is left out and an undefined array element is null. The
+// driver would store them as null, ignoreUndefined would also drop them from filters.
+function withoutUndefined (v) {
+  if (Array.isArray(v)) { return v.map(e => e === undefined ? null : withoutUndefined(e)); }
+  if (v === null || typeof v !== 'object' || ![Object.prototype, null].includes(Object.getPrototypeOf(v))) { return v; }
+  const out = {};
+  for (const [k, e] of Object.entries(v)) {
+    if (e !== undefined) { out[k] = withoutUndefined(e); }
+  }
+  return out;
+}
+
 // The stored form, a lone surrogate isn't valid UTF-8 so BSON would write it as U+FFFD anyway
 function stored (id, doc, v) {
-  const row = { _id: id, d: doc, v };
+  const row = { _id: id, d: withoutUndefined(doc), v };
   const ips = ipsOf(doc);
   if (ipBytes(id)) { ips.push({ f: 'id', a: ipBytes(id) }); }
   if (ips.length) { row._ip = ips; }
@@ -273,9 +285,12 @@ function defineCollections () {
     // Top level fields replace, $setField takes a field name with a . or $ as it is
     async update (id, fields) {
       await this.init();
-      fields = this.prepare(fields, true);
+      const { set, unset } = ArkimeDb.updateParts(fields);
       let d = '$d';
-      for (const [k, v] of Object.entries(fields)) { d = { $setField: { field: { $literal: k }, input: d, value: { $literal: v } } }; }
+      for (const [k, v] of Object.entries(this.prepare(set, true))) {
+        d = { $setField: { field: { $literal: k }, input: d, value: { $literal: withoutUndefined(v) } } };
+      }
+      for (const k of unset) { d = { $unsetField: { field: { $literal: k }, input: d } }; }
       const { matchedCount } = await this.coll.updateOne({ _id: id }, [{ $set: { d, v: { $add: ['$v', 1] } } }]);
       if (matchedCount === 1) { await this.#reindex(id); }
       return matchedCount === 1;
@@ -592,6 +607,11 @@ class MongoConnection {
 
   withPrefix (prefix) {
     return prefix === this.prefix ? this : new MongoConnection(undefined, { client: this.client, db: this.db, slots: this.#slots, prefix });
+  }
+
+  // Collections make their own tables, so it has everything that db.pl schema version has
+  async schemaVersion () {
+    return ArkimeDb.SCHEMA_VERSION;
   }
 
   collection (collName, options = {}) {

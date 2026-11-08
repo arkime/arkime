@@ -6,7 +6,6 @@
  */
 'use strict';
 
-const ArkimeUtil = require('./arkimeUtil');
 const fs = require('fs');
 const axios = require('axios');
 const yaml = require('js-yaml');
@@ -1074,3 +1073,6 @@ ArkimeConfig.registerSettings({
 });
 
 module.exports = ArkimeConfig;
+
+// After the export, arkimeUtil leads to arkimeDb which needs a whole ArkimeConfig
+const ArkimeUtil = require('./arkimeUtil');

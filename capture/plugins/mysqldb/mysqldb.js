@@ -562,12 +562,19 @@ function defineCollections () {
 
     // Top level fields replace, JSON_MERGE_PATCH would drop nulls and merge nested objects
     async update (id, fields) {
-      const keys = Object.keys(fields);
-      if (!keys.length) { return (await this.get(id)) !== null; }
+      const { set, unset } = ArkimeDb.updateParts(fields);
+      const setKeys = Object.keys(set);
+      if (!setKeys.length && !unset.length) { return (await this.get(id)) !== null; }
       const params = [];
-      const sets = keys.map(k => { params.push(`$.${JSON.stringify(k)}`, jsonParam(fields[k]) ?? 'null'); return '?, CAST(? AS JSON)'; });
+      let doc = 'doc';
+      if (unset.length) {
+        doc = `JSON_REMOVE(doc, ${unset.map(k => { params.push(`$.${JSON.stringify(k)}`); return '?'; }).join(', ')})`;
+      }
+      if (setKeys.length) {
+        doc = `JSON_SET(${doc}, ${setKeys.map(k => { params.push(`$.${JSON.stringify(k)}`, jsonParam(set[k])); return '?, CAST(? AS JSON)'; }).join(', ')})`;
+      }
       params.push(Buffer.from(id));
-      const [result] = await this.query(`UPDATE \`${this.table}\` SET doc = JSON_SET(doc, ${sets.join(', ')}), version = version + 1 WHERE id = ?`, { params });
+      const [result] = await this.query(`UPDATE \`${this.table}\` SET doc = ${doc}, version = version + 1 WHERE id = ?`, { params });
       return result.affectedRows > 0;
     }
 
@@ -651,8 +658,8 @@ function defineCollections () {
       return this.#columns.get(field) === 'number' ? `\`${field}\`` : 'NULL';
     }
 
-    #checkDoc (doc) {
-      for (const field of Object.keys(doc)) {
+    #checkFields (names) {
+      for (const field of names) {
         if (!this.#columns.has(field)) { throw new Error(`${this.table} has no column for '${field}'`); }
       }
     }
@@ -665,7 +672,7 @@ function defineCollections () {
     // Every column is written, so fields missing from the doc become null like a doc replace
     async put (id, doc, { createOnly } = {}) {
       await this.init();
-      this.#checkDoc(doc);
+      this.#checkFields(Object.keys(doc));
       id ??= this.newId();
       const fields = [...this.#columns.keys()];
       const cols = fields.map(f => `\`${f}\``);
@@ -682,7 +689,7 @@ function defineCollections () {
 
     async putIfVersion (id, doc, version) {
       await this.init();
-      this.#checkDoc(doc);
+      this.#checkFields(Object.keys(doc));
       const fields = [...this.#columns.keys()];
       const [result] = await this.query(`UPDATE \`${this.table}\` SET ${fields.map(f => `\`${f}\` = ?`).join(', ')}, version = version + 1 WHERE id = ? AND version = ?`,
         { params: [...fields.map(f => this.#value(f, doc[f])), Buffer.from(id), version] });
@@ -691,11 +698,12 @@ function defineCollections () {
 
     async update (id, fields) {
       await this.init();
-      this.#checkDoc(fields);
-      const names = Object.keys(fields);
+      const { set, unset } = ArkimeDb.updateParts(fields);
+      const names = [...Object.keys(set), ...unset];
+      this.#checkFields(names);
       if (!names.length) { return (await this.get(id)) !== null; }
       const [result] = await this.query(`UPDATE \`${this.table}\` SET ${names.map(f => `\`${f}\` = ?`).join(', ')}, version = version + 1 WHERE id = ?`,
-        { params: [...names.map(f => this.#value(f, fields[f])), Buffer.from(id)] });
+        { params: [...names.map(f => this.#value(f, set[f])), Buffer.from(id)] });
       return result.affectedRows > 0;
     }
 
@@ -854,6 +862,11 @@ class MySQLConnection {
 
   withPrefix (prefix) {
     return prefix === this.prefix ? this : new MySQLConnection(undefined, { pool: this.pool, slots: this.#slots, prefix });
+  }
+
+  // Collections make their own tables, so it has everything that db.pl schema version has
+  async schemaVersion () {
+    return ArkimeDb.SCHEMA_VERSION;
   }
 
   collection (collName, options = {}) {

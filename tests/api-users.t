@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 299;
+use Test::More tests => 302;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -513,6 +513,15 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     eq_or_diff($json->{error}, "User time limit (72 hours) exceeded", "user can't exceed their time limit");
     $json = viewerGet("/api/sessions?arkimeRegressionUser=sac-test2&date=72");
     is (exists $json->{data}, 1, "user can make a query within their time range");
+
+    # leaving out timeLimit and emailSearch removes them, so they come from the roles again
+    $json = viewerPostToken("/api/user/sac-test2", '{"roles": ["arkimeUser"], "emailSearch": true}', $token);
+    $users = viewerPost("/api/users", "");
+    ok(!exists $users->{data}->[$test2pos]->{timeLimit}, "left out time limit removed");
+    is($users->{data}->[$test2pos]->{emailSearch}, 1, "emailSearch set");
+    $json = viewerPostToken("/api/user/sac-test2", '{"timeLimit":"72", "roles": ["arkimeUser"]}', $token);
+    $users = viewerPost("/api/users", "");
+    ok(!exists $users->{data}->[$test2pos]->{emailSearch}, "left out emailSearch removed");
 
 # valueActions tests
     $json = viewerGet("/api/valueactions?arkimeRegressionUser=sac-test1");

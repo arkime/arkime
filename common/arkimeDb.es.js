@@ -108,7 +108,12 @@ class ESCollection extends ArkimeDb.Collection {
   async update (id, fields, { refresh = true, cluster } = {}) {
     if (this.#writeIndex) { throw new Error(`update isn't supported on ${this.#index}`); }
     try {
-      await this.#client.update({ index: this.#index, id, body: { doc: fields }, retry_on_conflict: 3, refresh, cluster });
+      // A doc update merges nested objects and can't remove a field, the script replaces them whole
+      const { set, unset } = ArkimeDb.updateParts(fields);
+      const body = unset.length || Object.values(set).some(v => ArkimeUtil.isPlainObject(v))
+        ? { script: { lang: 'painless', source: ESConnection.UPDATE_SCRIPT, params: { set, unset } } }
+        : { doc: set };
+      await this.#client.update({ index: this.#index, id, body, retry_on_conflict: 3, refresh, cluster });
       return true;
     } catch (err) {
       if (err.meta?.statusCode === 404) { return false; }
@@ -433,6 +438,8 @@ function decompile (query) {
 }
 
 class ESConnection {
+  static UPDATE_SCRIPT = 'ctx._source.putAll(params.set); for (def k : params.unset) { ctx._source.remove(k); }';
+
   client;
   prefix;
   #multiES;

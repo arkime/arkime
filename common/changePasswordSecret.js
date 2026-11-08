@@ -150,7 +150,14 @@ async function run (oldArg, newArg) {
     // Nothing encrypted to migrate (e.g. a role or header-only user)
     if (changed.length === 0) { continue; }
 
-    await User.setUser(userId, user);
+    const fields = {};
+    if (changed.includes('passStore')) { fields.passStore = user.passStore; }
+    if (changed.includes('cont3xt keys')) { fields.cont3xt = user.cont3xt; }
+    if (!await User.updateUser(userId, fields)) {
+      console.log(`SKIP   - ${userId}: deleted while running`);
+      skipped++;
+      continue;
+    }
     console.log(`UPDATE - ${userId}: re-encrypted ${changed.join(', ')}`);
     updated++;
   }

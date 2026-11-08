@@ -270,7 +270,7 @@ class User {
    * as passStore and cont3xt keys. Unlike searchUsers/getUser this does NOT
    * clean, filter, or expand roles. Intended for admin/maintenance tasks that
    * need the stored document as-is (e.g. re-encrypting after a passwordSecret
-   * change). Pair with setUser to write changes back.
+   * change). Pair with updateUser to write changes back.
    * @returns {Promise<Array>} every stored user/role document, unmodified
    */
   static getAllUsers () {
@@ -403,6 +403,44 @@ class User {
         });
       });
     }
+  }
+
+  static #storedRoles (userId) {
+    return new Promise((resolve, reject) => {
+      User.#implementation.getUser(userId, (err, doc) => err ? reject(err) : resolve(doc?.roles ?? []));
+    });
+  }
+
+  /**
+   * A field set to this in updateUser or saveFields is removed, an undefined one is left alone
+   */
+  static get UNSET_FIELD () { return ArkimeDb.UNSET; }
+
+  /**
+   * Update some fields of a stored user. Returns false when there is no stored user.
+   */
+  static async updateUser (userId, fields) {
+    if (Array.isArray(fields.roles)) {
+      fields = { ...fields, createEnabled: fields.roles.includes('usersAdmin') };
+    } else if (fields.roles === User.UNSET_FIELD) {
+      fields = { ...fields, createEnabled: User.UNSET_FIELD };
+    }
+    User.#usersCache.delete(userId);
+    return User.#implementation.updateUser(userId, fields);
+  }
+
+  /**
+   * Write only these fields of user and set them on user too. The anonymous user is saved
+   * whole the first time. Returns false when there is no stored user.
+   */
+  static async saveFields (user, fields) {
+    const { set, unset } = ArkimeDb.updateParts(fields);
+    Object.assign(user, set);
+    for (const k of unset) { delete user[k]; }
+    if (await User.updateUser(user.userId, fields)) { return true; }
+    if (user.userId !== 'anonymous' || !Auth.isAnonymousMode()) { return false; }
+    await User.setUser(user.userId, user);
+    return true;
   }
 
   /**
@@ -1030,63 +1068,56 @@ class User {
         return res.serverError(403, 'Only superAdmin user can enable Admin roles on a user');
       }
 
-      user.enabled = req.body.enabled === true;
+      const fields = {
+        enabled: req.body.enabled === true,
+        webEnabled: req.body.webEnabled === true,
+        headerAuthEnabled: req.body.headerAuthEnabled === true,
+
+        // missing ones are removed so they inherit
+        emailSearch: req.body.emailSearch ?? User.UNSET_FIELD,
+        removeEnabled: req.body.removeEnabled ?? User.UNSET_FIELD,
+        packetSearch: req.body.packetSearch ?? User.UNSET_FIELD,
+        hideStats: req.body.hideStats ?? User.UNSET_FIELD,
+        hideFiles: req.body.hideFiles ?? User.UNSET_FIELD,
+        hidePcap: req.body.hidePcap ?? User.UNSET_FIELD,
+        disablePcapDownload: req.body.disablePcapDownload ?? User.UNSET_FIELD,
+
+        roles: req.body.roles,
+        roleAssigners: req.body.roleAssigners ?? []
+      };
 
       if (ArkimeUtil.isString(req.body.expression, 0)) {
-        if (req.body.expression.match(/^\s*$/)) {
-          delete user.expression;
-        } else {
-          user.expression = req.body.expression;
-        }
+        fields.expression = req.body.expression.match(/^\s*$/) ? User.UNSET_FIELD : req.body.expression;
       }
 
       if (ArkimeUtil.isString(req.body.userName)) {
         if (req.body.userName.match(/^\s*$/)) {
           return res.serverError(403, 'Username can not be empty');
-        } else {
-          user.userName = req.body.userName;
         }
+        fields.userName = req.body.userName;
       }
 
-      // Per user
-      user.webEnabled = req.body.webEnabled === true;
-      user.headerAuthEnabled = req.body.headerAuthEnabled === true;
-
-      // preserve undefined for inherit
-      user.emailSearch = req.body.emailSearch;
-      user.removeEnabled = req.body.removeEnabled;
-      user.packetSearch = req.body.packetSearch;
-      user.hideStats = req.body.hideStats;
-      user.hideFiles = req.body.hideFiles;
-      user.hidePcap = req.body.hidePcap;
-      user.disablePcapDownload = req.body.disablePcapDownload;
-
+      fields.timeLimit = User.UNSET_FIELD;
       if (req.body.timeLimit !== undefined && req.body.timeLimit !== null && req.body.timeLimit !== '') {
         const tl = parseInt(req.body.timeLimit, 10);
         if (!Number.isFinite(tl) || tl < 0) {
           return res.serverError(422, 'timeLimit must be a non-negative integer');
         }
-        user.timeLimit = tl;
-      } else {
-        user.timeLimit = undefined;
+        fields.timeLimit = tl;
       }
-      user.roles = req.body.roles;
-      user.roleAssigners = req.body.roleAssigners ?? [];
 
-      User.setUser(userId, user, (err, info) => {
-        if (ArkimeConfig.debug) {
-          console.log('setUser', User.forLog(user), err, info);
+      try {
+        if (!await User.saveFields(user, fields)) {
+          return res.serverError(403, 'User not found');
         }
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), User.forLog(user));
+        return res.serverError(500, 'Error updating user');
+      }
 
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/user/%s`, userId, util.inspect(err, false, 50), User.forLog(user), info);
-          return res.serverError(500, 'Error updating user');
-        }
-
-        return res.json({
-          success: true,
-          text: `User ${userId} updated successfully`
-        });
+      return res.json({
+        success: true,
+        text: `User ${userId} updated successfully`
       });
     });
   }
@@ -1126,7 +1157,13 @@ class User {
         return res.serverError(403, 'User not found');
       }
 
-      const roles = [...user.roles];
+      // A readOnly viewer only sees usersAdmin, the other roles are still stored
+      let roles;
+      try {
+        roles = [...(readOnly ? await User.#storedRoles(userId) : user.roles)];
+      } catch (e) {
+        return res.serverError(500, 'Error updating user role');
+      }
       const hasRole = roles.includes(roleId);
       if (newRoleState) {
         if (hasRole) {
@@ -1152,22 +1189,18 @@ class User {
         roles.splice(roles.indexOf(roleId), 1);
       }
 
-      user.roles = roles;
-
-      User.setUser(userId, user, (err, info) => {
-        if (ArkimeConfig.debug) {
-          console.log('setUser', User.forLog(user), err, info);
+      try {
+        if (!await User.saveFields(user, { roles })) {
+          return res.serverError(403, 'User not found');
         }
+      } catch (err) {
+        console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), User.forLog(user));
+        return res.serverError(500, 'Error updating user role');
+      }
 
-        if (err) {
-          console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), User.forLog(user), info);
-          return res.serverError(500, 'Error updating user role');
-        }
-
-        return res.json({
-          success: true,
-          text: `User ${userId}'s role ${roleId} updated successfully`
-        });
+      return res.json({
+        success: true,
+        text: `User ${userId}'s role ${roleId} updated successfully`
       });
     });
   }
@@ -1181,7 +1214,7 @@ class User {
    * @returns {boolean} success - Whether the update password operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
-  static apiUpdateUserPassword (req, res) {
+  static async apiUpdateUserPassword (req, res) {
     if (!ArkimeUtil.isString(req.body.newPassword, 3)) {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
@@ -1206,18 +1239,18 @@ class User {
     }
 
     const user = req.settingUser;
-    user.passStore = Auth.pass2store(user.userId, req.body.newPassword);
-
-    User.setUser(user.userId, user, (err, info) => {
-      if (err) {
-        console.log(`ERROR - ${req.method} /api/user/password update error`, util.inspect(err, false, 50), info);
-        return res.serverError(500, 'Password update failed');
+    try {
+      if (!await User.saveFields(user, { passStore: Auth.pass2store(user.userId, req.body.newPassword) })) {
+        return res.serverError(403, 'Unknown user');
       }
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/user/password update error`, util.inspect(err, false, 50));
+      return res.serverError(500, 'Password update failed');
+    }
 
-      return res.json({
-        success: true,
-        text: 'Changed password successfully'
-      });
+    return res.json({
+      success: true,
+      text: 'Changed password successfully'
     });
   }
 
@@ -1266,15 +1299,16 @@ class User {
         if (key === 'theme' && typeof val !== 'string') { continue; }
         merged[key] = val;
       }
-      req.settingUser.settings = merged;
 
-      User.setUser(req.settingUser.userId, req.settingUser, (err) => {
-        if (err) {
-          console.log('ERROR - %s %s settings update error', req.method, ArkimeUtil.sanitizeStr(req.originalUrl), util.inspect(err, false, 50));
-          // res.send, not res.serverError -- wise mounts this handler too and has no res.serverError.
+      // res.send, not res.serverError -- wise mounts this handler too and has no res.serverError.
+      User.saveFields(req.settingUser, { settings: merged }).then((found) => {
+        if (!found) {
           return res.send({ success: false, text: 'User settings update failed', i18n: 'api.users.settingsUpdateFailed' });
         }
         return res.send({ success: true, text: 'Updated user settings successfully', i18n: 'api.users.settingsUpdated' });
+      }, (err) => {
+        console.log('ERROR - %s %s settings update error', req.method, ArkimeUtil.sanitizeStr(req.originalUrl), util.inspect(err, false, 50));
+        return res.send({ success: false, text: 'User settings update failed', i18n: 'api.users.settingsUpdateFailed' });
       });
     };
   }
@@ -1436,11 +1470,12 @@ class User {
 
     req.settingUser.#clearTotpAttempts();
     const user = req.settingUser;
-    user.totpSecret = pendingStore;
     User.#totpPendingSecrets.delete(user.userId);
 
     try {
-      await User.setUser(user.userId, user);
+      if (!await User.saveFields(user, { totpSecret: pendingStore })) {
+        return res.serverError(403, 'Unknown user');
+      }
       return res.json({
         success: true,
         text: 'Two-factor authentication enabled successfully'
@@ -1497,10 +1532,10 @@ class User {
       }
     }
 
-    delete user.totpSecret;
-
     try {
-      await User.setUser(user.userId, user);
+      if (!await User.saveFields(user, { totpSecret: User.UNSET_FIELD })) {
+        return res.serverError(403, 'Unknown user');
+      }
       return res.json({
         success: true,
         text: 'Two-factor authentication disabled successfully'
@@ -1662,13 +1697,6 @@ class User {
   #allExpression;
   #allTimeLimit;
   #allSettings = {};
-  /**
-   * Save user, callback only
-   */
-  save (cb) {
-    User.setUser(this.userId, this, cb);
-  }
-
   /**
    * Create the combined variables from ourselves and enabled roles we use.
    * force recomputes, the old values stay visible until the new ones are ready.
@@ -1918,13 +1946,8 @@ class User {
       return;
     }
 
-    this.roles = newRoles;
+    await User.saveFields(this, { roles: newRoles });
     await this.expandFromRoles(true);
-    await new Promise((resolve, reject) => {
-      this.save((err) => {
-        if (err) { reject(err); } else { resolve(); }
-      });
-    });
   }
 
   // Set last used info for user, should only be used by Auth
@@ -2177,6 +2200,12 @@ class UserDbImplementation {
     }, (err) => {
       cb(err instanceof ArkimeDb.ConflictError ? VERSION_CONFLICT : err);
     });
+  }
+
+  async updateUser (userId, fields) {
+    const found = await this.#users.update(userId, fields);
+    User.deleteCache(userId); // Delete again after db says it's done refreshing
+    return found;
   }
 
   async setLastUsed (userId, now) {

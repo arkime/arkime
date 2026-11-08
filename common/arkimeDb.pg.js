@@ -169,8 +169,9 @@ class PGCollection extends ArkimeDb.Collection {
   }
 
   async update (id, fields) {
-    const { rowCount } = await this.#query(`UPDATE ${this.#table} SET doc = doc || $1::jsonb, version = version + 1 WHERE id = $2`,
-      [jsonParam(fields), id]);
+    const { set, unset } = ArkimeDb.updateParts(fields);
+    const { rowCount } = await this.#query(`UPDATE ${this.#table} SET doc = (doc - $3::text[]) || $1::jsonb, version = version + 1 WHERE id = $2`,
+      [jsonParam(set), id, unset]);
     return rowCount > 0;
   }
 
@@ -497,8 +498,8 @@ class PGTypedCollection extends ArkimeDb.Collection {
     return `jsonb_strip_nulls(jsonb_build_object(${known.map(f => `'${f}', r."${f}"`).join(', ')}))`;
   }
 
-  #checkDoc (doc) {
-    for (const field of Object.keys(doc)) {
+  #checkFields (names) {
+    for (const field of names) {
       if (!this.#columns.has(field)) { throw new Error(`${this.#table} has no column for '${field}'`); }
     }
   }
@@ -511,7 +512,7 @@ class PGTypedCollection extends ArkimeDb.Collection {
   // Every column is written, so fields missing from the doc become null like a doc replace
   async put (id, doc, { createOnly } = {}) {
     await this.init();
-    this.#checkDoc(doc);
+    this.#checkFields(Object.keys(doc));
     id ??= this.newId();
     const t = this.#table;
     const fields = [...this.#columns.keys()];
@@ -532,7 +533,7 @@ class PGTypedCollection extends ArkimeDb.Collection {
 
   async putIfVersion (id, doc, version) {
     await this.init();
-    this.#checkDoc(doc);
+    this.#checkFields(Object.keys(doc));
     const fields = [...this.#columns.keys()];
     const { rowCount } = await this.#query(`UPDATE ${this.#table} SET (${this.#cols(fields)}) =
       (SELECT ${fields.map(f => `p."${f}"`).join(', ')} FROM jsonb_populate_record(NULL::${this.#table}, $1::jsonb) p),
@@ -542,12 +543,13 @@ class PGTypedCollection extends ArkimeDb.Collection {
 
   async update (id, fields) {
     await this.init();
-    this.#checkDoc(fields);
-    const names = Object.keys(fields);
+    const { set, unset } = ArkimeDb.updateParts(fields);
+    const names = [...Object.keys(set), ...unset];
+    this.#checkFields(names);
     if (!names.length) { return (await this.get(id)) !== null; }
     const { rowCount } = await this.#query(`UPDATE ${this.#table} SET (${this.#cols(names)}) =
       (SELECT ${names.map(f => `p."${f}"`).join(', ')} FROM jsonb_populate_record(NULL::${this.#table}, $1::jsonb) p),
-      version = version + 1 WHERE id = $2`, [jsonParam(fields), id]);
+      version = version + 1 WHERE id = $2`, [jsonParam(set), id]);
     return rowCount > 0;
   }
 
@@ -778,8 +780,6 @@ async function patternQuery (pool, sql, params) {
   }
 }
 
-const PG_SCHEMA_VERSION = 89;
-
 class PGConnection {
   pool;
   prefix;
@@ -808,7 +808,7 @@ class PGConnection {
 
   // Collections make their own tables, so Postgres has everything the db.pl schema version it matches has
   async schemaVersion () {
-    return PG_SCHEMA_VERSION;
+    return ArkimeDb.SCHEMA_VERSION;
   }
 
   collection (collName, options = {}) {

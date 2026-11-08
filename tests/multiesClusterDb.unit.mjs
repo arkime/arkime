@@ -16,6 +16,7 @@ import path from 'node:path';
 const cjsRequire = createRequire(import.meta.url);
 const ArkimeDb = cjsRequire('../common/arkimeDb.js');
 const MultiesClusterDb = cjsRequire('../viewer/multiesClusterDb.js');
+const ESConnection = cjsRequire('../common/arkimeDb.es.js');
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'multies-clusterdb-'));
 const conn = ArkimeDb.connect(`sqlite://${tmp}/cluster.db`, { prefix: 'tests_' });
@@ -96,6 +97,13 @@ describe('multies cluster db', () => {
     assert.deepEqual(await conn.collection('hunts').get('h1'), { name: 'one', status: 'done' });
     assert.equal((await answer('hunts', 'update', 'nope', {}, { doc: { a: 1 } })).status, 404);
     await assert.rejects(answer('hunts', 'update', 'h1', {}, { script: { source: 'x' } }));
+    const script = (set, unset) => ({ script: { lang: 'painless', source: ESConnection.UPDATE_SCRIPT, params: { set, unset } } });
+    assert.equal((await answer('hunts', 'update', 'h1', {}, script({ q: { a: 1 } }, ['status']))).result, 'updated');
+    assert.deepEqual(await conn.collection('hunts').get('h1'), { name: 'one', q: { a: 1 } }, 'the unset list removes');
+    assert.equal((await answer('hunts', 'update', 'h1', {}, { doc: { status: 'done' } })).result, 'updated');
+    assert.deepEqual(await conn.collection('hunts').get('h1'), { name: 'one', q: { a: 1 }, status: 'done' });
+    await assert.rejects(answer('hunts', 'update', 'h1', {}, script({}, [1])));
+    await assert.rejects(answer('hunts', 'update', 'h1', {}, { script: { source: ESConnection.UPDATE_SCRIPT, params: { set: [], unset: [] } } }));
     assert.equal((await answer('hunts', 'delete', 'h1', {})).result, 'deleted');
     assert.equal((await answer('hunts', 'delete', 'h1', {})).result, 'not_found');
     assert.deepEqual(await answer('hunts', 'refresh', undefined, {}), {});

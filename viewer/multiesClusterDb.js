@@ -10,6 +10,8 @@
 'use strict';
 
 const ESConnection = require('../common/arkimeDb.es.js');
+const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeDb = require('../common/arkimeDb');
 
 // Only history has dated indices. Nothing ES would decode, so a %2C list can't pass as one index
 const INDEX_RE = /^MULTIPREFIX_(?:(files|stats|dstats|fields|sequence|hunts|queries)(?:_v\d+)?|(history)(?:_v1(?:-(?:\d+w\d+)?)?)?)\*?$/;
@@ -81,6 +83,21 @@ async function search (coll, index, query, body) {
   };
 }
 
+// A doc update or the update script ESConnection sends, as the fields for coll.update
+function updateFields (body) {
+  if (ArkimeUtil.isPlainObject(body.doc)) { return body.doc; }
+  const { source, params } = body.script ?? {};
+  if (source !== ESConnection.UPDATE_SCRIPT || !ArkimeUtil.isPlainObject(params?.set) || !Array.isArray(params.unset)) {
+    throw new Error('Only doc updates are supported');
+  }
+  const fields = { ...params.set };
+  for (const k of params.unset) {
+    if (!ArkimeUtil.isString(k)) { throw new Error('Only doc updates are supported'); }
+    fields[k] = ArkimeDb.UNSET;
+  }
+  return fields;
+}
+
 /**
  * The ES shaped response for a multi viewer request on a cluster db index
  * @param {object} coll - the cluster's ArkimeDb collection
@@ -111,8 +128,7 @@ async function answer (coll, op, id, query, bodyStr) {
     return { _index: index, _id: id, result: await coll.delete(id) ? 'deleted' : 'not_found' };
   case 'update':
     if (id === null) { break; }
-    if (!body.doc) { throw new Error('Only doc updates are supported'); }
-    return await coll.update(id, body.doc)
+    return await coll.update(id, updateFields(body))
       ? { _index: index, _id: id, result: 'updated' }
       : { status: 404, error: { type: 'document_missing_exception', reason: `[${id}]: document missing` } };
   case 'history':

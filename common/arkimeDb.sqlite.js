@@ -142,7 +142,9 @@ class SQLiteCollection extends ArkimeDb.Collection {
     return this.#db.transaction(() => {
       const row = this.#db.prepare(`SELECT json FROM ${this.#table} WHERE ${this.#idCol} = ?`).get(id);
       if (!row) { return false; }
-      const doc = Object.assign(JSON.parse(row.json), fields);
+      const { set, unset } = ArkimeDb.updateParts(fields);
+      const doc = Object.assign(JSON.parse(row.json), set);
+      for (const k of unset) { delete doc[k]; }
       this.#db.prepare(`UPDATE ${this.#table} SET ${sets.join(', ')} WHERE ${this.#idCol} = ?`)
         .run(JSON.stringify(doc), id);
       return true;
