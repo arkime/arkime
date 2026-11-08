@@ -1014,12 +1014,16 @@ for my $i (1..11) {
 }
 esGet("/_refresh");
 
+# Searched with no ES too, the audit counts below include it
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "10.0.0.1"
 }));
+SKIP: {
+skip "no OpenSearch/Elasticsearch for the elasticsearch integration", 3 if $ArkimeTest::noEs;
 is($json->{data}->{_cont3xt}->{count}, 11);
 is($json->{data}->{hits}->[0]->{source}->{ip}, "10.0.0.1");
 is($json->{data}->{hits}->[1]->{source}->{ip}, "10.0.0.1");
+}
 
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "badip"

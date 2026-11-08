@@ -1163,7 +1163,7 @@ typedef struct {
     void     (*del)(const char *table, const char *id);
     void     (*sequence)(const char *name, ArkimeSeqNum_cb func, gpointer uw);
     uint32_t (*sequence_sync)(const char *name);
-    void     (*each)(const char *table, ArkimeDbRow_cb func);
+    gboolean (*each)(const char *table, ArkimeDbRow_cb func);
     gboolean (*file_exists)(const char *node, const char *name, uint32_t *num);
     int      (*queue_length)(void);
     int      (*queue_length_best)(void);
@@ -1219,6 +1219,7 @@ void     arkime_db_init();
 int      arkime_db_queue_length();
 int      arkime_db_queue_length_best();
 void    *arkime_db_es_server();
+gboolean arkime_db_cluster_each(const char *table, ArkimeDbRow_cb func);
 void     arkime_db_set_tokens_enabled(gboolean enabled);
 gboolean arkime_db_tokens_enabled(void);
 void     arkime_db_set_tokens_field(int pos, const char *tokensKey);

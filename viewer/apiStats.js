@@ -1710,7 +1710,8 @@ class StatsAPIs {
     Promise.all([
       Db.searchStats(params),
       Db.countStats(),
-      Db.nodesStatsCache()
+      // With no OpenSearch/Elasticsearch there are only the capture nodes
+      Db.hasEs() ? Db.nodesStatsCache() : undefined
     ]).then(([stats, total, nodesStats]) => {
       const results = { total: stats.total, results: [] };
 

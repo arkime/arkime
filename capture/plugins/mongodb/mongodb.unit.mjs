@@ -276,6 +276,26 @@ describe('mongodb', { skip: !url && 'set ARKIME_TEST_DB_URL to a mongodb:// url'
       assert.equal(scrolled._scroll_id, EsQuery.SCROLL_DONE);
       assert.equal(scrolled.hits.hits.length, 3);
 
+      // Pages of query.size in the query's sort, like a hunt reads it
+      const scrollQuery = { query: { match_all: {} }, size: 1, sort: [{ lastPacket: { order: 'asc' } }] };
+      let chunk = await sessions.searchScroll(`${prefix}sessions3-*`, scrollQuery, { scroll: '1m' });
+      const read = [];
+      while (chunk.hits.hits.length) {
+        assert.equal(chunk.hits.total, 3);
+        assert.ok(chunk.hits.hits.length <= 1);
+        read.push(...chunk.hits.hits.map(h => h._id));
+        if (chunk._scroll_id === EsQuery.SCROLL_DONE) { break; }
+        assert.ok(sessions.ownsScroll(chunk._scroll_id));
+        chunk = await sessions.scroll(chunk._scroll_id);
+      }
+      assert.deepEqual(read, ['s1', 's2', 's3']);
+      assert.equal(chunk._scroll_id, EsQuery.SCROLL_DONE);
+
+      const cleared = await sessions.searchScroll(`${prefix}sessions3-*`, scrollQuery, { scroll: '1m' });
+      await sessions.clearScroll(cleared._scroll_id);
+      await assert.rejects(sessions.scroll(cleared._scroll_id), (err) => err.statusCode === 404);
+      assert.equal(sessions.ownsScroll(EsQuery.SCROLL_DONE), false);
+
       assert.equal(await sessions.getIndices(day / 1000, day / 1000 + 3600), index);
       assert.equal(await sessions.getIndices(day / 1000 - 1000, day / 1000 + 3600, 'both'), `${index},${prefix}sessions3-251231`);
     });

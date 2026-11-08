@@ -157,6 +157,11 @@ class DbClusterImpl {
     return this.#sharedES ? cluster : undefined;
   }
 
+  // The regression tests clear these wherever the cluster db is
+  testCollection (collName) {
+    return { hunts: this.#hunts, queries: this.#queries }[collName];
+  }
+
   // --------------------------------------------------------------------------
   // HUNTS
   // --------------------------------------------------------------------------

@@ -222,12 +222,10 @@ jobs:
           chmod +x /usr/local/bin/arkimedb
           mkdir -p /tmp/arkimedb-data
           arkimedb serve --data-dir /tmp/arkimedb-data --port 9200 > /tmp/arkimedb.log 2>&1 &
-          curl -fsSL https://clickhouse.com/ | sh
-          mv clickhouse /usr/local/bin/clickhouse
           clickhouse --version
           mkdir -p /tmp/clickhouse-data
           (cd /tmp/clickhouse-data ; clickhouse server -- --path=/tmp/clickhouse-data/ --http_port=9100 --listen_host=127.0.0.1 > /tmp/clickhouse.log 2>&1 &)
-          # arkimedb is up in a second; a just downloaded 1.2G ClickHouse can take a while to start on a cold runner
+          # arkimedb is up in a second; ClickHouse can take a while to start on a cold runner
           for i in $(seq 1 120); do
             curl -fsS http://localhost:9100/ping >/dev/null 2>&1 && curl -fsS http://localhost:9200/ >/dev/null 2>&1 && break
             sleep 1
@@ -243,10 +241,6 @@ jobs:
           export PATH=/opt/arkime/bin:$PATH
           ldd capture/capture | grep -q libpq || (echo "capture wasn't built with libpq"; exit 1)
           (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
-          if ! ls /usr/lib/postgresql/*/bin/initdb > /dev/null 2>&1; then
-            apt-get -qq update
-            DEBIAN_FRONTEND=noninteractive apt-get -qq install postgresql > /dev/null
-          fi
           PGBIN=$(ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1)
           mkdir -p /tmp/pgdata && chown postgres /tmp/pgdata
           su postgres -c "$PGBIN/initdb -D /tmp/pgdata -A trust -U arkime" > /tmp/pginit.log
@@ -260,6 +254,28 @@ jobs:
           done
           curl -fsS http://localhost:9200/_cat/health || (cat /tmp/os; exit 1)
           (cd tests ; ARKIME_default__dbUrl=postgres://arkime@127.0.0.1:5433/arkimecap G_SLICE=always-malloc ./tests.pl --viewer)
+
+      - name: viewer test noes
+        if: ${{ matrix.viewertest == 'noes' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          ldd capture/capture | grep -q libpq || (echo "capture wasn't built with libpq"; exit 1)
+          clickhouse --version
+          mkdir -p /tmp/clickhouse-data
+          (cd /tmp/clickhouse-data ; clickhouse server -- --path=/tmp/clickhouse-data/ --http_port=9100 --listen_host=127.0.0.1 > /tmp/clickhouse.log 2>&1 &)
+          mkdir -p /tmp/pgdata && chown postgres /tmp/pgdata
+          runuser -u postgres -- initdb -D /tmp/pgdata -A trust -U arkime > /tmp/pginit.log
+          runuser -u postgres -- pg_ctl -D /tmp/pgdata -l /tmp/pgdata/postgres.log -o '-p 5433 -k /tmp' -w start || (cat /tmp/pginit.log /tmp/pgdata/postgres.log; exit 1)
+          createdb -h 127.0.0.1 -p 5433 -U arkime arkimetest
+          createdb -h 127.0.0.1 -p 5433 -U arkime arkimenoes
+          ARKIME_TEST_PG_URL=postgres://arkime@127.0.0.1:5433/arkimetest npm run test:unit
+          for i in $(seq 1 120); do
+            curl -fsS http://localhost:9100/ping >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9100/ping || (echo "ClickHouse not answering after 120s"; tail -50 /tmp/clickhouse.log; exit 1)
+          if curl -fsS http://localhost:9200/ > /dev/null 2>&1; then echo "something answers on 9200, the run must have no OpenSearch/Elasticsearch"; exit 1; fi
+          (cd tests ; CH=clickhouse://localhost:9100 PG=postgres://arkime@127.0.0.1:5433/arkimenoes G_SLICE=always-malloc ./tests_noes.sh --viewer)
 
       - name: otherdb viewer test
         if: ${{ matrix.otherdbtest == 'true' }}

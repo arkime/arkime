@@ -380,6 +380,28 @@ if (ArkimeConfig.regressionTests) {
   app.delete('/regressionTests/clusterDb/:coll/:id', clusterDbRoute(async (coll, req) => {
     return { deleted: await coll.delete(req.params.id) };
   }));
+  // A session as it is stored in whatever the sessions db is, like an ES doc get answers it
+  const storedSession = async (id) => {
+    const result = await Db.searchSessions(Db.sid2Index(id), { query: { ids: { values: [Db.sid2Id(id)] } }, _source: true, size: 1 }, { arkime_unflatten: false });
+    return result.hits?.hits?.[0];
+  };
+  app.get('/regressionTests/session/:id', async (req, res) => {
+    try {
+      const hit = await storedSession(req.params.id);
+      res.send(hit ? { found: true, _id: hit._id, _source: hit._source } : { found: false });
+    } catch (err) {
+      res.send({ found: false, error: err.message ?? String(err) });
+    }
+  });
+  app.delete('/regressionTests/session/:id', async (req, res) => {
+    try {
+      const hit = await storedSession(req.params.id);
+      if (hit) { await Db.deleteDocument(hit._index, hit._id, { refresh: true }); }
+      res.send({ deleted: !!hit });
+    } catch (err) {
+      res.send({ deleted: false, error: err.message ?? String(err) });
+    }
+  });
   app.get('/regressionTests/getUser/:user', (req, res) => {
     User.getUser(req.params.user, (err, user) => {
       // Shallow copy

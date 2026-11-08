@@ -299,7 +299,8 @@ class ArkimeDb {
    *   prefix, formatted), info.insecure (whether to skip TLS verification for this url), info.caTrustFile,
    *   info.fieldsMap() (the viewer's db fields by name, their type says ip, date, number or *Tokens), info.EsQuery
    *   (viewer/esQuery.js, which parses the ES queries into a tree to compile) and the
-   *   rest of the viewer's db settings. A scroll that answered everything returns _scroll_id 'arkime:done'. Its methods take and return what OpenSearch/Elasticsearch would,
+   *   rest of the viewer's db settings. A scroll that answered everything returns _scroll_id 'arkime:done', one that pages
+   *   gets read on with scroll(scrollId) and clearScroll(scrollId) for the ids its ownsScroll(scrollId) is true for. Its methods take and return what OpenSearch/Elasticsearch would,
    *   index is a sessions index pattern, which can leave off the prefix like the ES client adds it, and queries are ES query DSL:
    *     searchSessions(index, query, options), msearchSessions(index, queries, options),
    *     searchScroll(index, query, options, cb), getSession(id, options), updateSession(index, id, doc),

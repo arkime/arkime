@@ -2463,7 +2463,14 @@ void arkime_db_oui_lookup(int field, ArkimeSession_t *session, const uint8_t *ma
 /******************************************************************************/
 LOCAL void arkime_db_load_fields()
 {
-    clusterDb->each("fields", arkime_field_define_json);
+    if (!clusterDb->each("fields", arkime_field_define_json))
+        LOGEXIT("ERROR - Couldn't load the fields, the database might be down or not initialized");
+}
+/******************************************************************************/
+// Every row of a cluster db table, FALSE when it couldn't be read
+gboolean arkime_db_cluster_each(const char *table, ArkimeDbRow_cb func)
+{
+    return clusterDb->each(table, func);
 }
 /******************************************************************************/
 // Only allow raw JSON of the form ["name","name2"] or [], like the aliases and category arrays
@@ -2734,6 +2741,7 @@ LOCAL const ArkimeDbTable_t clusterTables[] = {
     {"files", FALSE, filesFields},
     {"fields", FALSE, noFields},
     {"sequence", FALSE, noFields},
+    {"tagger", FALSE, noFields},
     {NULL, FALSE, NULL}
 };
 /******************************************************************************/

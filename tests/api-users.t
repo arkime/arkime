@@ -487,8 +487,11 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     ok($info->{success}, "dismiss help note with digit id");
 
     # users schema has the field (db version 87)
+    SKIP: {
+        skip "users aren't in OpenSearch/Elasticsearch", 1 if $ArkimeTest::noEs;
     $info = esGet("/tests_users_v30/_mapping");
     is($info->{tests_users_v30}->{mappings}->{properties}->{dismissedHelpNotes}->{type}, "keyword", "users mapping has dismissedHelpNotes keyword");
+    }
 
     # note id length boundary
     my $noteId32 = 'a' x 32;

@@ -332,7 +332,7 @@ LOCAL uint32_t arkime_db_pg_sequence_sync(const char *name)
     }
 }
 /******************************************************************************/
-LOCAL void arkime_db_pg_each(const char *table, ArkimeDbRow_cb func)
+LOCAL gboolean arkime_db_pg_each(const char *table, ArkimeDbRow_cb func)
 {
     char sql[100];
     snprintf(sql, sizeof(sql), "SELECT id, doc::text FROM %s", arkime_db_pg_table(table));
@@ -340,13 +340,16 @@ LOCAL void arkime_db_pg_each(const char *table, ArkimeDbRow_cb func)
     ARKIME_LOCK(pgConn);
     PGresult *res = arkime_db_pg_exec(table, sql, 0, NULL, PGRES_TUPLES_OK);
     ARKIME_UNLOCK(pgConn);
-    if (!res)
-        LOGEXIT("ERROR - Couldn't load %s from Postgres", table);
+    if (!res) {
+        LOG("ERROR - Couldn't load %s from Postgres", table);
+        return FALSE;
+    }
 
     for (int i = 0; i < PQntuples(res); i++) {
         func((uint8_t *)PQgetvalue(res, i, 0), PQgetlength(res, i, 0), (uint8_t *)PQgetvalue(res, i, 1), PQgetlength(res, i, 1));
     }
     PQclear(res);
+    return TRUE;
 }
 /******************************************************************************/
 LOCAL gboolean arkime_db_pg_file_exists(const char *node, const char *name, uint32_t *num)

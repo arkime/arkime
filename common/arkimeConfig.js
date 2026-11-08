@@ -332,8 +332,14 @@ class ArkimeConfig {
    * The db urls for everything without its own setting: dbUrl or else elasticsearch. Exits when neither is set
    * but sessionsDbUrl is, since only the sessions db follows sessionsDbUrl.
    */
+  // The elasticsearch urls, undefined when it isn't set or is empty
+  static #elasticsearchUrls () {
+    const urls = ArkimeConfig.getArray('elasticsearch');
+    return urls?.length ? urls : undefined;
+  }
+
   static dbUrls () {
-    const urls = ArkimeConfig.getArray('dbUrl', undefined, ',') ?? ArkimeConfig.getArray('elasticsearch');
+    const urls = ArkimeConfig.getArray('dbUrl', undefined, ',') ?? ArkimeConfig.#elasticsearchUrls();
     if (!urls && ArkimeConfig.get('sessionsDbUrl')) {
       console.log('ERROR - set dbUrl, only the sessions db uses sessionsDbUrl');
       process.exit(1);
@@ -357,16 +363,17 @@ class ArkimeConfig {
     if (ArkimeConfig.isEsUrl(sessions[0])) { return sessions; }
     const db = ArkimeConfig.dbUrls();
     if (ArkimeConfig.isEsUrl(db[0])) { return db; }
-    return ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
+    return ArkimeConfig.#elasticsearchUrls() ?? ['http://localhost:9200'];
   }
 
   /**
-   * True when any db is OpenSearch/Elasticsearch, or elasticsearch is set for the ES only parts
+   * True when any db is OpenSearch/Elasticsearch, or elasticsearch is set for the ES only parts. An empty
+   * elasticsearch is the same as none.
    */
   static hasEs () {
     const users = ArkimeConfig.usersDbUrls();
     return ArkimeConfig.isEsUrl(ArkimeConfig.sessionsDbUrls()[0]) || ArkimeConfig.isEsUrl(ArkimeConfig.dbUrls()[0]) ||
-      (users !== undefined && ArkimeConfig.isEsUrl(users[0])) || ArkimeConfig.get('elasticsearch') !== undefined;
+      (users !== undefined && ArkimeConfig.isEsUrl(users[0])) || ArkimeConfig.#elasticsearchUrls() !== undefined;
   }
 
   /**

@@ -1002,13 +1002,17 @@ class DbCHImpl {
     if (this.isJsonArrayField(field)) {
       if (op === 'cardinality') { return `uniqExactArray(${col})`; }
       if (op === 'value_count') { return `sum(length(${col}))`; }
-      return `${op}Array(${col})`;
+      return op === 'sum' ? `sumArray(${col})` : `${op}ArrayOrNull(${col})`;
     }
     if (op === 'cardinality') { return `uniqExact(${col})`; }
     if (op === 'value_count') { return `count(${col})`; }
     if (op === 'sum') { return `sum(${col})`; }
-    return DATE_FIELDS.has(field) ? `toUnixTimestamp64Milli(${op}(${col}))` : `${op}(${col})`;
+    // min, max and avg of no values are null like ES, not 0
+    return DATE_FIELDS.has(field) ? `toUnixTimestamp64Milli(${op}OrNull(${col}))` : `${op}OrNull(${col})`;
   }
+
+  // ES answers null for these with no values
+  static NULLABLE_METRICS = ['min', 'max', 'avg'];
 
   isMetricAgg (agg) {
     return !!(agg.sum || agg.min || agg.max || agg.avg || agg.cardinality || agg.value_count || agg.percentiles);
@@ -1031,8 +1035,9 @@ class DbCHImpl {
       const select = metricEntries.map(([aggName, agg]) => `${this.metricExpression(agg)} AS ${quoteIdent(aggName)}`).join(', ');
       work.push(this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where}`).then((result) => {
         const row = result.data?.[0] || {};
-        for (const [aggName] of metricEntries) {
-          aggregations[aggName] = { value: row[aggName] ?? 0 };
+        for (const [aggName, agg] of metricEntries) {
+          const nullable = DbCHImpl.NULLABLE_METRICS.some(op => agg[op]);
+          aggregations[aggName] = { value: row[aggName] ?? (nullable ? null : 0) };
         }
       }));
     }
@@ -1048,7 +1053,8 @@ class DbCHImpl {
     if (this.isMetricAgg(agg)) {
       const expr = this.metricExpression(agg);
       const result = await this.query(`SELECT ${expr} AS value FROM ${this.tableName()} WHERE ${where}`);
-      return { value: result.data?.[0]?.value ?? 0 };
+      const nullable = DbCHImpl.NULLABLE_METRICS.some(op => agg[op]);
+      return { value: result.data?.[0]?.value ?? (nullable ? null : 0) };
     }
     throw chError(`aggregation ${Object.keys(agg).join(',')}`);
   }

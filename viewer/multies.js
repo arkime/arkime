@@ -188,6 +188,12 @@ function node2Url (node) {
   return node2EntryUrl(node);
 }
 
+// Does the cluster have an OpenSearch/Elasticsearch, not when both the sessions and the cluster db are elsewhere
+function node2HasEs (node) {
+  const dbUrl = node2DbUrl(node, 'dbUrl');
+  return ArkimeConfig.isEsUrl(node2SessionsDbUrl(node)) || !dbUrl || ArkimeConfig.isEsUrl(dbUrl);
+}
+
 // dbPrefix, else the entry's prefix
 function node2ClusterPrefix (node) {
   const prefix = node2DbUrl(node, 'dbPrefix');
@@ -454,6 +460,10 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
           console.log(`ERROR - multies cluster db ${req.method} ${ArkimeUtil.sanitizeStr(req.path)} for cluster '${node2Name(node)}':`, ArkimeUtil.sanitizeLine(err.message));
           asyncCb(null, { cluster: clusters[node], arkime_failed: true, error: err.message });
         });
+    }
+    // Only the sessions and cluster db calls above have somewhere to go
+    if (!clients[node]) {
+      return asyncCb(null, { cluster: clusters[node], arkime_failed: true });
     }
     const nodeName = node2Name(node);
     let nodeUrl = (clusterDbs[node]?.esUrl && isClusterDbPath(req.path) ? clusterDbs[node].esUrl : node2Url(node)) + req.url;
@@ -785,16 +795,16 @@ app.get('/:index/_stats', (req, res) => {
 app.get('/_template/MULTIPREFIX_sessions3_template', (req, res) => {
   req._skipReplace = req.query.cluster !== undefined;
   simpleGather(req, res, null, (err, results) => {
-    // console.log("DEBUG -", JSON.stringify(results, null, 2));
-
-    let obj = results[0];
-    for (let i = 1; i < results.length; i++) {
-      if (results[i].MULTIPREFIX_sessions3_template?.mappings?._meta?.molochDbVersion !== undefined &&
-        results[i].MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion < obj.MULTIPREFIX_sessions3_template.mappings._meta.molochDbVersion) {
-        obj = results[i];
+    const version = (r) => r.MULTIPREFIX_sessions3_template?.mappings?._meta?.molochDbVersion;
+    const versioned = results.filter(r => version(r) !== undefined);
+    if (versioned.length === 0) {
+      // No cluster has OpenSearch/Elasticsearch, their sessions dbs keep their own schema like a single viewer's
+      if (!Object.keys(clients).length) {
+        return res.send({ MULTIPREFIX_sessions3_template: { mappings: { _meta: { molochDbVersion: ArkimeDb.SCHEMA_VERSION } } } });
       }
+      return res.send(results[0]);
     }
-    res.send(obj);
+    res.send(versioned.reduce((min, r) => version(r) < version(min) ? r : min));
   });
 });
 app.put('/_template/MULTIPREFIX_sessions3_template', simpleGather1Cluster);
@@ -1522,6 +1532,7 @@ app.use(ArkimeUtil.expressErrorHandler);
 // Ping (HEAD /) periodically to maintain a list of active ES nodes
 function pingESNode (client, node) {
   return new Promise((resolve, reject) => {
+    if (!client) { return resolve({ isActive: true, node }); }
     client.ping({}, {
       requestTimeout: 3 * 1000 // ping usually has a 3000ms timeout
     }, function (error, { body: response }) {
@@ -1612,7 +1623,9 @@ async function premain () {
       authHeader[nodeName] = `Basic ${b64}`;
     }
 
-    clients[node] = new Client(esClientOptions);
+    if (node2HasEs(node)) {
+      clients[node] = new Client(esClientOptions);
+    }
 
     const sessionsUrl = node2SessionsDbUrl(node);
     const SessionsImpl = ArkimeDb.sessionsImpl(sessionsUrl);
@@ -1653,6 +1666,7 @@ async function premain () {
 
   // Now check version numbers
   nodes.forEach(async (node) => {
+    if (!clients[node]) { return; }
     try {
       const { body: data } = await clients[node].info();
 

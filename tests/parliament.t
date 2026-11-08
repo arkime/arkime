@@ -329,7 +329,10 @@ my $result = $result->{results}->{$k[0]};
 is ($result->{title}, "cluster 1a");
 is ($result->{id}, $k[0]);
 ok (exists $result->{deltaBPS});
+SKIP: {
+    skip "no OpenSearch/Elasticsearch data nodes", 1 if $ArkimeTest::noEs;
 ok (exists $result->{dataNodes});
+}
 
 # Delete cluster
 $result = parliamentDeleteToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);

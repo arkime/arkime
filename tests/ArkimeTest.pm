@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag esGet esPost esPut esDelete clusterSearch clusterPut clusterDelete clusterDeleteWhere clusterCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 multiDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
+@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag sessionsDeleteByNode sessionGet sessionDelete esGet esPost esPut esDelete clusterSearch clusterPut clusterDelete clusterDeleteWhere clusterCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 multiDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -20,7 +20,7 @@ $ArkimeTest::userAgent = LWP::UserAgent->new(timeout => 120, keep_alive => 10);
 $ArkimeTest::host = "127.0.0.1";
 $ArkimeTest::elasticsearch = $ENV{ELASTICSEARCH} || "http://127.0.0.1:9200";
 $ArkimeTest::usersElasticsearch = $ENV{USERSELASTICSEARCH} || "http://127.0.0.1:9200";
-$ArkimeTest::es = "-o 'elasticsearch=$ArkimeTest::elasticsearch' -o 'usersElasticsearch=$ArkimeTest::usersElasticsearch' $ENV{INSECURE}";
+$ArkimeTest::es = "-o 'elasticsearch=" . ($ENV{ARKIME_TEST_NOES} ? "" : $ArkimeTest::elasticsearch) . "' -o 'usersElasticsearch=$ArkimeTest::usersElasticsearch' $ENV{INSECURE}";
 
 if ($ENV{INSECURE} eq "--insecure") {
     $ArkimeTest::userAgent->ssl_opts(
@@ -76,6 +76,12 @@ if (!$ArkimeTest::dbUrl && open my $cfgFh, '<', "config.test.ini") {
     close $cfgFh;
 }
 $ArkimeTest::clusterDbNonES = $ArkimeTest::dbUrl ne "" && $ArkimeTest::dbUrl !~ m{^(https?|elasticsearchs?|opensearchs?)://}i;
+# No OpenSearch/Elasticsearch at all (tests_noes.sh): the es* helpers answer {}
+$ArkimeTest::noEs = $ENV{ARKIME_TEST_NOES};
+# The db options for the node scripts, saved now since a test may clear the ARKIME_ environment
+@ArkimeTest::dbArgs = $ArkimeTest::noEs
+    ? ('-o', "elasticsearch=", '-o', "dbUrl=$ENV{ARKIME_default__dbUrl}", '-o', "sessionsDbUrl=$ENV{ARKIME_default__sessionsDbUrl}")
+    : ('-o', "elasticsearch=$ArkimeTest::elasticsearch");
 $ENV{ARKIME_default__sessionsDbUrl} //= $ArkimeTest::elasticsearch if ($ArkimeTest::clusterDbNonES);
 
 ################################################################################
@@ -296,6 +302,8 @@ my ($url, $content, $debug) = @_;
 sub esGet {
 my ($url, $debug) = @_;
 
+    return {} if ($ArkimeTest::noEs);
+
     my $response = $ArkimeTest::userAgent->get("$ArkimeTest::elasticsearch$url");
     #print "$ArkimeTest::elasticsearch$url", " response:", $response->content;
     return my_from_json($url, $response->content, $debug);
@@ -303,6 +311,8 @@ my ($url, $debug) = @_;
 ################################################################################
 sub esPost {
 my ($url, $content, $debug) = @_;
+
+    return {} if ($ArkimeTest::noEs);
 
     my $response = $ArkimeTest::userAgent->post("$ArkimeTest::elasticsearch$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     #diag $url, " response:", $response->content;
@@ -332,6 +342,22 @@ my ($index, $id, $doc, $debug) = @_;
     return $response->is_success;
 }
 ################################################################################
+# A session as stored in whichever store holds sessions, through the viewer on port
+# so it is that viewer's sessions db and prefix. Answers like an ES doc get.
+sub sessionGet {
+my ($port, $sid) = @_;
+
+    my $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:$port/regressionTests/session/" . uri_escape($sid));
+    return my_from_json("session $sid", $response->content);
+}
+
+sub sessionDelete {
+my ($port, $sid) = @_;
+
+    my $response = $ArkimeTest::userAgent->request(HTTP::Request::Common::_simple_req("DELETE", "http://$ArkimeTest::host:$port/regressionTests/session/" . uri_escape($sid)));
+    return my_from_json("session $sid", $response->content);
+}
+################################################################################
 # Delete session documents carrying a tag from whichever store holds sessions.
 sub sessionsDeleteByTag {
 my ($index, $tag, $debug) = @_;
@@ -350,8 +376,26 @@ my ($index, $tag, $debug) = @_;
     return $response->is_success;
 }
 ################################################################################
+# Delete the sessions of these nodes from a sessions table/index that follows [default] sessionsDbUrl
+sub sessionsDeleteByNode {
+my ($index, @nodes) = @_;
+
+    if (!$ArkimeTest::noEs) {
+        return esPost("/$index/_delete_by_query?conflicts=proceed&refresh", to_json({ query => { terms => { node => \@nodes } } }));
+    }
+    $ENV{ARKIME_default__sessionsDbUrl} =~ m{^(clickhouses?|chttps?)://(.+)$} or die "sessionsDeleteByNode only knows ClickHouse with no ES\n";
+    my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
+    (my $table = $index) =~ s/-[^-]*$//;
+    my $sql = "DELETE FROM arkime.$table WHERE toString(fields.node) IN (" . join(",", map { "'$_'" } @nodes) . ")";
+    my $response = $ArkimeTest::userAgent->post("$chUrl/", Content => $sql, "Content-Type" => "text/plain;charset=UTF-8");
+    diag $response->content if (!$response->is_success);
+    return $response->is_success;
+}
+################################################################################
 sub esPut {
 my ($url, $content, $debug) = @_;
+
+    return {} if ($ArkimeTest::noEs);
 
     my $response = $ArkimeTest::userAgent->put("$ArkimeTest::elasticsearch$url", Content => $content, "Content-Type" => "application/json;charset=UTF-8");
     #diag $url, " response:", $response->content;
@@ -360,6 +404,8 @@ my ($url, $content, $debug) = @_;
 ################################################################################
 sub esDelete {
 my ($url, $debug) = @_;
+
+    return {} if ($ArkimeTest::noEs);
 
     esPut("/_cluster/settings", '{ "transient": { "action.destructive_requires_name": false}}');
 
@@ -682,7 +728,7 @@ my ($host, $port, $extraSleep) = @_;
 sub addUser {
     #diag ("cd ../viewer ; node addUser.js $ArkimeTest::es -c ../tests/config.test.ini $_[0]\n");
     my @es_args = (
-        '-o', "elasticsearch=$ArkimeTest::elasticsearch",
+        @ArkimeTest::dbArgs,
         '-o', "usersElasticsearch=$ArkimeTest::usersElasticsearch",
     );
     push @es_args, $ENV{INSECURE} if defined $ENV{INSECURE} && $ENV{INSECURE} ne '';
@@ -704,7 +750,7 @@ sub addUser {
 sub changePasswordSecret {
     my ($old, $new) = @_;
     my @es_args = (
-        '-o', "elasticsearch=$ArkimeTest::elasticsearch",
+        @ArkimeTest::dbArgs,
         '-o', "usersElasticsearch=$ArkimeTest::usersElasticsearch",
         '-o', "prefix=tests",
     );
@@ -726,6 +772,10 @@ sub changePasswordSecret {
 ################################################################################
 sub clearIndex {
 my ($index) = @_;
+    # A cluster db collection, wherever the cluster db is
+    if ($ArkimeTest::clusterDbNonES && $index =~ /^(tests2?)_(files|stats|dstats|fields|sequence|hunts|queries)$/) {
+        return clusterDeleteWhere($1 eq "tests2" ? 8124 : 8123, $2, {});
+    }
     # tests.pl --splitprefix gives the cluster db indices <prefix>cl_
     $index =~ s/^(tests2?)_(files|stats|dstats|fields|sequence|hunts|queries|history|featherprint)/$1cl_$2/ if ($ENV{ARKIME_TEST_SPLIT});
     esGet("/_flush");

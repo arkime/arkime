@@ -23,6 +23,7 @@ const DbClusterImpl = require('./db.cluster');
 const ArkimeDb = require('../common/arkimeDb');
 const DbCHImpl = require('./db.ch');
 const EsQuery = require('./esQuery');
+const { tokenFields, addAllTokens } = require('./sessionTokens');
 const Config = require('./config.js');
 DbCHImpl.register();
 
@@ -282,7 +283,8 @@ Db.initialize = async (info) => {
   });
   await internals.clusterImpl.init();
 
-  if (!internals.hasEs) { return; }
+  // multies checks each cluster's version itself
+  if (!internals.hasEs || internals.multiES) { return; }
   try {
     const { body: data } = await internals.client7.info();
     if (data.version.distribution === 'opensearch') {
@@ -699,7 +701,13 @@ Db.index = async (index, id, doc) => {
   return internals.client7.index({ index: fixIndex(index), body: doc, id });
 };
 
+// A sessions db that isn't OpenSearch/Elasticsearch writes the session like capture would, *Tokens included
 Db.indexNow = async (index, id, doc) => {
+  if (internals.sessionsImpl.writeSessions && /sessions[23]-/.test(index)) {
+    const session = { ...doc, index: fixIndex(index), _id: id };
+    addAllTokens(session, tokenFields(Object.keys(Config.getDBFieldsMap() ?? {})));
+    return internals.sessionsImpl.writeSessions([session]);
+  }
   return internals.client7.index({
     index: fixIndex(index), body: doc, id, refresh: true
   });
@@ -839,9 +847,14 @@ Db.msearchSessions = async (index, queries, options) => {
   return internals.sessionsImpl.msearchSessions(index, queries, options);
 };
 
+// A sessions db with its own scrolls says which scroll ids are its
 Db.scroll = async (params) => {
-  if (params?.body?.scroll_id === EsQuery.SCROLL_DONE) {
+  const scrollId = params?.body?.scroll_id;
+  if (scrollId === EsQuery.SCROLL_DONE) {
     return { body: { _scroll_id: EsQuery.SCROLL_DONE, hits: { total: 0, hits: [] } } };
+  }
+  if (internals.sessionsImpl?.ownsScroll?.(scrollId)) {
+    return { body: await internals.sessionsImpl.scroll(scrollId) };
   }
   params.rest_total_hits_as_int = true;
   return internals.client7.scroll(params);
@@ -849,8 +862,10 @@ Db.scroll = async (params) => {
 
 // Ignore errors when we try to clear a scroll that doesn't exist
 Db.clearScroll = async (params) => {
-  if (params?.body?.scroll_id === EsQuery.SCROLL_DONE) { return; }
+  const scrollId = params?.body?.scroll_id;
+  if (scrollId === EsQuery.SCROLL_DONE) { return; }
   try {
+    if (internals.sessionsImpl?.ownsScroll?.(scrollId)) { return await internals.sessionsImpl.clearScroll(scrollId); }
     await internals.client7.clearScroll(params);
   } catch (err) {
   }
@@ -1098,8 +1113,10 @@ Db.allocationExplain = async (cluster, index, shard, primary) => {
   return internals.client7.cluster.allocationExplain(params);
 };
 
-// A flush or refresh of everything, or of a cluster db index, also has to reach a separate cluster db ES
+// A flush or refresh of everything, or of a cluster db index, also has to reach a separate cluster db ES.
+// With no OpenSearch/Elasticsearch there is nothing to do, the other dbs' writes are already visible.
 function clusterDbIndices (op, index, cluster) {
+  if (!internals.hasEs) { return; }
   const separate = internals.clusterEsClient && internals.clusterEsClient !== internals.client7;
   if (index !== undefined && index !== '*') {
     if (separate && CLUSTER_INDEX_RE.test(index)) {
@@ -1390,7 +1407,8 @@ Db.getShortcutsCache = async (user) => {
     size: 10000
   };
 
-  const shortcuts = internals.sessionsImpl === internals.esImpl
+  // A multi viewer's local copy is behind multies, which only clusters with ES have, the users db is the source
+  const shortcuts = internals.sessionsImpl === internals.esImpl && !internals.multiES
     ? (await Db.searchShortcutsLocal(query)).body.hits
     : await userShortcuts(user.userId, roles);
 
@@ -1864,7 +1882,8 @@ Db.sid2Index = function (id) {
 
 // regression tests read and write the collections capture writes
 Db.clusterCollection = (collName) => {
-  return ['files', 'stats', 'dstats', 'fields', 'sequence'].includes(collName) ? internals.clusterImpl[collName] : undefined;
+  if (['files', 'stats', 'dstats', 'fields', 'sequence'].includes(collName)) { return internals.clusterImpl[collName]; }
+  return internals.regressionTests ? internals.clusterImpl.testCollection(collName) : undefined;
 };
 
 // [{ id, doc }] every field definition

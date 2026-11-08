@@ -13,7 +13,10 @@ use strict;
 my $json;
 
     $json = mesGet("/");
+    SKIP: {
+        skip "no cluster has OpenSearch/Elasticsearch", 1 if $ArkimeTest::noEs;
     ok ($json->{tagline} eq "You Know, for Search" || $json->{tagline} eq "The OpenSearch Project: https://opensearch.org/", "ES tagline");
+    }
     ok (!exists $json->{status} || $json->{status} == 200, "ES no status or 200 status");
 
     $json = mesGet("/_template/MULTIPREFIX_sessions3_template?filter_path=**._meta");
@@ -39,8 +42,11 @@ my $json;
     }
 
 # _count
+    SKIP: {
+        skip "no cluster has an OpenSearch/Elasticsearch users index", 1 if $ArkimeTest::noEs;
     $json = mesPost("/MULTIPREFIX_users/_count?ignore_unavailable=true", "");
     is ($json->{count}, 0, "Correct count number of users");
+    }
 
     $json = mesPost("/MULTIPREFIX_sessions3-*/_count?ignore_unavailable=true", "");
     cmp_ok ($json->{count}, '>=', 80, "Correct count number of sessions");
@@ -53,7 +59,10 @@ my $json;
 
 # _cluster
     $json = mesGet("/_cluster/health");
+    SKIP: {
+        skip "no cluster has OpenSearch/Elasticsearch nodes", 1 if $ArkimeTest::noEs;
     is ($json->{number_of_data_nodes}, 2, "Correct _cluster/health number of nodes");
+    }
     is ($json->{cluster_name}, "COMBINED", "Correct _cluster/health name");
 
 # _cluster/settings

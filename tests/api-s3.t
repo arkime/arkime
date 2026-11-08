@@ -25,8 +25,7 @@ my ($cmd) = @_;
     return $rc;
 }
 
-my $nodeFilter = '{ "query": { "terms": { "node": ["s3-test", "sqs-test"] } } }';
-esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
+sessionsDeleteByNode("tests2_sessions3-*", "s3-test", "sqs-test");
 
 sub run {
 my ($tag, $compression, $extension, $gap, $input) = @_;
@@ -253,4 +252,4 @@ is($esjson->{hits}->{total}, 0, "all s3 files expired");
 isnt(timedSystem("AWS_ACCESS_KEY_ID='foo' AWS_SECRET_ACCESS_KEY='foo' $aws s3 cp $s3url /tmp/arkime.file.expired > /dev/null 2>&1"), 0, "s3 object deleted");
 unlink("/tmp/arkime.file.expired");
 
-esPost("/tests2_sessions*/_delete_by_query?conflicts=proceed&refresh", $nodeFilter);
+sessionsDeleteByNode("tests2_sessions3-*", "s3-test", "sqs-test");

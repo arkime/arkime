@@ -578,7 +578,7 @@ LOCAL MYSQL_RES *arkime_mysqldb_select(const char *what, const char *sql)
     return res;
 }
 /******************************************************************************/
-LOCAL void arkime_mysqldb_each(const char *table, ArkimeDbRow_cb func)
+LOCAL gboolean arkime_mysqldb_each(const char *table, ArkimeDbRow_cb func)
 {
     char sql[200];
     snprintf(sql, sizeof(sql), "SELECT id, doc FROM `%s`", myTables[arkime_mysqldb_table_num(table)]);
@@ -586,8 +586,10 @@ LOCAL void arkime_mysqldb_each(const char *table, ArkimeDbRow_cb func)
     arkime_mysqldb_lock();
     MYSQL_RES *res = arkime_mysqldb_select(table, sql);
     ARKIME_UNLOCK(myConn);
-    if (!res)
-        LOGEXIT("ERROR - Couldn't load %s from MySQL", table);
+    if (!res) {
+        LOG("ERROR - Couldn't load %s from MySQL", table);
+        return FALSE;
+    }
 
     MYSQL_ROW row;
     while ((row = mysql_fetch_row(res))) {
@@ -595,6 +597,7 @@ LOCAL void arkime_mysqldb_each(const char *table, ArkimeDbRow_cb func)
         func((uint8_t *)row[0], lengths[0], (uint8_t *)row[1], lengths[1]);
     }
     mysql_free_result(res);
+    return TRUE;
 }
 /******************************************************************************/
 // f_node and f_name find it with their indexes, the json name checks a name longer than f_name holds

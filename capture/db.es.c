@@ -324,7 +324,7 @@ LOCAL uint32_t arkime_db_es_sequence_sync(const char *name)
     }
 }
 /******************************************************************************/
-LOCAL void arkime_db_es_each(const char *table, ArkimeDbRow_cb func)
+LOCAL gboolean arkime_db_es_each(const char *table, ArkimeDbRow_cb func)
 {
     size_t                 data_len;
     char                   key[100];
@@ -334,7 +334,8 @@ LOCAL void arkime_db_es_each(const char *table, ArkimeDbRow_cb func)
     uint8_t           *data = arkime_http_get(clusterServer, key, key_len, &data_len);
 
     if (!data) {
-        LOGEXIT("ERROR - Couldn't download %s%s, database (%s) might be down or not initialized.", config.clusterPrefix, table, clusterServerName);
+        LOG("ERROR - Couldn't download %s%s, database (%s) might be down or not initialized.", config.clusterPrefix, table, clusterServerName);
+        return FALSE;
     }
 
     uint32_t           hits_len;
@@ -343,7 +344,9 @@ LOCAL void arkime_db_es_each(const char *table, ArkimeDbRow_cb func)
     const uint8_t     *ahits = hits ? arkime_js0n_get(hits, hits_len, "hits", &ahits_len) : NULL;
 
     if (!ahits) {
-        LOGEXIT("ERROR - Couldn't download %s%s, database (%s) might be down or not initialized.", config.clusterPrefix, table, clusterServerName);
+        LOG("ERROR - Couldn't download %s%s, database (%s) might be down or not initialized.", config.clusterPrefix, table, clusterServerName);
+        free(data);
+        return FALSE;
     }
 
     uint32_t out[2 * 8000];
@@ -363,6 +366,7 @@ LOCAL void arkime_db_es_each(const char *table, ArkimeDbRow_cb func)
         func(id, id_len, source, source_len);
     }
     free(data);
+    return TRUE;
 }
 /******************************************************************************/
 LOCAL gboolean arkime_db_es_file_exists(const char *node, const char *filename, uint32_t *outputId)

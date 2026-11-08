@@ -6,6 +6,8 @@
  */
 'use strict';
 
+const cryptoLib = require('crypto');
+
 // capture/plugins/mongodb/mongodb.c writes each session into a collection named after the ES index it would
 // be in, <prefix>sessions3-<period>, with the session's fields at the top level and _ip holding its ips.
 // The viewer's ES queries are parsed by viewer/esQuery.js and compiled here into MongoDB filters and pipelines.
@@ -27,7 +29,9 @@ const SESSION_INDEXES = [
   { key: { firstPacket: 1, _id: 1 }, name: 'firstPacketId' }
 ];
 const BUCKET_CONCURRENCY = 8;
-const MAX_SCROLL = 1000000;
+// Like ES's search.max_open_scroll_context
+const MAX_SCROLLS = 500;
+const SCROLL_ID_PREFIX = 'arkime:mongodb:';
 const MAX_BUCKETS = 65536;
 const BAD_SEGMENTS = new Set(['', '__proto__', 'constructor', 'prototype']);
 
@@ -42,6 +46,13 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
 
   function badRequest (msg) {
     return Object.assign(new Error(`MongoDB sessions: ${msg}`), { statusCode: 400 });
+  }
+
+  // An ES keep alive like 5m or 300s, how long an unread scroll stays open
+  function scrollMs (keepAlive) {
+    const m = /^(\d+)(ms|s|m|h)?$/.exec(String(keepAlive ?? ''));
+    if (!m) { return 5 * 60 * 1000; }
+    return Number(m[1]) * { ms: 1, s: 1000, m: 60000, h: 3600000 }[m[2] ?? 'ms'];
   }
 
   // A plain dotted path, never an operator or a prototype key
@@ -128,6 +139,7 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
     #lastShortcuts;
     #indexed = new Set();
     #EsQuery;
+    #scrolls = new Map();
 
     static tlsHost (url) { return MongoConnection.tlsHost(url); }
 
@@ -184,12 +196,13 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
 
     // One pipeline over several collections, each branch filtered (and maybe sorted and cut) on its own
     // indexes. tag sets _coll to the collection a row came from.
-    #union (colls, branch, rest, tag) {
+    // A scroll's cursor lives across many reads and maxTimeMS counts all of them, so it has none
+    #union (colls, branch, rest, tag, { keepOpen } = {}) {
       const each = (coll) => tag ? [...branch, { $set: { _coll: { $literal: coll } } }] : branch;
       const [first, ...others] = colls;
       const pipeline = [...each(first)];
       for (const coll of others) { pipeline.push({ $unionWith: { coll, pipeline: each(coll) } }); }
-      return this.#db.collection(first).aggregate([...pipeline, ...rest], { allowDiskUse: true, maxTimeMS: this.#timeout() });
+      return this.#db.collection(first).aggregate([...pipeline, ...rest], keepOpen ? { allowDiskUse: true } : { allowDiskUse: true, maxTimeMS: this.#timeout() });
     }
 
     #timeout () {
@@ -654,16 +667,85 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
       return { body: { responses } };
     }
 
-    // No ES style scroll, a scroll gets everything in its one answer
+    // An ES style scroll, each read is the next query.size sessions from a cursor kept open between reads
     async searchScroll (index, query, options, cb) {
       try {
-        const result = await this.searchSessions(index, options?.scroll ? { ...query, size: MAX_SCROLL } : query, options);
-        if (options?.scroll) { result._scroll_id = this.#EsQuery.SCROLL_DONE; }
+        const result = options?.scroll ? await this.#startScroll(index, query, options.scroll) : await this.searchSessions(index, query, options);
         return cb ? cb(null, result) : result;
       } catch (err) {
         if (cb) { return cb(err); }
         throw err;
       }
+    }
+
+    ownsScroll (scrollId) {
+      return typeof scrollId === 'string' && scrollId.startsWith(SCROLL_ID_PREFIX);
+    }
+
+    async scroll (scrollId) {
+      return this.#readScroll(scrollId);
+    }
+
+    async clearScroll (scrollId) {
+      const state = this.#scrolls.get(scrollId);
+      if (!state) { return; }
+      this.#scrolls.delete(scrollId);
+      clearTimeout(state.timer);
+      await state.cursor.close().catch(() => {});
+    }
+
+    async #startScroll (index, query, keepAlive) {
+      if (this.#scrolls.size >= MAX_SCROLLS) { throw badRequest(`more than ${MAX_SCROLLS} open scrolls`); }
+      const colls = await this.#resolve(index);
+      if (!colls.length) { return { hits: { total: 0, hits: [] }, _scroll_id: this.#EsQuery.SCROLL_DONE }; }
+      const filter = await this.#filter(query);
+      const size = Math.min(Math.max(1, Number(query.size ?? 10) || 10), 10000);
+      const sort = this.#sort(query.sort);
+      const patterns = hasRegexp(query);
+      const count = () => this.#count(colls, filter);
+      const total = await (patterns ? this.#conn.patternRun(count) : count());
+      const id = SCROLL_ID_PREFIX + cryptoLib.randomUUID();
+      this.#scrolls.set(id, {
+        cursor: this.#union(colls, [{ $match: filter }], [{ $sort: sort }], true, { keepOpen: true }).batchSize(size),
+        size,
+        total,
+        patterns,
+        hitSort: Array.isArray(query.sort) ? sort : undefined,
+        keepAliveMs: scrollMs(keepAlive)
+      });
+      return this.#readScroll(id);
+    }
+
+    // A short page is the last one, its id is SCROLL_DONE so the caller's next scroll is empty
+    async #readScroll (scrollId) {
+      const state = this.#scrolls.get(scrollId);
+      if (!state) {
+        const err = new Error(`MongoDB sessions: scroll ${scrollId} is gone`);
+        err.statusCode = 404;
+        throw err;
+      }
+      clearTimeout(state.timer);
+      const read = async () => {
+        const page = [];
+        while (page.length < state.size && await state.cursor.hasNext()) { page.push(await state.cursor.next()); }
+        return page;
+      };
+      let rows;
+      try {
+        rows = await (state.patterns ? this.#conn.patternRun(read) : read());
+      } catch (err) {
+        await this.clearScroll(scrollId);
+        throw err;
+      }
+      let id = scrollId;
+      if (rows.length < state.size) {
+        await this.clearScroll(scrollId);
+        id = this.#EsQuery.SCROLL_DONE;
+      } else {
+        state.timer = setTimeout(() => this.clearScroll(scrollId), state.keepAliveMs);
+        state.timer.unref?.();
+      }
+      return { _scroll_id: id, hits: { total: state.total, hits: rows.map(r => this.#hit(r, state.hitSort)) } };
     }
 
     // Pages by lastPacket and _id, the order every caller consumes it in
@@ -844,7 +926,9 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
       this.#lastShortcuts = key;
     }
 
-    close () {}
+    async close () {
+      await Promise.all([...this.#scrolls.keys()].map(id => this.clearScroll(id)));
+    }
   }
 
   return MongoSessions;

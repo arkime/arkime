@@ -23,6 +23,7 @@ const DbESImpl = require('./db.es.js');
 const DbCHImpl = require('./db.ch.js');
 const ArkimeDb = require('../common/arkimeDb');
 const EsQuery = require('./esQuery');
+const { tokenFields, addAllTokens } = require('./sessionTokens');
 
 DbCHImpl.register();
 
@@ -209,36 +210,6 @@ ArkimeConfig.loaded(() => {
 // ============================================================================
 // [tee] sessionsDbUrl, the bulked sessions written to another sessions db as capture would write them
 
-// Used until the fields index answers, the *Tokens fields capture defines
-const DEFAULT_TOKENS = ['dhcp.hostTokens', 'dns.hostTokens', 'email.hostTokens', 'http.hostTokens', 'http.uriTokens',
-  'http.useragentTokens', 'oracle.hostTokens', 'quic.hostTokens', 'smb.hostTokens', 'socks.hostTokens'];
-
-// ES's wordSplit analyzer: lowercased, split on anything outside [A-Za-z0-9_]
-function wordSplit (str) {
-  return (str.match(/[A-Za-z0-9_]+/g) ?? []).map(t => t.toLowerCase());
-}
-
-// Sets the tokens of the field at segs beside it, in every object of an array on the way.
-// Iterative, a sensor's doc can nest arrays deeper than the stack.
-function addTokens (doc, segs, tokensKey) {
-  const stack = [[doc, 0]];
-  while (stack.length > 0) {
-    const [obj, depth] = stack.pop();
-    if (Array.isArray(obj)) {
-      for (const o of obj) { stack.push([o, depth]); }
-      continue;
-    }
-    if (obj === null || typeof obj !== 'object') { continue; }
-    if (depth < segs.length - 1) {
-      stack.push([obj[segs[depth]], depth + 1]);
-      continue;
-    }
-    const value = obj[segs[depth]];
-    if (value === undefined || value === null) { continue; }
-    obj[tokensKey] = [].concat(value).flatMap(v => typeof v === 'string' ? wordSplit(v) : []);
-  }
-}
-
 // Deeper than any session, a writer serializing it would overflow the stack
 function tooDeep (doc, max) {
   const stack = [[doc, 0]];
@@ -254,9 +225,6 @@ function tooDeep (doc, max) {
 class SessionsTee {
   static FLUSH_MS = 1000;
   static MAX_INFLIGHT = 4;
-  static MAX_TOKENS = 256;
-  static MAX_TOKENS_DEPTH = 8;
-  static MAX_TOKENS_LEN = 256;
   static MAX_DEPTH = 64;
 
   #db;
@@ -274,7 +242,7 @@ class SessionsTee {
     this.#db = db;
     this.#prefix = teePrefix;
     this.#maxBytes = maxBatchBytes || 4 * 1024 * 1024;
-    this.#setTokens(DEFAULT_TOKENS);
+    this.#tokens = tokenFields();
   }
 
   // Once es can be asked for the fields, throws when the sessions db can't be written
@@ -284,15 +252,6 @@ class SessionsTee {
     await this.#db.checkWriteSessions?.();
   }
 
-  // Sensors can define fields, so bound how much work they add to every doc
-  #setTokens (dbFields) {
-    this.#tokens = [...new Set(dbFields)].filter(dbField => dbField.length <= SessionsTee.MAX_TOKENS_LEN).map(dbField => {
-      const segs = dbField.slice(0, -'Tokens'.length).split('.');
-      return { segs, key: `${segs.at(-1)}Tokens` };
-    }).filter(({ segs }) => segs.length <= SessionsTee.MAX_TOKENS_DEPTH && segs.every(seg => seg !== '' && !ArkimeUtil.isProtoKey(seg)))
-      .slice(0, SessionsTee.MAX_TOKENS);
-  }
-
   async #loadTokens () {
     try {
       const { statusCode, body } = await esRequestJson('POST', `/${prefix}fields/_search`, {
@@ -300,7 +259,7 @@ class SessionsTee {
       });
       if (statusCode !== 200 || !Array.isArray(body?.hits?.hits)) { return; }
       const dbFields = body.hits.hits.map(h => h._source?.dbField2).filter(f => typeof f === 'string' && f.endsWith('Tokens'));
-      if (dbFields.length) { this.#setTokens([...DEFAULT_TOKENS, ...dbFields]); }
+      if (dbFields.length) { this.#tokens = tokenFields(dbFields); }
     } catch (err) {
       console.log('Sessions tee: loading the *Tokens fields failed, using the defaults', ArkimeUtil.sanitizeLine(err.message));
     }
@@ -331,7 +290,7 @@ class SessionsTee {
       return;
     }
     try {
-      for (const { segs, key } of this.#tokens) { addTokens(doc, segs, key); }
+      addAllTokens(doc, this.#tokens);
       doc.index = index;
       doc._id = String(op._id ?? `${index.slice(index.lastIndexOf('sessions3-') + 'sessions3-'.length)}-${cryptoLib.randomBytes(15).toString('base64url')}`);
     } catch (err) {

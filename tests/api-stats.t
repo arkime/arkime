@@ -55,6 +55,9 @@ my $test1Token = getTokenCookie("test1");
     my $dstats = viewerGet("/api/dstats?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
     is (@{$dstats}, 7, "dstats.json array size");
 
+SKIP: {
+    skip "the OpenSearch/Elasticsearch admin apis need one", 96 if $ArkimeTest::noEs;
+
 # esstats.json
     my $esstats = viewerGet("/api/esstats");
     is ($esstats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
@@ -332,11 +335,15 @@ my $test1Token = getTokenCookie("test1");
     $recovery = multiGet("/api/esrecovery?show=all&cluster=unknown");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
 
+}
 # parliament.json
     my $stats = viewerGet("/api/parliament");
     is (@{$stats->{data}}, 1, "parliament.json data set ");
+    SKIP: {
+        skip "no OpenSearch/Elasticsearch nodes", 2 if $ArkimeTest::noEs;
     is (@{$stats->{esNodes}}, 1, "parliament.json esNodes set ");
     ok (defined $stats->{esNodes}->[0]->{nodeName}, "parliament.json esNodes has no junk timestamp entry");
+    }
     is ($stats->{recordsTotal}, 1, "parliament.json recordsTotal");
     is ($stats->{data}->[0]->{id}, "test", "parliament.json name");
 

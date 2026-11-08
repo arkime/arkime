@@ -594,7 +594,7 @@ LOCAL uint32_t arkime_mongodb_sequence_sync(const char *name)
     }
 }
 /******************************************************************************/
-LOCAL void arkime_mongodb_each(const char *table, ArkimeDbRow_cb func)
+LOCAL gboolean arkime_mongodb_each(const char *table, ArkimeDbRow_cb func)
 {
     mongoc_client_t *client = mongoc_client_pool_pop(clusterMg.pool);
     mongoc_collection_t *coll = mongoc_client_get_collection(client, clusterMg.database, mgTables[arkime_mongodb_table_num(table)]);
@@ -624,11 +624,13 @@ LOCAL void arkime_mongodb_each(const char *table, ArkimeDbRow_cb func)
         bson_free(json);
     }
     bson_error_t error;
-    if (mongoc_cursor_error(cursor, &error))
-        LOGEXIT("ERROR - Couldn't load %s from MongoDB: %s", table, error.message);
+    const gboolean ok = !mongoc_cursor_error(cursor, &error);
+    if (!ok)
+        LOG("ERROR - Couldn't load %s from MongoDB: %s", table, error.message);
     mongoc_cursor_destroy(cursor);
     mongoc_collection_destroy(coll);
     mongoc_client_pool_push(clusterMg.pool, client);
+    return ok;
 }
 /******************************************************************************/
 LOCAL gboolean arkime_mongodb_file_exists(const char *node, const char *name, uint32_t *num)
