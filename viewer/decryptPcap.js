@@ -9,6 +9,8 @@
  */
 
 'use strict';
+// stdout is the pcap, so every log line goes to stderr
+console.log = console.error;
 const Config = require('./config.js');
 const Db = require('./db.js');
 const cryptoLib = require('crypto');
