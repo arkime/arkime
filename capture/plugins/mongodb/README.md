@@ -65,10 +65,9 @@ dstats only take their fields and store each as its type.
 
 ## Building
 
-The plugin isn't in configure.ac yet, so generate its Makefile from the top of the tree:
+The plugin isn't part of the default build, after `./configure` build it from the top of the tree:
 
 ```bash
-./config.status --file=capture/plugins/mongodb/Makefile
 make -C capture/plugins/mongodb
 (cd capture/plugins/mongodb && npm ci)
 ```

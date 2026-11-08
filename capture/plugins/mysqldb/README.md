@@ -59,10 +59,9 @@ read differently, like `(?i)` and nested classes.
 
 ## Building
 
-The plugin isn't in configure.ac yet, so generate its Makefile from the top of the tree:
+The plugin isn't part of the default build, after `./configure` build it from the top of the tree:
 
 ```bash
-./config.status --file=capture/plugins/mysqldb/Makefile
 make -C capture/plugins/mysqldb
 (cd capture/plugins/mysqldb && npm ci)
 ```

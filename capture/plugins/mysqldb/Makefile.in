@@ -1,5 +1,4 @@
-# Not in configure.ac yet, build it with
-#   ./config.status --file=capture/plugins/mysqldb/Makefile && make -C capture/plugins/mysqldb
+# Not part of the default build, build it with make -C capture/plugins/mysqldb
 CC            = @CC@
 MKDIR_P       = mkdir -p
 INSTALL       = @INSTALL@
@@ -11,8 +10,8 @@ INCLUDE_OTHER = -I../.. -I../../thirdparty \
 
 # pkg-config's mysqlclient only names the library, mysql_config --libs also names its dependencies
 MYSQL_CONFIG ?= mysql_config
-MYSQL_CFLAGS := $(shell pkg-config --cflags mysqlclient 2>/dev/null || $(MYSQL_CONFIG) --cflags)
-MYSQL_LIBS   := $(shell pkg-config --libs mysqlclient 2>/dev/null || $(MYSQL_CONFIG) --libs)
+MYSQL_CFLAGS = $(shell pkg-config --cflags mysqlclient 2>/dev/null || $(MYSQL_CONFIG) --cflags)
+MYSQL_LIBS   = $(shell pkg-config --libs mysqlclient 2>/dev/null || $(MYSQL_CONFIG) --libs)
 
 ../mysqldb.so : mysqldb.c ../../arkime.h ../../hash.h ../../dll.h ../../bsb.h
 	$(CC) -pthread @SHARED_FLAGS@ $(EXTRA_CFLAGS) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fno-strict-aliasing -g -fPIC $(INCLUDE_OTHER) $(MYSQL_CFLAGS) $< $(MYSQL_LIBS)

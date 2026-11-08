@@ -17,6 +17,8 @@ AC_CONFIG_FILES([
   capture/plugins/lua/Makefile
   capture/plugins/kafka/Makefile
   capture/plugins/zeeklog/Makefile
+  capture/plugins/mongodb/Makefile
+  capture/plugins/mysqldb/Makefile
   capture/parsers/Makefile
   db/Makefile
   tests/plugins/Makefile
