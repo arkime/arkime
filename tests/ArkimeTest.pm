@@ -38,10 +38,36 @@ if (!$ArkimeTest::sessionsDbUrl && open my $cfgFh, '<', "config.test.ini") {
     }
     close $cfgFh;
 }
+# Any sessions db that isn't OpenSearch/Elasticsearch, ClickHouse or a dbPlugins scheme. A dbPlugins one
+# needs ARKIME_TEST_SESSIONS_HELPER, a script that can wipe, post, deleteByTag and find its sessions.
+$ArkimeTest::sessionsDbNonES = $ArkimeTest::sessionsDbUrl ne "" && $ArkimeTest::sessionsDbUrl !~ m{^(https?|elasticsearchs?|opensearchs?)://}i;
+$ArkimeTest::sessionsDbCH = $ArkimeTest::sessionsDbUrl =~ m{^(clickhouses?|chttps?)://}i;
 
-# A Postgres dbUrl from the environment or config.test.ini, otherwise
-# capture's stats, dstats, files, fields and sequence are in Elasticsearch.
-# Only the sessions follow sessionsDbUrl, so a Postgres dbUrl keeps them in Elasticsearch.
+################################################################################
+# Runs the sessions helper of a dbPlugins sessions db
+sub sessionsHelper {
+    my (@args) = @_;
+    die "ARKIME_TEST_SESSIONS_HELPER isn't set for sessionsDbUrl $ArkimeTest::sessionsDbUrl\n" if (!$ENV{ARKIME_TEST_SESSIONS_HELPER});
+    open(my $fh, '-|', 'node', $ENV{ARKIME_TEST_SESSIONS_HELPER}, $ArkimeTest::sessionsDbUrl, @args) or return 0;
+    my $out = do { local $/; <$fh> };
+    close($fh);
+    diag $out if ($? != 0);
+    return $? == 0;
+}
+
+# The sessions helper's json output, undef when it fails
+sub sessionsHelperJson {
+    my (@args) = @_;
+    open(my $fh, '-|', 'node', $ENV{ARKIME_TEST_SESSIONS_HELPER}, $ArkimeTest::sessionsDbUrl, @args) or return undef;
+    my $out = do { local $/; <$fh> };
+    close($fh);
+    if ($? != 0) { diag $out; return undef; }
+    return from_json($out);
+}
+
+# A dbUrl that isn't OpenSearch/Elasticsearch from the environment or config.test.ini, like postgres:// or a
+# dbPlugins scheme, otherwise capture's stats, dstats, files, fields and sequence are in Elasticsearch.
+# Only the sessions follow sessionsDbUrl, so such a dbUrl keeps them in Elasticsearch.
 $ArkimeTest::dbUrl = $ENV{ARKIME_default__dbUrl} // "";
 if (!$ArkimeTest::dbUrl && open my $cfgFh, '<', "config.test.ini") {
     while (<$cfgFh>) {
@@ -49,8 +75,8 @@ if (!$ArkimeTest::dbUrl && open my $cfgFh, '<', "config.test.ini") {
     }
     close $cfgFh;
 }
-$ArkimeTest::clusterDbPG = $ArkimeTest::dbUrl =~ m{^postgres(ql)?://};
-$ENV{ARKIME_default__sessionsDbUrl} //= $ArkimeTest::elasticsearch if ($ArkimeTest::clusterDbPG);
+$ArkimeTest::clusterDbNonES = $ArkimeTest::dbUrl ne "" && $ArkimeTest::dbUrl !~ m{^(https?|elasticsearchs?|opensearchs?)://}i;
+$ENV{ARKIME_default__sessionsDbUrl} //= $ArkimeTest::elasticsearch if ($ArkimeTest::clusterDbNonES);
 
 ################################################################################
 sub my_from_json
@@ -290,9 +316,11 @@ my ($url, $content, $debug) = @_;
 sub sessionsPost {
 my ($index, $id, $doc, $debug) = @_;
 
-    if ($ArkimeTest::sessionsDbUrl !~ m{^(clickhouses?|chttps?)://(.+)$}) {
+    if (!$ArkimeTest::sessionsDbNonES) {
         return esPost("/$index/_doc/$id?refresh=true", $doc, $debug);
     }
+    return sessionsHelper("post", $index, $id, $doc) if (!$ArkimeTest::sessionsDbCH);
+    $ArkimeTest::sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$};
 
     my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
     my $obj = from_json($doc);
@@ -308,9 +336,11 @@ my ($index, $id, $doc, $debug) = @_;
 sub sessionsDeleteByTag {
 my ($index, $tag, $debug) = @_;
 
-    if ($ArkimeTest::sessionsDbUrl !~ m{^(clickhouses?|chttps?)://(.+)$}) {
+    if (!$ArkimeTest::sessionsDbNonES) {
         return esPost("/$index/_delete_by_query?conflicts=proceed&refresh", '{ "query": { "term": { "tags": "' . $tag . '" } } }', $debug);
     }
+    return sessionsHelper("deleteByTag", $index, $tag) if (!$ArkimeTest::sessionsDbCH);
+    $ArkimeTest::sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$};
 
     my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
     (my $table = $index) =~ s/-[^-]*$//;

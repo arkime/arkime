@@ -778,6 +778,8 @@ async function patternQuery (pool, sql, params) {
   }
 }
 
+const PG_SCHEMA_VERSION = 89;
+
 class PGConnection {
   pool;
   prefix;
@@ -802,6 +804,11 @@ class PGConnection {
 
   withPrefix (prefix) {
     return prefix === this.prefix ? this : new PGConnection(undefined, { pool: this.pool, prefix });
+  }
+
+  // Collections make their own tables, so Postgres has everything the db.pl schema version it matches has
+  async schemaVersion () {
+    return PG_SCHEMA_VERSION;
   }
 
   collection (collName, options = {}) {

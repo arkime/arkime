@@ -59,7 +59,8 @@ class HistoryAPIs {
   static async getHistories (req, res) {
     try {
       let userId;
-      if (req.user.hasRole('arkimeAdmin')) { // user is an admin, they can view all history items
+      const isAdmin = req.user.hasRole('arkimeAdmin');
+      if (isAdmin) { // user is an admin, they can view all history items
         // if the admin has requested a specific user
         if (req.query.userId) { userId = req.query.userId; }
       } else { // user isn't an admin, so they can only view their own history items
@@ -82,7 +83,7 @@ class HistoryAPIs {
       }
 
       if (userId) { // filter on userId, admins can use * and ?
-        and.push({ userId: { $wildcard: userId } });
+        and.push({ userId: isAdmin ? { $wildcard: userId } : userId });
       }
 
       if (ArkimeUtil.isString(req.query.api)) { // filter on api endpoint
@@ -122,7 +123,6 @@ class HistoryAPIs {
       ]);
 
       const results = { total: histories.total, results: [] };
-      const isAdmin = req.user.hasRole('arkimeAdmin');
       for (const hit of histories.data) {
         const item = hit.doc;
         item.id = hit.id;

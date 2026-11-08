@@ -297,6 +297,7 @@ class StatsAPIs {
           if (data[fields.nodeName] === undefined) {
             data[fields.nodeName] = Array(num).fill(0);
           }
+          if (!(pos >= 0 && pos < num)) { continue; }
           data[fields.nodeName][pos] = mult * func(fields);
         }
       }
@@ -1766,6 +1767,7 @@ class StatsAPIs {
 
   // --------------------------------------------------------------------------
   static async initialize () {
+    if (!Db.hasEs()) { return; }
     try {
       const { body: info } = await Db.nodesStats({
         metric: 'jvm,process,fs,os,indices,thread_pool'

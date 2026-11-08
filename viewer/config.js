@@ -253,6 +253,9 @@ class Config {
     for (const prop of [...keyProps, ...stringProps]) {
       if (source[prop] !== undefined && typeof source[prop] !== 'string') { return false; }
     }
+    for (const prop of ['dbField', 'dbField2']) {
+      if (source[prop] !== undefined && (source[prop].length > 256 || source[prop].split('.').length > 16)) { return false; }
+    }
     // db.pl gives some fields a list of categories
     if (source.category !== undefined && typeof source.category !== 'string' &&
         !(Array.isArray(source.category) && source.category.every(cat => typeof cat === 'string'))) { return false; }

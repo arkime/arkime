@@ -631,7 +631,7 @@ class FeatherprintAPIs {
   // undefined means "couldn't tell", which callers treat as too old.
   static async dbVersion () {
     try {
-      return (await Db.healthCache())?.molochDbVersion;
+      return await Db.clusterSchemaVersion();
     } catch {
       return undefined;
     }

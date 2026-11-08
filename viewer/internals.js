@@ -95,6 +95,8 @@ internals.initialize = (app) => {
 ArkimeConfig.loaded(() => {
   // build internals
   internals.multiES = Config.getBool('multiES', false);
+  // with no OpenSearch/Elasticsearch db the viewer never talks to one
+  internals.hasEs = internals.multiES || ArkimeConfig.hasEs();
   // A multi viewer only talks to multies, its clusters' dbs are set in multiESNodes
   internals.elasticBase = internals.multiES ? Config.getArray('elasticsearch', 'http://localhost:9200') : ArkimeConfig.sessionsEsUrls();
   internals.remoteClusters = Config.configMap('remote-clusters', 'moloch-clusters');

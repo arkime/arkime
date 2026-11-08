@@ -1172,6 +1172,29 @@ typedef struct {
 
 typedef const ArkimeClusterDb_t *(*ArkimeClusterDbInit)(const char *url);
 
+// The tables a cluster db writer creates, the same layout as COLLECTION_OPTIONS in viewer/db.cluster.js.
+// A typed table keeps every field in its own column, the others are json docs with the indexed fields as columns.
+// type is the ES mapping type: keyword, ip, boolean, short, long, date or float.
+enum {
+    ARKIME_DB_INDEXED = 1,
+    ARKIME_DB_INDEXED_SORT,     // also sorted on, descending
+    ARKIME_DB_INDEXED_WILDCARD  // also searched with *wildcards*
+};
+typedef struct {
+    const char *field;
+    const char *type;
+    int         indexed;
+} ArkimeDbField_t;
+
+typedef struct {
+    const char            *name;   // without the dbPrefix
+    gboolean               typed;
+    const ArkimeDbField_t *fields; // ends with a NULL field
+} ArkimeDbTable_t;
+
+// Ends with a NULL name
+const ArkimeDbTable_t *arkime_db_cluster_tables();
+
 // The sessionsDbUrl, or dbUrl when it isn't set. Every member can be NULL.
 // check exits when the db isn't set up and returns its schema version, health runs every 30 seconds
 // and health_ms is how long the last one took, dropped counts writes given up on.

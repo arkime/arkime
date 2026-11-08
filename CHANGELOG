@@ -311,6 +311,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           split by another field it draws one waffle per value
   - #4428 Add dashboardMaxQueryDays limiting how much time a dashboard may search, in days, default 7, -1 for no limit;
           a wider time range (or All) shows why and searches nothing
+  - #4430 A viewer with no OpenSearch/Elasticsearch db (sessions, cluster and users elsewhere and no elasticsearch
+          setting) no longer connects to one, its ES health, ES stats tabs and ES Admin page are hidden
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password
@@ -322,6 +324,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           for an https://localhost url like the OpenSearch/Elasticsearch connections do unless the section sets insecure=false.
           The client certificate and caTrustFile are only used for the configured url's origin, a redirect elsewhere gets
           the system CAs. A urlapi maxRedirects that isn't a number is now 0 instead of following redirects
+## ESProxy
+  - #4430 [tee] sessionsDbUrl also writes the sessions sensors send to ClickHouse or a dbPlugins sessions db like
+          MongoDB, the way capture writes them to that db. A ClickHouse table is created with db/ch.pl init. [tee]
+          takes prefix, maxBatchBytes and the db's own settings, like clickhouseDatabase or clickhouseUser
 ## WISE
   - #4279 New MISP source that either periodically bulk loads attributes or queries per item, configured with [misp:<name>] sections
   - #4384 New esClientKey/esClientCert/esClientKeyPass settings present a client certificate (mTLS) to the users OpenSearch/Elasticsearch

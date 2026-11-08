@@ -17,11 +17,14 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const { LRUCache } = require('lru-cache');
-const Config = require('./config.js');
 const DbESImpl = require('./db.es');
 const DbUsersImpl = require('./db.users');
 const DbClusterImpl = require('./db.cluster');
+const ArkimeDb = require('../common/arkimeDb');
 const DbCHImpl = require('./db.ch');
+const EsQuery = require('./esQuery');
+const Config = require('./config.js');
+DbCHImpl.register();
 
 const cache10 = new LRUCache({ max: 1000, ttl: 1000 * 10 });
 const cache60 = new LRUCache({ max: 1000, ttl: 1000 * 60 });
@@ -60,10 +63,6 @@ function checkURLs (nodes) {
   }
 }
 
-function isClickHouseSessionsUrl (url) {
-  return /^clickhouses?:\/\/|^chttps?:\/\//.test(url || '');
-}
-
 // True if the index name (string, comma list, or array) refers to sessions
 function isSessionsIndex (index) {
   if (!index) { return false; }
@@ -78,6 +77,8 @@ function isSessionsIndex (index) {
 
 Db.initialize = async (info) => {
   internals.multiES = info.multiES === 'true' || info.multiES === true || false;
+  // with no OpenSearch/Elasticsearch db the viewer never talks to one
+  internals.hasEs = internals.multiES || ArkimeConfig.hasEs();
   delete info.multiES;
 
   internals.debug = info.debug || 0;
@@ -178,24 +179,20 @@ Db.initialize = async (info) => {
   internals.usersImpl = new DbUsersImpl(User.dbConnect(internals.usersPrefix));
   await internals.usersImpl.init();
 
-  // Initialize the sessions DB backend. sessionsImpl serves sessions indices
-  // (ClickHouse when sessionsDbUrl says so, otherwise Elasticsearch); esImpl
-  // always exists and serves everything else.
+  // Initialize the sessions DB backend. sessionsImpl serves sessions indices, the one the sessionsDbUrl
+  // scheme registered or else OpenSearch/Elasticsearch; esImpl always exists and serves everything else.
   internals.esImpl = new DbESImpl({ Db, internals, fixIndex });
 
   const sessionsDbUrl = info.sessionsDbUrl || ArkimeConfig.sessionsDbUrls().join(',');
-  if (!internals.multiES && !isClickHouseSessionsUrl(sessionsDbUrl) && !ArkimeConfig.isEsUrl(sessionsDbUrl)) {
-    console.log(`ERROR - the sessions db can't be '${sessionsDbUrl.split(':')[0]}', set sessionsDbUrl to OpenSearch/Elasticsearch or ClickHouse`);
+  const SessionsImpl = internals.multiES ? undefined : ArkimeDb.sessionsImpl(sessionsDbUrl);
+  if (!internals.multiES && !SessionsImpl && !ArkimeConfig.isEsUrl(sessionsDbUrl)) {
+    console.log(`ERROR - the sessions db can't be '${sessionsDbUrl.split(':')[0]}', set sessionsDbUrl to OpenSearch/Elasticsearch, ClickHouse or a dbPlugins sessions scheme`);
     process.exit(1);
   }
-  if (isClickHouseSessionsUrl(sessionsDbUrl) && !internals.multiES) {
-    info.sessionsDbUrl = sessionsDbUrl;
-    // The caller's info doesn't carry the clickhouse* options; capture reads
-    // the same names from config
-    for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable']) {
-      info[opt] ??= Config.get(opt);
-    }
-    internals.sessionsImpl = new DbCHImpl({ ...info, insecure: insecure(sessionsDbUrl.replace(/^(clickhouses|chttps):/i, 'https:')) });
+  if (SessionsImpl) {
+    internals.sessionsImpl = new SessionsImpl({
+      ...info, sessionsDbUrl, prefix: internals.prefix, caTrustFile: internals.info.caTrustFile, insecure: insecure(sessionsDbUrl), fieldsMap: () => Config.getDBFieldsMap(), EsQuery
+    });
   } else {
     internals.sessionsImpl = internals.esImpl;
   }
@@ -224,7 +221,7 @@ Db.initialize = async (info) => {
   }
 
   // Update aliases cache so -shrink/-reindex works
-  if (internals.nodeName !== undefined) {
+  if (internals.nodeName !== undefined && internals.hasEs) {
     Db.getAliasesCache();
     setInterval(() => { Db.getAliasesCache(); }, 2 * 60 * 1000);
   }
@@ -273,8 +270,9 @@ Db.initialize = async (info) => {
       basicAuth: info.esBasicAuth
     });
   internals.clusterShared = clusterConn === esConn;
+  internals.clusterConn = clusterConn;
   // The flush and refresh admin calls also reach a separate OpenSearch/Elasticsearch cluster db
-  internals.clusterEsClient = clusterConn.client;
+  internals.clusterEsClient = !clusterDbUrl || ArkimeDb.isES(clusterDbUrl) ? clusterConn.client : undefined;
   internals.clusterImpl = new DbClusterImpl({
     conn: clusterConn,
     esConn,
@@ -284,6 +282,7 @@ Db.initialize = async (info) => {
   });
   await internals.clusterImpl.init();
 
+  if (!internals.hasEs) { return; }
   try {
     const { body: data } = await internals.client7.info();
     if (data.version.distribution === 'opensearch') {
@@ -841,8 +840,8 @@ Db.msearchSessions = async (index, queries, options) => {
 };
 
 Db.scroll = async (params) => {
-  if (params?.body?.scroll_id === 'ch:done') {
-    return { body: { _scroll_id: 'ch:done', hits: { total: 0, hits: [] } } };
+  if (params?.body?.scroll_id === EsQuery.SCROLL_DONE) {
+    return { body: { _scroll_id: EsQuery.SCROLL_DONE, hits: { total: 0, hits: [] } } };
   }
   params.rest_total_hits_as_int = true;
   return internals.client7.scroll(params);
@@ -850,7 +849,7 @@ Db.scroll = async (params) => {
 
 // Ignore errors when we try to clear a scroll that doesn't exist
 Db.clearScroll = async (params) => {
-  if (params?.body?.scroll_id === 'ch:done') { return; }
+  if (params?.body?.scroll_id === EsQuery.SCROLL_DONE) { return; }
   try {
     await internals.client7.clearScroll(params);
   } catch (err) {
@@ -1232,6 +1231,7 @@ Db.updateLocalShortcuts = async () => {
 
   if (internals.multiES) { return; } // don't sync shortcuts for multies
   if (!internals.usersImpl) { return; } // no users backend configured
+  if (internals.sessionsImpl !== internals.esImpl) { return; } // only ES sessions queries read the local copy
 
   const msg = `updating local shortcuts (${internals.info.host}/${internals.localShortcutsIndex}) from users backend`;
 
@@ -1358,6 +1358,15 @@ Db.deleteAllShortcuts = async () => {
   await internals.usersImpl.deleteAllShortcuts();
   await setShortcutsVersion();
 };
+// The shortcuts a user can see, read from the users db, in the shape of the local ES index's hits
+async function userShortcuts (userId, roles) {
+  const hits = (await internals.usersImpl.getAllShortcuts())
+    .filter(({ source: s }) => s.userId === userId || [].concat(s.users ?? []).includes(userId) || [].concat(s.roles ?? []).some(r => roles.includes(r)))
+    .sort((a, b) => String(a.source.name).localeCompare(String(b.source.name)))
+    .map(({ id, source, version }) => ({ _id: id, _source: source, _version: version }));
+  return { total: hits.length, hits };
+}
+
 Db.getShortcutsCache = async (user) => {
   const cshortcuts = internals.shortcutsCache.get(user.userId);
   if (cshortcuts && internals.shortcutsCacheTS.get(user.userId) > Date.now() - 30000) {
@@ -1381,7 +1390,9 @@ Db.getShortcutsCache = async (user) => {
     size: 10000
   };
 
-  const { body: { hits: shortcuts } } = await Db.searchShortcutsLocal(query);
+  const shortcuts = internals.sessionsImpl === internals.esImpl
+    ? (await Db.searchShortcutsLocal(query)).body.hits
+    : await userShortcuts(user.userId, roles);
 
   const shortcutsMap = {};
   for (const shortcut of shortcuts.hits) {
@@ -1466,6 +1477,14 @@ Db.getShareableVersioned = async (id) => {
   return internals.usersImpl.getShareableVersioned(id);
 };
 
+Db.hasEs = () => internals.hasEs;
+
+// The db.pl schema version the cluster db matches, from the ES sessions template or the cluster db itself
+Db.clusterSchemaVersion = async () => {
+  if (internals.clusterEsClient) { return (await Db.healthCache())?.molochDbVersion; }
+  return internals.clusterConn.schemaVersion?.();
+};
+
 Db.arkimeNodeStats = async (nodeName) => {
   const stat = await internals.clusterImpl.stats.get(nodeName);
   if (!stat) { throw new Error('Unknown node'); }
@@ -1492,14 +1511,19 @@ Db.healthCache = async (cluster) => {
     return value;
   }
 
+  if (!internals.hasEs) { throw new Error('No OpenSearch/Elasticsearch is configured'); }
   const health = await Db.health(cluster);
-  const { body: doc } = await internals.client7.indices.getTemplate({
-    name: fixIndex('sessions3_template'),
-    filter_path: '**._meta',
-    cluster
-  });
   if (cluster === undefined) {
-    health.molochDbVersion = doc[fixIndex('sessions3_template')].mappings._meta.molochDbVersion;
+    // a sessions db that isn't ES has no sessions template there
+    try {
+      const { body: doc } = await internals.client7.indices.getTemplate({
+        name: fixIndex('sessions3_template'),
+        filter_path: '**._meta'
+      });
+      health.molochDbVersion = doc[fixIndex('sessions3_template')]?.mappings?._meta?.molochDbVersion;
+    } catch (err) {
+      if (err.meta?.statusCode !== 404) { throw err; }
+    }
   }
   cache10.set(key, health);
   return health;
@@ -1725,7 +1749,10 @@ Db.checkVersion = async function (minVersion) {
     process.exit(1);
   }
 
-  await ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
+  // the version lives in the ES sessions template, other sessions dbs have their own schema
+  if (internals.sessionsImpl === internals.esImpl) {
+    await ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
+  }
 };
 
 Db.isLocalView = async function (node) {

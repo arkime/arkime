@@ -192,7 +192,8 @@ class ArkimeDb {
   //   http(s), elasticsearch(s), opensearch(s)   OpenSearch/Elasticsearch, can hold anything
   //   postgres(ql)                                 can hold the users, cont3xt and cluster dbs
   //   sqlite(3)                                    can hold the users and cont3xt dbs
-  // The sessions db is separate, see the viewer's sessionsDbUrl handling.
+  //   clickhouse(s), chttp(s)                    can hold the sessions, registered by the viewer
+  // The sessions db is separate, a sessions scheme is registered with registerSessions.
   //
   // dbPlugins adds more, a list of modules found in pluginsDir, set in each app's section:
   //   dbPlugins=mydb.js
@@ -209,6 +210,8 @@ class ArkimeDb {
   //     }
   //     api.registerDbScheme('mydb', MyConnection, { cluster: false });
   //   };
+  // api also has ArkimeConfig and ArkimeUtil, capture/plugins/mysqldb is a complete example. A sessions db
+  // scheme uses api.registerSessionsScheme, see registerSessions and capture/plugins/mongodb.
   // Then mydb://... works for usersDbUrl, cont3xt's dbUrl and every other plain collection db. With
   // cluster: true it can also be the viewer's and multies' dbUrl, capture writes that db too so it also
   // needs a capture rootPlugins writer, see arkime_db_cluster_register.
@@ -281,10 +284,54 @@ class ArkimeDb {
    */
   static tlsHost (url) {
     const entry = ArkimeDb.#entry(ArkimeDb.#scheme(url));
-    const backend = typeof entry?.backend === 'string' ? require(entry.backend) : entry?.backend;
+    const backend = (typeof entry?.backend === 'string' ? require(entry.backend) : entry?.backend) ?? ArkimeDb.sessionsImpl(url);
     if (typeof backend?.tlsHost === 'function') { return backend.tlsHost(url); }
     const u = ArkimeUtil.parseUrl(url);
     return u?.protocol === 'https:' ? u.hostname : undefined;
+  }
+
+  static #sessions = new Map();
+  /**
+   * Register a sessions db (sessionsDbUrl) url scheme for the viewer and multies. capture writes the sessions
+   * too, so the scheme also needs a capture rootPlugins writer, see arkime_db_sessions_register.
+   * @param {string} scheme - The url scheme, without the ://
+   * @param {function} SessionsImpl - Constructed with (info): info.sessionsDbUrl, info.prefix (the sessions
+   *   prefix, formatted), info.insecure (whether to skip TLS verification for this url), info.caTrustFile,
+   *   info.fieldsMap() (the viewer's db fields by name, their type says ip, date, number or *Tokens), info.EsQuery
+   *   (viewer/esQuery.js, which parses the ES queries into a tree to compile) and the
+   *   rest of the viewer's db settings. A scroll that answered everything returns _scroll_id 'arkime:done'. Its methods take and return what OpenSearch/Elasticsearch would,
+   *   index is a sessions index pattern, which can leave off the prefix like the ES client adds it, and queries are ES query DSL:
+   *     searchSessions(index, query, options), msearchSessions(index, queries, options),
+   *     searchScroll(index, query, options, cb), getSession(id, options), updateSession(index, id, doc),
+   *     addTagsToSession(index, id, tags), removeTagsFromSession(index, id, tags),
+   *     addHuntToSession(index, id, huntId, huntName), removeHuntFromSession(index, id, huntId, huntName),
+   *     deleteDocument(index, id, options), numberOfDocuments(index, options), getMinValue(index, field),
+   *     getIndices(startTime, stopTime, bounding, rotateIndex, extraIndices), getSessionIndices(),
+   *     refreshForNotFoundRetry(index), syncShortcuts(shortcuts), close()
+   *   A backend with per period indices can also have listIndices(index), the names a pattern matches, for multies.
+   *   esProxy's [tee] sessionsDbUrl needs writeSessions(docs), session docs with index, _id and the *Tokens fields
+   *   like capture writes them, addHuntToSession's 5th arg nodes, the only nodes it may change, and can call
+   *   checkWriteSessions(), which throws when the sessions can't be written.
+   *   viewer/db.ch.js and capture/plugins/mongodb/mongodb.js are complete ones. A static tlsHost(url) answers
+   *   for the scheme like a collection backend's.
+   */
+  static registerSessions (scheme, SessionsImpl) {
+    ArkimeDb.#sessions.set(scheme.toLowerCase(), SessionsImpl);
+  }
+
+  /**
+   * The SessionsImpl registered for a url's scheme, undefined for OpenSearch/Elasticsearch or an unknown scheme
+   */
+  static sessionsImpl (url) {
+    ArkimeDb.#loadPlugins();
+    return ArkimeDb.#sessions.get(ArkimeDb.#scheme(url));
+  }
+
+  /**
+   * Can the url's scheme hold the sessions
+   */
+  static holdsSessions (url) {
+    return ArkimeDb.isES(url) || ArkimeDb.sessionsImpl(url) !== undefined;
   }
 
   static #scheme (url) {
@@ -308,9 +355,8 @@ class ArkimeDb {
   static #pluginsLoaded = false;
   /**
    * Load the dbPlugins setting's modules once, before the first scheme lookup, so every app and tool gets them.
-   * Each name is found in pluginsDir like viewerPlugins and the module exports registerDb(api), where
-   * api.registerDbScheme(scheme, Connection, { cluster }) is register and api.ArkimeDb has Collection and
-   * ConflictError to build on. Waits for the config to load, before that only the built in schemes are known.
+   * Each name is found in pluginsDir like viewerPlugins, see loadDbPlugin. Waits for the config to load,
+   * before that only the built in schemes are known.
    */
   static #loadPlugins () {
     if (ArkimeDb.#pluginsLoaded) { return; }
@@ -322,23 +368,40 @@ class ArkimeDb {
     const plugins = Config.getArray('dbPlugins', []);
     if (!plugins.length) { return; }
     const dirs = Config.getArray('pluginsDir', `${require('./version').config_prefix}/plugins`);
-    const api = {
-      registerDbScheme: (scheme, Connection, flags = {}) => ArkimeDb.register(scheme, Connection, { cluster: !!flags.cluster }),
-      ArkimeDb
-    };
     for (const plugin of plugins) {
       const dir = dirs.find(d => fs.existsSync(path.join(d, plugin)));
       if (!dir) {
         console.log(`ERROR - Couldn't find dbPlugins '${plugin}' in pluginsDir ${dirs.join(', ')}`);
         process.exit(1);
       }
-      const mod = require(path.resolve(dir, plugin));
-      if (typeof mod.registerDb !== 'function') {
-        console.log(`ERROR - dbPlugins '${plugin}' doesn't export registerDb(api)`);
+      try {
+        ArkimeDb.loadDbPlugin(path.resolve(dir, plugin));
+      } catch (err) {
+        console.log(`ERROR - dbPlugins '${plugin}'`, err.message);
         process.exit(1);
       }
-      mod.registerDb(api);
     }
+  }
+
+  /**
+   * Load one db plugin module and call its registerDb(api), dbPlugins does this for each name. The api has
+   * registerDbScheme(scheme, Connection, { cluster }), registerSessionsScheme(scheme, SessionsImpl), ArkimeDb
+   * for Collection, ConflictError and the where helpers, and ArkimeConfig and ArkimeUtil for settings and TLS
+   * options like the built in backends use.
+   * @param {string} file - The module's path
+   */
+  static loadDbPlugin (file) {
+    const mod = require(file);
+    if (typeof mod.registerDb !== 'function') {
+      throw new Error(`${file} doesn't export registerDb(api)`);
+    }
+    mod.registerDb({
+      registerDbScheme: (scheme, Connection, flags = {}) => ArkimeDb.register(scheme, Connection, { cluster: !!flags.cluster }),
+      registerSessionsScheme: (scheme, SessionsImpl) => ArkimeDb.registerSessions(scheme, SessionsImpl),
+      ArkimeDb,
+      ArkimeConfig,
+      ArkimeUtil
+    });
   }
 
   /**

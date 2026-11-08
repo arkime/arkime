@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 379;
+use Test::More tests => 386;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -639,7 +639,7 @@ is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost"]}}]}}}'), 200, "files search for own node with host allowed");
 # The exact body the viewer's expiry sends
 SKIP: {
-    skip "a Postgres cluster db has no ES expiry query", 1 if $ArkimeTest::clusterDbPG;
+    skip "a non-ES cluster db has no ES expiry query", 1 if $ArkimeTest::clusterDbNonES;
     is (filesSearch("test", to_json(viewerGet("/regressionTests/expireQuery?nodes=test&dirs=/x,/y/"))), 200, "files search real expiry query allowed");
 }
 # Older sensor viewers always send profile false
@@ -674,7 +674,7 @@ unlike ($response->content, qr/"hits"/, "GET fields _search with ; smuggled q no
 # version that it bumps from the current one, so do the same and re-post the
 # existing source to leave the doc unchanged
 SKIP: {
-    skip "a Postgres cluster db keeps the stats doc out of ES", 2 if $ArkimeTest::clusterDbPG;
+    skip "a non-ES cluster db keeps the stats doc out of ES", 2 if $ArkimeTest::clusterDbNonES;
     $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test");
     is ($response->code, 200, "GET stats doc allowed");
     my $stats = from_json($response->content);
@@ -1168,4 +1168,68 @@ foreach my $test (
     my ($path, $code, $name) = @$test;
     $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$path");
     is ($response->code, $code, $name);
+}
+
+# [tee] sessionsDbUrl, tests.pl points it at the teech_ prefix of the ClickHouse or dbPlugins sessions db
+SKIP: {
+    skip "sessions tee only with ClickHouse or dbPlugins sessions", 7 if (!$ArkimeTest::sessionsDbNonES);
+    # The teed docs whose _id is in ids, or with a tag, sorted by _id
+    my $teeDocs;
+    if ($ArkimeTest::sessionsDbCH) {
+        $ArkimeTest::sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$};
+        my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
+        $teeDocs = sub {
+            my ($ids, $tag) = @_;
+            my $where = $ids ? "_id IN (" . join(",", map { "'$_'" } @$ids) . ")" : "has(fields.tags, '$tag')";
+            my $resp = $ArkimeTest::userAgent->post("$chUrl/?output_format_json_quote_64bit_integers=0", Content => "SELECT fields FROM arkime.teech_sessions3 WHERE $where ORDER BY _id FORMAT JSONEachRow", "Content-Type" => "text/plain;charset=UTF-8");
+            return [map { from_json($_)->{fields} } grep { $_ ne "" } split(/\n/, $resp->content)];
+        };
+    } else {
+        $teeDocs = sub {
+            my ($ids, $tag) = @_;
+            return ArkimeTest::sessionsHelperJson("find", "teech_sessions3-*", to_json($ids ? {_id => {'$in' => $ids}} : {tags => $tag})) // [];
+        };
+    }
+
+    my $own = {node => "test", lastPacket => 1704067200000, firstPacket => 1704067100000, protocol => ["http", "dns"],
+               http => {uri => ["Example.com/Login/Admin?x=1"], host => ["Www.Example.com"]}, dns => [{host => ["A.B-c.com"], opcode => "QUERY"}]};
+    my $other = {node => "esproxyhost", lastPacket => 1704067200000, protocol => ["tls"]};
+    my $noid = {node => "test", lastPacket => 1704067200000, protocol => ["tls"], tags => ["tee-noid"]};
+    my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk?refresh=true");
+    $r->header('Content-Type' => 'application/x-ndjson');
+    $r->content(join("\n", '{"index":{"_index":"tests_sessions3-2024","_id":"tee-own"}}', to_json($own),
+                           '{"index":{"_index":"tests_sessions3-2024","_id":"tee-other"}}', to_json($other),
+                           '{"index":{"_index":"tests_sessions3-2024"}}', to_json($noid)) . "\n");
+    is ($ArkimeTest::userAgent->request($r)->code, 200, "bulk sessions with the sessions tee");
+
+    my $docs;
+    waitUntil(sub { $docs = $teeDocs->(["tee-own"]); @$docs == 1; });
+    my $d = $docs->[0] // {};
+    is_deeply ([$d->{http}{uriTokens}, $d->{http}{hostTokens}, $d->{dns}[0]{hostTokens}, $d->{index}, $d->{node}],
+               [["example", "com", "login", "admin", "x", "1"], ["www", "example", "com"], ["a", "b", "c", "com"], "teech_sessions3-2024", "test"],
+               "tee doc has the doc, its index with the tee prefix and the wordSplit tokens");
+
+    $docs = $teeDocs->(undef, "tee-noid");
+    is (scalar @$docs, 1, "a session without an _id is teed");
+    like ($docs->[0]{_id} // "", qr/^2024-[A-Za-z0-9_-]{20}$/, "and gets an id from its index");
+
+    my $hunt = to_json({script => {source => $addHunt, lang => "painless", params => {huntId => "tee-hunt", huntName => "tee"}}});
+    foreach my $id ("tee-own", "tee-other") {
+        $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_update/$id");
+        $r->header('Content-Type' => 'application/json');
+        $r->content($hunt);
+        $ArkimeTest::userAgent->request($r);
+    }
+    waitUntil(sub { $docs = $teeDocs->(["tee-other", "tee-own"]); ($docs->[1]{huntId} // [])->[0]; });
+    is_deeply ($docs->[1]{huntId}, ["tee-hunt"], "hunt update teed to the sensor's own session");
+    is_deeply ($docs->[0]{huntId} // [], [], "hunt update not teed to another host's session");
+
+    esPost("/tests_sessions3-2024/_delete_by_query?refresh=true", '{"query":{"bool":{"should":[{"ids":{"values":["tee-own","tee-other"]}},{"term":{"tags":"tee-noid"}}]}}}');
+    if ($ArkimeTest::sessionsDbCH) {
+        $ArkimeTest::sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$};
+        $ArkimeTest::userAgent->post(($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2/", Content => "TRUNCATE TABLE arkime.teech_sessions3", "Content-Type" => "text/plain;charset=UTF-8");
+    } else {
+        ArkimeTest::sessionsHelper("wipe", "teech_");
+    }
+    is (scalar @{$teeDocs->(["tee-own", "tee-other"])} + scalar @{$teeDocs->(undef, "tee-noid")}, 0, "tee sessions cleaned up");
 }

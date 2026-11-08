@@ -76,7 +76,7 @@ ok((grep { $_->{kind} eq 'changeIp' } @{$al->{alerts}}), "changeIp alert fired f
 ok((grep { $_->{kind} eq 'newIp' } @{$al->{alerts}}),    "newIp alerts fired");
 
 SKIP: {
-    skip "a Postgres cluster db keeps the mac doc out of ES", 1 if $ArkimeTest::clusterDbPG;
+    skip "a non-ES cluster db keeps the mac doc out of ES", 1 if $ArkimeTest::clusterDbNonES;
     my $fpIndex = $ENV{ARKIME_TEST_SPLIT} ? "testscl_featherprint" : "tests_featherprint";
     my $macDoc = esGet("/$fpIndex/_doc/mac:aa:bb:cc:00:00:01");
     is(scalar(@{$macDoc->{_source}->{ipHistory}}), 2,    "moved mac doc saved with both ips");

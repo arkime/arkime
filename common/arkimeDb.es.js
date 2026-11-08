@@ -183,6 +183,9 @@ class ESCollection extends ArkimeDb.Collection {
       return { total: hits.total, data: hits.hits.map(toHit) };
     }
 
+    // Like ES max_result_window, a deep from would buffer every hit before it
+    if (from > 10000) { throw new Error(`Result window is too large, from ${from} is past 10000`); }
+
     // ES won't scroll with a from, so skip the first hits here instead
     body.from = 0;
     body.size = 1000;

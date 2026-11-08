@@ -33,6 +33,7 @@ class HuntAPIs {
 
   // --------------------------------------------------------------------------
   static #runningHuntJob;
+  static #publicSortFields = new Set(['created', 'name', 'status', 'size', 'started', 'lastUpdated', 'lastPacketTime', 'totalSessions', 'searchedSessions', 'matchedSessions']);
   static isHuntJobRunning () {
     return HuntAPIs.#runningHuntJob !== undefined;
   }
@@ -1000,7 +1001,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {number} recordsFiltered - The number of hunts returned in this result.
    */
   static getHunts (req, res) {
-    const sortField = /^[A-Za-z_][A-Za-z0-9_.]*$/.test(req.query.sortField ?? '') ? req.query.sortField : 'created';
+    // Non-admins get some hunts with search and userId blanked, so they can't sort or search on those
+    const isAdmin = req.user.hasRole('arkimeAdmin');
+    const sortOk = isAdmin ? /^[A-Za-z_][A-Za-z0-9_.]*$/.test(req.query.sortField ?? '') : HuntAPIs.#publicSortFields.has(req.query.sortField);
+    const sortField = sortOk ? req.query.sortField : 'created';
     const params = {
       sort: { [sortField]: req.query.desc === 'true' ? 'desc' : 'asc' },
       from: parseInt(req.query.start) || 0,
@@ -1011,7 +1015,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     if (req.query.history) { // only get finished jobs
       and.push({ status: 'finished' });
       if (ArkimeUtil.isString(req.query.searchTerm)) { // apply search term across whitelisted fields only
-        and.push({ $or: ['name', 'userId'].map(field => ({ [field]: { $contains: req.query.searchTerm } })) });
+        and.push({ $or: (isAdmin ? ['name', 'userId'] : ['name']).map(field => ({ [field]: { $contains: req.query.searchTerm } })) });
       }
     } else { // get queued, paused, running jobs
       params.from = 0;
@@ -1048,7 +1052,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
-        if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && !hunt.users.includes(req.user.userId)) {
+        if (!isAdmin && req.user.userId !== hunt.userId && !hunt.users.includes(req.user.userId)) {
           if (!hunt.roles || !hunt.roles.length || !req.user.hasRole(hunt.roles)) {
             // since hunt isn't cached we can just modify
             hunt.id = '';

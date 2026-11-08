@@ -94,6 +94,7 @@ async function initializeApp() {
     PATH,
     MULTIVIEWER,
     HASUSERSES,
+    HASES,
     HASTSHARK,
     HUNTWARN,
     HUNTLIMIT,

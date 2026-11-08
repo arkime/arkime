@@ -413,6 +413,11 @@ app.get(
 );
 
 // stats apis - no auth -------------------------------------------------------
+app.use(['/api/eshealth', '/api/esstats', '/api/esindices', '/api/estasks', '/api/esadmin', '/api/esshards', '/api/esrecovery', '/eshealth.json', '/esstats.json'], (req, res, next) => {
+  if (internals.hasEs) { return next(); }
+  return res.serverError(404, 'No OpenSearch/Elasticsearch is configured');
+});
+
 app.get( // es health endpoint
   ['/api/eshealth', '/eshealth.json'],
   [ArkimeUtil.noCacheJson],
@@ -2540,6 +2545,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     version: version.version,
     multiViewer: internals.multiES,
     hasUsersES: !!ArkimeConfig.usersDbUrls(),
+    hasEs: internals.hasEs,
     hasTshark: !!internals.tsharkPath,
     huntWarn: Config.getInt('huntWarn', 100000),
     huntLimit: limit,
@@ -2595,11 +2601,13 @@ async function main () {
 
   Db.checkVersion(MIN_DB_VERSION);
 
-  try {
-    const health = await Db.healthCache();
-    internals.clusterName = health.cluster_name;
-  } catch (err) {
-    console.log('ERROR - fetching OpenSearch/Elasticsearch health', err);
+  if (internals.hasEs) {
+    try {
+      const health = await Db.healthCache();
+      internals.clusterName = health.cluster_name;
+    } catch (err) {
+      console.log('ERROR - fetching OpenSearch/Elasticsearch health', err);
+    }
   }
 
   await StatsAPIs.initialize();

@@ -56,7 +56,9 @@ SPDX-License-Identifier: Apache-2.0
           <v-tooltip activator="parent">{{ $t('navigation.helpTip') }}</v-tooltip>
         </v-btn>
 
-        <e-s-health class="ms-2" />
+        <e-s-health
+          v-if="$constants.HASES"
+          class="ms-2" />
 
         <v-btn
           v-if="isAToolBarPage"
@@ -150,6 +152,8 @@ export default {
         featherprint: { title: this.$t('navigation.featherprint'), link: 'featherprint', name: 'Featherprint' },
         viewconfig: { title: this.$t('navigation.viewConfig'), link: 'viewconfig', userFlag: 'canViewConfig', name: 'ViewConfig' }
       };
+
+      if (!this.$constants.HASES) { delete menu.esadmin; }
 
       // preserve url query parameters
       for (const m in menu) {

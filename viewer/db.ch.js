@@ -12,6 +12,9 @@ const https = require('https');
 const NodeURL = require('url').URL;
 const async = require('async');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ArkimeConfig = require('../common/arkimeConfig');
+const ArkimeDb = require('../common/arkimeDb');
+const EsQuery = require('./esQuery');
 
 let Config;
 
@@ -32,6 +35,12 @@ const MATERIALIZED = {
 // Most per-bucket sub-agg queries in flight at once for one agg
 const BUCKET_QUERY_CONCURRENCY = 8;
 
+// Most buckets one search may create, ES's search.max_buckets default
+const MAX_BUCKETS = 65536;
+
+// A longer body can't become a string
+const MAX_RESPONSE_BYTES = require('buffer').constants.MAX_STRING_LENGTH;
+
 const ARRAY_FIELDS = new Set(['protocol', 'tags', 'fileId', 'packetPos', 'packetLen', 'huntId', 'huntName']);
 const DATE_FIELDS = new Set(['timestamp', '@timestamp', 'firstPacket', 'lastPacket', 'cert.notBefore', 'cert.notAfter']);
 const NUMERIC_HINTS = new Set([
@@ -50,39 +59,28 @@ const DEFAULT_FIELDS = [
 // Object-array parents in JSON column: `fields.<parent>` is Array(JSON), where
 // each element is an object containing the sub-field. Sub-paths like
 // `cert.notAfter` cannot be addressed directly via `fields.cert.notAfter` and
-// must be unrolled via arrayMap/arrayExists over CAST(... AS Array(JSON)).
-// Populated dynamically from the JSON schema; seeded with built-ins so cold
-// queries don't break before the first refresh completes.
-const NESTED_OBJECT_ARRAY_PARENTS = new Set(['cert', 'dns']);
+// are read as `fields.<parent>[].<sub>` subcolumns.
+// Seeds each instance's set, refreshSchema adds the rest per cluster.
+const NESTED_OBJECT_ARRAY_PARENTS = ['cert', 'dns'];
 
 // Array-of-objects children inside a nested parent, e.g. each element of
 // fields.dns[] carries an answers[] array of objects (dnsOutputAnswers)
 const NESTED_OBJECT_SUB_ARRAYS = new Set(['dns.answers']);
 
-// Paths whose CH type is Array(...) — capture/db.c writes nearly every
-// non-counter field as a JSON array. Populated from the live schema by
-// refreshSchema(); this lets isArrayField default to "true" for any field we
-// have seen, which matches ES multi-value semantics.
-const ARRAY_PATH_FIELDS = new Set();
+const SCHEMA_SAMPLE_ROWS = 500000;
 
-function nestedArrayParent (field) {
-  const dot = field.indexOf('.');
-  if (dot < 0) { return null; }
-  const parentPath = field.substring(0, dot);
-  if (!NESTED_OBJECT_ARRAY_PARENTS.has(parentPath)) { return null; }
-  return { parent: parentPath, sub: field.substring(dot + 1) };
+// Build `seg1.seg2...` quoting segments that aren't bare identifiers.
+function identPath (path) {
+  return String(path).split('.').map(p => /^[A-Za-z_][A-Za-z0-9_]*$/.test(p) ? p : quoteIdent(p)).join('.');
 }
 
 function jsonPath (field) {
-  // Build `fields.seg1.seg2...` quoting segments that aren't bare identifiers.
-  const segs = field.split('.').map(p => /^[A-Za-z_][A-Za-z0-9_]*$/.test(p) ? p : '`' + p.replace(/`/g, '``') + '`');
-  return 'fields.' + segs.join('.');
+  return 'fields.' + identPath(field);
 }
 
 // Sub-path inside a nested object element (no `fields.` prefix).
 function subPath (sub) {
-  const segs = sub.split('.').map(p => /^[A-Za-z_][A-Za-z0-9_]*$/.test(p) ? p : '`' + p.replace(/`/g, '``') + '`');
-  return segs.join('.');
+  return identPath(sub);
 }
 
 function chError (feature) {
@@ -96,7 +94,12 @@ function metricOrderName (orderKey) {
 }
 
 function quoteIdent (ident) {
-  return '`' + String(ident).replace(/`/g, '``') + '`';
+  return '`' + String(ident).replace(/\\/g, '\\\\').replace(/`/g, '``') + '`';
+}
+
+// The wordSplit tokens next to each other, in order, case-insensitive
+function phraseRegex (tokens) {
+  return `(?i)(^|[^A-Za-z0-9_])${tokens.join('[^A-Za-z0-9_]+')}([^A-Za-z0-9_]|$)`;
 }
 
 function sqlLiteral (value, field) {
@@ -311,10 +314,34 @@ function dbFieldsMap () {
   }
 }
 
+// Count buckets against one search's budget, erroring like ES once over it
+function addBuckets (budget, count) {
+  budget.buckets += count;
+  if (budget.buckets > MAX_BUCKETS) {
+    throw new Error(`Trying to create too many buckets. Must be less than or equal to: [${MAX_BUCKETS}] but was [${budget.buckets}]`);
+  }
+}
+
 class DbCHImpl {
+  static SCHEMES = ['clickhouse', 'clickhouses', 'chttp', 'chttps'];
+
+  // The built in sessions schemes, the viewer and multies register them at startup
+  static register () {
+    for (const scheme of DbCHImpl.SCHEMES) { ArkimeDb.registerSessions(scheme, DbCHImpl); }
+  }
+
+  static tlsHost (url) {
+    return /^(clickhouses|chttps):\/\//i.test(url) ? ArkimeUtil.parseUrl(url.replace(/^[^:]+:/, 'https:'))?.hostname : undefined;
+  }
+
   constructor (info) {
     const dbUrl = info.sessionsDbUrl;
     if (!dbUrl) { throw new Error('CH backend: sessionsDbUrl is required'); }
+    // capture reads the same clickhouse settings from the config
+    info = { ...info };
+    for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable']) {
+      info[opt] ??= ArkimeConfig.get(opt);
+    }
 
     let normalized = dbUrl;
     if (normalized.startsWith('clickhouses://') || normalized.startsWith('chttps://')) {
@@ -348,11 +375,16 @@ class DbCHImpl {
 
     // Typed paths declared in the table DDL (populated by refreshSchema).
     this.typedPaths = new Map();
+    // Learned from the live schema: paths CH has as Array(...), which capture writes for nearly every
+    // non-counter field, and top-level arrays of objects
+    this.arrayPaths = new Set();
+    this.nestedParents = new Set(NESTED_OBJECT_ARRAY_PARENTS);
 
     // Auto-discover Array(JSON) parents in the `fields` column. Refresh
     // periodically so newly-seen JSON paths (e.g. from new parsers) become
     // addressable as nested object arrays without code changes.
-    this.refreshSchema().catch((err) => {
+    // searches wait for it, until then typed paths would be read as Dynamic and fail
+    this.schemaReady = this.refreshSchema().catch((err) => {
       if (Config?.debug >= 1) { console.log('CH backend: initial schema refresh failed:', err.message); }
     });
     this.schemaRefreshTimer = setInterval(() => {
@@ -372,18 +404,25 @@ class DbCHImpl {
       if (Config?.debug >= 1) { console.log('CH backend: typed path discovery failed:', err.message); }
     }
 
-    const sql = `SELECT distinctJSONPathsAndTypes(fields) AS p FROM ${this.tableName()}`;
+    // Only the newest sessions, a whole table scan is far too slow on a big cluster. The sets
+    // only grow, so paths seen by earlier refreshes stay known.
+    const sql = `SELECT distinctJSONPathsAndTypes(fields) AS p FROM ${this.tableName()} WHERE lastPacket >= (SELECT min(lp) FROM (SELECT lastPacket AS lp FROM ${this.tableName()} ORDER BY lastPacket DESC LIMIT ${SCHEMA_SAMPLE_ROWS}))`;
     const res = await this.query(sql);
     const map = res?.data?.[0]?.p;
     if (!map || typeof map !== 'object') { return; }
+    const objects = new Set(Object.keys(map).filter(p => p.includes('.')).map(p => p.substring(0, p.indexOf('.'))));
     for (const [path, types] of Object.entries(map)) {
       if (!Array.isArray(types)) { continue; }
       const isArr = types.some(t => typeof t === 'string' && t.startsWith('Array('));
       if (!isArr) { continue; }
-      ARRAY_PATH_FIELDS.add(path);
-      if (!path.includes('.') && types.some(t => typeof t === 'string' && t.startsWith('Array(JSON'))) {
-        NESTED_OBJECT_ARRAY_PARENTS.add(path);
+      this.arrayPaths.add(path);
+      // A parent also seen as a plain object stays one, a stray array of objects can't hide its fields
+      if (!path.includes('.') && !objects.has(path) && types.some(t => typeof t === 'string' && t.startsWith('Array(JSON'))) {
+        this.nestedParents.add(path);
       }
+    }
+    for (const path of objects) {
+      if (!NESTED_OBJECT_ARRAY_PARENTS.includes(path)) { this.nestedParents.delete(path); }
     }
   }
 
@@ -431,17 +470,30 @@ class DbCHImpl {
         }
       }, (res) => {
         const chunks = [];
-        res.on('data', (chunk) => chunks.push(chunk));
-        res.on('end', () => {
-          const text = Buffer.concat(chunks).toString();
-          if (res.statusCode < 200 || res.statusCode >= 300) {
-            return reject(new Error(`CH backend: query failed (${res.statusCode}): ${text}`));
+        let bytes = 0;
+        res.on('data', (chunk) => {
+          bytes += chunk.length;
+          if (bytes > MAX_RESPONSE_BYTES) {
+            return req.destroy(new Error(`CH backend: response larger than ${MAX_RESPONSE_BYTES} bytes`));
           }
-          if (opts.text) { return resolve(text); }
+          chunks.push(chunk);
+        });
+        res.on('error', reject);
+        res.on('end', () => {
+          if (bytes > MAX_RESPONSE_BYTES) { return; }
           try {
-            resolve(text.length ? JSON.parse(text) : {});
+            const text = Buffer.concat(chunks).toString();
+            if (res.statusCode < 200 || res.statusCode >= 300) {
+              return reject(new Error(`CH backend: query failed (${res.statusCode}): ${text}`));
+            }
+            if (opts.text) { return resolve(text); }
+            try {
+              resolve(text.length ? JSON.parse(text) : {});
+            } catch (err) {
+              err.message = `CH backend: failed to parse JSON response: ${err.message}; body=${text}`;
+              reject(err);
+            }
           } catch (err) {
-            err.message = `CH backend: failed to parse JSON response: ${err.message}; body=${text}`;
             reject(err);
           }
         });
@@ -452,14 +504,22 @@ class DbCHImpl {
     });
   }
 
+  nestedArrayParent (field) {
+    const dot = field.indexOf('.');
+    if (dot < 0) { return null; }
+    const parentPath = field.substring(0, dot);
+    if (!this.nestedParents.has(parentPath)) { return null; }
+    return { parent: parentPath, sub: field.substring(dot + 1) };
+  }
+
   isArrayField (field) {
     if (MATERIALIZED[field]) { return false; }
     // Typed paths declare their type in the DDL — most authoritative.
     const typed = this.typedPaths.get(field);
     if (typed) { return typed.startsWith('Array'); }
-    if (ARRAY_PATH_FIELDS.has(field)) { return true; }
+    if (this.arrayPaths.has(field)) { return true; }
     if (ARRAY_FIELDS.has(field)) { return true; }
-    if (nestedArrayParent(field)) { return true; }
+    if (this.nestedArrayParent(field)) { return true; }
     if (NUMERIC_HINTS.has(field) || DATE_FIELDS.has(field)) { return false; }
     const info = dbFieldsMap()[field];
     if (!info) { return false; }
@@ -485,32 +545,19 @@ class DbCHImpl {
       if (mat.col.startsWith('`') || mat.col.includes('.')) { return mat.col; }
       return `${quoteIdent(this.prefix + this.table)}.${mat.col}`;
     }
-    const nested = nestedArrayParent(field);
+    const nested = this.nestedArrayParent(field);
     if (nested) {
-      // Unroll Array(JSON) parent and project the sub-path. Filter out
-      // elements where sub is null so callers see a clean array of values.
       const subType = this.scalarTypeForField(field);
-      const subDot = nested.sub.indexOf('.');
-      if (subDot > 0 && NESTED_OBJECT_SUB_ARRAYS.has(`${nested.parent}.${nested.sub.substring(0, subDot)}`)) {
-        // Two-level unroll: fields.parent[].mid[].leaf
-        const mid = subPath(nested.sub.substring(0, subDot));
-        const leaf = subPath(nested.sub.substring(subDot + 1));
-        const inner = `arrayFlatten(arrayMap(a -> if(dynamicType(a.${leaf}) LIKE 'Array%', CAST(a.${leaf} AS Array(${subType})), [CAST(a.${leaf} AS ${subType})]), arrayFilter(a -> isNotNull(a.${leaf}), CAST(c.${mid} AS Array(JSON)))))`;
-        return `arrayFlatten(arrayMap(c -> ${inner}, arrayFilter(c -> isNotNull(c.${mid}), CAST(${jsonPath(nested.parent)} AS Array(JSON)))))`;
-      }
-      const sub = subPath(nested.sub);
-      const arr = `CAST(${jsonPath(nested.parent)} AS Array(JSON))`;
+      const vals = `arrayFilter(x -> isNotNull(x), ${this.nestedValues(nested)})`;
       const info = dbFieldsMap()[field];
       if (info?.type === 'date' || DATE_FIELDS.has(field)) {
         // ES returns date sub-fields as ISO strings; emit ISO strings so
         // viewer/db.js fixSessionFields' Date.parse() works.
-        return `arrayMap(c -> formatDateTime(fromUnixTimestamp64Milli(CAST(c.${sub} AS Int64), 'UTC'), '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC'), arrayFilter(c -> isNotNull(c.${sub}), ${arr}))`;
+        return `arrayMap(x -> formatDateTime(fromUnixTimestamp64Milli(CAST(x AS Int64), 'UTC'), '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC'), ${vals})`;
       }
       // Sub-values vary in shape per field ({"dns":[{"ASN":["AS4713 ..."],
-      // "opcode":"QUERY"}]}), so adapt per element. dynamicType here is cheap:
-      // it runs on values already materialized by the Array(JSON) cast, not on
-      // a per-part Dynamic column.
-      return `arrayFlatten(arrayMap(c -> if(dynamicType(c.${sub}) LIKE 'Array%', CAST(c.${sub} AS Array(${subType})), [CAST(c.${sub} AS ${subType})]), arrayFilter(c -> isNotNull(c.${sub}), ${arr})))`;
+      // "opcode":"QUERY"}]}), so adapt per element
+      return `arrayFlatten(arrayMap(x -> if(dynamicType(x) LIKE 'Array%', CAST(x AS Array(${subType})), [CAST(x AS ${subType})]), ${vals}))`;
     }
     // Typed JSON path: a real typed subcolumn, read it directly — no
     // dynamicType() branching, no `.:` casts.
@@ -535,6 +582,17 @@ class DbCHImpl {
     return `${jsonPath(field)}.:\`${t}\``;
   }
 
+  // A sub-field's values across an Array(JSON) parent, one per element (null where it's missing). The
+  // parent[].sub subcolumn reads only that sub-field, a CAST to Array(JSON) reads every object whole.
+  nestedValues (nested) {
+    const arr = jsonPath(nested.parent);
+    const subDot = nested.sub.indexOf('.');
+    if (subDot > 0 && NESTED_OBJECT_SUB_ARRAYS.has(`${nested.parent}.${nested.sub.substring(0, subDot)}`)) {
+      return `arrayFlatten(${arr}[].${subPath(nested.sub.substring(0, subDot))}[].${subPath(nested.sub.substring(subDot + 1))})`;
+    }
+    return `${arr}[].${subPath(nested.sub)}`;
+  }
+
   // Expression to use in SELECT projection. Returns native JSON-friendly value.
   selectExpr (field) {
     if (field === 'id') { return `\`_id\` AS \`id\``; }
@@ -547,7 +605,7 @@ class DbCHImpl {
       return `formatDateTime(${mat.col}, '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC') AS ${quoteIdent(field)}`;
     }
     if (mat) { return `${mat.col} AS ${quoteIdent(field)}`; }
-    if (nestedArrayParent(field)) {
+    if (this.nestedArrayParent(field)) {
       return `${this.columnForField(field)} AS ${quoteIdent(field)}`;
     }
     const info = dbFieldsMap()[field];
@@ -583,7 +641,8 @@ class DbCHImpl {
 
   // ES analyzes both sides of a *Tokens query (wordSplit analyzer: split on
   // \W+, lowercase); capture stores these fields pre-tokenized, so tokenize
-  // the query value the same way and require every token to be present.
+  // the query value the same way and require every token to be present, then
+  // in order within one value of the source field like match_phrase.
   // Returns null for non-tokens fields.
   tokensPredicate (field, op, value) {
     const info = dbFieldsMap()[field];
@@ -595,7 +654,12 @@ class DbCHImpl {
       const toks = tokensOf(v);
       if (toks.length === 0) { return '0'; }
       if (toks.length === 1) { return `has(${col}, ${sqlLiteral(toks[0], field)})`; }
-      return `hasAll(${col}, [${toks.map(t => sqlLiteral(t, field)).join(', ')}])`;
+      const all = `hasAll(${col}, [${toks.map(t => sqlLiteral(t, field)).join(', ')}])`;
+      const source = field.endsWith('Tokens') ? field.slice(0, -6) : undefined;
+      if (!dbFieldsMap()[source]) { return all; }
+      const re = sqlLiteral(phraseRegex(toks));
+      const src = this.columnForField(source);
+      return `(${all} AND ${this.isJsonArrayField(source) ? `arrayExists(x -> match(toString(x), ${re}), ${src})` : `match(toString(${src}), ${re})`})`;
     };
     const parts = (op === 'IN' ? value : [value]).map(one);
     return parts.length === 1 ? parts[0] : `(${parts.join(' OR ')})`;
@@ -613,15 +677,13 @@ class DbCHImpl {
       }
       return [op, value];
     });
-    const nested = nestedArrayParent(field);
+    const nested = this.nestedArrayParent(field);
     const info = dbFieldsMap()[field];
     if (nested && (info?.type === 'date' || DATE_FIELDS.has(field))) {
       const msConds = conds.map(([op, v]) => [op, typeof v === 'number' ? v : Date.parse(v)]);
       if (!msConds.some(([, ms]) => Number.isNaN(ms))) {
-        const sub = subPath(nested.sub);
-        const arr = `CAST(${jsonPath(nested.parent)} AS Array(JSON))`;
-        const body = msConds.map(([op, ms]) => `CAST(c.${sub} AS Int64) ${op} ${Math.trunc(ms)}`).join(' AND ');
-        return `arrayExists(c -> ${body}, arrayFilter(c -> isNotNull(c.${sub}), ${arr}))`;
+        const body = msConds.map(([op, ms]) => `CAST(x AS Int64) ${op} ${Math.trunc(ms)}`).join(' AND ');
+        return `arrayExists(x -> ${body}, arrayFilter(x -> isNotNull(x), ${this.nestedValues(nested)}))`;
       }
     }
     if (!nested && this.isJsonArrayField(field) && !this.isIpField(field)) {
@@ -638,10 +700,13 @@ class DbCHImpl {
 
   // ClickHouse equivalent of an ES terms-lookup query: shortcut values live in
   // the synced lookups table, matched via IN (subquery). FINAL collapses
-  // ReplacingMergeTree updates so edits are visible immediately.
+  // ReplacingMergeTree updates so edits are visible immediately. A missing
+  // row throws, so a negated shortcut can't match everything.
   termsLookupPredicate (field, lookup) {
     const path = ['ip', 'string', 'number'].includes(lookup.path) ? lookup.path : 'string';
-    const sub = (expr) => `(SELECT ${expr}(arrayJoin(${quoteIdent(path)})) FROM ${this.lookupsTableName()} FINAL WHERE id = ${sqlLiteral(String(lookup.id))})`;
+    const id = sqlLiteral(String(lookup.id));
+    const found = `(SELECT throwIf(count() = 0, 'CH backend: shortcut not found in lookups table') FROM ${this.lookupsTableName()} FINAL WHERE id = ${id})`;
+    const sub = (expr) => `(SELECT ${expr}(arrayJoin(${quoteIdent(path)})) FROM ${this.lookupsTableName()} FINAL WHERE id = ${id} AND ${found} = 0)`;
     const col = this.columnForField(field);
     const isArr = this.isJsonArrayField(field);
     if (path === 'ip') {
@@ -683,18 +748,16 @@ class DbCHImpl {
   // as ms integers, but columnForField projects them as ISO strings for
   // display — compare the raw Int64 instead. Returns null when not applicable.
   nestedDatePredicate (field, op, value) {
-    const nested = nestedArrayParent(field);
+    const nested = this.nestedArrayParent(field);
     if (!nested) { return null; }
     const info = dbFieldsMap()[field];
     if (info?.type !== 'date' && !DATE_FIELDS.has(field)) { return null; }
     const values = (op === 'IN' ? value : [value]).map(v => typeof v === 'number' ? v : Date.parse(v));
     if (values.some(ms => Number.isNaN(ms))) { return null; }
-    const sub = subPath(nested.sub);
-    const arr = `CAST(${jsonPath(nested.parent)} AS Array(JSON))`;
     const body = op === 'IN'
-      ? `has([${values.map(ms => Math.trunc(ms)).join(', ')}], CAST(c.${sub} AS Int64))`
-      : `CAST(c.${sub} AS Int64) ${op} ${Math.trunc(values[0])}`;
-    return `arrayExists(c -> ${body}, arrayFilter(c -> isNotNull(c.${sub}), ${arr}))`;
+      ? `has([${values.map(ms => Math.trunc(ms)).join(', ')}], CAST(x AS Int64))`
+      : `CAST(x AS Int64) ${op} ${Math.trunc(values[0])}`;
+    return `arrayExists(x -> ${body}, arrayFilter(x -> isNotNull(x), ${this.nestedValues(nested)}))`;
   }
 
   basicPredicate (field, op, value) {
@@ -758,47 +821,36 @@ class DbCHImpl {
   }
 
   translateClause (clause) {
-    if (!clause || Object.keys(clause).length === 0 || clause.match_all) { return '1'; }
-    if (clause.bool) { return this.translateBool(clause.bool); }
-    if (clause.term) {
-      const field = Object.keys(clause.term)[0];
-      const value = clause.term[field]?.value ?? clause.term[field];
-      return this.predicateForFieldValue(field, '=', value);
-    }
-    if (clause.terms) {
-      const field = Object.keys(clause.terms)[0];
-      const value = clause.terms[field];
-      // ES terms-lookup ({index, id, path}) = shortcut reference; resolved
-      // against the synced lookups table
-      if (value && !Array.isArray(value) && typeof value === 'object' && value.id !== undefined && value.path) {
-        return this.termsLookupPredicate(field, value);
-      }
-      return this.predicateForFieldValue(field, 'IN', value);
-    }
-    if (clause.range) {
-      const field = Object.keys(clause.range)[0];
-      const range = clause.range[field];
-      const conds = [];
-      if (range.gt !== undefined) { conds.push(['>', range.gt]); }
-      if (range.gte !== undefined) { conds.push(['>=', range.gte]); }
-      if (range.lt !== undefined) { conds.push(['<', range.lt]); }
-      if (range.lte !== undefined) { conds.push(['<=', range.lte]); }
-      if (conds.length === 0) { return '1'; }
+    return this.compileNode(EsQuery.parse(clause, { unsupported: chError }));
+  }
+
+  // One node of the EsQuery tree as a WHERE expression
+  compileNode (node) {
+    if (node.all) { return '1'; }
+    if (node.none) { return '0'; }
+    if (node.and) { return node.and.length === 1 ? this.compileNode(node.and[0]) : `(${node.and.map(n => `(${this.compileNode(n)})`).join(' AND ')})`; }
+    if (node.or) { return node.or.length === 1 ? this.compileNode(node.or[0]) : `(${node.or.map(n => `(${this.compileNode(n)})`).join(' OR ')})`; }
+    // ifNull: comparisons on missing Nullable fields yield NULL, and ES's
+    // must_not matches docs that lack the field — NULL must negate to true.
+    if (node.not) { return `NOT ifNull((${this.compileNode(node.not)}), 0)`; }
+
+    const { field, op, value } = node;
+    switch (op) {
+    case 'eq': return this.predicateForFieldValue(field, '=', value);
+    case 'in': return this.predicateForFieldValue(field, 'IN', value);
+    case 'lookup': return this.termsLookupPredicate(field, value);
+    case 'range': {
+      const conds = value.map(([o, v]) => [{ gt: '>', gte: '>=', lt: '<', lte: '<=' }[o], v]);
       if (conds.length === 1) { return this.predicateForFieldValue(field, conds[0][0], conds[0][1]); }
       return this.rangePredicate(field, conds);
     }
-    if (clause.exists) {
-      const field = clause.exists.field;
+    case 'exists': {
       const mat = MATERIALIZED[field];
       if (mat && mat.type === 'String') { return `${mat.col} != ''`; }
       if (mat) { return `isNotNull(${mat.col})`; }
-      const nested = nestedArrayParent(field);
+      const nested = this.nestedArrayParent(field);
       if (nested) {
-        // No isNotNull(parent) guard: SQL evaluates both sides columnar anyway,
-        // and a raw Dynamic read is ~10x the cost; CAST yields [] for nulls.
-        const sub = subPath(nested.sub);
-        const arr = `CAST(${jsonPath(nested.parent)} AS Array(JSON))`;
-        return `arrayExists(c -> isNotNull(c.${sub}), ${arr})`;
+        return `arrayExists(x -> isNotNull(x), ${this.nestedValues(nested)})`;
       }
       if (this.isJsonArrayField(field)) {
         // columnForField already yields [] for missing/null paths; a raw
@@ -814,34 +866,24 @@ class DbCHImpl {
       const t = this.scalarTypeForField(field);
       return `(isNotNull(${jsonPath(field)}.:\`${t}\`) OR notEmpty(ifNull(${jsonPath(field)}.:\`Array(Nullable(${t}))\`, CAST([] AS Array(Nullable(${t}))))))`;
     }
-    if (clause.prefix) {
-      const field = Object.keys(clause.prefix)[0];
-      const value = clause.prefix[field]?.value ?? clause.prefix[field];
+    case 'prefix':
       if (this.isJsonArrayField(field)) {
         return `arrayExists(x -> startsWith(toString(x), ${sqlLiteral(value)}), ${this.columnForField(field)})`;
       }
       return `startsWith(toString(${this.columnForField(field)}), ${sqlLiteral(value)})`;
-    }
-    if (clause.wildcard) {
-      const field = Object.keys(clause.wildcard)[0];
-      const value = clause.wildcard[field]?.value ?? clause.wildcard[field];
+    case 'wildcard': {
       const pattern = sqlLiteral(wildcardToLike(value));
       if (this.isJsonArrayField(field)) {
         return `arrayExists(x -> toString(x) LIKE ${pattern}, ${this.columnForField(field)})`;
       }
       return `toString(${this.columnForField(field)}) LIKE ${pattern}`;
     }
-    if (clause.match) {
-      const field = Object.keys(clause.match)[0];
-      const value = clause.match[field]?.query ?? clause.match[field];
+    case 'match':
       if (this.isJsonArrayField(field)) {
         return `arrayExists(x -> positionCaseInsensitive(toString(x), ${sqlLiteral(value)}) > 0, ${this.columnForField(field)})`;
       }
       return `positionCaseInsensitive(toString(${this.columnForField(field)}), ${sqlLiteral(value)}) > 0`;
-    }
-    if (clause.match_phrase) {
-      const field = Object.keys(clause.match_phrase)[0];
-      const value = clause.match_phrase[field]?.query ?? clause.match_phrase[field];
+    case 'phrase': {
       // *Tokens fields are stored pre-tokenized; phrase ≈ all tokens present
       const tokens = this.tokensPredicate(field, '=', value);
       if (tokens) { return tokens; }
@@ -850,15 +892,7 @@ class DbCHImpl {
       }
       return `position(toString(${this.columnForField(field)}), ${sqlLiteral(value)}) > 0`;
     }
-    if (clause.ids) {
-      return this.predicateForFieldValue('id', 'IN', clause.ids.values || []);
-    }
-    if (clause.query_string) {
-      return this.translateQueryString(clause.query_string.query || clause.query_string);
-    }
-    if (clause.regexp) {
-      const field = Object.keys(clause.regexp)[0];
-      const value = clause.regexp[field]?.value ?? clause.regexp[field];
+    case 'regexp': {
       // ES regexp queries anchor to the whole value; RE2 match() is substring.
       const pattern = sqlLiteral(`^(?:${value})$`);
       if (this.isJsonArrayField(field)) {
@@ -866,67 +900,8 @@ class DbCHImpl {
       }
       return `match(toString(${this.columnForField(field)}), ${pattern})`;
     }
-    if (clause.nested) { throw chError('nested queries'); }
-    if (clause.script) { throw chError('script queries'); }
-    throw chError(`query clause ${Object.keys(clause).join(',')}`);
-  }
-
-  translateBool (bool) {
-    const parts = [];
-    const addAll = (items, joiner) => {
-      if (!items) { return; }
-      if (!Array.isArray(items)) { items = [items]; }
-      if (items.length === 0) { return; }
-      const translated = items.map(item => `(${this.translateClause(item)})`);
-      parts.push(translated.length === 1 ? translated[0] : `(${translated.join(` ${joiner} `)})`);
-    };
-    addAll(bool.must, 'AND');
-    addAll(bool.filter, 'AND');
-    if (bool.must_not) {
-      // ifNull: comparisons on missing Nullable fields yield NULL, and ES's
-      // must_not matches docs that lack the field — NULL must negate to true.
-      const mustNot = Array.isArray(bool.must_not) ? bool.must_not : [bool.must_not];
-      parts.push(...mustNot.map(item => `NOT ifNull((${this.translateClause(item)}), 0)`));
     }
-    if (bool.should) {
-      const should = Array.isArray(bool.should) ? bool.should : [bool.should];
-      const min = Number(bool.minimum_should_match ?? (parts.length ? 0 : 1));
-      if (min > 1) { throw chError('bool minimum_should_match > 1'); }
-      if (min === 1 && should.length) {
-        parts.push(`(${should.map(item => `(${this.translateClause(item)})`).join(' OR ')})`);
-      }
-    }
-    return parts.length ? parts.join(' AND ') : '1';
-  }
-
-  translateQueryString (query) {
-    if (typeof query !== 'string') { throw chError('query_string object syntax'); }
-    if (/[[\]{}~^]|\bTO\b|[<>]=?/.test(query)) { throw chError('query_string advanced syntax'); }
-    const tokens = query.match(/\(|\)|\bAND\b|\bOR\b|\bNOT\b|[^\s()]+/gi) || [];
-    const out = [];
-    for (const token of tokens) {
-      const upper = token.toUpperCase();
-      if (token === '(' || token === ')' || upper === 'AND' || upper === 'OR') {
-        out.push(upper === 'AND' || upper === 'OR' ? upper : token);
-      } else if (upper === 'NOT') {
-        out.push('NOT');
-      } else {
-        const match = token.match(/^([^:]+):(.+)$/);
-        if (!match) { throw chError('query_string free text'); }
-        // ES's default operator joins adjacent terms with OR
-        const prev = out[out.length - 1];
-        if (prev !== undefined && prev !== '(' && prev !== 'AND' && prev !== 'OR' && prev !== 'NOT') { out.push('OR'); }
-        const field = match[1];
-        let value = match[2].replace(/^"|"$/g, '');
-        if (value.includes('*') || value.includes('?')) {
-          out.push(`toString(${this.columnForField(field)}) LIKE ${sqlLiteral(wildcardToLike(value))}`);
-        } else {
-          value = value.replace(/\\([:\\])/g, '$1');
-          out.push(this.predicateForFieldValue(field, '=', value));
-        }
-      }
-    }
-    return out.length ? out.join(' ') : '1';
+    throw chError(`query ${op}`);
   }
 
   projectionFromQuery (query) {
@@ -1002,10 +977,9 @@ class DbCHImpl {
     if (projection.wantAll) {
       select.push(`toJSONString(fields) AS \`__fields_json__\``);
     }
-    // exact_rows_before_limit: the pre-LIMIT match count comes back in the
-    // same response (rows_before_limit_at_least), saving a count() query.
-    // Useless with LIMIT 0, where ClickHouse short-circuits the scan.
-    const settings = size > 0 ? ' SETTINGS exact_rows_before_limit = 1' : '';
+    // A search gets its total from a count() beside it: exact_rows_before_limit reads every match in
+    // order instead of stopping at the LIMIT. The keyset iterator still uses it for its first page.
+    const settings = size > 0 && opts.keyset ? ' SETTINGS exact_rows_before_limit = 1' : '';
     const sql = `SELECT ${select.join(', ')}, formatDateTime(${quoteIdent(this.prefix + this.table)}.lastPacket, '%y%m%d') AS \`_dayIndex\` FROM ${this.tableName()} WHERE (${where})${keyset} ORDER BY ${order} LIMIT ${size}${from ? ` OFFSET ${from}` : ''}${settings}`;
     return { sql, projection, where, size };
   }
@@ -1040,7 +1014,7 @@ class DbCHImpl {
     return !!(agg.sum || agg.min || agg.max || agg.avg || agg.cardinality || agg.value_count || agg.percentiles);
   }
 
-  async translateAggs (aggs, where) {
+  async translateAggs (aggs, where, budget = { buckets: 0 }) {
     if (!aggs) { return undefined; }
     const aggregations = {};
     const entries = Object.entries(aggs);
@@ -1051,7 +1025,7 @@ class DbCHImpl {
     const otherEntries = entries.filter(([, agg]) => !this.isMetricAgg(agg));
 
     const work = otherEntries.map(async ([aggName, agg]) => {
-      aggregations[aggName] = await this.runAgg(agg, where);
+      aggregations[aggName] = await this.runAgg(agg, where, budget);
     });
     if (metricEntries.length) {
       const select = metricEntries.map(([aggName, agg]) => `${this.metricExpression(agg)} AS ${quoteIdent(aggName)}`).join(', ');
@@ -1066,11 +1040,11 @@ class DbCHImpl {
     return aggregations;
   }
 
-  async runAgg (agg, where) {
-    if (agg.terms) { return this.runTermsAgg(agg, where); }
-    if (agg.histogram && this.isNumericHistogram(agg.histogram)) { return this.runNumericHistogramAgg(agg, where); }
-    if (agg.histogram || agg.date_histogram) { return this.runHistogramAgg(agg, where); }
-    if (agg.filter) { return this.runFilterAgg(agg, where); }
+  async runAgg (agg, where, budget) {
+    if (agg.terms) { return this.runTermsAgg(agg, where, budget); }
+    if (agg.histogram && this.isNumericHistogram(agg.histogram)) { return this.runNumericHistogramAgg(agg, where, budget); }
+    if (agg.histogram || agg.date_histogram) { return this.runHistogramAgg(agg, where, budget); }
+    if (agg.filter) { return this.runFilterAgg(agg, where, budget); }
     if (this.isMetricAgg(agg)) {
       const expr = this.metricExpression(agg);
       const result = await this.query(`SELECT ${expr} AS value FROM ${this.tableName()} WHERE ${where}`);
@@ -1081,16 +1055,17 @@ class DbCHImpl {
 
   // One bucket: the rows that also match the filter's clause, with its
   // sub-aggs beside its doc_count like ES
-  async runFilterAgg (agg, where) {
+  async runFilterAgg (agg, where, budget) {
+    addBuckets(budget, 1);
     const filterWhere = `(${where}) AND (${this.translateClause(agg.filter)})`;
     const [count, subs] = await Promise.all([
       this.query(`SELECT count() AS doc_count FROM ${this.tableName()} WHERE ${filterWhere}`),
-      this.translateAggs(agg.aggregations || agg.aggs, filterWhere)
+      this.translateAggs(agg.aggregations || agg.aggs, filterWhere, budget)
     ]);
     return { doc_count: Number(count.data?.[0]?.doc_count ?? 0), ...subs };
   }
 
-  async runTermsAgg (agg, where) {
+  async runTermsAgg (agg, where, budget) {
     const terms = agg.terms;
     let keyExpr;
     let field = terms.field;
@@ -1172,17 +1147,20 @@ class DbCHImpl {
       });
     const returnedSum = buckets.reduce((s, b) => s + b.doc_count, 0);
     const sumOther = Math.max(0, totalDocCount - returnedSum);
+    // reserve one bucket per sub-agg query so an over budget fan-out fails before querying
+    addBuckets(budget, buckets.length * (1 + otherSubs.length));
 
     await Promise.all([
       ...histoSubs.map(([subName, subAgg]) =>
-        this.runTermsHistogramSub(buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where)),
+        this.runTermsHistogramSub(buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where, budget)),
       otherSubs.length === 0
         ? undefined
         : async.eachLimit(buckets, BUCKET_QUERY_CONCURRENCY, async (bucket) => {
           const filter = bucketWhereFn ? bucketWhereFn(bucket.key) : this.predicateForFieldValue(field, '=', bucket.key);
           const bucketWhere = `(${where}) AND (${filter})`;
           for (const [subName, subAgg] of otherSubs) {
-            bucket[subName] = await this.runAgg(subAgg, bucketWhere);
+            budget.buckets--;
+            bucket[subName] = await this.runAgg(subAgg, bucketWhere, budget);
           }
         })
     ]);
@@ -1192,7 +1170,7 @@ class DbCHImpl {
 
   // Histogram sub-agg under a terms agg (e.g. SPIGraph): one grouped query for
   // all buckets instead of one query per bucket.
-  async runTermsHistogramSub (buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where) {
+  async runTermsHistogramSub (buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where, budget) {
     for (const bucket of buckets) { bucket[subName] = { buckets: [] }; }
     if (buckets.length === 0) { return; }
 
@@ -1211,6 +1189,7 @@ class DbCHImpl {
     const metricSelect = Object.entries(subSubs).map(([subSubName, a]) => `${this.metricExpression(a)} AS ${quoteIdent(subSubName)}`);
     const select = [`${keyExpr} AS key`, `${slotExpr} AS slot`, 'count() AS doc_count', ...metricSelect].join(', ');
     const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE (${where}) AND ${keyFilter} GROUP BY key, slot ORDER BY slot ASC`)).data || [];
+    addBuckets(budget, rows.length);
 
     const byKey = new Map(buckets.map(b => [String(b.key), b]));
     for (const row of rows) {
@@ -1230,7 +1209,7 @@ class DbCHImpl {
     return `(toStartOfInterval(${column} - INTERVAL ${offsetSeconds} second, INTERVAL ${intervalSeconds} second) + INTERVAL ${offsetSeconds} second)`;
   }
 
-  async runHistogramAgg (agg, where) {
+  async runHistogramAgg (agg, where, budget) {
     const histo = agg.histogram || agg.date_histogram;
     const intervalMs = typeof histo.interval === 'number' ? histo.interval : this.intervalToMs(histo.fixed_interval || histo.calendar_interval || histo.interval);
     const intervalSeconds = Math.max(1, Math.floor(intervalMs / 1000));
@@ -1251,6 +1230,7 @@ class DbCHImpl {
       const metricSelectSpan = Object.entries(subAggsSpan).map(([subName, subAgg]) => `${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
       const spanSelect = [`${spanKeyExpr} AS key`, 'count() AS doc_count', ...metricSelectSpan].join(', ');
       const spanRows = (await this.query(`SELECT ${spanSelect} FROM ${this.tableName()} WHERE ${where} GROUP BY key ORDER BY key ASC`)).data || [];
+      addBuckets(budget, spanRows.length);
       return {
         buckets: spanRows.map(row => {
           const bucket = { key: Number(row.key), doc_count: Number(row.doc_count) };
@@ -1267,6 +1247,7 @@ class DbCHImpl {
     }
     const select = [`toUnixTimestamp(${keyExpr}) * 1000 AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
     const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key ORDER BY key ASC`)).data || [];
+    addBuckets(budget, rows.length);
     return {
       buckets: rows.map(row => {
         const bucket = { key: Number(row.key), doc_count: Number(row.doc_count) };
@@ -1293,7 +1274,7 @@ class DbCHImpl {
   // size. Only populated buckets are returned (ES min_doc_count: 1, which
   // is what the summary asks for). Metric sub-aggs fold into the GROUP BY,
   // any other sub-agg (the summary's split terms) runs once per bucket.
-  async runNumericHistogramAgg (agg, where) {
+  async runNumericHistogramAgg (agg, where, budget) {
     const histo = agg.histogram;
     const field = histo.field;
     const interval = Number(histo.interval);
@@ -1328,12 +1309,15 @@ class DbCHImpl {
       return bucket;
     });
 
+    // reserve one bucket per sub-agg query so an over budget fan-out fails before querying
+    addBuckets(budget, buckets.length * (1 + otherSubs.length));
     if (otherSubs.length) {
       await async.eachLimit(buckets, BUCKET_QUERY_CONCURRENCY, async (bucket) => {
         const inRange = this.rangePredicate(field, [['>=', bucket.key], ['<', bucket.key + interval]]);
         const bucketWhere = `(${where}) AND (${inRange})`;
         for (const [subName, subAgg] of otherSubs) {
-          bucket[subName] = await this.runAgg(subAgg, bucketWhere);
+          budget.buckets--;
+          bucket[subName] = await this.runAgg(subAgg, bucketWhere, budget);
         }
       });
     }
@@ -1377,15 +1361,14 @@ class DbCHImpl {
   }
 
   async searchSessions (index, query, options = {}) {
+    await this.schemaReady;
     const translated = this.translateQuery(query, { ...options, timeClause: this.timeClauseFromIndex(index) });
     const [rowsResult, countResult, aggregations] = await Promise.all([
-      this.query(translated.sql),
-      translated.size === 0 ? this.query(`SELECT count() AS count FROM ${this.tableName()} WHERE ${translated.where}`) : null,
+      translated.size === 0 ? { data: [] } : this.query(translated.sql),
+      this.query(`SELECT count() AS count FROM ${this.tableName()} WHERE ${translated.where}`),
       this.translateAggs(query.aggregations || query.aggs, translated.where)
     ]);
-    const total = countResult
-      ? Number(countResult.data?.[0]?.count ?? 0)
-      : Number(rowsResult.rows_before_limit_at_least ?? rowsResult.data?.length ?? 0);
+    const total = Number(countResult.data?.[0]?.count ?? 0);
     const hits = this.rowsToHits(rowsResult.data || [], translated.projection);
     this.attachSort(hits, query.sort);
     return { hits: { total, hits }, aggregations };
@@ -1423,6 +1406,7 @@ class DbCHImpl {
   }
 
   async * searchSessionsIterator (index, query, options = {}) {
+    await this.schemaReady;
     let remaining = Number(query.size ?? 10000);
     let searchAfter;
     const pageSize = Math.min(remaining || 2000, 2000);
@@ -1505,10 +1489,12 @@ class DbCHImpl {
     throw chError('painless update script');
   }
 
-  async applyAssignments (id, assignments, index) {
+  // nodes, when set, limits the update to sessions from those nodes
+  async applyAssignments (id, assignments, index, nodes) {
     // Constrain by the index's time range so the update only visits a few
     // partitions — a bare `_id = x` predicate would touch every part.
-    const where = `\`_id\` = ${sqlLiteral(id)}${this.timeClauseFromIndex(index, { qualify: false })}`;
+    let where = `\`_id\` = ${sqlLiteral(id)}${this.timeClauseFromIndex(index, { qualify: false })}`;
+    if (nodes) { where += ` AND node IN (${nodes.length ? nodes.map(n => sqlLiteral(n)).join(', ') : "''"})`; }
 
     // Prefer a lightweight UPDATE (patch parts, CH 25.7+): no part rewrite,
     // synchronous, immediately visible to the re-search the viewer does after
@@ -1520,8 +1506,14 @@ class DbCHImpl {
         this.lightweightUpdates = true;
         return { result: 'updated' };
       } catch (err) {
-        this.lightweightUpdates = false;
-        console.log('CH backend: lightweight UPDATE unavailable, using ALTER TABLE UPDATE mutations:', err.message.split('\n')[0]);
+        // Only a no-op probe failing means the server or table can't, not this one update (too big, say)
+        try {
+          await this.query(`UPDATE ${this.tableName()} SET fields = fields WHERE 0 SETTINGS enable_lightweight_update = 1`, { text: true });
+        } catch (probeErr) {
+          this.lightweightUpdates = false;
+          console.log('CH backend: lightweight UPDATE unavailable, using ALTER TABLE UPDATE mutations:', ArkimeUtil.sanitizeLine(probeErr.message.split('\n')[0]));
+        }
+        if (this.lightweightUpdates !== false) { throw err; }
       }
     }
 
@@ -1543,12 +1535,24 @@ class DbCHImpl {
     return this.applyAssignments(id, [this.tagsRemoveAssignment(tags)], index);
   }
 
-  async addHuntToSession (index, id, huntId, huntName) {
-    return this.applyAssignments(id, [this.huntAddAssignment(huntId, huntName)], index);
+  async addHuntToSession (index, id, huntId, huntName, nodes) {
+    return this.applyAssignments(id, [this.huntAddAssignment(huntId, huntName)], index, nodes);
   }
 
   async removeHuntFromSession (index, id, huntId, huntName) {
     return this.applyAssignments(id, [this.huntRemoveAssignment(huntId, huntName)], index);
+  }
+
+  // Session docs with index, _id and the *Tokens fields, inserted the way capture's ClickHouse writer does
+  async writeSessions (docs) {
+    if (!docs.length) { return; }
+    const insert = `INSERT INTO ${this.tableName()} (fields, \`_id\`, lastPacket) SELECT data, CAST(data.\`_id\` AS String), ` +
+      'fromUnixTimestamp64Milli(toInt64OrZero(toString(data.lastPacket))) FROM input(\'data JSON\') FORMAT JSONAsObject';
+    await this.query(`${insert}\n${docs.map(doc => JSON.stringify(doc)).join('\n')}\n`, { raw: true, text: true });
+  }
+
+  async checkWriteSessions () {
+    await this.query(`SELECT 1 FROM ${this.tableName()} LIMIT 0`);
   }
 
   async deleteDocument (index, id, options) {
@@ -1570,7 +1574,7 @@ class DbCHImpl {
     try {
       const chQuery = options?.scroll ? { ...query, size: 1000000 } : query;
       result = await this.searchSessions(index, chQuery, options);
-      if (options?.scroll) { result._scroll_id = 'ch:done'; }
+      if (options?.scroll) { result._scroll_id = EsQuery.SCROLL_DONE; }
     } catch (err) {
       if (cb) { return cb(err); }
       throw err;

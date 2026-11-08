@@ -438,6 +438,12 @@ my ($cmd) = @_;
     my $node = "node";
     $node = "c8 node" if ($main::c8);
 
+    # With ClickHouse or dbPlugins sessions esProxy also tees the bulked sessions to their teech_ prefix
+    if ($ArkimeTest::sessionsDbNonES) {
+        $ENV{ARKIME_tee__sessionsDbUrl} = $ArkimeTest::sessionsDbUrl;
+        $ENV{ARKIME_tee__prefix} = "teech";
+    }
+
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
         step("Initializing ES");
         if ($main::debug) {
@@ -466,6 +472,12 @@ my ($cmd) = @_;
                 $chRc = system("../db/ch.pl --no-prompt --prefix tests_ --partition none $chUrl init 2>&1 1>/dev/null");
             }
             die "ClickHouse init failed (is ClickHouse running at $chUrl?), aborting so tests don't run against stale sessions\n" if ($chRc != 0);
+            # esProxy's [tee] sessionsDbUrl writes its copy of the bulked sessions here
+            system("../db/ch.pl --no-prompt --prefix teech_ --partition none $chUrl init 2>&1 1>/dev/null") == 0 or die "ClickHouse tee init failed\n";
+        } elsif ($ArkimeTest::sessionsDbNonES) {
+            step("Wiping the $sessionsDbUrl sessions");
+            ArkimeTest::sessionsHelper("wipe", "tests_") or die "Couldn't wipe the sessions at $sessionsDbUrl\n";
+            ArkimeTest::sessionsHelper("wipe", "teech_") or die "Couldn't wipe the tee sessions at $sessionsDbUrl\n";
         }
 
         step("Loading tagger");
@@ -511,11 +523,11 @@ my ($cmd) = @_;
     my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
     my $mesCh = $ArkimeTest::sessionsDbUrl ? ",sessionsDbUrl:$ArkimeTest::sessionsDbUrl" : "";
     my $mesCluster = $ArkimeTest::dbUrl ? ",dbUrl:$ArkimeTest::dbUrl" : "";
-    # Only the sessions follow sessionsDbUrl, a Postgres dbUrl needs one for them
-    my $mesPGSessions = $ArkimeTest::clusterDbPG ? ",sessionsDbUrl:$ELASTICSEARCH" : "";
-    $mesCh ||= $mesPGSessions;
+    # Only the sessions follow sessionsDbUrl, a dbUrl that is not ES needs one for them
+    my $mesNonESSessions = $ArkimeTest::clusterDbNonES ? ",sessionsDbUrl:$ELASTICSEARCH" : "";
+    $mesCh ||= $mesNonESSessions;
     my ($mesSplit, $mesSplit2) = $ENV{ARKIME_TEST_SPLIT} ? (",dbPrefix:testscl,sessionsDbPrefix:tests", ",dbPrefix:tests2cl,sessionsDbPrefix:tests2") : ("", "");
-    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh$mesCluster$mesSplit;$ELASTICSEARCH,prefix:tests2_,name:test2$mesPGSessions$mesCluster$mesSplit2'";
+    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh$mesCluster$mesSplit;$ELASTICSEARCH,prefix:tests2_,name:test2$mesNonESSessions$mesCluster$mesSplit2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {

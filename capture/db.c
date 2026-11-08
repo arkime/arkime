@@ -2700,6 +2700,48 @@ LOCAL void *arkime_db_stats_thread(void *UNUSED(threadp))
     return NULL;
 }
 /******************************************************************************/
+// The stats doc, STATS_FIELDS in viewer/db.cluster.js. X(field, type, dstats indexed)
+#define ARKIME_DB_STATS_FIELDS(X) \
+    X("ver", "keyword", 0) X("nodeName", "keyword", ARKIME_DB_INDEXED) X("hostname", "keyword", 0) \
+    X("interval", "short", ARKIME_DB_INDEXED) X("currentTime", "date", ARKIME_DB_INDEXED) \
+    X("freeSpaceP", "float", 0) X("memoryP", "float", 0) X("usedSpaceM", "long", 0) X("freeSpaceM", "long", 0) \
+    X("monitoring", "long", 0) X("memory", "long", 0) X("cpu", "long", 0) X("diskQueue", "long", 0) \
+    X("esQueue", "long", 0) X("packetQueue", "long", 0) X("fragsQueue", "long", 0) X("frags", "long", 0) \
+    X("needSave", "long", 0) X("closeQueue", "long", 0) X("tcpSessions", "long", 0) X("udpSessions", "long", 0) \
+    X("icmpSessions", "long", 0) X("sctpSessions", "long", 0) X("espSessions", "long", 0) \
+    X("otherSessions", "long", 0) X("deltaPackets", "long", 0) X("deltaBytes", "long", 0) \
+    X("deltaWrittenBytes", "long", 0) X("deltaUnwrittenBytes", "long", 0) X("deltaSessions", "long", 0) \
+    X("deltaSessionBytes", "long", 0) X("deltaDropped", "long", 0) X("deltaFragsDropped", "long", 0) \
+    X("deltaOverloadDropped", "long", 0) X("deltaESDropped", "long", 0) X("deltaDupDropped", "long", 0) \
+    X("esHealthMS", "long", 0) X("deltaMS", "long", 0) X("startTime", "long", 0)
+
+#define ARKIME_DB_STATS_FIELD(f, t, i) {f, t, 0},
+#define ARKIME_DB_DSTATS_FIELD(f, t, i) {f, t, i},
+LOCAL const ArkimeDbField_t statsFields[] = {ARKIME_DB_STATS_FIELDS(ARKIME_DB_STATS_FIELD) {NULL, NULL, 0}};
+LOCAL const ArkimeDbField_t dstatsFields[] = {ARKIME_DB_STATS_FIELDS(ARKIME_DB_DSTATS_FIELD) {NULL, NULL, 0}};
+LOCAL const ArkimeDbField_t filesFields[] = {
+    {"node", "keyword", ARKIME_DB_INDEXED},
+    {"name", "keyword", ARKIME_DB_INDEXED_WILDCARD},
+    {"first", "long", ARKIME_DB_INDEXED_SORT},
+    {"num", "long", ARKIME_DB_INDEXED_SORT},
+    {"locked", "long", ARKIME_DB_INDEXED},
+    {NULL, NULL, 0}
+};
+LOCAL const ArkimeDbField_t noFields[] = {{NULL, NULL, 0}};
+LOCAL const ArkimeDbTable_t clusterTables[] = {
+    {"stats", TRUE, statsFields},
+    {"dstats", TRUE, dstatsFields},
+    {"files", FALSE, filesFields},
+    {"fields", FALSE, noFields},
+    {"sequence", FALSE, noFields},
+    {NULL, FALSE, NULL}
+};
+/******************************************************************************/
+const ArkimeDbTable_t *arkime_db_cluster_tables()
+{
+    return clusterTables;
+}
+/******************************************************************************/
 // Plugins can register schemes before arkime_db_init
 void arkime_db_cluster_register(char *scheme, ArkimeClusterDbInit init)
 {

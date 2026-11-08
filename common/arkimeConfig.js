@@ -362,6 +362,15 @@ class ArkimeConfig {
   }
 
   /**
+   * True when any db is OpenSearch/Elasticsearch, or elasticsearch is set for the ES only parts
+   */
+  static hasEs () {
+    const users = ArkimeConfig.usersDbUrls();
+    return ArkimeConfig.isEsUrl(ArkimeConfig.sessionsDbUrls()[0]) || ArkimeConfig.isEsUrl(ArkimeConfig.dbUrls()[0]) ||
+      (users !== undefined && ArkimeConfig.isEsUrl(users[0])) || ArkimeConfig.get('elasticsearch') !== undefined;
+  }
+
+  /**
    * No scheme, http(s) or the elasticsearch:// and opensearch:// style ones
    */
   static isEsUrl (url) {

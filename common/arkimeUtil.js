@@ -137,6 +137,12 @@ class ArkimeUtil {
     return str.replace(/\u001b/g, '*ESC*');
   }
 
+  // sanitizeStr kept to one log line, for text an attacker may have shaped
+  static sanitizeLine (str) {
+    str = ArkimeUtil.sanitizeStr(str);
+    return typeof str === 'string' ? str.replace(/\r/g, '\\r').replace(/\n/g, '\\n') : str;
+  }
+
   // ----------------------------------------------------------------------------
   /**
    * Async yield helper

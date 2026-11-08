@@ -24,7 +24,7 @@ my $json;
     is ($json->{cluster}, "test", "Correct cluster status");
 
     SKIP: {
-        skip "a Postgres cluster db has no ES index stats", 4 if $ArkimeTest::clusterDbPG;
+        skip "a non-ES cluster db has no ES index stats", 4 if $ArkimeTest::clusterDbNonES;
 
     is (exists $json->{indices}->{MULTIPREFIX_stats_v30}, 1, "Correct stats/_stats index");
 

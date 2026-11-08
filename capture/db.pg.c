@@ -48,66 +48,51 @@ LOCAL uint64_t      pgDropped;
 LOCAL uint64_t      pgLost;
 LOCAL volatile int  pgExiting;
 
-// Same layout as the viewer's ArkimeDb Postgres collections, prefixed like the ES indices
-LOCAL const char   *pgTableNames[] = {"stats", "dstats", "files", "fields", "sequence", NULL};
-// Same generated columns and indexes as COLLECTION_OPTIONS in viewer/db.cluster.js, desc ones are also sorted descending
-LOCAL const struct {
-    const char *table;
-    const char *field;
-    gboolean    desc;
-} pgIndexed[] = {
-    {"files", "node", FALSE},
-    {"files", "name", FALSE},
-    {"files", "first", TRUE},
-    {"files", "num", TRUE},
-    {"files", "locked", FALSE},
-    {NULL, NULL, FALSE}
-};
-LOCAL char         *pgTables[6];
-
-// stats and dstats keep each field of the stats doc in its own column, the same list and types as
-// STATS_FIELDS in viewer/db.cluster.js. A new field goes in both, its column is added at startup.
-LOCAL const char   *pgTypedNames[] = {"stats", "dstats", NULL};
-LOCAL const struct {
-    const char *field;
-    const char *type;
-} pgStatsColumns[] = {
-    {"ver", "text"}, {"nodeName", "text"}, {"hostname", "text"}, {"interval", "smallint"}, {"currentTime", "bigint"},
-    {"freeSpaceP", "real"}, {"memoryP", "real"}, {"usedSpaceM", "bigint"}, {"freeSpaceM", "bigint"}, {"monitoring", "bigint"},
-    {"memory", "bigint"}, {"cpu", "bigint"}, {"diskQueue", "bigint"}, {"esQueue", "bigint"}, {"packetQueue", "bigint"},
-    {"fragsQueue", "bigint"}, {"frags", "bigint"}, {"needSave", "bigint"}, {"closeQueue", "bigint"}, {"tcpSessions", "bigint"},
-    {"udpSessions", "bigint"}, {"icmpSessions", "bigint"}, {"sctpSessions", "bigint"}, {"espSessions", "bigint"},
-    {"otherSessions", "bigint"}, {"deltaPackets", "bigint"}, {"deltaBytes", "bigint"}, {"deltaWrittenBytes", "bigint"},
-    {"deltaUnwrittenBytes", "bigint"}, {"deltaSessions", "bigint"}, {"deltaSessionBytes", "bigint"}, {"deltaDropped", "bigint"},
-    {"deltaFragsDropped", "bigint"}, {"deltaOverloadDropped", "bigint"}, {"deltaESDropped", "bigint"},
-    {"deltaDupDropped", "bigint"}, {"esHealthMS", "bigint"}, {"deltaMS", "bigint"}, {"startTime", "bigint"},
-    {NULL, NULL}
-};
-// dstats is searched by node, interval and time
-LOCAL const char   *pgDstatsIndexed[] = {"nodeName", "interval", "currentTime", NULL};
+// arkime_db_cluster_tables, each prefixed like the ES indices
+LOCAL const ArkimeDbTable_t *pgLayout;
+LOCAL char        **pgTables;
 // Per typed table: the upsert and the versioned upsert
-LOCAL char         *pgTypedSql[2][2];
+LOCAL char       *(*pgTypedSql)[2];
 // Live captures version the stats doc so an out of order one is skipped
 LOCAL uint64_t      pgStatsVersion;
 
 /******************************************************************************/
-LOCAL const char *arkime_db_pg_table(const char *name)
+LOCAL int arkime_db_pg_table_num(const char *name)
 {
-    for (int i = 0; pgTableNames[i]; i++) {
-        if (strcmp(name, pgTableNames[i]) == 0)
-            return pgTables[i];
+    for (int i = 0; pgLayout[i].name; i++) {
+        if (strcmp(name, pgLayout[i].name) == 0)
+            return i;
     }
     LOGEXIT("ERROR - Unknown Postgres table %s", name);
 }
-
+/******************************************************************************/
+LOCAL const char *arkime_db_pg_table(const char *name)
+{
+    return pgTables[arkime_db_pg_table_num(name)];
+}
 /******************************************************************************/
 LOCAL int arkime_db_pg_typed(const char *name)
 {
-    for (int i = 0; pgTypedNames[i]; i++) {
-        if (strcmp(name, pgTypedNames[i]) == 0)
-            return i;
-    }
-    return -1;
+    const int n = arkime_db_pg_table_num(name);
+    return pgLayout[n].typed ? n : -1;
+}
+/******************************************************************************/
+// The column a typed table gives each ES type, PG_TYPES in common/arkimeDb.pg.js
+LOCAL const char *arkime_db_pg_type(const char *type)
+{
+    if (strcmp(type, "short") == 0 || strcmp(type, "byte") == 0)
+        return "smallint";
+    if (strcmp(type, "integer") == 0)
+        return "integer";
+    if (strcmp(type, "long") == 0 || strcmp(type, "date") == 0)
+        return "bigint";
+    if (strcmp(type, "float") == 0)
+        return "real";
+    if (strcmp(type, "double") == 0)
+        return "double precision";
+    if (strcmp(type, "boolean") == 0)
+        return "boolean";
+    return "text";
 }
 /******************************************************************************/
 LOCAL void arkime_db_pg_log_error(const char *what, const PGresult *res)
@@ -441,7 +426,8 @@ LOCAL void arkime_db_pg_create(const char *sql)
 // ALTER takes a lock even when the column exists, so only the missing ones are added.
 LOCAL void arkime_db_pg_typed_init(int n)
 {
-    const char *t = arkime_db_pg_table(pgTypedNames[n]);
+    const char *t = pgTables[n];
+    const ArkimeDbField_t *fields = pgLayout[n].fields;
     char sql[300];
     snprintf(sql, sizeof(sql), "CREATE TABLE IF NOT EXISTS %s (id TEXT PRIMARY KEY, version INTEGER NOT NULL DEFAULT 1)", t);
     arkime_db_pg_create(sql);
@@ -453,13 +439,13 @@ LOCAL void arkime_db_pg_typed_init(int n)
         LOGEXIT("ERROR - Couldn't read the %s columns: %s", t, PQresultErrorMessage(res));
 
     GString *alter = g_string_new(NULL);
-    for (int c = 0; pgStatsColumns[c].field; c++) {
+    for (int c = 0; fields[c].field; c++) {
         gboolean have = FALSE;
         for (int r = 0; r < PQntuples(res) && !have; r++) {
-            have = strcmp(PQgetvalue(res, r, 0), pgStatsColumns[c].field) == 0;
+            have = strcmp(PQgetvalue(res, r, 0), fields[c].field) == 0;
         }
         if (!have)
-            g_string_append_printf(alter, "%s ADD COLUMN IF NOT EXISTS \"%s\" %s", alter->len ? "," : "", pgStatsColumns[c].field, pgStatsColumns[c].type);
+            g_string_append_printf(alter, "%s ADD COLUMN IF NOT EXISTS \"%s\" %s", alter->len ? "," : "", fields[c].field, arkime_db_pg_type(fields[c].type));
     }
     PQclear(res);
 
@@ -473,9 +459,13 @@ LOCAL void arkime_db_pg_typed_init(int n)
     }
     g_string_free(alter, TRUE);
 
-    if (strcmp(pgTypedNames[n], "dstats") == 0) {
-        for (int i = 0; pgDstatsIndexed[i]; i++) {
-            snprintf(sql, sizeof(sql), "CREATE INDEX IF NOT EXISTS %s_f_%s ON %s (\"%s\")", t, pgDstatsIndexed[i], t, pgDstatsIndexed[i]);
+    for (int c = 0; fields[c].field; c++) {
+        if (!fields[c].indexed)
+            continue;
+        snprintf(sql, sizeof(sql), "CREATE INDEX IF NOT EXISTS %s_f_%s ON %s (\"%s\")", t, fields[c].field, t, fields[c].field);
+        arkime_db_pg_create(sql);
+        if (fields[c].indexed == ARKIME_DB_INDEXED_SORT) {
+            snprintf(sql, sizeof(sql), "CREATE INDEX IF NOT EXISTS %s_f_%s_desc ON %s (\"%s\" DESC NULLS LAST)", t, fields[c].field, t, fields[c].field);
             arkime_db_pg_create(sql);
         }
     }
@@ -484,8 +474,8 @@ LOCAL void arkime_db_pg_typed_init(int n)
     GString *cols = g_string_new(NULL);
     GString *vals = g_string_new(NULL);
     GString *sets = g_string_new(NULL);
-    for (int c = 0; pgStatsColumns[c].field; c++) {
-        const char *f = pgStatsColumns[c].field;
+    for (int c = 0; fields[c].field; c++) {
+        const char *f = fields[c].field;
         g_string_append_printf(cols, ", \"%s\"", f);
         g_string_append_printf(vals, ", p.\"%s\"", f);
         g_string_append_printf(sets, "%s\"%s\" = excluded.\"%s\"", c ? ", " : "", f, f);
@@ -667,8 +657,14 @@ LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *url)
         if (!g_ascii_isalnum(*c) && *c != '_')
             CONFIGEXIT("dbPrefix '%s' can only have letters, digits and _ with a Postgres dbUrl", config.clusterPrefix);
     }
-    for (int i = 0; pgTableNames[i]; i++) {
-        pgTables[i] = g_strdup_printf("%s%s", config.clusterPrefix, pgTableNames[i]);
+    pgLayout = arkime_db_cluster_tables();
+    int ntables = 0;
+    while (pgLayout[ntables].name)
+        ntables++;
+    pgTables = g_new0(char *, ntables + 1);
+    pgTypedSql = g_malloc0(sizeof(*pgTypedSql) * ntables);
+    for (int i = 0; i < ntables; i++) {
+        pgTables[i] = g_strdup_printf("%s%s", config.clusterPrefix, pgLayout[i].name);
     }
 
     pgConn = arkime_db_pg_connect(url);
@@ -679,26 +675,28 @@ LOCAL const ArkimeClusterDb_t *arkime_db_pg_cluster_init(const char *url)
     PQsetNoticeProcessor(pgConn, arkime_db_pg_notice, NULL);
 
     char sql[300];
-    for (int i = 0; pgTables[i]; i++) {
-        if (arkime_db_pg_typed(pgTableNames[i]) >= 0)
+    for (int i = 0; i < ntables; i++) {
+        if (pgLayout[i].typed) {
+            arkime_db_pg_typed_init(i);
             continue;
-        snprintf(sql, sizeof(sql), "CREATE TABLE IF NOT EXISTS %s (id TEXT PRIMARY KEY, doc JSONB NOT NULL, version INTEGER NOT NULL DEFAULT 1)", pgTables[i]);
-        arkime_db_pg_create(sql);
-    }
-    for (int i = 0; pgTypedNames[i]; i++) {
-        arkime_db_pg_typed_init(i);
-    }
+        }
 
-    for (int i = 0; pgIndexed[i].table; i++) {
-        const char *t = arkime_db_pg_table(pgIndexed[i].table);
-        const char *f = pgIndexed[i].field;
-        snprintf(sql, sizeof(sql), "ALTER TABLE %s ADD COLUMN IF NOT EXISTS f_%s JSONB GENERATED ALWAYS AS (NULLIF(doc #> '{%s}', 'null'::jsonb)) STORED", t, f, f);
+        const char *t = pgTables[i];
+        snprintf(sql, sizeof(sql), "CREATE TABLE IF NOT EXISTS %s (id TEXT PRIMARY KEY, doc JSONB NOT NULL, version INTEGER NOT NULL DEFAULT 1)", t);
         arkime_db_pg_create(sql);
-        snprintf(sql, sizeof(sql), "CREATE INDEX IF NOT EXISTS %s_f_%s ON %s (f_%s)", t, f, t, f);
-        arkime_db_pg_create(sql);
-        if (pgIndexed[i].desc) {
-            snprintf(sql, sizeof(sql), "CREATE INDEX IF NOT EXISTS %s_f_%s_desc ON %s (f_%s DESC NULLS LAST)", t, f, t, f);
+
+        for (const ArkimeDbField_t *field = pgLayout[i].fields; field->field; field++) {
+            if (!field->indexed)
+                continue;
+            const char *f = field->field;
+            snprintf(sql, sizeof(sql), "ALTER TABLE %s ADD COLUMN IF NOT EXISTS f_%s JSONB GENERATED ALWAYS AS (NULLIF(doc #> '{%s}', 'null'::jsonb)) STORED", t, f, f);
             arkime_db_pg_create(sql);
+            snprintf(sql, sizeof(sql), "CREATE INDEX IF NOT EXISTS %s_f_%s ON %s (f_%s)", t, f, t, f);
+            arkime_db_pg_create(sql);
+            if (field->indexed == ARKIME_DB_INDEXED_SORT) {
+                snprintf(sql, sizeof(sql), "CREATE INDEX IF NOT EXISTS %s_f_%s_desc ON %s (f_%s DESC NULLS LAST)", t, f, t, f);
+                arkime_db_pg_create(sql);
+            }
         }
     }
 

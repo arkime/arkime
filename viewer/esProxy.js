@@ -20,6 +20,11 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const aws4 = require('aws4');
 const EsProxyCredentials = require('./esProxyCredentials');
 const DbESImpl = require('./db.es.js');
+const DbCHImpl = require('./db.ch.js');
+const ArkimeDb = require('../common/arkimeDb');
+const EsQuery = require('./esQuery');
+
+DbCHImpl.register();
 
 // express app
 const app = express();
@@ -140,6 +145,7 @@ ArkimeConfig.loaded(() => {
 // Optional tee stuff
 let elasticsearchTee;
 let authHeaderTee;
+let sessionsTee;
 
 ArkimeConfig.loaded(() => {
   elasticsearchTee = Config.sectionGet('tee', 'elasticsearch');
@@ -175,7 +181,220 @@ ArkimeConfig.loaded(() => {
     authHeaderTee = null;
     console.log('SigV4 signing enabled for tee, region:', teeRegion);
   }
+
+  // The sessions also go to a sessions db, everything else only es has a place for
+  const teeSessionsDbUrl = Config.sectionGet('tee', 'sessionsDbUrl');
+  if (teeSessionsDbUrl) {
+    const SessionsImpl = ArkimeDb.sessionsImpl(teeSessionsDbUrl);
+    if (typeof SessionsImpl?.prototype.writeSessions !== 'function') {
+      console.log(`ERROR - [tee] sessionsDbUrl '${teeSessionsDbUrl.split(':')[0]}' can't be written to, use ClickHouse or a dbPlugins sessions scheme`);
+      process.exit(1);
+    }
+    const teeSettings = Object.fromEntries(Config.keys('tee').map(key => [key, Config.sectionGet('tee', key)]));
+    const teePrefix = ArkimeUtil.formatPrefix(Config.sectionGet('tee', 'prefix', prefix));
+    sessionsTee = new SessionsTee(new SessionsImpl({
+      ...teeSettings,
+      prefix: teePrefix,
+      insecure: ArkimeConfig.insecure,
+      caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
+      fieldsMap: () => ({}),
+      EsQuery
+    }), {
+      prefix: teePrefix,
+      maxBatchBytes: parseInt(Config.sectionGet('tee', 'maxBatchBytes'), 10) || undefined
+    });
+  }
 });
+
+// ============================================================================
+// [tee] sessionsDbUrl, the bulked sessions written to another sessions db as capture would write them
+
+// Used until the fields index answers, the *Tokens fields capture defines
+const DEFAULT_TOKENS = ['dhcp.hostTokens', 'dns.hostTokens', 'email.hostTokens', 'http.hostTokens', 'http.uriTokens',
+  'http.useragentTokens', 'oracle.hostTokens', 'quic.hostTokens', 'smb.hostTokens', 'socks.hostTokens'];
+
+// ES's wordSplit analyzer: lowercased, split on anything outside [A-Za-z0-9_]
+function wordSplit (str) {
+  return (str.match(/[A-Za-z0-9_]+/g) ?? []).map(t => t.toLowerCase());
+}
+
+// Sets the tokens of the field at segs beside it, in every object of an array on the way.
+// Iterative, a sensor's doc can nest arrays deeper than the stack.
+function addTokens (doc, segs, tokensKey) {
+  const stack = [[doc, 0]];
+  while (stack.length > 0) {
+    const [obj, depth] = stack.pop();
+    if (Array.isArray(obj)) {
+      for (const o of obj) { stack.push([o, depth]); }
+      continue;
+    }
+    if (obj === null || typeof obj !== 'object') { continue; }
+    if (depth < segs.length - 1) {
+      stack.push([obj[segs[depth]], depth + 1]);
+      continue;
+    }
+    const value = obj[segs[depth]];
+    if (value === undefined || value === null) { continue; }
+    obj[tokensKey] = [].concat(value).flatMap(v => typeof v === 'string' ? wordSplit(v) : []);
+  }
+}
+
+// Deeper than any session, a writer serializing it would overflow the stack
+function tooDeep (doc, max) {
+  const stack = [[doc, 0]];
+  while (stack.length > 0) {
+    const [obj, depth] = stack.pop();
+    if (obj === null || typeof obj !== 'object') { continue; }
+    if (depth >= max) { return true; }
+    for (const v of Object.values(obj)) { stack.push([v, depth + 1]); }
+  }
+  return false;
+}
+
+class SessionsTee {
+  static FLUSH_MS = 1000;
+  static MAX_INFLIGHT = 4;
+  static MAX_TOKENS = 256;
+  static MAX_TOKENS_DEPTH = 8;
+  static MAX_TOKENS_LEN = 256;
+  static MAX_DEPTH = 64;
+
+  #db;
+  #prefix;
+  #maxBytes;
+  #queue = [];
+  #queueBytes = 0;
+  #inflight = 0;
+  #timer;
+  #tokens = [];
+  #counts = { rows: 0, sent: 0, failed: 0, dropped: 0 };
+  #lastLog = 0;
+
+  constructor (db, { prefix: teePrefix, maxBatchBytes }) {
+    this.#db = db;
+    this.#prefix = teePrefix;
+    this.#maxBytes = maxBatchBytes || 4 * 1024 * 1024;
+    this.#setTokens(DEFAULT_TOKENS);
+  }
+
+  // Once es can be asked for the fields, throws when the sessions db can't be written
+  async check () {
+    await this.#loadTokens();
+    setInterval(() => this.#loadTokens(), 5 * 60 * 1000).unref();
+    await this.#db.checkWriteSessions?.();
+  }
+
+  // Sensors can define fields, so bound how much work they add to every doc
+  #setTokens (dbFields) {
+    this.#tokens = [...new Set(dbFields)].filter(dbField => dbField.length <= SessionsTee.MAX_TOKENS_LEN).map(dbField => {
+      const segs = dbField.slice(0, -'Tokens'.length).split('.');
+      return { segs, key: `${segs.at(-1)}Tokens` };
+    }).filter(({ segs }) => segs.length <= SessionsTee.MAX_TOKENS_DEPTH && segs.every(seg => seg !== '' && !ArkimeUtil.isProtoKey(seg)))
+      .slice(0, SessionsTee.MAX_TOKENS);
+  }
+
+  async #loadTokens () {
+    try {
+      const { statusCode, body } = await esRequestJson('POST', `/${prefix}fields/_search`, {
+        size: 10000, _source: ['dbField2'], query: { wildcard: { dbField2: '*Tokens' } }
+      });
+      if (statusCode !== 200 || !Array.isArray(body?.hits?.hits)) { return; }
+      const dbFields = body.hits.hits.map(h => h._source?.dbField2).filter(f => typeof f === 'string' && f.endsWith('Tokens'));
+      if (dbFields.length) { this.#setTokens([...DEFAULT_TOKENS, ...dbFields]); }
+    } catch (err) {
+      console.log('Sessions tee: loading the *Tokens fields failed, using the defaults', ArkimeUtil.sanitizeLine(err.message));
+    }
+  }
+
+  // The index with the tee's prefix, like capture with that prefix names it
+  #index (index) {
+    const at = index.lastIndexOf('sessions3-');
+    return at === -1 ? undefined : `${index.startsWith('partial-') ? 'partial-' : ''}${this.#prefix}${index.slice(at)}`;
+  }
+
+  /**
+   * Queue one session from a bulk, op is the index or create metadata and line its unparsed doc
+   */
+  addSession (op, line) {
+    const index = this.#index(op._index);
+    if (!index) { return; }
+    let doc;
+    try {
+      doc = JSON.parse(line);
+    } catch (err) {
+      return;
+    }
+    if (doc === null || typeof doc !== 'object' || Array.isArray(doc) || tooDeep(doc, SessionsTee.MAX_DEPTH)) { return; }
+    if (this.#queueBytes + line.length > this.#maxBytes * 16) {
+      this.#counts.dropped++;
+      this.#logCounts();
+      return;
+    }
+    try {
+      for (const { segs, key } of this.#tokens) { addTokens(doc, segs, key); }
+      doc.index = index;
+      doc._id = String(op._id ?? `${index.slice(index.lastIndexOf('sessions3-') + 'sessions3-'.length)}-${cryptoLib.randomBytes(15).toString('base64url')}`);
+    } catch (err) {
+      console.log('Sessions tee: dropping a bad session', ArkimeUtil.sanitizeStr(err?.message ?? String(err)));
+      return;
+    }
+
+    this.#counts.rows++;
+    this.#queue.push({ doc, bytes: line.length + 1 });
+    this.#queueBytes += line.length + 1;
+    if (this.#queueBytes >= this.#maxBytes) {
+      this.#flush();
+    } else if (!this.#timer) {
+      this.#timer = setTimeout(() => this.#flush(), SessionsTee.FLUSH_MS);
+    }
+  }
+
+  /**
+   * A sensor's add hunt update, only to its own nodes' sessions like the ES script
+   */
+  addHunt (index, id, huntId, huntName, nodes) {
+    index = this.#index(index);
+    if (!index) { return; }
+    this.#db.addHuntToSession(index, id, huntId, huntName, nodes).catch((err) => {
+      if (err.statusCode !== 404) { console.log('Sessions tee: hunt update failed', ArkimeUtil.sanitizeLine(err.message)); }
+    });
+  }
+
+  #flush () {
+    clearTimeout(this.#timer);
+    this.#timer = undefined;
+    while (this.#queue.length > 0 && this.#inflight < SessionsTee.MAX_INFLIGHT) {
+      const docs = [];
+      let bytes = 0;
+      while (this.#queue.length > 0 && (docs.length === 0 || bytes + this.#queue[0].bytes < this.#maxBytes)) {
+        const item = this.#queue.shift();
+        docs.push(item.doc);
+        bytes += item.bytes;
+      }
+      this.#queueBytes -= bytes;
+      this.#inflight++;
+      Promise.resolve().then(() => this.#db.writeSessions(docs)).then(() => {
+        this.#counts.sent += docs.length;
+      }).catch((err) => {
+        this.#counts.failed += docs.length;
+        console.log(`Sessions tee: writing ${docs.length} sessions failed`, ArkimeUtil.sanitizeLine(err.message.slice(0, 500)));
+      }).finally(() => {
+        this.#inflight--;
+        if (this.#queue.length > 0 && !this.#timer) { this.#flush(); }
+      });
+    }
+    if (this.#queue.length > 0 && !this.#timer) {
+      this.#timer = setTimeout(() => this.#flush(), SessionsTee.FLUSH_MS);
+    }
+  }
+
+  #logCounts () {
+    if (Date.now() - this.#lastLog < 60000) { return; }
+    this.#lastLog = Date.now();
+    const c = this.#counts;
+    console.log(`Sessions tee: queue full, dropping sessions. rows: ${c.rows} sent: ${c.sent} failed: ${c.failed} dropped: ${c.dropped}`);
+  }
+}
 
 // ============================================================================
 // GET calls we can match exactly
@@ -432,7 +651,7 @@ async function doProxyFull (config, req, res) {
   // Stream the response, buffering a large one could exhaust memory. Still always a
   // 200, which is what capture and the sensor viewers have always gotten from esProxy.
   const preq = client.request(url, options, (pres) => {
-    if (!res.pipeable) {
+    if (!res.pipeable || res.headersSent) {
       pres.resume();
       return;
     }
@@ -473,6 +692,10 @@ async function doProxyFull (config, req, res) {
 async function doProxy (req, res) {
   res.pipeable = true;
   await doProxyFull({ elasticsearch, authHeader, sigV4Signer, sigV4Credentials }, req, res);
+  if (sessionsTee) {
+    for (const [op, line] of req.teeSessions ?? []) { sessionsTee.addSession(op, line); }
+    if (req.teeHunt) { sessionsTee.addHunt(...req.teeHunt); }
+  }
   if (elasticsearchTee) {
     // Never let a tee failure become an unhandled rejection, that exits for every sensor
     doProxyFull({ elasticsearch: elasticsearchTee, authHeader: authHeaderTee, sigV4Signer: sigV4SignerTee, sigV4Credentials: sigV4CredentialsTee }, req, {
@@ -598,6 +821,10 @@ async function dropFieldCollisions (creates) {
   }
 }
 
+function isBulkId (id) {
+  return id === undefined || typeof id === 'string' || typeof id === 'number';
+}
+
 async function validateBulk (req) {
   if (!req._body) {
     return true;
@@ -623,6 +850,8 @@ async function validateBulk (req) {
   const out = [];
   const fieldCreates = [];
   const deletedFields = new Set();
+  // [operation, doc line] of the sessions, for the ClickHouse tee
+  const sessions = [];
   let rewrote = false;
   for (let i = 0; i < lines.length; i++) {
     // ES allows blank lines between pairs of meta/object
@@ -659,9 +888,11 @@ async function validateBulk (req) {
           continue;
         }
         if (!isSessionsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        if (!isBulkId(json.index._id)) { throw new Error('Bad _id'); }
       } else if (typeof json.create === 'object') {
         const _index = json.create._index;
         if (!isSessionsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        if (!isBulkId(json.create._id)) { throw new Error('Bad _id'); }
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
@@ -717,6 +948,7 @@ async function validateBulk (req) {
     if (json.delete) {
       out.push(lines[i]);
     } else {
+      if (sessionsTee && lines[i + 1] !== undefined) { sessions.push([json.index ?? json.create, lines[i + 1]]); }
       out.push(lines[i], lines[i + 1]);
       i++;
     }
@@ -734,6 +966,8 @@ async function validateBulk (req) {
       for (const create of fieldCreates) { create.dropped = true; }
     }
   }
+
+  if (sessions.length > 0) { req.teeSessions = sessions; }
 
   if (rewrote) {
     const final = out.flatMap(item => typeof item === 'string' ? [item] : (item.dropped ? [] : item.lines));
@@ -757,6 +991,7 @@ async function validateFilesSearch (req) {
   try {
     const json = parseDocBody(req);
     if (!Object.keys(json).every(key => filesSearchKeys.includes(key))) { return false; }
+    if (hasForbiddenSearchKey(json)) { return false; }
     if (json.profile !== undefined && typeof json.profile !== 'boolean') { return false; }
     if (Object.keys(json.query).length !== 1) { return false; }
     const bool = json.query.bool;
@@ -858,6 +1093,8 @@ async function validateUpdate (req) {
     if (Object.keys(params).length !== 2 || !ArkimeUtil.isString(params.huntId) || !ArkimeUtil.isString(params.huntName)) { return false; }
     const esproxyNodes = await hostNodes(req.sensor, true);
     const script = { lang: 'painless', source: addHuntHostScript, params: { huntId: params.huntId, huntName: params.huntName, esproxyNodes } };
+    const [, index, , id] = req.esPath.split('/');
+    req.teeHunt = [index, id, params.huntId, params.huntName, esproxyNodes];
     req.body = Buffer.from(JSON.stringify({ script }));
     delete req.headers['content-encoding'];
     return true;
@@ -1194,6 +1431,13 @@ async function main () {
   }
   if (sigV4CredentialsTee) {
     await sigV4CredentialsTee.initialize();
+  }
+  if (sessionsTee) {
+    try {
+      await sessionsTee.check();
+    } catch (err) {
+      console.log('ERROR - [tee] sessionsDbUrl can\'t be written, for ClickHouse run db/ch.pl init for it', err.message);
+    }
   }
 
   // Before listening, otherwise a stats doc could beat the pin

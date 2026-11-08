@@ -11,8 +11,8 @@
 const fs = require('fs');
 const path = require('path');
 
-// The stats doc capture writes, a Postgres cluster db gives each its own column. capture/db.pg.c
-// has the same list, a new field goes in both and its column is added the next time either starts.
+// The stats doc capture writes, a SQL cluster db gives each its own column. ARKIME_DB_STATS_FIELDS in
+// capture/db.c has the same list, a new field goes in both and its column is added the next time either starts.
 const STATS_FIELDS = Object.fromEntries([
   ...['ver', 'nodeName', 'hostname'].map(f => [f, 'keyword']),
   ['interval', 'short'], ['currentTime', 'date'], ['freeSpaceP', 'float'], ['memoryP', 'float'],
@@ -24,7 +24,7 @@ const STATS_FIELDS = Object.fromEntries([
     'startTime'].map(f => [f, 'long'])
 ]);
 
-// What expiry, the files and stats pages and capture look up, capture creates the same columns in db.pg.c
+// What expiry, the files and stats pages and capture look up, arkime_db_cluster_tables in capture/db.c is the same layout
 const COLLECTION_OPTIONS = {
   stats: { typed: true, fields: STATS_FIELDS },
   files: {

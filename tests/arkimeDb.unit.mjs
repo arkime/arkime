@@ -7,6 +7,8 @@ Conformance tests for ArkimeDb collections. Run with `npm run test:unit`.
 SQLite always runs. Set these to also run the other backends:
   ARKIME_TEST_ES_URL=http://localhost:9200
   ARKIME_TEST_PG_URL=postgres://user:pass@localhost:5432/arkime
+A dbPlugins backend runs with its module and a url for it:
+  ARKIME_TEST_DB_PLUGIN=capture/plugins/mysqldb/mysqldb.js ARKIME_TEST_DB_URL=mysql://user:pass@localhost/arkime
 */
 import { test, describe, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,6 +30,10 @@ const backends = [
 ];
 if (process.env.ARKIME_TEST_ES_URL) { backends.push({ name: 'es', url: process.env.ARKIME_TEST_ES_URL, prefix: `arkimedb_unit_${run}_` }); }
 if (process.env.ARKIME_TEST_PG_URL) { backends.push({ name: 'pg', url: process.env.ARKIME_TEST_PG_URL, prefix: `arkimedb_unit_${run}_` }); }
+if (process.env.ARKIME_TEST_DB_URL) {
+  if (process.env.ARKIME_TEST_DB_PLUGIN) { ArkimeDb.loadDbPlugin(path.resolve(process.env.ARKIME_TEST_DB_PLUGIN)); }
+  backends.push({ name: process.env.ARKIME_TEST_DB_URL.split(':')[0], url: process.env.ARKIME_TEST_DB_URL, prefix: `arkimedb_unit_${run}_` });
+}
 
 const docs = {
   a: { name: 'alpha', creator: 'bob', roles: ['r1', 'r2'], n: 5, tags: ['Foo', 'bar'], issuedAt: 100, flag: true, ip: '10.1.2.3', hosts: [{ name: 'h1', port: 1 }, { name: 'h2' }] },
@@ -536,16 +542,22 @@ for (const backend of backends) {
 }
 
 describe('viewer cluster db', () => {
-  test('capture creates the same typed stats columns as the viewer', () => {
+  test('capture has the same cluster table layout as the viewer', () => {
     const DbClusterImpl = cjsRequire('../viewer/db.cluster.js');
-    const pgType = { keyword: 'text', short: 'smallint', date: 'bigint', long: 'bigint', float: 'real' };
-    const src = fs.readFileSync(new URL('../capture/db.pg.c', import.meta.url), 'utf8');
-    const block = src.slice(src.indexOf('pgStatsColumns[] = {'), src.indexOf('{NULL, NULL}', src.indexOf('pgStatsColumns[] = {')));
-    const capture = Object.fromEntries([...block.matchAll(/\{"(\w+)", "(\w+)"\}/g)].map(m => [m[1], m[2]]));
-    for (const collName of ['stats', 'dstats']) {
-      const fields = DbClusterImpl.collectionOptions(collName).fields;
-      const viewer = Object.fromEntries(Object.entries(fields).map(([f, spec]) => [f, pgType[spec.type ?? spec]]));
-      assert.deepEqual(viewer, capture, collName);
+    const src = fs.readFileSync(new URL('../capture/db.c', import.meta.url), 'utf8');
+    const between = (from, to) => src.slice(src.indexOf(from), src.indexOf(to, src.indexOf(from)));
+    const indexed = { 0: undefined, ARKIME_DB_INDEXED: true, ARKIME_DB_INDEXED_SORT: 'sort', ARKIME_DB_INDEXED_WILDCARD: 'wildcard' };
+    const stats = [...between('#define ARKIME_DB_STATS_FIELDS(X)', '#define ARKIME_DB_STATS_FIELD(').matchAll(/X\("(\w+)", "(\w+)", (\w+)\)/g)];
+    const files = [...between('filesFields[] = {', '{NULL, NULL, 0}').matchAll(/\{"(\w+)", "(\w+)", (\w+)\}/g)];
+    const capture = {
+      stats: stats.map(([, f, type]) => [f, type, undefined]),
+      dstats: stats.map(([, f, type, i]) => [f, type, indexed[i]]),
+      files: files.map(([, f, type, i]) => [f, type, indexed[i]])
+    };
+    for (const [collName, fields] of Object.entries(capture)) {
+      const viewer = Object.entries(DbClusterImpl.collectionOptions(collName).fields).map(([f, spec]) => [f, spec.type ?? spec, spec.indexed]);
+      assert.deepEqual(viewer, fields, collName);
+      assert.equal(!!DbClusterImpl.collectionOptions(collName).typed, collName !== 'files', collName);
     }
   });
 });

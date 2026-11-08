@@ -373,6 +373,15 @@ class CronAPIs {
 
     try {
       const cron = await Db.getQuery(key);
+      if (!cron) {
+        return res.serverError(404, 'Unknown resource');
+      }
+
+      // the owner or editRoles may have changed since checkResourceAccess read it
+      const settingUser = req.settingUser || req.user;
+      if (!req.user.hasRole(Auth.appAdminRole) && !(cron.creator && cron.creator === settingUser.userId) && !settingUser.hasRole(cron.editRoles)) {
+        return res.serverError(403, 'Permission denied');
+      }
 
       // Only notifiers being added, an editor resaving a cron keeps the ones already on it
       const current = Array.isArray(cron.notifier) ? cron.notifier : ArkimeUtil.isString(cron.notifier) ? cron.notifier.split(',') : [];
