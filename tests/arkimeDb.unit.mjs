@@ -323,8 +323,12 @@ for (const backend of backends) {
           assert.match(rows.map(r => r['QUERY PLAN']).join('\n'), /Index.*f_creator/);
           const { rows: desc } = await client.query(`EXPLAIN SELECT id FROM ${t} ORDER BY f_n DESC NULLS LAST LIMIT 2`);
           assert.match(desc.map(r => r['QUERY PLAN']).join('\n'), /Index.*f_n_desc/);
-          const { rows: trgm } = await client.query(`EXPLAIN SELECT id FROM ${t} WHERE (f_name #>> '{}') LIKE '%eta%'`);
-          assert.match(trgm.map(r => r['QUERY PLAN']).join('\n'), /Bitmap Index Scan on .*f_name_trgm/);
+          // Without pg_trgm (postgresql-contrib) wildcard searches scan, which the backend warns about
+          const { rowCount: hasTrgm } = await client.query("SELECT 1 FROM pg_extension WHERE extname = 'pg_trgm'");
+          if (hasTrgm) {
+            const { rows: trgm } = await client.query(`EXPLAIN SELECT id FROM ${t} WHERE (f_name #>> '{}') LIKE '%eta%'`);
+            assert.match(trgm.map(r => r['QUERY PLAN']).join('\n'), /Bitmap Index Scan on .*f_name_trgm/);
+          }
         } finally {
           await client.query('ROLLBACK');
           client.release();
