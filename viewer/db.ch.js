@@ -324,6 +324,11 @@ function dbFieldsMap () {
   }
 }
 
+// A LIMIT one past what's left of the budget, so an over budget agg isn't buffered whole before addBuckets fails it
+function bucketLimit (budget) {
+  return Math.max(1, MAX_BUCKETS - budget.buckets + 1);
+}
+
 // Count buckets against one search's budget, erroring like ES once over it
 function addBuckets (budget, count) {
   budget.buckets += count;
@@ -498,7 +503,11 @@ class DbCHImpl {
           try {
             const text = Buffer.concat(chunks).toString();
             if (res.statusCode < 200 || res.statusCode >= 300) {
-              return reject(new Error(`CH backend: query failed (${res.statusCode}): ${text}`));
+              // Users only get the error name or our own throwIf text, the rest has the server version and internals
+              console.log(`CH backend: query failed (${res.statusCode}):`, ArkimeUtil.sanitizeLine(text.slice(0, 1000)));
+              let reason = text.match(/\(([A-Z][A-Z0-9_]+)\) \(version /)?.[1] ?? 'unknown error';
+              if (reason === 'FUNCTION_THROW_IF_VALUE_IS_NON_ZERO') { reason = text.match(/DB::Exception: (CH backend: [^:'\n]+)/)?.[1] ?? reason; }
+              return reject(new Error(`CH backend: query failed (${res.statusCode}): ${reason}`));
             }
             if (opts.text) { return resolve(text); }
             try {
@@ -1144,7 +1153,7 @@ class DbCHImpl {
     }
     const metricSelect = metricSubs.map(([subName, subAgg]) => `${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
 
-    const size = Number(terms.size || 10);
+    const size = Math.min(Math.max(1, Math.floor(Number(terms.size) || 10)), bucketLimit(budget));
     // ES tie-breaks equal counts by key; for ip-typed fields the key order is
     // the IP's binary value, not its string form
     const tieExpr = (!terms.script && field && this.isIpField(field)) ? 'toIPv6OrNull(key)' : 'key';
@@ -1208,7 +1217,7 @@ class DbCHImpl {
     const subSubs = subAgg.aggregations || subAgg.aggs || {};
     const metricSelect = Object.entries(subSubs).map(([subSubName, a]) => `${this.metricExpression(a)} AS ${quoteIdent(subSubName)}`);
     const select = [`${keyExpr} AS key`, `${slotExpr} AS slot`, 'count() AS doc_count', ...metricSelect].join(', ');
-    const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE (${where}) AND ${keyFilter} GROUP BY key, slot ORDER BY slot ASC`)).data || [];
+    const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE (${where}) AND ${keyFilter} GROUP BY key, slot ORDER BY slot ASC LIMIT ${bucketLimit(budget)}`)).data || [];
     addBuckets(budget, rows.length);
 
     const byKey = new Map(buckets.map(b => [String(b.key), b]));
@@ -1249,7 +1258,7 @@ class DbCHImpl {
       const subAggsSpan = agg.aggregations || agg.aggs || {};
       const metricSelectSpan = Object.entries(subAggsSpan).map(([subName, subAgg]) => `${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
       const spanSelect = [`${spanKeyExpr} AS key`, 'count() AS doc_count', ...metricSelectSpan].join(', ');
-      const spanRows = (await this.query(`SELECT ${spanSelect} FROM ${this.tableName()} WHERE ${where} GROUP BY key ORDER BY key ASC`)).data || [];
+      const spanRows = (await this.query(`SELECT ${spanSelect} FROM ${this.tableName()} WHERE ${where} GROUP BY key ORDER BY key ASC LIMIT ${bucketLimit(budget)}`)).data || [];
       addBuckets(budget, spanRows.length);
       return {
         buckets: spanRows.map(row => {
@@ -1266,7 +1275,7 @@ class DbCHImpl {
       metricSelect.push(`${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
     }
     const select = [`toUnixTimestamp(${keyExpr}) * 1000 AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
-    const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key ORDER BY key ASC`)).data || [];
+    const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key ORDER BY key ASC LIMIT ${bucketLimit(budget)}`)).data || [];
     addBuckets(budget, rows.length);
     return {
       buckets: rows.map(row => {
@@ -1322,7 +1331,7 @@ class DbCHImpl {
     // default valued column out, isNotNull a Nullable one
     const present = this.translateClause({ exists: { field } });
     const select = [`${keyExpr} AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
-    const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE (${where}) AND (${present}) GROUP BY key HAVING isNotNull(key) ORDER BY ${orderExpr} ${orderDir}, key ASC`)).data || [];
+    const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE (${where}) AND (${present}) GROUP BY key HAVING isNotNull(key) ORDER BY ${orderExpr} ${orderDir}, key ASC LIMIT ${bucketLimit(budget)}`)).data || [];
     const buckets = rows.map(row => {
       const bucket = { key: Number(row.key), doc_count: Number(row.doc_count) };
       for (const [subName] of metricSubs) { bucket[subName] = { value: row[subName] ?? 0 }; }

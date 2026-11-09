@@ -214,7 +214,7 @@ class DbUsersImpl {
       where,
       sort: { [sortField]: params.sortOrder === 'desc' ? 'desc' : 'asc' },
       from: params.from || 0,
-      size: params.size || 50
+      size: Math.min(Math.max(+params.size || 50, 0), 10000)
     });
     return { total, data: data.map(h => ({ id: h.id, source: h.doc })) };
   }

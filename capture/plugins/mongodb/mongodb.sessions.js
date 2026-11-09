@@ -7,6 +7,7 @@
 'use strict';
 
 const cryptoLib = require('crypto');
+const { AsyncLocalStorage } = require('async_hooks');
 
 // capture/plugins/mongodb/mongodb.c writes each session into a collection named after the ES index it would
 // be in, <prefix>sessions3-<period>, with the session's fields at the top level and _ip holding its ips.
@@ -33,6 +34,8 @@ const BUCKET_CONCURRENCY = 8;
 const MAX_SCROLLS = 500;
 const SCROLL_ID_PREFIX = 'arkime:mongodb:';
 const MAX_BUCKETS = 65536;
+// The mongodbPatternTimeout of the patternRun a query runs in, every query it makes uses it
+const patternMs = new AsyncLocalStorage();
 const BAD_SEGMENTS = new Set(['', '__proto__', 'constructor', 'prototype']);
 
 function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
@@ -205,7 +208,13 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
     }
 
     #timeout () {
-      return Math.max(1, parseInt(ArkimeConfig.get('mongodbSessionsTimeout', 300), 10) || 300) * 1000;
+      const ms = Math.max(1, parseInt(ArkimeConfig.get('mongodbSessionsTimeout', 300), 10) || 300) * 1000;
+      const pattern = patternMs.getStore();
+      return pattern ? Math.min(ms, pattern) : ms;
+    }
+
+    #patternRun (fn) {
+      return this.#conn.patternRun(({ maxTimeMS }) => patternMs.run(maxTimeMS, fn));
     }
 
     // --------------------------------------------------------------------------
@@ -595,8 +604,10 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
         keyFilter = (b) => ({ $and: [{ lastPacket: { $gte: b.key } }, { firstPacket: { $lt: b.key + interval } }] });
       }
       const { branch, merge } = this.#buckets(filter, values, { _k: { $type: 'number' } }, key, group);
-      const rest = [...merge, ...groupSubs.after, { $sort: { _id: 1 } }];
+      // One past the budget is enough to know it's too many
+      const rest = [...merge, ...groupSubs.after, { $sort: { _id: 1 } }, { $limit: Math.max(0, budget.left) + 1 }];
       const rows = await this.#union(colls, branch, rest).toArray();
+      if (rows.length > budget.left) { this.#spend(budget, rows.length); }
       let buckets = rows.map(r => {
         const bucket = { key: r._id, doc_count: r.doc_count };
         if (isDate) { bucket.key_as_string = new Date(r._id).toISOString(); }
@@ -654,7 +665,7 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
 
     // --------------------------------------------------------------------------
     async searchSessions (index, query = {}, options = {}) {
-      return hasRegexp(query) ? this.#conn.patternRun(() => this.#searchSessions(index, query, options)) : this.#searchSessions(index, query, options);
+      return hasRegexp(query) ? this.#patternRun(() => this.#searchSessions(index, query, options)) : this.#searchSessions(index, query, options);
     }
 
     async #searchSessions (index, query, options) {
@@ -713,7 +724,7 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
     #page (colls, filter, sort, after, n, patterns) {
       const match = after ? { $and: [filter, this.#after(sort, after)] } : filter;
       const run = () => this.#union(colls, [{ $match: match }, { $sort: sort }, { $limit: n }], [{ $sort: sort }, { $limit: n }], true).toArray();
-      return patterns ? this.#conn.patternRun(run) : run();
+      return patterns ? this.#patternRun(run) : run();
     }
 
     // The total is counted once, with the first page
@@ -726,7 +737,7 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
       const sort = this.#keysetSort(this.#sort(query.sort));
       const patterns = hasRegexp(query);
       const count = () => this.#count(colls, filter);
-      const total = await (patterns ? this.#conn.patternRun(count) : count());
+      const total = await (patterns ? this.#patternRun(count) : count());
       const id = SCROLL_ID_PREFIX + cryptoLib.randomUUID();
       this.#scrolls.set(id, {
         colls,
@@ -920,8 +931,15 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
     async writeSessions (docs) {
       const byColl = new Map();
       for (const { index, ...doc } of docs) {
+        let ips;
+        try {
+          ips = ipsOf(doc);
+        } catch (err) {
+          console.log(`MongoDB sessions: dropping session ${JSON.stringify(String(doc._id).slice(0, 100))}, ${err.message}`);
+          continue;
+        }
         if (!byColl.has(index)) { byColl.set(index, []); }
-        byColl.get(index).push({ replaceOne: { filter: { _id: doc._id }, replacement: { ...doc, _ip: ipsOf(doc) }, upsert: true } });
+        byColl.get(index).push({ replaceOne: { filter: { _id: doc._id }, replacement: { ...doc, _ip: ips }, upsert: true } });
       }
       await Promise.all([...byColl].map(async ([coll, ops]) => {
         if (!this.#indexed.has(coll)) {

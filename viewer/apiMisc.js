@@ -110,7 +110,7 @@ class MiscAPIs {
     const params = {
       fields: columns,
       from: +req.query.start || 0,
-      size: Math.min(+req.query.length || 10, 10000),
+      size: Math.min(Math.max(+req.query.length || 10, 0), 10000),
       sort: { [sortField]: req.query.desc === 'true' ? 'desc' : 'asc' }
     };
 

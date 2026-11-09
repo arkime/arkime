@@ -32,7 +32,8 @@ The url is the standard MongoDB connection string, `mongodb://user:password@host
 or `mongodb+srv://`, and it must name a database. Without `tls` settings in the url a remote server
 must use TLS and its certificate is verified with `caTrustFile` or the system CAs, like the
 OpenSearch/Elasticsearch connections. `--insecure` still requires TLS but skips verification.
-Loopback and unix socket servers are left alone.
+A url with one loopback or unix socket server is left alone and connects to only that server, set
+`tls=false` in the url for a local replica set or a local member of one.
 
 | Setting | Default | |
 | --- | --- | --- |

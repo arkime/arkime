@@ -163,7 +163,7 @@ class SQLiteCollection extends ArkimeDb.Collection {
   async find ({ where, sort, from = 0, size, version } = {}) {
     const w = this.#where(where);
     const total = this.#db.prepare(`SELECT COUNT(*) AS total FROM ${this.#table} ${w.sql}`).get(...w.params).total;
-    if (size === 0) { return { total, data: [] }; }
+    if ((size ?? 1) <= 0) { return { total, data: [] }; }
 
     const order = ArkimeDb.sortList(sort).map(([field, dir]) => {
       const expr = this.#expr(field);

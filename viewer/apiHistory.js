@@ -74,7 +74,7 @@ class HistoryAPIs {
       const params = {
         sort: { [sortField]: req.query.desc === 'true' ? 'desc' : 'asc' },
         from: +req.query.start || 0,
-        size: +req.query.length || 1000
+        size: Math.min(Math.max(+req.query.length || 1000, 0), 10000)
       };
 
       const and = [];

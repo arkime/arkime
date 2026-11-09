@@ -17,6 +17,8 @@ const FALSE = { _id: { $exists: false } };
 const DUPLICATE_KEY = 11000;
 const PATTERN_SLOTS = 2;
 const PATTERN_QUEUE = 100;
+// Capture's sessions have a few dozen, a doc with more is refused before it costs a buffer per ip
+const MAX_IPS = 10000;
 
 function escapeRegex (s) {
   return String(s).replace(/[\\^$.*+?()[\]{}|/-]/g, '\\$&');
@@ -96,7 +98,10 @@ function ipsOf (doc, path = '', out = []) {
     for (const [k, v] of Object.entries(doc)) { ipsOf(v, path ? `${path}.${k}` : k, out); }
   } else {
     const b = ipBytes(doc);
-    if (b) { out.push({ f: path, a: b }); }
+    if (b) {
+      if (out.length >= MAX_IPS) { throw new Error(`More than ${MAX_IPS} ips in one doc`); }
+      out.push({ f: path, a: b });
+    }
   }
   return out;
 }
@@ -507,12 +512,15 @@ function defineCollections () {
 }
 
 // Like the OpenSearch/Elasticsearch connections, a remote server's certificate is verified with caTrustFile
-// or the system CAs, and --insecure still requires TLS. tls settings in the url win, loopback and unix
-// socket servers are left alone.
+// or the system CAs, and --insecure still requires TLS. tls settings in the url win. A lone loopback or unix
+// socket server is left alone but used directly, so plaintext never reaches replica set members it lists.
 function tlsOptions (url, options) {
   if (/[?&](tls|ssl)[A-Za-z]*=/i.test(url)) { return {}; }
   const hosts = MongoConnection.hosts(url);
-  if (!url.startsWith('mongodb+srv:') && hosts.every(h => ArkimeConfig.isLoopbackHost(h))) { return {}; }
+  if (!url.startsWith('mongodb+srv:') && hosts.length === 1 && ArkimeConfig.isLoopbackHost(hosts[0]) &&
+      !/[?&](replicaSet|directConnection|loadBalanced)=/i.test(url)) {
+    return { directConnection: true };
+  }
   const insecure = options.insecure ?? ArkimeConfig.insecure;
   const caTrustFile = options.caTrustFile ?? ArkimeConfig.get('caTrustFile');
   ArkimeUtil.tlsOptionsOrExit({ insecure, caTrustFile }, 'MongoDB');

@@ -225,6 +225,7 @@ function tooDeep (doc, max) {
 class SessionsTee {
   static FLUSH_MS = 1000;
   static MAX_INFLIGHT = 4;
+  static MAX_HUNTS = 16;
   static MAX_DEPTH = 64;
 
   #db;
@@ -233,6 +234,7 @@ class SessionsTee {
   #queue = [];
   #queueBytes = 0;
   #inflight = 0;
+  #hunts = 0;
   #timer;
   #tokens = [];
   #counts = { rows: 0, sent: 0, failed: 0, dropped: 0 };
@@ -274,7 +276,7 @@ class SessionsTee {
   /**
    * Queue one session from a bulk, op is the index or create metadata and line its unparsed doc
    */
-  addSession (op, line) {
+  addSession (op, line, sensor) {
     const index = this.#index(op._index);
     if (!index) { return; }
     let doc;
@@ -299,7 +301,7 @@ class SessionsTee {
     }
 
     this.#counts.rows++;
-    this.#queue.push({ doc, bytes: line.length + 1 });
+    this.#queue.push({ doc, sensor, bytes: line.length + 1 });
     this.#queueBytes += line.length + 1;
     if (this.#queueBytes >= this.#maxBytes) {
       this.#flush();
@@ -313,31 +315,49 @@ class SessionsTee {
    */
   addHunt (index, id, huntId, huntName, nodes) {
     index = this.#index(index);
-    if (!index) { return; }
+    // Capture always names a dated index, an undated one would update every partition
+    if (!index || !/-(\d{6}(h\d{2})?|\d{2}[wm]\d{2})$/.test(index)) { return; }
+    if (this.#hunts >= SessionsTee.MAX_HUNTS) {
+      this.#counts.dropped++;
+      this.#logCounts();
+      return;
+    }
+    this.#hunts++;
     this.#db.addHuntToSession(index, id, huntId, huntName, nodes).catch((err) => {
       if (err.statusCode !== 404) { console.log('Sessions tee: hunt update failed', ArkimeUtil.sanitizeLine(err.message)); }
-    });
+    }).finally(() => { this.#hunts--; });
+  }
+
+  async #write (items) {
+    try {
+      await this.#db.writeSessions(items.map(item => item.doc));
+      this.#counts.sent += items.length;
+    } catch (err) {
+      const bySensor = Map.groupBy(items, item => item.sensor);
+      if (bySensor.size === 1) {
+        this.#counts.failed += items.length;
+        console.log(`Sessions tee: writing ${items.length} sessions from ${ArkimeUtil.sanitizeStr(String(items[0].sensor))} failed`, ArkimeUtil.sanitizeLine(err.message.slice(0, 500)));
+        return;
+      }
+      // One sensor's bad session fails the whole insert, retry each sensor's alone
+      for (const group of bySensor.values()) { await this.#write(group); }
+    }
   }
 
   #flush () {
     clearTimeout(this.#timer);
     this.#timer = undefined;
     while (this.#queue.length > 0 && this.#inflight < SessionsTee.MAX_INFLIGHT) {
-      const docs = [];
+      const items = [];
       let bytes = 0;
-      while (this.#queue.length > 0 && (docs.length === 0 || bytes + this.#queue[0].bytes < this.#maxBytes)) {
+      while (this.#queue.length > 0 && (items.length === 0 || bytes + this.#queue[0].bytes < this.#maxBytes)) {
         const item = this.#queue.shift();
-        docs.push(item.doc);
+        items.push(item);
         bytes += item.bytes;
       }
       this.#queueBytes -= bytes;
       this.#inflight++;
-      Promise.resolve().then(() => this.#db.writeSessions(docs)).then(() => {
-        this.#counts.sent += docs.length;
-      }).catch((err) => {
-        this.#counts.failed += docs.length;
-        console.log(`Sessions tee: writing ${docs.length} sessions failed`, ArkimeUtil.sanitizeLine(err.message.slice(0, 500)));
-      }).finally(() => {
+      this.#write(items).catch(() => {}).finally(() => {
         this.#inflight--;
         if (this.#queue.length > 0 && !this.#timer) { this.#flush(); }
       });
@@ -351,7 +371,7 @@ class SessionsTee {
     if (Date.now() - this.#lastLog < 60000) { return; }
     this.#lastLog = Date.now();
     const c = this.#counts;
-    console.log(`Sessions tee: queue full, dropping sessions. rows: ${c.rows} sent: ${c.sent} failed: ${c.failed} dropped: ${c.dropped}`);
+    console.log(`Sessions tee: queue full, dropping sessions and hunt updates. rows: ${c.rows} sent: ${c.sent} failed: ${c.failed} dropped: ${c.dropped}`);
   }
 }
 
@@ -652,7 +672,7 @@ async function doProxy (req, res) {
   res.pipeable = true;
   await doProxyFull({ elasticsearch, authHeader, sigV4Signer, sigV4Credentials }, req, res);
   if (sessionsTee) {
-    for (const [op, line] of req.teeSessions ?? []) { sessionsTee.addSession(op, line); }
+    for (const [op, line] of req.teeSessions ?? []) { sessionsTee.addSession(op, line, req.sensor.node); }
     if (req.teeHunt) { sessionsTee.addHunt(...req.teeHunt); }
   }
   if (elasticsearchTee) {

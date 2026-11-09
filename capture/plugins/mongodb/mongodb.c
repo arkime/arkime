@@ -105,7 +105,8 @@ LOCAL gboolean arkime_mongodb_loopback(const char *host)
 /******************************************************************************/
 /* Like the OpenSearch/Elasticsearch connection, a remote server's certificate is
  * verified with caTrustFile or the system CAs, and --insecure still requires TLS.
- * tls settings in the url win, loopback and unix socket servers are left alone.
+ * tls settings in the url win. A lone loopback or unix socket server is left alone
+ * but used directly, so plaintext never reaches replica set members it lists.
  */
 LOCAL void arkime_mongodb_connect(ArkimeMgDb_t *mg, const char *url)
 {
@@ -121,20 +122,25 @@ LOCAL void arkime_mongodb_connect(ArkimeMgDb_t *mg, const char *url)
 
     const bson_t *options = mongoc_uri_get_options(uri);
     gboolean tlsSet = FALSE;
+    gboolean topologySet = FALSE;
     bson_iter_t iter;
     if (bson_iter_init(&iter, options)) {
         while (bson_iter_next(&iter)) {
-            if (g_ascii_strncasecmp(bson_iter_key(&iter), "tls", 3) == 0 || g_ascii_strncasecmp(bson_iter_key(&iter), "ssl", 3) == 0)
+            const char *key = bson_iter_key(&iter);
+            if (g_ascii_strncasecmp(key, "tls", 3) == 0 || g_ascii_strncasecmp(key, "ssl", 3) == 0)
                 tlsSet = TRUE;
+            if (g_ascii_strcasecmp(key, MONGOC_URI_REPLICASET) == 0 || g_ascii_strcasecmp(key, MONGOC_URI_DIRECTCONNECTION) == 0 ||
+                g_ascii_strcasecmp(key, MONGOC_URI_LOADBALANCED) == 0)
+                topologySet = TRUE;
         }
     }
 
-    gboolean remote = mongoc_uri_get_srv_hostname(uri) != NULL;
-    for (const mongoc_host_list_t *h = mongoc_uri_get_hosts(uri); h; h = h->next) {
-        if (h->family != AF_UNIX && !arkime_mongodb_loopback(h->host))
-            remote = TRUE;
-    }
-    if (remote && !tlsSet) {
+    const mongoc_host_list_t *hosts = mongoc_uri_get_hosts(uri);
+    const gboolean lone = mongoc_uri_get_srv_hostname(uri) == NULL && hosts && !hosts->next && !topologySet &&
+                          (hosts->family == AF_UNIX || arkime_mongodb_loopback(hosts->host));
+    if (lone && !tlsSet) {
+        mongoc_uri_set_option_as_bool(uri, MONGOC_URI_DIRECTCONNECTION, true);
+    } else if (!tlsSet) {
         mongoc_uri_set_option_as_bool(uri, MONGOC_URI_TLS, true);
         if (config.insecure) {
             mongoc_uri_set_option_as_bool(uri, MONGOC_URI_TLSALLOWINVALIDCERTIFICATES, true);

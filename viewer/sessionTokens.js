@@ -16,6 +16,8 @@ const DEFAULT_TOKENS = ['dhcp.hostTokens', 'dns.hostTokens', 'email.hostTokens',
 const MAX_TOKENS = 256;
 const MAX_TOKENS_DEPTH = 8;
 const MAX_TOKENS_LEN = 256;
+// Every field walks the doc's arrays on its path, so a doc gets this many values walked in all
+const MAX_TOKENS_WORK = 1000000;
 
 // ES's wordSplit analyzer: lowercased, split on anything outside [A-Za-z0-9_]
 function wordSplit (str) {
@@ -35,11 +37,16 @@ function tokenFields (dbFields = []) {
 
 // Sets the tokens of the field at segs beside it, in every object of an array on the way.
 // Iterative, a sensor's doc can nest arrays deeper than the stack.
-function addTokens (doc, segs, tokensKey) {
+function addTokens (doc, segs, tokensKey, work) {
+  const spend = (n) => {
+    work.left -= n;
+    if (work.left < 0) { throw new Error(`More than ${MAX_TOKENS_WORK} values to tokenize`); }
+  };
   const stack = [[doc, 0]];
   while (stack.length > 0) {
     const [obj, depth] = stack.pop();
     if (Array.isArray(obj)) {
+      spend(obj.length);
       for (const o of obj) { stack.push([o, depth]); }
       continue;
     }
@@ -50,15 +57,17 @@ function addTokens (doc, segs, tokensKey) {
     }
     const value = obj[segs[depth]];
     if (value === undefined || value === null) { continue; }
+    if (Array.isArray(value)) { spend(value.length); }
     obj[tokensKey] = [].concat(value).flatMap(v => typeof v === 'string' ? wordSplit(v) : []);
   }
 }
 
 /**
- * Add every one of the tokenFields to doc
+ * Add every one of the tokenFields to doc, throws when the doc's arrays would take too long
  */
 function addAllTokens (doc, fields) {
-  for (const { segs, key } of fields) { addTokens(doc, segs, key); }
+  const work = { left: MAX_TOKENS_WORK };
+  for (const { segs, key } of fields) { addTokens(doc, segs, key, work); }
 }
 
 module.exports = { tokenFields, addAllTokens };

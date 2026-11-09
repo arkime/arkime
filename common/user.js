@@ -405,12 +405,6 @@ class User {
     }
   }
 
-  static #storedRoles (userId) {
-    return new Promise((resolve, reject) => {
-      User.#implementation.getUser(userId, (err, doc) => err ? reject(err) : resolve(doc?.roles ?? []));
-    });
-  }
-
   /**
    * A field set to this in updateUser or saveFields is removed, an undefined one is left alone
    */
@@ -1157,45 +1151,55 @@ class User {
         return res.serverError(403, 'User not found');
       }
 
-      // A readOnly viewer only sees usersAdmin, the other roles are still stored
-      let roles;
-      try {
-        roles = [...(readOnly ? await User.#storedRoles(userId) : user.roles)];
-      } catch (e) {
-        return res.serverError(500, 'Error updating user role');
-      }
-      const hasRole = roles.includes(roleId);
-      if (newRoleState) {
-        if (hasRole) {
-          return res.serverError(403, 'Can not add a role that the user already has');
+      // The stored roles (a readOnly viewer only sees usersAdmin) written back only if
+      // unchanged, so a role change made in between isn't undone
+      for (let tries = 0; ; tries++) {
+        let hit;
+        try {
+          hit = await User.#implementation.getVersioned(userId);
+        } catch (e) {
+          return res.serverError(500, 'Error updating user role');
         }
-        roles.push(roleId);
-
-        if (userId.startsWith('role:')) {
-          let rolesSet;
-          try {
-            rolesSet = await User.roles2ExpandedSet(roles, true);
-          } catch (e) {
-            return res.serverError(500, 'Error updating user role');
+        const roles = [...((hit ? hit.doc.roles : user.roles) ?? [])];
+        const hasRole = roles.includes(roleId);
+        if (newRoleState) {
+          if (hasRole) {
+            return res.serverError(403, 'Can not add a role that the user already has');
           }
-          if (roleId === userId || rolesSet.has(userId)) {
-            return res.serverError(403, `Can't have circular role dependencies`);
-          }
-        }
-      } else {
-        if (!hasRole) {
-          return res.serverError(403, 'Can not remove a role that the user does not have');
-        }
-        roles.splice(roles.indexOf(roleId), 1);
-      }
+          roles.push(roleId);
 
-      try {
-        if (!await User.saveFields(user, { roles })) {
-          return res.serverError(403, 'User not found');
+          if (userId.startsWith('role:')) {
+            let rolesSet;
+            try {
+              rolesSet = await User.roles2ExpandedSet(roles, true);
+            } catch (e) {
+              return res.serverError(500, 'Error updating user role');
+            }
+            if (roleId === userId || rolesSet.has(userId)) {
+              return res.serverError(403, `Can't have circular role dependencies`);
+            }
+          }
+        } else {
+          if (!hasRole) {
+            return res.serverError(403, 'Can not remove a role that the user does not have');
+          }
+          roles.splice(roles.indexOf(roleId), 1);
         }
-      } catch (err) {
-        console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), User.forLog(user));
-        return res.serverError(500, 'Error updating user role');
+
+        try {
+          if (!hit) { // an anonymous user that isn't stored yet
+            if (!await User.saveFields(user, { roles })) {
+              return res.serverError(403, 'User not found');
+            }
+          } else {
+            await User.#implementation.putIfVersion(userId, { ...hit.doc, roles, createEnabled: roles.includes('usersAdmin') }, hit.version);
+          }
+          break;
+        } catch (err) {
+          if (err instanceof ArkimeDb.ConflictError && tries < 5) { continue; }
+          console.log(`ERROR - ${req.method} /api/user/%s/assignment`, userId, util.inspect(err, false, 50), User.forLog(user));
+          return res.serverError(500, 'Error updating user role');
+        }
       }
 
       return res.json({
@@ -2202,6 +2206,16 @@ class UserDbImplementation {
     }, (err) => {
       cb(err instanceof ArkimeDb.ConflictError ? VERSION_CONFLICT : err);
     });
+  }
+
+  async getVersioned (userId) {
+    return this.#users.getVersioned(userId);
+  }
+
+  async putIfVersion (userId, doc, version) {
+    User.deleteCache(userId);
+    await this.#users.putIfVersion(userId, doc, version);
+    User.deleteCache(userId); // Delete again after db says it's done refreshing
   }
 
   async updateUser (userId, fields) {

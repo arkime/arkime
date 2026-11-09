@@ -1008,7 +1008,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     const params = {
       sort: { [sortField]: req.query.desc === 'true' ? 'desc' : 'asc' },
       from: parseInt(req.query.start) || 0,
-      size: parseInt(req.query.length) || 10000
+      size: Math.min(Math.max(parseInt(req.query.length) || 10000, 0), 10000)
     };
 
     const and = [];

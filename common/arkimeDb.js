@@ -421,7 +421,11 @@ class ArkimeDb {
   static #OPS = new Set(['$in', '$nin', '$ne', '$exists', '$gt', '$gte', '$lt', '$lte', '$contains', '$icontains', '$prefix', '$wildcard', '$regex', '$cidr']);
   // SQLite matches every row with the same few patterns, a compiled pattern can be MBs
   static MAX_WHERE_REGEXES = 50;
-  static #regexCache = new LRUCache({ max: ArkimeDb.MAX_WHERE_REGEXES * 2 });
+  // A compiled pattern's memory grows with its compile time, so the cache is sized in compile ms
+  static #regexCache = new LRUCache({ max: ArkimeDb.MAX_WHERE_REGEXES * 2, maxSize: 500, sizeCalculation: (v) => v.ms });
+  // Compiling runs on the main thread and a big pattern takes ~100ms, so new patterns get this many ms a second
+  static REGEX_COMPILE_MS = 100;
+  static #compiling = { start: 0, ms: 0 };
   static #cidrCache = new LRUCache({ max: 1000 });
 
   /**
@@ -429,15 +433,24 @@ class ArkimeDb {
    */
   static regex (pattern) {
     const key = `r\t${pattern}`;
-    let re = ArkimeDb.#regexCache.get(key);
-    if (!re) {
-      const RE2 = require('re2');
+    const hit = ArkimeDb.#regexCache.get(key);
+    if (hit) { return hit.re; }
+
+    const budget = ArkimeDb.#compiling;
+    const now = Date.now();
+    if (now - budget.start >= 1000) { budget.start = now; budget.ms = 0; }
+    if (budget.ms >= ArkimeDb.REGEX_COMPILE_MS) { throw new Error('Too many new $regex patterns, try again'); }
+    const RE2 = require('re2');
+    const t0 = performance.now();
+    try {
       // Compiled alone first, an unbalanced ) would otherwise close the anchoring group and match everything
       new RE2(pattern, 's');
-      re = new RE2(`^(?:${pattern})$`, 's');
-      ArkimeDb.#regexCache.set(key, re);
+      const re = new RE2(`^(?:${pattern})$`, 's');
+      ArkimeDb.#regexCache.set(key, { re, ms: Math.max(1, Math.ceil(performance.now() - t0)) });
+      return re;
+    } finally {
+      budget.ms += performance.now() - t0;
     }
-    return re;
   }
 
   /**
