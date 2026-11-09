@@ -397,8 +397,19 @@ sub setSchemaVersion
 }
 
 ################################################################################
+# The oldest supported LTS, lightweight UPDATEs need 25.8 and only 26.x is tested
+sub checkServerVersion
+{
+    my $version = chquery("SELECT", "SELECT version() FORMAT TSV");
+    chomp $version;
+    my ($major, $minor) = $version =~ /^(\d+)\.(\d+)/ or die "Couldn't parse ClickHouse version '$version'\n";
+    die "ClickHouse $version is too old, Arkime needs 26.3 or newer\n" if ($major < 26 || ($major == 26 && $minor < 3));
+}
+
+################################################################################
 sub upgradeToCurrent
 {
+    checkServerVersion();
     createDatabase();
     createSchemaVersionTable();
     createSessionsTable();
@@ -495,6 +506,7 @@ sub cmdInit
         waitFor("INIT", "do you want to erase everything");
     }
 
+    checkServerVersion();
     logmsg "Dropping tables\n";
     chquery("DROP TABLE", "DROP TABLE IF EXISTS $sessionsTable");
     chquery("DROP TABLE", "DROP TABLE IF EXISTS $lookupsTable");

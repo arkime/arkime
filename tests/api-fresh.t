@@ -8,7 +8,7 @@ use JSON;
 use Data::Dumper;
 use strict;
 
-    esCopy("tests_fields", "tests2_fields");
+    clusterCopy(8123, 8124, "fields");
     esGet("/_flush");
 
 # Make sure no items
@@ -18,11 +18,14 @@ use strict;
 # Now test the APIs, basically making sure viewer doesn't crash
 my $json;
 
+SKIP: {
+    skip "no OpenSearch/Elasticsearch to report on", 2 if $ArkimeTest::noEs;
     $json = viewerGet2("/eshealth.json");
     is ($json->{number_of_data_nodes}, 1, "Correct number_of_data_nodes");
 
     $json = viewerGet2("/esstats.json");
     is ($json->{recordsTotal}, 1, "Correct number of stats");
+}
 
     $json = viewerGet2("/stats.json");
     is ($json->{recordsTotal}, 0, "Correct files recordsTotal");
@@ -51,7 +54,8 @@ my $json;
     is (scalar @{$json->{graph}->{"destination.packetsHisto"}}, 0, "Correct spigraph.json graph dstPacketsHisto");
     is (scalar @{$json->{graph}->{"client.bytesHisto"}}, 0, "Correct spigraph.json graph client.bytesHisto");
     is (scalar @{$json->{graph}->{"server.bytesHisto"}}, 0, "Correct spigraph.json graph dstDataBytesHisto");
-    is (scalar keys %{$json->{map}}, 0, "Correct spigraph.json map");
+    # ES with no sessions index answers no aggregations, an empty sessions table empty ones
+    is (scalar keys %{$json->{map}}, $ArkimeTest::noEs ? 3 : 0, "Correct spigraph.json map");
 
     $json = viewerGet2("/spiview.json?map=true&date=-1");
     is (scalar keys %{$json->{spi}}, 0, "Empty spiview.json spi");
@@ -61,7 +65,7 @@ my $json;
 
     $json = viewerGet2("/spiview.json?spi=ta&facets=1&map=true&date=-1");
     is (scalar keys %{$json->{spi}}, 1, "one spiview.json spi");
-    is (scalar keys %{$json->{spi}->{ta}}, 2, "Two spiview.json ta elements");
+    is (scalar keys %{$json->{spi}->{ta}}, $ArkimeTest::noEs ? 3 : 2, "Two spiview.json ta elements");
     is ($json->{recordsTotal}, 0, "Correct spiview.json recordsTotal");
     is (scalar @{$json->{graph}->{sessionsHisto}}, 0, "Correct spiview.json graph sessionsHisto");
     is (scalar @{$json->{graph}->{"source.packetsHisto"}}, 0, "Correct spiview.json graph srcPacketsHisto");

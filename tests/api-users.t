@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 310;
+use Test::More tests => 313;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -487,8 +487,11 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     ok($info->{success}, "dismiss help note with digit id");
 
     # users schema has the field (db version 87)
+    SKIP: {
+        skip "users aren't in OpenSearch/Elasticsearch", 1 if $ArkimeTest::noEs;
     $info = esGet("/tests_users_v30/_mapping");
     is($info->{tests_users_v30}->{mappings}->{properties}->{dismissedHelpNotes}->{type}, "keyword", "users mapping has dismissedHelpNotes keyword");
+    }
 
     # note id length boundary
     my $noteId32 = 'a' x 32;
@@ -535,6 +538,15 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     eq_or_diff($json->{error}, "User time limit (72 hours) exceeded", "user can't exceed their time limit");
     $json = viewerGet("/api/sessions?arkimeRegressionUser=sac-test2&date=72");
     is (exists $json->{data}, 1, "user can make a query within their time range");
+
+    # leaving out timeLimit and emailSearch removes them, so they come from the roles again
+    $json = viewerPostToken("/api/user/sac-test2", '{"roles": ["arkimeUser"], "emailSearch": true}', $token);
+    $users = viewerPost("/api/users", "");
+    ok(!exists $users->{data}->[$test2pos]->{timeLimit}, "left out time limit removed");
+    is($users->{data}->[$test2pos]->{emailSearch}, 1, "emailSearch set");
+    $json = viewerPostToken("/api/user/sac-test2", '{"timeLimit":"72", "roles": ["arkimeUser"]}', $token);
+    $users = viewerPost("/api/users", "");
+    ok(!exists $users->{data}->[$test2pos]->{emailSearch}, "left out emailSearch removed");
 
 # valueActions tests
     $json = viewerGet("/api/valueactions?arkimeRegressionUser=sac-test1");

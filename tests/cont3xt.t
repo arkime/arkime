@@ -691,7 +691,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
         custom => $deep
     }]
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "Custom field nested too deep"}'));
+is($json, "Error: JSON body nested deeper than 32");
 
 # update overview requires token
 $json = cont3xtPut('/api/overview', to_json({
@@ -1014,12 +1014,16 @@ for my $i (1..11) {
 }
 esGet("/_refresh");
 
+# Searched with no ES too, the audit counts below include it
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "10.0.0.1"
 }));
+SKIP: {
+skip "no OpenSearch/Elasticsearch for the elasticsearch integration", 3 if $ArkimeTest::noEs;
 is($json->{data}->{_cont3xt}->{count}, 11);
 is($json->{data}->{hits}->[0]->{source}->{ip}, "10.0.0.1");
 is($json->{data}->{hits}->[1]->{source}->{ip}, "10.0.0.1");
+}
 
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "badip"
@@ -1884,4 +1888,4 @@ is(scalar @{$json->{audits}}, 1, "search the client left is in the history");
 cmp_ok(time() - $leaveStart, "<", 5, "search the client left was saved before searchTimeout");
 $json = cont3xtGet("/api/audits?searchTerm=$longVal");
 is(scalar @{$json->{audits}}, 1, "long bulk search is in the history");
-cmp_ok(length($json->{audits}->[0]->{indicator}), "<=", 8000, "long bulk search indicator is truncated");
+cmp_ok(length($json->{audits}->[0]->{indicator}), "<=", 2000, "long bulk search indicator is truncated");

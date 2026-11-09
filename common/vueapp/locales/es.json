@@ -2537,9 +2537,9 @@
     "history": {
       "needAdminPrivileges": "Se necesitan privilegios de administrador",
       "retrieveFailed": "Error al recuperar el historial",
-      "missingIndex": "Falta el índice de historial",
       "deletedSuccessfully": "Elemento del historial eliminado exitosamente",
-      "deleteFailed": "Error al eliminar el elemento del historial"
+      "deleteFailed": "Error al eliminar el elemento del historial",
+      "notFound": "Elemento del historial no encontrado"
     },
     "shareables": {
       "missingName": "Falta el nombre del elemento compartido",
@@ -2585,6 +2585,7 @@
       "rolesMustBeArray": "El campo de roles debe ser un arreglo de cadenas de texto",
       "editRolesMustBeArray": "El campo de roles de edición debe ser un arreglo de cadenas de texto",
       "usersMustBeString": "El campo de usuarios debe ser una cadena de texto",
+      "viewMustBeString": "La vista debe ser una cadena de texto",
       "nameExists": "Ya existe un atajo con el nombre {name}",
       "created": "¡Nuevo atajo creado!",
       "errorCreating": "Error al crear el atajo",

@@ -1,6 +1,7 @@
 /* tagger.c  -- Simple plugin that tags sessions by using ip, hosts, md5s
- *              lists fetched from the ES database.  taggerUpload.pl is
- *              used to upload files to the database.  tagger checks
+ *              lists fetched from the ES database, or the cluster db's
+ *              tagger table with no ES.  taggerUpload.pl or taggerUpload.js
+ *              is used to upload files to the database.  tagger checks
  *              once a minute to see if the files in the database have
  *              changed.
  *
@@ -20,7 +21,7 @@
 
 extern ArkimeConfig_t        config;
 
-extern void                 *esServer;
+LOCAL  void                 *esServer;
 
 LOCAL  int                   httpHostField;
 LOCAL  int                   httpXffField;
@@ -721,6 +722,83 @@ LOCAL gboolean tagger_fetch_files(gpointer sync)
 }
 /******************************************************************************/
 /*
+ * With no ES the files are rows of the cluster db's tagger table. A blocking read,
+ * so after startup it runs on a thread and the rows load on the main thread.
+ */
+typedef struct {
+    char    *id;
+    uint8_t *doc;
+    int      doc_len;
+} TaggerRow_t;
+
+LOCAL GPtrArray *dbRows;
+LOCAL gboolean   dbFetching;
+
+LOCAL void tagger_db_row(const uint8_t *id, int id_len, const uint8_t *doc, int doc_len)
+{
+    TaggerRow_t *row = g_new(TaggerRow_t, 1);
+    row->id = g_strndup((const char *)id, id_len);
+    row->doc = (uint8_t *)g_strndup((const char *)doc, doc_len);
+    row->doc_len = doc_len;
+    g_ptr_array_add(dbRows, row);
+}
+/******************************************************************************/
+LOCAL void tagger_db_load(GPtrArray *rows)
+{
+    for (guint r = 0; r < rows->len; r++) {
+        TaggerRow_t *row = g_ptr_array_index(rows, r);
+        char *md5 = arkime_js0n_get_str(row->doc, row->doc_len, "md5");
+
+        TaggerFile_t *file;
+        uint32_t hhash = arkime_string_hash(row->id);
+        HASH_FIND_HASH(s_, allFiles, hhash, row->id, file);
+        if (!md5) {
+        } else if (!file) {
+            file = ARKIME_TYPE_ALLOC0(TaggerFile_t);
+            file->str = row->id;
+            row->id = NULL;
+            HASH_ADD_HASH(s_, allFiles, hhash, file->str, file);
+            tagger_load_file_cb(200, row->doc, row->doc_len, file);
+        } else if (!file->md5 || strcmp(file->md5, md5) != 0) {
+            tagger_load_file_cb(200, row->doc, row->doc_len, file);
+        }
+        g_free(md5);
+        g_free(row->id);
+        g_free(row->doc);
+        g_free(row);
+    }
+    g_ptr_array_free(rows, TRUE);
+}
+/******************************************************************************/
+LOCAL gboolean tagger_db_loaded(gpointer rows)
+{
+    tagger_db_load(rows);
+    dbFetching = FALSE;
+    return G_SOURCE_REMOVE;
+}
+/******************************************************************************/
+LOCAL gpointer tagger_db_fetch_thread(gpointer UNUSED(uw))
+{
+    dbRows = g_ptr_array_new();
+    arkime_db_cluster_each("tagger", tagger_db_row);
+    g_idle_add(tagger_db_loaded, dbRows);
+    return NULL;
+}
+/******************************************************************************/
+LOCAL gboolean tagger_db_fetch(gpointer sync)
+{
+    if (sync) {
+        dbRows = g_ptr_array_new();
+        arkime_db_cluster_each("tagger", tagger_db_row);
+        tagger_db_load(dbRows);
+    } else if (!dbFetching) {
+        dbFetching = TRUE;
+        g_thread_unref(g_thread_new("arkime-tagger", tagger_db_fetch_thread, NULL));
+    }
+    return G_SOURCE_CONTINUE;
+}
+/******************************************************************************/
+/*
  * Called by arkime when the plugin is loaded
  */
 void arkime_plugin_init()
@@ -729,6 +807,7 @@ void arkime_plugin_init()
         LOG("Not enabling in dryRun mode");
         return;
     }
+    esServer = arkime_db_es_server();
 
     HASH_INIT(s_, allFiles, arkime_string_hash, arkime_string_cmp);
     HASH_INIT(s_, allDomains, arkime_string_hash, arkime_string_cmp);
@@ -763,7 +842,12 @@ void arkime_plugin_init()
     dstIpField         = arkime_field_by_exp("ip.dst");
 
     /* Call right away sync, and schedule every 60 seconds async */
-    tagger_fetch_files(GINT_TO_POINTER(1));
-    g_timeout_add_seconds(60, tagger_fetch_files, 0);
+    if (esServer) {
+        tagger_fetch_files(GINT_TO_POINTER(1));
+        g_timeout_add_seconds(60, tagger_fetch_files, 0);
+    } else {
+        tagger_db_fetch(GINT_TO_POINTER(1));
+        g_timeout_add_seconds(60, tagger_db_fetch, 0);
+    }
 
 }

@@ -150,7 +150,14 @@ async function run (oldArg, newArg) {
     // Nothing encrypted to migrate (e.g. a role or header-only user)
     if (changed.length === 0) { continue; }
 
-    await User.setUser(userId, user);
+    const fields = {};
+    if (changed.includes('passStore')) { fields.passStore = user.passStore; }
+    if (changed.includes('cont3xt keys')) { fields.cont3xt = user.cont3xt; }
+    if (!await User.updateUser(userId, fields)) {
+      console.log(`SKIP   - ${userId}: deleted while running`);
+      skipped++;
+      continue;
+    }
     console.log(`UPDATE - ${userId}: re-encrypted ${changed.join(', ')}`);
     updated++;
   }
@@ -200,19 +207,14 @@ async function premain () {
     defaultSections: 'default'
   });
 
-  const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
-  const usersUrl = ArkimeConfig.get('usersUrl');
-  const usersEs = ArkimeConfig.getArray('usersElasticsearch') ?? es;
-
-  // Match viewer/db.js: users prefix is usersPrefix falling back to the main prefix.
-  const usersPrefix = ArkimeConfig.get('usersPrefix') ?? ArkimeConfig.get('prefix', 'arkime');
+  const usersEs = ArkimeConfig.usersDbUrls() ?? ArkimeConfig.dbUrls();
+  const usersPrefix = ArkimeConfig.usersPrefix();
 
   await Auth.initialize({ passwordSecretSection: 'default' });
 
   User.initialize({
-    insecure: ArkimeConfig.isInsecure([usersUrl, usersEs]),
+    insecure: ArkimeConfig.isInsecure([usersEs]),
     requestTimeout: ArkimeConfig.get('elasticsearchTimeout', 300),
-    url: usersUrl,
     node: usersEs,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
     clientKey: ArkimeConfig.get('esClientKey'),

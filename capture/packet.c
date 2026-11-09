@@ -27,7 +27,6 @@ LOCAL uint64_t               initialDropped = 0;
 LOCAL uint8_t                firstPacket = 0;
 struct timeval               initialPacket; // Don't make LOCAL for now because of netflow plugin
 
-extern void                 *esServer;
 extern uint32_t              pluginsCbs;
 
 int                          mac1Field;
@@ -577,7 +576,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
 
         if (unlikely(packet->pktlen == ARKIME_PACKET_LEN_FILE_DONE)) {
             // Make sure no best http requests are in the queue, like the file create
-            while (arkime_http_queue_length_best(esServer) > 0) {
+            while (arkime_db_queue_length_best() > 0) {
                 usleep(5000);
             }
 
@@ -807,7 +806,7 @@ LOCAL void arkime_packet_log(int mProtocol)
         stats.total,
         stats.dropped - initialDropped,
         (stats.total ? (stats.dropped - initialDropped) * (double)100.0 / stats.total : 0),
-        arkime_http_queue_length(esServer),
+        arkime_db_queue_length(),
         wql,
         arkime_packet_outstanding(),
         arkime_session_close_outstanding(),
@@ -892,7 +891,7 @@ LOCAL void arkime_packet_cmd_stats(int UNUSED(argc), char **UNUSED(argv), gpoint
                        MAX(arkime_session_idle_seconds(mProtocolIcmp),
                            arkime_session_idle_seconds(mProtocolIcmpv6)),
 
-                       arkime_http_queue_length(esServer),
+                       arkime_db_queue_length(),
                        wql,
                        arkime_packet_outstanding(),
                        arkime_session_close_outstanding(),

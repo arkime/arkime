@@ -252,22 +252,25 @@ ok(exists $shortcuts->{$shortcut1Id}->{help}, "Shortcut has help");
 ok(exists $shortcuts->{$shortcut1Id}->{dbField}, "Shortcut has dbField");
 
 # the local (test2) cluster should sync with the remote (test) cluster
-sleep(1);
-esGet("/_refresh");
-viewerGet2("/api/syncshortcuts");
-sleep(1);
-esGet("/_refresh");
-sleep(2);
+SKIP: {
+    skip "shortcuts are only copied to an ES lookups index when the sessions are in ES", 1 if $ArkimeTest::noEs;
+    sleep(1);
+    esGet("/_refresh");
+    viewerGet2("/api/syncshortcuts");
+    sleep(1);
+    esGet("/_refresh");
+    sleep(2);
 
-my $testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
-my $tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
+    my $testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
+    my $tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
 
-for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
-  delete $testsCluster->[$i]->{_index};
-  delete $tests2Cluster->[$i]->{_index};
+    for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
+      delete $testsCluster->[$i]->{_index};
+      delete $tests2Cluster->[$i]->{_index};
+    }
+
+    eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 }
-
-eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
 # delete shortcut requires token
 $json = viewerDelete("/api/shortcut/$shortcut1Id");
@@ -302,19 +305,22 @@ $shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=sac-user2");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts for sac-user2 after cleanup");
 
 # the local (test2) cluster should sync with the remote (test) cluster
-viewerGet2("/api/syncshortcuts");
-esGet("/_refresh");
-sleep(2);
+SKIP: {
+    skip "shortcuts are only copied to an ES lookups index when the sessions are in ES", 1 if $ArkimeTest::noEs;
+    viewerGet2("/api/syncshortcuts");
+    esGet("/_refresh");
+    sleep(2);
 
-$testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
-$tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
+    my $testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
+    my $tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
 
-for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
-  delete $testsCluster->[$i]->{_index};
-  delete $tests2Cluster->[$i]->{_index};
+    for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
+      delete $testsCluster->[$i]->{_index};
+      delete $tests2Cluster->[$i]->{_index};
+    }
+
+    eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 }
-
-eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
 # --- Description type validation tests ---
 

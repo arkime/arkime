@@ -21,7 +21,6 @@ extern ArkimeConfig_t        config;
 LOCAL  pcap_t               *pcap;
 LOCAL  FILE                 *offlineFile = 0;
 
-extern void                 *esServer;
 LOCAL  ArkimeStringHead_t    monitorQ;
 
 LOCAL  char                  offlinePcapFilename[PATH_MAX + 1];
@@ -482,10 +481,10 @@ LOCAL gboolean reader_libpcapfile_read()
         return G_SOURCE_CONTINUE;
     }
 
-    // pause reading if too many waiting ES operations
-    if (arkime_http_queue_length(esServer) > 30 || arkime_http_queue_length_best(esServer) > 0) {
+    // pause reading if too many waiting db operations
+    if (arkime_db_queue_length() > 30 || arkime_db_queue_length_best() > 0) {
         if (config.debug)
-            LOG("Waiting to process more packets, es q: %d best q: %d", arkime_http_queue_length(esServer), arkime_http_queue_length_best(esServer));
+            LOG("Waiting to process more packets, db q: %d best q: %d", arkime_db_queue_length(), arkime_db_queue_length_best());
         return G_SOURCE_CONTINUE;
     }
 

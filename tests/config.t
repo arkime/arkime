@@ -313,6 +313,9 @@ doGoodTest("../tests/testconfig.json");
 
 doNotFoundTest("notfound.json");
 
+SKIP: {
+    skip "no OpenSearch/Elasticsearch to hold the config", 16 if $ArkimeTest::noEs;
+
 #### ELASTICSEARCH JSON
 
 $es = "${ArkimeTest::elasticsearch}/testconfig/_doc/testconfig";
@@ -338,6 +341,7 @@ doGoodTest($url);
 $url = "${ArkimeTest::elasticsearch}/testconfig/_source/notfound";
 
 doNotFoundTest($url);
+}
 
 #### REDIS JSON
 use IO::Socket::INET;

@@ -1,4 +1,4 @@
-use Test::More tests => 77;
+use Test::More tests => 76;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -47,7 +47,8 @@ my ($check) = @_;
     my $otherToken = getTokenCookie('historytest1');
 
 # Clear all history
-    esDelete("/tests*_history_v1*");
+    viewerGet("/regressionTests/deleteAllHistory");
+    viewerGet2("/regressionTests/deleteAllHistory");
     sleep(1);
     esGet("/_flush");
     esGet("/_refresh");
@@ -156,17 +157,8 @@ my ($check) = @_;
     $json = viewerDeleteToken("/api/history/$item->{id}?arkimeRegressionUser=historytest1", $otherToken);
     eq_or_diff($json, from_json('{"success": false, "text": "You do not have permission to access this resource"}', {relaxed => 1}), "Test Delete Not Admin", { context => 3 });
 
-# Delete item no index
-    $json = viewerDeleteToken("/api/history/$item->{id}", $token);
-    is($json->{success}, 0, "Test Delete No Index");
-    is($json->{i18n}, "api.history.missingIndex", "Test Delete No Index i18n");
-
-# Delete item invalid index
+# Delete item, the index older clients send along is ignored
     $json = viewerDeleteToken("/api/history/$item->{id}?index=evil_nothistory", $token);
-    is($json->{success}, 0, "Test Delete Invalid Index");
-
-# Delete item
-    $json = viewerDeleteToken("/api/history/$item->{id}?index=$item->{index}", $token);
     is($json->{success}, 1, "Test Delete success");
     is($json->{i18n}, "api.history.deletedSuccessfully", "Test Delete i18n");
     esGet("/_refresh");
@@ -218,9 +210,13 @@ my ($check) = @_;
   }
   is ($found3, 0, "Non admin should not see forcedExpression in history");
 
-  # delete the history item with the forced expression
+  # delete the history item with the forced expression through multi
   $item = $json->{data}->[0];
-  $json = viewerDeleteToken("/api/history/$item->{id}?index=$item->{index}", $token);
+  $json = multiDeleteToken("/api/history/$item->{id}?cluster=test", $token);
+  is($json->{i18n}, "api.history.deletedSuccessfully", "multi delete i18n");
+  esGet("/_refresh");
+  $json = viewerDeleteToken("/api/history/$item->{id}", $token);
+  is($json->{i18n}, "api.history.notFound", "deleted item is not found");
 
 # Delete Users
     $json = viewerDeleteToken("/api/user/historytest1", $token);

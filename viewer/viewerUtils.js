@@ -384,9 +384,10 @@ class ViewerUtils {
   // ----------------------------------------------------------------------------
   static async loadFields () {
     try {
-      let data = await Db.loadFields();
+      // Config takes { _id, _source } field docs
+      let data = (await Db.loadFields()).map(h => ({ _id: h.id, _source: h.doc }));
       // Field docs can be written by sensors, drop a bad one before anything reads it
-      data = data.hits.hits.filter((field) => {
+      data = data.filter((field) => {
         if (Config.isValidFieldDoc(field)) { return true; }
         console.log('WARNING - skipping invalid field definition', ArkimeUtil.sanitizeStr(JSON.stringify(field?._id)));
         return false;

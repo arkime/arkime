@@ -91,6 +91,36 @@ LOCAL int arkime_field_exp_cmp(const char *key, const ArkimeFieldInfo_t *element
     return strcmp(key, element->expression) == 0;
 }
 /******************************************************************************/
+// Same JSON array text, ignoring whitespace outside strings since Postgres jsonb adds a space after commas
+LOCAL gboolean arkime_field_json_same(const char *a, const char *b)
+{
+    gboolean inString = FALSE;
+    while (1) {
+        if (!inString) {
+            while (*a == ' ')
+                a++;
+            while (*b == ' ')
+                b++;
+        }
+        if (*a != *b)
+            return FALSE;
+        if (!*a)
+            return TRUE;
+        if (*a == '\\' && inString) {
+            a++;
+            b++;
+            if (*a != *b)
+                return FALSE;
+            if (!*a)
+                return TRUE;
+        } else if (*a == '"') {
+            inString = !inString;
+        }
+        a++;
+        b++;
+    }
+}
+/******************************************************************************/
 LOCAL void arkime_field_free_info(ArkimeFieldInfo_t *info)
 {
     g_free(info->dbFieldFull);
@@ -109,6 +139,7 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     uint32_t           out[4 * 100]; // Can have up to 100 elements at any level
     int                disabled = 0;
+    int                fieldECS = -1;
 
     if (js0n(data, data_len, out, sizeof(out)) != 0) {
         LOGEXIT("ERROR - Parse error for >%.*s<\n", data_len, data);
@@ -124,9 +155,8 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
             info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
             info->dbFieldLen  = out[i + 3];
         } else if (strncmp("fieldECS", (char *)data + out[i], 7) == 0) {
-            g_free(info->dbFieldFull);
-            info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
-            info->dbFieldLen  = out[i + 3];
+            // The viewer uses fieldECS over dbField2, applied after the loop so key order can't matter
+            fieldECS = i;
         } else if (strncmp("type", (char *)data + out[i], 4) == 0) {
             g_free(info->kind);
             info->kind = g_strndup((char *)data + out[i + 2], out[i + 3]);
@@ -148,6 +178,12 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
                 disabled = 1;
             }
         }
+    }
+
+    if (fieldECS >= 0) {
+        g_free(info->dbFieldFull);
+        info->dbFieldFull = info->dbField = g_strndup((char *)data + out[fieldECS + 2], out[fieldECS + 3]);
+        info->dbFieldLen  = out[fieldECS + 3];
     }
 
     if (!info->dbField) {
@@ -454,7 +490,7 @@ int arkime_field_define(const char *group, const char *kind, const char *express
         if (strcmp(kind, minfo->kind) != 0) {
             LOG("WARNING - Field kind in db '%s' doesn't match field kind '%s' in capture for field '%s'", minfo->kind, kind, expression);
         }
-        if (category && (!minfo->category || strcmp(category, minfo->category) != 0)) {
+        if (category && (!minfo->category || !arkime_field_json_same(category, minfo->category))) {
             LOG("UPDATING - Field category to '%s' from '%s' for field '%s'", category, minfo->category, expression);
             arkime_db_update_field(expression, "category", category);
         }
@@ -462,7 +498,7 @@ int arkime_field_define(const char *group, const char *kind, const char *express
             LOG("UPDATING - Field transform to '%s' from '%s' for field '%s'", transform, minfo->transform, expression);
             arkime_db_update_field(expression, "transform", transform);
         }
-        if (aliases && (!minfo->aliases || strcmp(aliases, minfo->aliases) != 0)) {
+        if (aliases && (!minfo->aliases || !arkime_field_json_same(aliases, minfo->aliases))) {
             LOG("UPDATING - Field aliases to '%s' from '%s' for field '%s'", aliases, minfo->aliases, expression);
             arkime_db_update_field(expression, "aliases", aliases);
         }

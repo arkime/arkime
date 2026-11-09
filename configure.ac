@@ -17,6 +17,8 @@ AC_CONFIG_FILES([
   capture/plugins/lua/Makefile
   capture/plugins/kafka/Makefile
   capture/plugins/zeeklog/Makefile
+  capture/plugins/mongodb/Makefile
+  capture/plugins/mysqldb/Makefile
   capture/parsers/Makefile
   db/Makefile
   tests/plugins/Makefile
@@ -674,6 +676,29 @@ AS_IF([test "x$with_libxdp" != "xno"], [
 
 AC_SUBST([LIBXDP_CFLAGS])
 AC_SUBST([LIBXDP_LIBS])
+
+dnl Checks for libpq, lets capture write its cluster db metadata to Postgres. Optional.
+AC_ARG_WITH([libpq],
+  AS_HELP_STRING([--with-libpq], [Write capture metadata to a Postgres dbUrl (requires libpq 13 or newer)]))
+
+have_libpq=no
+AS_IF([test "x$with_libpq" != "xno"], [
+    PKG_CHECK_MODULES([LIBPQ], [libpq >= 13], [
+        AC_DEFINE([HAVE_LIBPQ], [1], [Define to 1 if libpq is available for a Postgres dbUrl.])
+        have_libpq=yes
+        LIBPQ_VERSION=`$PKG_CONFIG --modversion libpq`
+        AC_MSG_NOTICE([Found libpq $LIBPQ_VERSION, Postgres dbUrl enabled.])
+    ], [
+        AS_IF([test "x$with_libpq" = "xyes"], [
+            AC_MSG_ERROR([libpq 13 or newer was requested but not found via pkg-config. Install libpq-dev or libpq-devel.])
+        ], [
+            AC_MSG_WARN([libpq 13 or newer not found via pkg-config, Postgres dbUrl disabled.])
+        ])
+    ])
+])
+
+AC_SUBST([LIBPQ_CFLAGS])
+AC_SUBST([LIBPQ_LIBS])
 
 dnl jemalloc
 AC_ARG_WITH(jemalloc,

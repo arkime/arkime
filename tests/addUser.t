@@ -294,10 +294,10 @@ like ($response->content, qr/"success":\s*true/, "receiveSession first chunk acc
 unlink glob("/tmp/test3-*-receivefail.pcap");
 $response = receiveSession("receivefail", "receivefail2");
 like ($response->content, qr/"success":\s*false/, "receiveSession reports pcap write failure");
-ok (!esGet("/tests2_sessions3-receivetest/_doc/receivefail2")->{found}, "session not indexed when its pcap write failed");
+ok (!sessionGet(8126, "3\@receivetest:receivefail2")->{found}, "session not indexed when its pcap write failed");
 $response = receiveSession("receivefail", "receivefail3");
 like ($response->content, qr/"success":\s*true/, "receiveSession after a failed write starts a new pcap");
-ok (esGet("/tests2_sessions3-receivetest/_doc/receivefail3")->{found}, "session after a failed write indexed");
+ok (sessionGet(8126, "3\@receivetest:receivefail3")->{found}, "session after a failed write indexed");
 
 # /receiveSession - a session without packets reports when it can't be indexed
 $response = receiveSession("receivenopcap", '9@receivetest:x', 1);
@@ -306,12 +306,13 @@ like ($response->content, qr/"success":\s*false/, "receiveSession reports sessio
 # /receiveSession - a received session is indexed once its pcap is written, pointing at the new file
 $response = receiveSession("receiveok");
 like ($response->content, qr/"success":\s*true/, "receiveSession with pcap accepted");
-my $received = esGet("/tests2_sessions3-receivetest/_doc/receiveok");
+my $received = sessionGet(8126, "3\@receivetest:receiveok");
 is ($received->{_source}->{srcNode}, "receivetest", "received session indexed");
 ok ($received->{_source}->{packetPos}->[0] < 0 && -e glob("/tmp/test3-*-receiveok.pcap"), "received session points at written pcap");
+sessionDelete(8126, "3\@receivetest:$_") for (qw(toString receivefail receivefail3 receiveok));
 esDelete("/tests2_sessions3-receivetest");
 
-esPost("/tests2_files*/_delete_by_query?refresh=true", '{"query":{"bool":{"should":[{"wildcard":{"name":"*-toString.pcap"}},{"wildcard":{"name":"*-receivefail.pcap"}},{"wildcard":{"name":"*-receiveok.pcap"}}]}}}');
+clusterDeleteWhere(8124, "files", {'$or' => [map { {name => {'$wildcard' => "*-$_.pcap"}} } qw(toString receivefail receiveok)]});
 unlink glob("/tmp/test3-*-receiveok.pcap");
 unlink glob("/tmp/test3-*-receivefail.pcap");
 unlink glob("/tmp/test3-*-toString.pcap");

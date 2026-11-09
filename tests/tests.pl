@@ -26,6 +26,8 @@ $main::userAgent->ssl_opts(SSL_verify_mode => 0, verify_hostname => 0);
 
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 my $USERSELASTICSEARCH = $ENV{USERSELASTICSEARCH} || $ELASTICSEARCH;
+# No OpenSearch/Elasticsearch at all, see tests_noes.sh
+my $NOES = $ENV{ARKIME_TEST_NOES};
 
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
@@ -37,19 +39,19 @@ my $EXTRA = "";
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
     }
 
     if (! -f "oui.txt") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
     }
 
     if (! -f "GeoLite2-City.mmdb") {
-        system("curl -sSfLO https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
+        system("curl -sSfLO --retry 3 --max-time 300 https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/arkime.h'))[9] > (stat('plugins/test.so'))[9]) {
@@ -438,14 +440,25 @@ my ($cmd) = @_;
     my $node = "node";
     $node = "c8 node" if ($main::c8);
 
+    # With ClickHouse or dbPlugins sessions esProxy also tees the bulked sessions to their teech_ prefix
+    if ($ArkimeTest::sessionsDbNonES) {
+        $ENV{ARKIME_tee__sessionsDbUrl} = $ArkimeTest::sessionsDbUrl;
+        $ENV{ARKIME_tee__prefix} = "teech";
+    }
+
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
-        step("Initializing ES");
-        if ($main::debug) {
+        step("Initializing ES") if (!$NOES);
+        if ($NOES) {
+        } elsif ($main::debug) {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt");
             system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression");
         } else {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
             system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression 2>&1 1>/dev/null");
+        }
+        if ($ENV{ARKIME_TEST_SPLIT} && !$NOES) {
+            system("../db/db.pl $INSECURE --prefix testscl $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
+            system("../db/db.pl $INSECURE --prefix tests2cl $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
         }
 
         # Initialize ClickHouse if a sessionsDbUrl is configured for the test viewer
@@ -462,6 +475,14 @@ my ($cmd) = @_;
                 $chRc = system("../db/ch.pl --no-prompt --prefix tests_ --partition none $chUrl init 2>&1 1>/dev/null");
             }
             die "ClickHouse init failed (is ClickHouse running at $chUrl?), aborting so tests don't run against stale sessions\n" if ($chRc != 0);
+            # esProxy's [tee] sessionsDbUrl writes its copy of the bulked sessions here
+            system("../db/ch.pl --no-prompt --prefix teech_ --partition none $chUrl init 2>&1 1>/dev/null") == 0 or die "ClickHouse tee init failed\n";
+            # With no ES the tests2 viewers' sessions are in ClickHouse too
+            system("../db/ch.pl --no-prompt --prefix tests2_ --partition none $chUrl init 2>&1 1>/dev/null") == 0 or die "ClickHouse tests2 init failed\n" if ($NOES);
+        } elsif ($ArkimeTest::sessionsDbNonES) {
+            step("Wiping the $sessionsDbUrl sessions");
+            ArkimeTest::sessionsHelper("wipe", "tests_") or die "Couldn't wipe the sessions at $sessionsDbUrl\n";
+            ArkimeTest::sessionsHelper("wipe", "teech_") or die "Couldn't wipe the tee sessions at $sessionsDbUrl\n";
         }
 
         step("Loading tagger");
@@ -470,7 +491,11 @@ my ($cmd) = @_;
                    ["md5", "md5.tagger1.json", "md5taggertest1"], ["ip", "ip.tagger2.json", "iptaggertest2"],
                    ["host", "host.tagger2.json", "hosttaggertest2"], ["md5", "md5.tagger2.json", "md5taggertest2"],
                    ["email", "email.tagger2.json", "emailtaggertest2"], ["uri", "uri.tagger2.json", "uritaggertest2"]) {
-            system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH @$t$tagQuiet");
+            if ($NOES) {
+                system("$node ../capture/plugins/taggerUpload.js -c config.test.ini -n test $INSECURE @$t$tagQuiet");
+            } else {
+                system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH @$t$tagQuiet");
+            }
         }
     }
 
@@ -500,13 +525,18 @@ my ($cmd) = @_;
         waitFor($ArkimeTest::host, 8081, 1);
     }
 
-    my $es = "-o 'elasticsearch=$ELASTICSEARCH'";
-    my $ces = "-o 'cont3xt.elasticsearch=$ELASTICSEARCH'";
+    my $es = $NOES ? "-o 'elasticsearch='" : "-o 'elasticsearch=$ELASTICSEARCH'";
+    my $ces = $NOES ? "-o 'cont3xt.elasticsearch='" : "-o 'cont3xt.elasticsearch=$ELASTICSEARCH'";
     my $ues = "-o 'usersElasticsearch=$USERSELASTICSEARCH'";
     my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
     my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
     my $mesCh = $ArkimeTest::sessionsDbUrl ? ",sessionsDbUrl:$ArkimeTest::sessionsDbUrl" : "";
-    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh;$ELASTICSEARCH,prefix:tests2_,name:test2'";
+    my $mesCluster = $ArkimeTest::dbUrl ? ",dbUrl:$ArkimeTest::dbUrl" : "";
+    # Only the sessions follow sessionsDbUrl, a dbUrl that is not ES needs one for them
+    my $mesNonESSessions = $ArkimeTest::clusterDbNonES ? ",sessionsDbUrl:" . ($NOES ? $ArkimeTest::sessionsDbUrl : $ELASTICSEARCH) : "";
+    $mesCh ||= $mesNonESSessions;
+    my ($mesSplit, $mesSplit2) = $ENV{ARKIME_TEST_SPLIT} ? (",dbPrefix:testscl,sessionsDbPrefix:tests", ",dbPrefix:tests2cl,sessionsDbPrefix:tests2") : ("", "");
+    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh$mesCluster$mesSplit;$ELASTICSEARCH,prefix:tests2_,name:test2$mesNonESSessions$mesCluster$mesSplit2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
@@ -531,8 +561,6 @@ my ($cmd) = @_;
         system($mcmd);
 
         die "Loaded" if ($cmd eq "--viewerload");
-
-        esCopy("tests_fields", "tests2_fields", "field");
     }
 
     if ($cmd ne "--viewernostart") {
@@ -579,11 +607,18 @@ my ($cmd) = @_;
     waitFor($ArkimeTest::host, 8126);
     waitFor($ArkimeTest::host, 8008);
     waitFor($ArkimeTest::host, 3218);
-    waitFor($ArkimeTest::host, 7200);
+    # esProxy only proxies to OpenSearch/Elasticsearch
+    waitFor($ArkimeTest::host, 7200) if (!$NOES);
     waitFor($ArkimeTest::host, 7379);
     waitFor($ArkimeTest::host, 4566);
     step("Preparing tests");
     sleep 1;
+
+    # tests2 viewers need the fields capture added to tests
+    if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
+        clusterCopy(8123, 8124, "fields");
+        $main::userAgent->post("http://$ArkimeTest::host:$_/regressionTests/flushCache") for (8126, 8127, 8128);
+    }
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
     $main::userAgent->get("$ELASTICSEARCH/_refresh");
@@ -603,6 +638,10 @@ my ($cmd) = @_;
 
     my @tests = @ARGV;
     @tests = glob ("*.t") if ($#tests == -1);
+    # esProxy only knows one prefix
+    @tests = grep { !/^esProxy/ } @tests if ($ENV{ARKIME_TEST_SPLIT});
+    # These only test OpenSearch/Elasticsearch, esProxy and db.pl
+    @tests = grep { !/^(esProxy|dbpl|api-esadmin)/ } @tests if ($NOES);
     my $parser = $harness->runtests(@tests);
 
 # Cleanup
@@ -672,6 +711,9 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
+    } elsif ($ARGV[0] eq "--splitprefix") {
+        $ENV{ARKIME_TEST_SPLIT} = 1;
+        shift @ARGV;
     } elsif ($ARGV[0] eq "--jobs") {
         shift @ARGV;
         $main::jobs = $ARGV[0];
@@ -690,6 +732,24 @@ while (scalar (@ARGV) > 0) {
     } else {
         last;
     }
+}
+
+# Every node with a prefix gets <prefix>cl_ for its cluster db, the viewers and capture read it from the environment.
+# Debian's sh drops names with a - in them, so those are spelled DASH like the config expects.
+if ($ENV{ARKIME_TEST_SPLIT}) {
+    my $section;
+    open(my $cfgFh, '<', "config.test.ini") or die "Can't open config.test.ini";
+    while (<$cfgFh>) {
+        $section = $1 if (/^\[(.*)\]/);
+        next if (!$section || !/^prefix\s*=\s*(\S+?)_?\s*$/);
+        my $prefix = $1;
+        (my $name = $section) =~ s/-/DASH/g;
+        $name =~ s/:/COLON/g;
+        $name =~ s/\./DOT/g;
+        $ENV{"ARKIME_${name}__dbPrefix"} = "${prefix}cl";
+        $ENV{"ARKIME_${name}__sessionsDbPrefix"} = $prefix;
+    }
+    close($cfgFh);
 }
 
 if ($main::cmd eq "--fix") {
@@ -718,6 +778,7 @@ if ($main::cmd eq "--fix") {
     print "  --debug                Turn on debugging\n";
     print "  --valgrind             Use valgrind on capture\n";
     print "  --jobs <n>             Run up to n captures at once for the pcap tests (default 4)\n";
+    print "  --splitprefix          Give the cluster db indices their own <prefix>cl_ prefix\n";
     print "\n";
     print "Commands:\n";
     print "  --help                 This help\n";

@@ -2538,9 +2538,9 @@
     "history": {
       "needAdminPrivileges": "Eednay adminway ivilegespray",
       "retrieveFailed": "Errorway etrievingray istoryhay",
-      "missingIndex": "Issingmay istoryhay indexway",
       "deletedSuccessfully": "Eletedday istoryhay itemway uccessfullysay",
-      "deleteFailed": "Errorway eletingday istoryhay itemway"
+      "deleteFailed": "Errorway eletingday istoryhay itemway",
+      "notFound": "Istoryhay itemway otnay oundfay"
     },
     "shareables": {
       "missingName": "Issingmay areableshay amenay",
@@ -2586,6 +2586,7 @@
       "rolesMustBeArray": "Olesray ieldfay ustmay ebay anway arrayway ofway ingstray",
       "editRolesMustBeArray": "Editway olesray ieldfay ustmay ebay anway arrayway ofway ingstray",
       "usersMustBeString": "Usersway ieldfay ustmay ebay away ingstray",
+      "viewMustBeString": "Viewway ustmay ebay away ingstray",
       "nameExists": "Away ortcutshay ithway ethay amenay, {name}, alreadyway existsway",
       "created": "Eatedcray ewnay ortcutshay!",
       "errorCreating": "Errorway eatingcray ortcutshay",

@@ -17,6 +17,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const RE2 = require('re2');
 const ArkimeConfig = require('../common/arkimeConfig');
+const ArkimeUtil = require('../common/arkimeUtil');
 
 // build internals
 const internals = {
@@ -95,7 +96,11 @@ internals.initialize = (app) => {
 
 ArkimeConfig.loaded(() => {
   // build internals
-  internals.elasticBase = Config.getArray('elasticsearch', 'http://localhost:9200');
+  internals.multiES = Config.getBool('multiES', false);
+  // with no OpenSearch/Elasticsearch db the viewer never talks to one
+  internals.hasEs = internals.multiES || ArkimeConfig.hasEs();
+  // A multi viewer only talks to multies, its clusters' dbs are set in multiESNodes
+  internals.elasticBase = internals.multiES ? Config.getArray('elasticsearch', 'http://localhost:9200') : ArkimeConfig.sessionsEsUrls();
   internals.remoteClusters = Config.configMap('remote-clusters', 'moloch-clusters');
   internals.esQueryTimeout = Config.get('elasticsearchTimeout', 5 * 60) + 's';
   internals.esScrollTimeout = Config.get('elasticsearchScrollTimeout', 5 * 60) + 's';
@@ -111,13 +116,8 @@ ArkimeConfig.loaded(() => {
   internals.cronTimeout = +Config.get('dbFlushTimeout', 5) + // How long capture holds items
                            60 + // How long before ES reindexes
                            20; // Transmit and extra time
-  internals.prefix = Config.get('prefix', 'arkime_');
-  internals.multiES = Config.getBool('multiES', false);
-
-  // make sure there's an _ after the prefix
-  if (internals.prefix && !internals.prefix.endsWith('_')) {
-    internals.prefix = `${internals.prefix}_`;
-  }
+  internals.prefix = ArkimeUtil.formatPrefix(ArkimeConfig.sessionsDbPrefix());
+  internals.clusterPrefix = ArkimeUtil.formatPrefix(ArkimeConfig.dbPrefix());
 
   internals.uploadLimits.fileSize = Config.getInt('uploadFileSizeLimit', 2147483648);
 

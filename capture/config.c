@@ -645,12 +645,56 @@ LOCAL void arkime_config_load_hidden(const char *configFile)
     config.configFile = g_strdup(line);
 }
 /******************************************************************************/
+// The key's prefix or def, which it takes ownership of, ending in _ unless empty
+LOCAL char *arkime_config_prefix(GKeyFile *keyfile, const char *key, char *def)
+{
+    char *prefix = arkime_config_str(keyfile, key, NULL);
+    if (prefix)
+        g_free(def);
+    else
+        prefix = def;
+
+    int len = strlen(prefix);
+    if (len > 50)
+        CONFIGEXIT("%s can be at most 50 characters long", key);
+    if (len > 0 && prefix[len - 1] != '_') {
+        char *tmp = g_strdup_printf("%s_", prefix);
+        g_free(prefix);
+        prefix = tmp;
+    }
+    return prefix;
+}
+/******************************************************************************/
+// elasticsearch:// and opensearch:// style urls, comma separated, as http(s) to the server
+char *arkime_config_es_url(const char *url)
+{
+    gchar **urls = g_strsplit(url, ",", 0);
+    GString *result = g_string_new(NULL);
+    for (int i = 0; urls[i]; i++) {
+        const char *u = g_strstrip(urls[i]);
+        if (!*u)
+            continue;
+        if (result->len)
+            g_string_append_c(result, ',');
+        const char *colon = strstr(u, "://");
+        if (colon && (g_str_has_prefix(u, "elasticsearch") || g_str_has_prefix(u, "opensearch")))
+            g_string_append_printf(result, "%s%s", colon[-1] == 's' ? "https" : "http", colon);
+        else
+            g_string_append(result, u);
+    }
+    g_strfreev(urls);
+    return g_string_free(result, FALSE);
+}
+/******************************************************************************/
 LOCAL char arkime_config_key_sep(const char *key)
 {
     if (!key)
         return ';';
     if (strcmp(key, "elasticsearch") == 0 ||
-        strcmp(key, "usersElasticsearch") == 0)
+        strcmp(key, "usersElasticsearch") == 0 ||
+        strcmp(key, "sessionsDbUrl") == 0 ||
+        strcmp(key, "dbUrl") == 0 ||
+        strcmp(key, "usersDbUrl") == 0)
         return ',';
     return ';';
 }
@@ -1222,18 +1266,11 @@ LOCAL void arkime_config_load()
         }
     }
 
-    config.prefix           = arkime_config_str(keyfile, "prefix", "arkime_");
-    int len = strlen(config.prefix);
-    if (len > 50)
-        CONFIGEXIT("prefix can be at most 50 characters long");
-    if (len > 0 && config.prefix[len - 1] != '_') {
-        char *tmp  = g_malloc(len + 2);
-        memcpy(tmp, config.prefix, len);
-        tmp[len] = '_';
-        tmp[len + 1] = 0;
-        g_free(config.prefix);
-        config.prefix = tmp;
-    }
+    // A db with its own url falls back to prefix, one in dbUrl to dbPrefix then prefix
+    config.clusterPrefix    = arkime_config_prefix(keyfile, "dbPrefix", arkime_config_str(keyfile, "prefix", "arkime_"));
+    char *sessionsDbUrl     = arkime_config_str(keyfile, "sessionsDbUrl", NULL);
+    config.prefix           = arkime_config_prefix(keyfile, "sessionsDbPrefix", sessionsDbUrl ? arkime_config_str(keyfile, "prefix", "arkime_") : g_strdup(config.clusterPrefix));
+    g_free(sessionsDbUrl);
 
     config.elasticsearch    = arkime_config_str(keyfile, "elasticsearch", "localhost:9200");
     config.interface        = arkime_config_str_list(keyfile, "interface", NULL);

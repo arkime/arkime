@@ -26,17 +26,47 @@ class ArkimeUtil {
   static adminRole;
 
   // ----------------------------------------------------------------------------
+  // Far deeper than anything Arkime stores, a stored doc past 1000 fails every SQLite json query on its table
+  static #MAX_JSON_DEPTH = 32;
+
   /**
-   * A json body parser that doesn't allow anything that looks like "__proto__": or "constructor":
+   * A json body parser that doesn't allow anything that looks like "__proto__": or "constructor":,
+   * or nesting deeper than #MAX_JSON_DEPTH
    */
   static jsonParser = bodyParser.json({
     limit: '1mb',
     verify: function (req, res, buf, encoding) {
       if (buf !== undefined && buf.length) {
+        ArkimeUtil.#checkJsonDepth(buf);
         sjson.parse(buf);
       }
     }
   });
+
+  static #checkJsonDepth (buf) {
+    let depth = 0;
+    let inString = false;
+    for (let i = 0; i < buf.length; i++) {
+      const c = buf[i];
+      if (inString) {
+        if (c === 0x5c) { // backslash, skip what it escapes
+          i++;
+        } else if (c === 0x22) {
+          inString = false;
+        }
+      } else if (c === 0x22) {
+        inString = true;
+      } else if (c === 0x7b || c === 0x5b) {
+        if (++depth > ArkimeUtil.#MAX_JSON_DEPTH) {
+          const err = new Error(`JSON body nested deeper than ${ArkimeUtil.#MAX_JSON_DEPTH}`);
+          err.status = 400;
+          throw err;
+        }
+      } else if (c === 0x7d || c === 0x5d) {
+        depth--;
+      }
+    }
+  }
 
   // ---------------------------------------------------------------------------
   /**
@@ -105,6 +135,12 @@ class ArkimeUtil {
     if (typeof str !== 'string') { str = String(str); }
 
     return str.replace(/\u001b/g, '*ESC*');
+  }
+
+  // sanitizeStr kept to one log line, for text an attacker may have shaped
+  static sanitizeLine (str) {
+    str = ArkimeUtil.sanitizeStr(str);
+    return typeof str === 'string' ? str.replace(/\r/g, '\\r').replace(/\n/g, '\\n') : str;
   }
 
   // ----------------------------------------------------------------------------
@@ -1162,5 +1198,9 @@ const ArkimeDb = require('./arkimeDb');
 ArkimeUtil.createRedisClient = ArkimeDb.createRedisClient;
 ArkimeUtil.createElasticsearchInfo = ArkimeDb.createElasticsearchInfo;
 ArkimeUtil.createMemcachedClient = ArkimeDb.createMemcachedClient;
-ArkimeUtil.createLMDBStore = ArkimeDb.createLMDBStore;
 ArkimeUtil.createSQLiteDB = ArkimeDb.createSQLiteDB;
+ArkimeUtil.dbConnect = ArkimeDb.connect;
+ArkimeUtil.dbRegister = ArkimeDb.register;
+ArkimeUtil.dbCloseAll = ArkimeDb.closeAll;
+ArkimeUtil.dbIsES = ArkimeDb.isES;
+ArkimeUtil.dbHoldsCluster = ArkimeDb.holdsCluster;

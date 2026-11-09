@@ -1,4 +1,4 @@
-use Test::More tests => 64;
+use Test::More tests => 66;
 use Cwd;
 use ArkimeTest;
 use JSON;
@@ -60,6 +60,12 @@ $json = viewerPostToken("/api/cron/$key", '{"name":"sac-test1update","query":"pr
 ok($json->{success}, "query roles can be updated");
 eq_or_diff($json->{query}->{roles}->[0], "arkimeUser", "query roles was updated");
 eq_or_diff($json->{query}->{editRoles}->[0], "cont3xtUser", "query editRoles was updated");
+
+# leaving out roles and editRoles keeps the stored ones
+$json = viewerPostToken("/api/cron/$key", '{"name":"sac-test1update","query":"protocols == tls","action":"tag","tags":"tls","users":"sac-test2,test3"}', $token);
+ok($json->{success}, "query can be updated without roles");
+$json = viewerGetToken("/api/crons", $token);
+eq_or_diff([$json->[0]->{roles}, $json->[0]->{editRoles}], [["arkimeUser"], ["cont3xtUser"]], "left out roles and editRoles are kept");
 
 # can share with sac-test1 via roles
 $json = viewerGetToken("/api/crons?arkimeRegressionUser=sac-test1", $test1Token);

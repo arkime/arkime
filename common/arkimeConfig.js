@@ -6,7 +6,6 @@
  */
 'use strict';
 
-const ArkimeUtil = require('./arkimeUtil');
 const fs = require('fs');
 const axios = require('axios');
 const yaml = require('js-yaml');
@@ -67,12 +66,14 @@ class ArkimeConfig {
 
     ArkimeConfig.#uri = ArkimeConfig.#configFile;
 
-    // If ARKIME__usersElasticsearch is set then create a temp config
-    if (process.env.ARKIME__usersElasticsearch) {
+    // If ARKIME__usersDbUrl or ARKIME__usersElasticsearch is set then create a temp config
+    if (process.env.ARKIME__usersDbUrl || process.env.ARKIME__usersElasticsearch) {
       ArkimeConfig.#config = {
         [ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1]]: {
+          usersDbUrl: process.env.ARKIME__usersDbUrl,
           usersElasticsearch: process.env.ARKIME__usersElasticsearch,
           usersElasticsearchBasicAuth: process.env.ARKIME__usersElasticsearchBasicAuth,
+          usersDbPrefix: process.env.ARKIME__usersDbPrefix,
           usersPrefix: process.env.ARKIME__usersPrefix
         }
       };
@@ -149,8 +150,8 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
   /**
    * Should certificate verification be skipped for these urls: --insecure, or
-   * every https url is a loopback host. The urls share one TLS setting, so a
-   * single remote host means verifying all of them.
+   * every url that uses TLS is to a loopback host, see ArkimeDb.tlsHost. The urls share one TLS
+   * setting, so pass only the urls of the one connection it is for.
    * @param {Array<string|string[]>} [urls] - urls or arrays of urls, falsy entries are skipped
    * @returns {boolean}
    */
@@ -168,16 +169,25 @@ class ArkimeConfig {
       if (!url) {
         continue;
       }
-      const u = ArkimeUtil.parseUrl(url);
-      if (u === undefined) { continue; } // reported by the config validation
-      if (u.protocol !== 'https:') { continue; }
-      if (u.hostname !== 'localhost' && u.hostname !== '[::1]' && !/^127\.\d+\.\d+\.\d+$/.test(u.hostname)) {
+      const host = require('./arkimeDb').tlsHost(url);
+      if (host === undefined) { continue; }
+      if (!ArkimeConfig.isLoopbackHost(host)) {
         return false;
       }
       loopback = true;
     }
 
     return loopback;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Is the host a url names this machine: localhost, 127.x, ::1 or a postgres unix socket directory
+   * @param {string} host - a url's hostname, or a postgres host parameter
+   * @returns {boolean}
+   */
+  static isLoopbackHost (host) {
+    return !!host && (host.startsWith('/') || ['localhost', '[::1]', '::1'].includes(host) || /^127\.\d+\.\d+\.\d+$/.test(host));
   }
 
   // ----------------------------------------------------------------------------
@@ -313,6 +323,111 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
   static getArray (sectionKey, d, sep) {
     return ArkimeConfig.getFullArray(ArkimeConfig.#defaultSections, sectionKey, d, sep);
+  }
+
+  // ----------------------------------------------------------------------------
+  // Where each group of indices lives, every setting falls back to the older or broader ones
+  // ----------------------------------------------------------------------------
+  /**
+   * The db urls for everything without its own setting: dbUrl or else elasticsearch. Exits when neither is set
+   * but sessionsDbUrl is, since only the sessions db follows sessionsDbUrl.
+   */
+  // The elasticsearch urls, undefined when it isn't set or is empty
+  static #elasticsearchUrls () {
+    const urls = ArkimeConfig.getArray('elasticsearch');
+    return urls?.length ? urls : undefined;
+  }
+
+  static dbUrls () {
+    const urls = ArkimeConfig.getArray('dbUrl', undefined, ',') ?? ArkimeConfig.#elasticsearchUrls();
+    if (!urls && ArkimeConfig.get('sessionsDbUrl')) {
+      console.log('ERROR - set dbUrl, only the sessions db uses sessionsDbUrl');
+      process.exit(1);
+    }
+    return (urls ?? ['http://localhost:9200']).map(u => ArkimeConfig.esUrl(u));
+  }
+
+  /**
+   * The sessions db urls, sessionsDbUrl or else dbUrls
+   */
+  static sessionsDbUrls () {
+    return ArkimeConfig.getArray('sessionsDbUrl', undefined, ',')?.map(u => ArkimeConfig.esUrl(u)) ?? ArkimeConfig.dbUrls();
+  }
+
+  /**
+   * The OpenSearch/Elasticsearch for the sessions and everything else ES only: the sessions db when it is one,
+   * else dbUrl when it is one, else elasticsearch
+   */
+  static sessionsEsUrls () {
+    const sessions = ArkimeConfig.sessionsDbUrls();
+    if (ArkimeConfig.isEsUrl(sessions[0])) { return sessions; }
+    const db = ArkimeConfig.dbUrls();
+    if (ArkimeConfig.isEsUrl(db[0])) { return db; }
+    return ArkimeConfig.#elasticsearchUrls() ?? ['http://localhost:9200'];
+  }
+
+  /**
+   * True when the sessions or cluster db is OpenSearch/Elasticsearch, or elasticsearch is set for the ES only
+   * parts, the ones sessionsEsUrls() reaches. An ES users db alone doesn't count, nothing ES only would talk
+   * to it. An empty elasticsearch is the same as none.
+   */
+  static hasEs () {
+    return ArkimeConfig.isEsUrl(ArkimeConfig.sessionsDbUrls()[0]) || ArkimeConfig.isEsUrl(ArkimeConfig.dbUrls()[0]) ||
+      ArkimeConfig.#elasticsearchUrls() !== undefined;
+  }
+
+  /**
+   * No scheme, http(s) or the elasticsearch:// and opensearch:// style ones
+   */
+  static isEsUrl (url) {
+    return require('./arkimeDb').isES(url);
+  }
+
+  /**
+   * An elasticsearch:// or opensearch:// style url as the http(s) one to the server
+   */
+  static esUrl (url) {
+    return url.replace(/^(elasticsearch|opensearch)/i, 'http');
+  }
+
+  // Prefixes: a db with its own url uses its own prefix then prefix, a db that lives in dbUrl uses its own prefix
+  // then dbPrefix then prefix. usersPrefix is the older name for usersDbPrefix.
+
+  /**
+   * The prefix for what lives in dbUrl, dbPrefix or prefix
+   */
+  static dbPrefix () {
+    return ArkimeConfig.get('dbPrefix') ?? ArkimeConfig.get('prefix', 'arkime_');
+  }
+
+  /**
+   * The sessions prefix, sessionsDbPrefix, then prefix with a sessionsDbUrl or dbPrefix without one
+   */
+  static sessionsDbPrefix () {
+    return ArkimeConfig.get('sessionsDbPrefix') ?? (ArkimeConfig.get('sessionsDbUrl') ? ArkimeConfig.get('prefix', 'arkime_') : ArkimeConfig.dbPrefix());
+  }
+
+  /**
+   * The users db urls, usersDbUrl, usersUrl or usersElasticsearch, undefined when none is set
+   */
+  static usersDbUrls () {
+    const urls = ArkimeConfig.getArray('usersDbUrl', undefined, ',') ?? ArkimeConfig.getArray('usersUrl', undefined, ',') ?? ArkimeConfig.getArray('usersElasticsearch');
+    return urls?.map(u => ArkimeConfig.esUrl(u));
+  }
+
+  /**
+   * The users prefix setting, usersDbPrefix or usersPrefix, else d
+   */
+  static usersDbPrefix (d) {
+    return ArkimeConfig.get('usersDbPrefix') ?? ArkimeConfig.get('usersPrefix') ?? d;
+  }
+
+  /**
+   * The users prefix, the users prefix setting, then prefix with a users url or dbPrefix without one.
+   * d replaces prefix with a users url, the multi viewer's is ''.
+   */
+  static usersPrefix (d) {
+    return ArkimeConfig.usersDbPrefix(ArkimeConfig.usersDbUrls() ? (d ?? ArkimeConfig.get('prefix', 'arkime_')) : ArkimeConfig.dbPrefix());
   }
 
   // ----------------------------------------------------------------------------
@@ -663,6 +778,13 @@ class ArkimeConfig {
 
   // ----------------------------------------------------------------------------
   static #loadedCbs = [];
+  /**
+   * Has the config finished loading
+   */
+  static isLoaded () {
+    return ArkimeConfig.#loadedCbs === undefined;
+  }
+
   static loaded (cb, front) {
     if (ArkimeConfig.#loadedCbs === undefined) {
       cb(); // Loaded already, call right away
@@ -950,7 +1072,14 @@ ArkimeConfig.registerSettings({
   usersElasticsearchAPIKey: { secret: true },
   usersElasticsearchBasicAuth: { secret: true },
   elasticsearch: { type: 'urls' },
-  usersElasticsearch: { type: 'urls' }
+  usersElasticsearch: { type: 'urls' },
+  usersDbUrl: { type: 'urls' },
+  sessionsDbUrl: { type: 'urls' },
+  dbUrl: { type: 'urls' },
+  postgresPatternTimeout: { type: 'int', min: 0 }
 });
 
 module.exports = ArkimeConfig;
+
+// After the export, arkimeUtil leads to arkimeDb which needs a whole ArkimeConfig
+const ArkimeUtil = require('./arkimeUtil');

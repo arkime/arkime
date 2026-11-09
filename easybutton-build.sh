@@ -219,6 +219,8 @@ if [ -f "/etc/redhat-release" ] || [ -f "/etc/system-release" ]; then
   # repo, which the build containers already enable. Best effort, capture builds
   # fine without it.
   sudo yum -y install libxdp-devel || echo "ARKIME: libxdp-devel not installed, the xdp reader will not be built. On EL it needs the CRB repo, 'dnf config-manager --set-enabled crb'"
+  # libpq is optional and lets capture write to a Postgres dbUrl
+  sudo yum -y install libpq-devel || echo "ARKIME: libpq-devel not installed, capture won't support a Postgres dbUrl"
 
   if [ $DOJEMALLOC -eq 1 ]; then
     sudo yum -y install jemalloc-devel
@@ -246,6 +248,8 @@ if [ -f "/etc/debian_version" ]; then
   # libxdp is optional and enables the xdp reader, Ubuntu 22 doesn't have it at
   # all. Best effort, capture builds fine without it.
   sudo apt-get -qq install libxdp-dev || echo "ARKIME: libxdp-dev not available, the xdp reader will not be built"
+  # libpq is optional and lets capture write to a Postgres dbUrl
+  sudo apt-get -qq install libpq-dev || echo "ARKIME: libpq-dev not available, capture won't support a Postgres dbUrl"
 
   if [ $DOJEMALLOC -eq 1 ]; then
     sudo apt-get -qq install curl libjemalloc-dev
@@ -307,7 +311,7 @@ if [ -f "/etc/alpine-release" ] ; then
     echo "ARKIME: apk failed"
     exit 1
   fi
-  sudo apk add --no-cache libnl3-dev libxdp-dev jemalloc-dev || echo "ARKIME: optional apk packages not installed"
+  sudo apk add --no-cache libnl3-dev libxdp-dev jemalloc-dev libpq-dev || echo "ARKIME: optional apk packages not installed"
 
   if [ $DOTHIRDPARTY -eq 0 ]; then
     LUA_CFLAGS="$(pkg-config --cflags lua5.4)"
@@ -323,6 +327,7 @@ if [ -f "/etc/alpine-release" ] ; then
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
     sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-net-ssleay perl-io-socket-ssl perl-json perl-socket6 perl-clone perl-html-parser zstd librdkafka openssl pkg-config
+    sudo pacman -S --noconfirm --needed libpq || echo "ARKIME: libpq not installed, capture won't support a Postgres dbUrl"
 fi
 
 if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then

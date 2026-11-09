@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 377;
+use Test::More tests => 386;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -391,10 +391,11 @@ my $session_params = "rest_total_hits_as_int=true";
 my $entire_params = "preference=primaries&ignore_unavailable=true&rest_total_hits_as_int=true";
 foreach my $test (
     ["tests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id allowed"],
-    ["tests_sessions2-2024%2Ctests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id in sessions2 and sessions3 allowed"],
+    ["tests_sessions2-2024%2Ctests_sessions3-2024/_search?$session_params", $search_ids, 200, "older sensor viewers sessions search by id in sessions2 and sessions3 allowed"],
     ["partial-tests_sessions3-2024/_search?$session_params", $search_ids, 200, "sessions search by id in partial index allowed"],
-    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params", $search_entire, 200, "sessions search by rootId across all sessions allowed"],
-    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params&max_concurrent_shard_requests=5", $search_entire, 200, "sessions search by rootId with max_concurrent_shard_requests allowed"],
+    ["tests_sessions3-*/_search?$entire_params", $search_entire, 200, "sessions search by rootId across all sessions allowed"],
+    ["tests_sessions3-*/_search?$entire_params&max_concurrent_shard_requests=5", $search_entire, 200, "sessions search by rootId with max_concurrent_shard_requests allowed"],
+    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params", $search_entire, 200, "older sensor viewers sessions search by rootId allowed"],
     ["tests_sessions3-2024,tests_users/_search", $search_ids, 400, "sessions search with non sessions index rejected"],
     ["tests_sessions3-2024%2Ctests_users/_search", $search_ids, 400, "sessions search with encoded non sessions index rejected"],
     ["tests_sessions3-2024%252Ctests_users/_search", $search_ids, 400, "sessions search with double encoded comma rejected"],
@@ -404,7 +405,7 @@ foreach my $test (
     ["tests_sessions3-2024/_search", $search_ids_aggs, 400, "sessions search by id with aggs rejected"],
     ["tests_sessions3-2024/_search", $search_ids_two, 400, "sessions search by id with extra query clause rejected"],
     ["tests_sessions3-2024/_search", $search_ids_profile, 400, "sessions search by id with non boolean profile rejected"],
-    ["tests_sessions2-*%2Ctests_sessions3-*/_search?$entire_params", $search_entire_profile, 400, "sessions search by rootId with non boolean profile rejected"],
+    ["tests_sessions3-*/_search?$entire_params", $search_entire_profile, 400, "sessions search by rootId with non boolean profile rejected"],
 ) {
     my ($path, $body, $code, $name) = @$test;
     $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/$path");
@@ -637,7 +638,10 @@ is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":[
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost","test"]}}]}}}'), 400, "files search for a node on another host rejected");
 is (filesSearch("esproxyhost", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["esproxyhost"]}}]}}}'), 200, "files search for own node with host allowed");
 # The exact body the viewer's expiry sends
-is (filesSearch("test", to_json(viewerGet("/regressionTests/expireQuery?nodes=test&dirs=/x,/y/"))), 200, "files search real expiry query allowed");
+SKIP: {
+    skip "a non-ES cluster db has no ES expiry query", 1 if $ArkimeTest::clusterDbNonES;
+    is (filesSearch("test", to_json(viewerGet("/regressionTests/expireQuery?nodes=test&dirs=/x,/y/"))), 200, "files search real expiry query allowed");
+}
 # Older sensor viewers always send profile false
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":false}'), 200, "files search with profile false allowed");
 is (filesSearch("test", '{"size":1,"query":{"bool":{"filter":[{"terms":{"node":["test"]}}]}},"profile":true}'), 200, "files search with profile true allowed");
@@ -669,14 +673,17 @@ unlike ($response->content, qr/"hits"/, "GET fields _search with ; smuggled q no
 # POST - exact path compare; capture writes its stats doc with an external
 # version that it bumps from the current one, so do the same and re-post the
 # existing source to leave the doc unchanged
-$response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test");
-is ($response->code, 200, "GET stats doc allowed");
-my $stats = from_json($response->content);
-$req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test?version_type=external&version=" . ($stats->{_version} + 1));
-$req->header('Content-Type' => 'application/json');
-$req->content(to_json($stats->{_source}));
-$response = $ArkimeTest::userAgent->request($req);
-is ($response->code, 200, "POST stats doc with version query allowed");
+SKIP: {
+    skip "a non-ES cluster db keeps the stats doc out of ES", 2 if $ArkimeTest::clusterDbNonES;
+    $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test");
+    is ($response->code, 200, "GET stats doc allowed");
+    my $stats = from_json($response->content);
+    $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_stats/_doc/test?version_type=external&version=" . ($stats->{_version} + 1));
+    $req->header('Content-Type' => 'application/json');
+    $req->content(to_json($stats->{_source}));
+    $response = $ArkimeTest::userAgent->request($req);
+    is ($response->code, 200, "POST stats doc with version query allowed");
+}
 
 # A sensor with host set can only put that hostname in its stats doc, viewers
 # use it to decide which nodes are on their host
@@ -1147,9 +1154,10 @@ is ($response->code, 400, "POST session update in multi-index expression rejecte
 # The sensor viewer's es client encodes the commas in index lists, these are its startup and not found retry calls
 foreach my $test (
     ["_nodes/stats/jvm%2Cprocess%2Cfs%2Cos%2Cindices%2Cthread_pool", 200, "GET nodes stats with encoded commas allowed"],
-    ["tests_sessions2-*%2Cpartial-tests_sessions3-*%2Ctests_sessions3-*/_alias", 200, "GET viewer sessions alias list allowed"],
+    ["partial-tests_sessions3-*%2Ctests_sessions3-*/_alias", 200, "GET viewer sessions alias list allowed"],
+    ["tests_sessions2-*%2Cpartial-tests_sessions3-*%2Ctests_sessions3-*/_alias", 200, "GET older sensor viewers sessions alias list allowed"],
     ["tests_sessions3-2024/_refresh", 200, "GET sessions index refresh allowed"],
-    ["tests_sessions2-2024%2Ctests_sessions3-2024/_refresh", 200, "GET sessions2 and sessions3 index refresh allowed"],
+    ["tests_sessions2-2024%2Ctests_sessions3-2024/_refresh", 200, "GET older sensor viewers sessions2 and sessions3 index refresh allowed"],
     ["tests_*/_refresh", 200, "GET capture exit refresh allowed"],
     ["tests_queries/_doc/primary-viewer", 200, "GET primary viewer doc allowed"],
     ["tests_queries/_doc/other", 400, "GET other queries doc rejected"],
@@ -1160,4 +1168,68 @@ foreach my $test (
     my ($path, $code, $name) = @$test;
     $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:7200/$path");
     is ($response->code, $code, $name);
+}
+
+# [tee] sessionsDbUrl, tests.pl points it at the teech_ prefix of the ClickHouse or dbPlugins sessions db
+SKIP: {
+    skip "sessions tee only with ClickHouse or dbPlugins sessions", 7 if (!$ArkimeTest::sessionsDbNonES);
+    # The teed docs whose _id is in ids, or with a tag, sorted by _id
+    my $teeDocs;
+    if ($ArkimeTest::sessionsDbCH) {
+        $ArkimeTest::sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$};
+        my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
+        $teeDocs = sub {
+            my ($ids, $tag) = @_;
+            my $where = $ids ? "_id IN (" . join(",", map { "'$_'" } @$ids) . ")" : "has(fields.tags, '$tag')";
+            my $resp = $ArkimeTest::userAgent->post("$chUrl/?output_format_json_quote_64bit_integers=0", Content => "SELECT fields FROM arkime.teech_sessions3 WHERE $where ORDER BY _id FORMAT JSONEachRow", "Content-Type" => "text/plain;charset=UTF-8");
+            return [map { from_json($_)->{fields} } grep { $_ ne "" } split(/\n/, $resp->content)];
+        };
+    } else {
+        $teeDocs = sub {
+            my ($ids, $tag) = @_;
+            return ArkimeTest::sessionsHelperJson("find", "teech_sessions3-*", to_json($ids ? {_id => {'$in' => $ids}} : {tags => $tag})) // [];
+        };
+    }
+
+    my $own = {node => "test", lastPacket => 1704067200000, firstPacket => 1704067100000, protocol => ["http", "dns"],
+               http => {uri => ["Example.com/Login/Admin?x=1"], host => ["Www.Example.com"]}, dns => [{host => ["A.B-c.com"], opcode => "QUERY"}]};
+    my $other = {node => "esproxyhost", lastPacket => 1704067200000, protocol => ["tls"]};
+    my $noid = {node => "test", lastPacket => 1704067200000, protocol => ["tls"], tags => ["tee-noid"]};
+    my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk?refresh=true");
+    $r->header('Content-Type' => 'application/x-ndjson');
+    $r->content(join("\n", '{"index":{"_index":"tests_sessions3-240101","_id":"tee-own"}}', to_json($own),
+                           '{"index":{"_index":"tests_sessions3-240101","_id":"tee-other"}}', to_json($other),
+                           '{"index":{"_index":"tests_sessions3-240101"}}', to_json($noid)) . "\n");
+    is ($ArkimeTest::userAgent->request($r)->code, 200, "bulk sessions with the sessions tee");
+
+    my $docs;
+    waitUntil(sub { $docs = $teeDocs->(["tee-own"]); @$docs == 1; });
+    my $d = $docs->[0] // {};
+    is_deeply ([$d->{http}{uriTokens}, $d->{http}{hostTokens}, $d->{dns}[0]{hostTokens}, $d->{index}, $d->{node}],
+               [["example", "com", "login", "admin", "x", "1"], ["www", "example", "com"], ["a", "b", "c", "com"], "teech_sessions3-240101", "test"],
+               "tee doc has the doc, its index with the tee prefix and the wordSplit tokens");
+
+    $docs = $teeDocs->(undef, "tee-noid");
+    is (scalar @$docs, 1, "a session without an _id is teed");
+    like ($docs->[0]{_id} // "", qr/^240101-[A-Za-z0-9_-]{20}$/, "and gets an id from its index");
+
+    my $hunt = to_json({script => {source => $addHunt, lang => "painless", params => {huntId => "tee-hunt", huntName => "tee"}}});
+    foreach my $id ("tee-own", "tee-other") {
+        $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-240101/_update/$id");
+        $r->header('Content-Type' => 'application/json');
+        $r->content($hunt);
+        $ArkimeTest::userAgent->request($r);
+    }
+    waitUntil(sub { $docs = $teeDocs->(["tee-other", "tee-own"]); ($docs->[1]{huntId} // [])->[0]; });
+    is_deeply ($docs->[1]{huntId}, ["tee-hunt"], "hunt update teed to the sensor's own session");
+    is_deeply ($docs->[0]{huntId} // [], [], "hunt update not teed to another host's session");
+
+    esPost("/tests_sessions3-240101/_delete_by_query?refresh=true", '{"query":{"bool":{"should":[{"ids":{"values":["tee-own","tee-other"]}},{"term":{"tags":"tee-noid"}}]}}}');
+    if ($ArkimeTest::sessionsDbCH) {
+        $ArkimeTest::sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$};
+        $ArkimeTest::userAgent->post(($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2/", Content => "TRUNCATE TABLE arkime.teech_sessions3", "Content-Type" => "text/plain;charset=UTF-8");
+    } else {
+        ArkimeTest::sessionsHelper("wipe", "teech_");
+    }
+    is (scalar @{$teeDocs->(["tee-own", "tee-other"])} + scalar @{$teeDocs->(undef, "tee-noid")}, 0, "tee sessions cleaned up");
 }

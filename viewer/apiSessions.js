@@ -2503,6 +2503,8 @@ class SessionAPIs {
         async function endCb () {
           queriesInfo = queriesInfo.sort((a, b) => b.doc_count - a.doc_count).slice(0, size * 2);
           const queries = queriesInfo.map((item) => { return item.query; });
+          // nothing matched, the send below only runs per response
+          if (queries.length === 0) { return res.send(results); }
 
           try {
             const { body: searchResult } = await Db.msearchSessions(indices, queries, options);
@@ -4923,7 +4925,7 @@ class SessionAPIs {
         saveId.seq = seq;
         const options = { num: saveId.seq, name: filename, first: session.firstPacket, node: Config.nodeName(), filesize: -1, locked: 1 };
 
-        await Db.indexNow('files', Config.nodeName() + '-' + saveId.seq, options);
+        await Db.putFile(Config.nodeName() + '-' + saveId.seq, options);
 
         cb(filename);
         saveId.filename = filename; // Don't set the saveId.filename until after the first request completes

@@ -2537,9 +2537,9 @@
     "history": {
       "needAdminPrivileges": "Administratorrechte erforderlich",
       "retrieveFailed": "Fehler beim Abrufen des Verlaufs",
-      "missingIndex": "Verlaufsindex fehlt",
       "deletedSuccessfully": "Verlaufseintrag erfolgreich gelöscht",
-      "deleteFailed": "Fehler beim Löschen des Verlaufseintrags"
+      "deleteFailed": "Fehler beim Löschen des Verlaufseintrags",
+      "notFound": "Verlaufseintrag nicht gefunden"
     },
     "shareables": {
       "missingName": "Name des gemeinsamen Elements fehlt",
@@ -2585,6 +2585,7 @@
       "rolesMustBeArray": "Rollenfeld muss ein Array von Zeichenketten sein",
       "editRolesMustBeArray": "Bearbeitungsrollenfeld muss ein Array von Zeichenketten sein",
       "usersMustBeString": "Benutzerfeld muss eine Zeichenkette sein",
+      "viewMustBeString": "Ansicht muss eine Zeichenkette sein",
       "nameExists": "Eine Verknüpfung mit dem Namen {name} existiert bereits",
       "created": "Neue Verknüpfung erstellt!",
       "errorCreating": "Fehler beim Erstellen der Verknüpfung",

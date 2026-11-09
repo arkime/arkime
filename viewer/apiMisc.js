@@ -14,7 +14,6 @@ const fs = require('fs');
 const unzipper = require('unzipper');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
-const ViewerUtils = require('./viewerUtils');
 const ArkimeConfig = require('../common/arkimeConfig');
 const User = require('../common/user');
 const View = require('./apiViews');
@@ -107,43 +106,36 @@ class MiscAPIs {
   static getFiles (req, res) {
     const columns = ['num', 'node', 'name', 'locked', 'first', 'filesize', 'encoding', 'packetPosEncoding', 'packets', 'packetsSize', 'uncompressedBits', 'compression', 'firstTimestamp', 'lastTimestamp', 'startTimestamp', 'finishTimestamp', 'sessionsStarted', 'sessionsPresent'];
 
-    const query = {
-      _source: columns,
-      from: +req.query.start || 0,
-      size: +req.query.length || 10,
-      sort: {}
-    };
-
     const sortField = columns.includes(req.query.sortField) ? req.query.sortField : 'num';
-    query.sort[sortField] = {
-      order: req.query.desc === 'true' ? 'desc' : 'asc'
+    const params = {
+      fields: columns,
+      from: +req.query.start || 0,
+      size: Math.min(Math.max(+req.query.length || 10, 0), 10000),
+      sort: { [sortField]: req.query.desc === 'true' ? 'desc' : 'asc' }
     };
 
-    if (req.query.filter) {
-      query.query = { wildcard: { name: `*${req.query.filter}*` } };
+    if (ArkimeUtil.isString(req.query.filter) && req.query.filter !== '') {
+      params.where = { name: { $wildcard: `*${req.query.filter}*` } };
     }
 
-    ViewerUtils.addCluster(req.query.cluster, query);
-
     Promise.all([
-      Db.searchScroll('files', query),
-      Db.numberOfDocuments('files', { cluster: req.query.cluster })
+      Db.searchFiles(params, req.query.cluster),
+      Db.countFiles(req.query.cluster)
     ]).then(([files, total]) => {
-      if (files.error) { throw files.error; }
-
-      const results = { total: files.hits.total, results: [] };
-      for (const file of files.hits.hits) {
-        const fields = file._source || file.fields;
+      const results = { total: files.total, results: [] };
+      for (const file of files.data) {
+        // only ES applies the fields hint
+        const fields = Object.fromEntries([...columns, 'cluster'].filter(c => file.doc[c] !== undefined).map(c => [c, file.doc[c]]));
         if (fields.locked === undefined) {
           fields.locked = 0;
         }
         fields.cratio = fields.packetsSize ? Math.round(100 - (100 * fields.filesize / fields.packetsSize)) : 0;
-        fields.id = file._id;
+        fields.id = file.id;
         results.results.push(fields);
       }
 
       const r = {
-        recordsTotal: total.count,
+        recordsTotal: total,
         recordsFiltered: results.total,
         data: results.results
       };
@@ -403,9 +395,7 @@ class MiscAPIs {
       const clusters = await MiscAPIs.#getClusters(); // { active: [], inactive: [] }
       const remoteclusters = MiscAPIs.#remoteClusters(); // {}
       const fieldhistory = UserAPIs.findUserState('fieldHistory', req.user); // {}
-      // views not supported for redis/lmdb user backends
-      const dbUrl = User.getDbUrl();
-      const views = (dbUrl?.startsWith('redis') || dbUrl?.startsWith('lmdb')) ? undefined : (await View.getViews(req)).data;
+      const views = (await View.getViews(req)).data;
       const roles = await User.getRoles();
 
       // can't fetch user or fields is FATAL, so let it fall through to outer

@@ -782,6 +782,12 @@ SPDX-License-Identifier: Apache-2.0
                     v-show="query.sortField === 'name' && query.desc" />
                 </th>
                 <th
+                  v-if="!user.roles.includes('arkimeAdmin')"
+                  class="no-wrap">
+                  {{ $t('hunts.jobUser') }}
+                </th>
+                <th
+                  v-else
                   class="cursor-pointer no-wrap"
                   @click="columnClick('userId')">
                   {{ $t('hunts.jobUser') }}

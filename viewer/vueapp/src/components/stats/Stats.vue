@@ -560,37 +560,39 @@ SPDX-License-Identifier: Apache-2.0
                 icon="mdi-speedometer" />
               {{ $t('stats.nav.captureStats') }}
             </v-btn>
-            <span class="page-tab-divider" />
-            <v-btn :value="2">
-              <v-icon
-                start
-                icon="mdi-server" />
-              {{ $t('stats.nav.esNodes') }}
-            </v-btn>
-            <v-btn :value="3">
-              <v-icon
-                start
-                icon="mdi-database" />
-              {{ $t('stats.nav.esIndices') }}
-            </v-btn>
-            <v-btn :value="4">
-              <v-icon
-                start
-                icon="mdi-format-list-checks" />
-              {{ $t('stats.nav.esTasks') }}
-            </v-btn>
-            <v-btn :value="5">
-              <v-icon
-                start
-                icon="mdi-sitemap" />
-              {{ $t('stats.nav.esShards') }}
-            </v-btn>
-            <v-btn :value="6">
-              <v-icon
-                start
-                icon="mdi-lifebuoy" />
-              {{ $t('stats.nav.esRecovery') }}
-            </v-btn>
+            <template v-if="$constants.HASES">
+              <span class="page-tab-divider" />
+              <v-btn :value="2">
+                <v-icon
+                  start
+                  icon="mdi-server" />
+                {{ $t('stats.nav.esNodes') }}
+              </v-btn>
+              <v-btn :value="3">
+                <v-icon
+                  start
+                  icon="mdi-database" />
+                {{ $t('stats.nav.esIndices') }}
+              </v-btn>
+              <v-btn :value="4">
+                <v-icon
+                  start
+                  icon="mdi-format-list-checks" />
+                {{ $t('stats.nav.esTasks') }}
+              </v-btn>
+              <v-btn :value="5">
+                <v-icon
+                  start
+                  icon="mdi-sitemap" />
+                {{ $t('stats.nav.esShards') }}
+              </v-btn>
+              <v-btn :value="6">
+                <v-icon
+                  start
+                  icon="mdi-lifebuoy" />
+                {{ $t('stats.nav.esRecovery') }}
+              </v-btn>
+            </template>
           </v-btn-toggle>
         </div>
       </div>
@@ -685,7 +687,8 @@ import { resolveMessage } from '@common/resolveI18nMessage';
 
 let searchInputTimeout;
 
-const LAST_TAB = 6;
+// the tabs past capture stats are all OpenSearch/Elasticsearch
+const LAST_TAB = HASES ? 6 : 1;
 // out of range selects no tab and renders an empty body, which an old
 // statsTab=7 ES Admin bookmark would otherwise do
 function clampTab (value) {

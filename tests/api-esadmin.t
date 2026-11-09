@@ -165,7 +165,7 @@ use strict;
 
     # Allocation explanation with specific index/shard parameters
     # Note: This may fail if there are no unassigned shards, so we just check it doesn't error
-    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=sac-esadmin-db&index=sessions2-*&shard=0&primary=true");
+    $json = viewerGet("/api/esadmin/allocation?arkimeRegressionUser=sac-esadmin-db&index=sessions3-*&shard=0&primary=true");
     ok(defined $json, "Allocation explain with parameters returns response");
 
 # multiviewer

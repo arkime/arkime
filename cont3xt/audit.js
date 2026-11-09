@@ -72,23 +72,17 @@ class Audit {
    * Creates a new history audit log
    * @name /audit
    * @param {Audit} audit - The history entry to create
+   * @param {object} options - Passed to the put, eg refresh
    * @returns {Promise} - The promise that either resolves or rejects in error
    */
-  static async create (audit) {
+  static async create (audit, options) {
     return new Promise((resolve, reject) => {
       const msg = Audit.verifyAudit(audit);
       if (msg) {
         return reject(msg);
       }
 
-      // A bulk search joins every indicator, keep it under the ES keyword term limit (32766 bytes).
-      // Cut on a separator so the history page doesn't replay a partial indicator.
-      if (audit.indicator.length > 8000) {
-        const cut = audit.indicator.lastIndexOf(', ', 8000);
-        audit.indicator = audit.indicator.slice(0, cut > 0 ? cut : 8000);
-      }
-
-      Db.putAudit(null, audit).then((results) => {
+      Db.putAudit(null, audit, options).then((results) => {
         if (!results) {
           reject('ES Error');
         } else {
@@ -96,6 +90,13 @@ class Audit {
         }
       }).catch((err) => reject('ES Error: ' + err));
     });
+  }
+
+  /**
+   * Records how long a search took and what it found on the audit log created before it ran
+   */
+  static async finish (id, took, resultCount) {
+    return Db.updateAudit(id, { took, resultCount });
   }
 
   // Verify the given audit entry, returns error msg on failure, null otherwise
@@ -185,7 +186,7 @@ class Audit {
       }
       // ----------------------------------------
 
-      const results = await Db.implementation.deleteAudit(req.params.id);
+      const results = await Db.deleteAudit(req.params.id);
 
       if (!results) {
         return res.send({ success: false, text: 'Database error' });
