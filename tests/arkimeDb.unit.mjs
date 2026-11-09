@@ -585,6 +585,21 @@ describe('viewer cluster db', () => {
       assert.equal(!!DbClusterImpl.collectionOptions(collName).typed, collName !== 'files', collName);
     }
   });
+
+  test('es ranges on epoch_second dates send the format, es reads a bare number as millis', () => {
+    const DbClusterImpl = cjsRequire('../viewer/db.cluster.js');
+    for (const [collName, field] of [['stats', 'currentTime'], ['dstats', 'currentTime'], ['history', 'timestamp']]) {
+      const where = { $or: [{ [field]: { $gte: 1700000000, $lte: 1700000060 } }] };
+      const query = ESConnection.compile(where, DbClusterImpl.collectionOptions(collName).es.dateFormats);
+      assert.deepEqual(query.bool.filter[0].bool.should[0].bool.filter, [
+        { range: { [field]: { gte: 1700000000, format: 'epoch_second' } } },
+        { range: { [field]: { lte: 1700000060, format: 'epoch_second' } } }
+      ], collName);
+      // multies hands the other backends the plain numbers
+      assert.deepEqual(ESConnection.decompile(query), { $or: [{ $and: [{ [field]: { $gte: 1700000000 } }, { [field]: { $lte: 1700000060 } }] }] }, collName);
+    }
+    assert.deepEqual(ESConnection.compile({ n: { $gt: 5 } }), { bool: { filter: [{ range: { n: { gt: 5 } } }] } });
+  });
 });
 
 describe('viewer users db', () => {

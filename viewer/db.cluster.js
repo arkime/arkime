@@ -24,9 +24,13 @@ const STATS_FIELDS = Object.fromEntries([
     'startTime'].map(f => [f, 'long'])
 ]);
 
+// db.pl maps these as epoch_second dates, ES would read a number as epoch millis
+const SECONDS = 'epoch_second';
+
 // What expiry, the files and stats pages and capture look up, arkime_db_cluster_tables in capture/db.c is the same layout
 const COLLECTION_OPTIONS = {
-  stats: { typed: true, fields: STATS_FIELDS },
+  stats: { typed: true, fields: STATS_FIELDS, es: { dateFormats: { currentTime: SECONDS } } },
+  history: { es: { dateFormats: { timestamp: SECONDS } } },
   files: {
     fields: {
       node: { type: 'keyword', indexed: true },
@@ -47,7 +51,8 @@ const COLLECTION_OPTIONS = {
       nodeName: { type: 'keyword', indexed: true },
       interval: { type: 'short', indexed: true },
       currentTime: { type: 'date', indexed: true }
-    }
+    },
+    es: { dateFormats: { currentTime: SECONDS } }
   }
 };
 
@@ -91,7 +96,10 @@ class DbClusterImpl {
     this.#multiES = !!multiES;
     // Only the sessions ES client knows the multi cluster routing
     this.#sharedES = conn === esConn;
-    const options = (collName, es = {}) => ({ ...DbClusterImpl.collectionOptions(collName), es: { index: fixIndex(collName), dbpl: true, ...es } });
+    const options = (collName, es = {}) => {
+      const base = DbClusterImpl.collectionOptions(collName);
+      return { ...base, es: { ...base.es, index: fixIndex(collName), dbpl: true, ...es } };
+    };
     for (const collName of ['files', 'stats', 'dstats', 'fields', 'sequence']) {
       this[collName] = conn.collection(collName, options(collName, collName === 'files' ? { checkMapping: true } : {}));
     }
