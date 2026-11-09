@@ -142,7 +142,7 @@ class ESCollection extends ArkimeDb.Collection {
 
   async deleteWhere (where, { cluster } = {}) {
     const { body } = await this.#client.deleteByQuery({
-      index: this.#index, body: { query: compile(where) }, refresh: true, conflicts: 'proceed', cluster
+      index: this.#index, body: { query: compile(where, this.options.es?.dateFormats) }, refresh: true, conflicts: 'proceed', cluster
     });
     return body.deleted;
   }
@@ -150,7 +150,7 @@ class ESCollection extends ArkimeDb.Collection {
   // The search body find sends, so validators like esProxy's can be tested against it
   searchBody ({ where, sort, from = 0, size, fields } = {}) {
     const body = {
-      query: compile(where),
+      query: compile(where, this.options.es?.dateFormats),
       from,
       size: size ?? 1000,
       track_total_hits: true
@@ -211,7 +211,7 @@ class ESCollection extends ArkimeDb.Collection {
 
   async count (where, { cluster } = {}) {
     try {
-      const { body } = await this.#client.count({ index: this.#index, body: { query: compile(where) }, ignore_unavailable: true, cluster });
+      const { body } = await this.#client.count({ index: this.#index, body: { query: compile(where, this.options.es?.dateFormats) }, ignore_unavailable: true, cluster });
       return body.count;
     } catch (err) {
       if (err.meta?.statusCode === 404) { return 0; }
@@ -229,7 +229,7 @@ class ESCollection extends ArkimeDb.Collection {
     const { body } = await this.#client.search({
       index: this.#index,
       body: {
-        query: compile(where),
+        query: compile(where, this.options.es?.dateFormats),
         size: 0,
         aggregations: { groups: { terms: { field: groupBy === 'id' ? '_id' : ArkimeDb.checkField(groupBy), size }, aggregations: aggs } }
       },
@@ -335,7 +335,8 @@ function wildcardEscape (str) {
   return String(str).replace(/[\\*?]/g, '\\$&');
 }
 
-function compileOp (field, op, c) {
+// dateFormats: { field: format }, ES reads a number in a date range as epoch millis unless told the format
+function compileOp (field, op, c, dateFormats) {
   const f = esField(field);
   switch (op) {
   case '$eq': return field === 'id' ? { ids: { values: [c] } } : { term: { [f]: c } };
@@ -343,10 +344,11 @@ function compileOp (field, op, c) {
   case '$in': return field === 'id' ? { ids: { values: c } } : { terms: { [f]: c } };
   case '$nin': return { bool: { must_not: [compileOp(field, '$in', c)] } };
   case '$exists': return c ? { exists: { field: f } } : { bool: { must_not: [{ exists: { field: f } }] } };
-  case '$gt': return { range: { [f]: { gt: c } } };
-  case '$gte': return { range: { [f]: { gte: c } } };
-  case '$lt': return { range: { [f]: { lt: c } } };
-  case '$lte': return { range: { [f]: { lte: c } } };
+  case '$gt': case '$gte': case '$lt': case '$lte': {
+    const range = { [op.slice(1)]: c };
+    if (dateFormats?.[field]) { range.format = dateFormats[field]; }
+    return { range: { [f]: range } };
+  }
   case '$contains': return { wildcard: { [f]: { value: `*${wildcardEscape(c)}*` } } };
   case '$icontains': return { wildcard: { [f]: { value: `*${wildcardEscape(c)}*`, case_insensitive: true } } };
   case '$prefix': return { prefix: { [f]: c } };
@@ -361,20 +363,20 @@ function compileOp (field, op, c) {
   }
 }
 
-function compile (where) {
+function compile (where, dateFormats) {
   if (!where) { return { match_all: {} }; }
   const filter = [];
   for (const [key, cond] of Object.entries(where)) {
     if (key === '$or') {
-      filter.push(cond.length ? { bool: { should: cond.map(compile), minimum_should_match: 1 } } : { match_none: {} });
+      filter.push(cond.length ? { bool: { should: cond.map(w => compile(w, dateFormats)), minimum_should_match: 1 } } : { match_none: {} });
     } else if (key === '$and') {
-      filter.push(...cond.map(compile));
+      filter.push(...cond.map(w => compile(w, dateFormats)));
     } else if (key === '$not') {
-      filter.push({ bool: { must_not: [compile(cond)] } });
+      filter.push({ bool: { must_not: [compile(cond, dateFormats)] } });
     } else {
       ArkimeDb.checkField(key);
       for (const [op, c] of ArkimeDb.condOps(cond)) {
-        filter.push(compileOp(key, op, c));
+        filter.push(compileOp(key, op, c, dateFormats));
       }
     }
   }
@@ -397,6 +399,8 @@ function decompileOne (type, clause) {
   case 'range': {
     const ops = {};
     for (const [op, c] of Object.entries(spec)) {
+      // Only says how ES reads the bound, the other backends compare the number as is
+      if (op === 'format') { continue; }
       if (!['gt', 'gte', 'lt', 'lte'].includes(op)) { throw new Error(`Unsupported range ${op}`); }
       ops[`$${op}`] = c;
     }

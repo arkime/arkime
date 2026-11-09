@@ -1,4 +1,4 @@
-use Test::More tests => 139;
+use Test::More tests => 142;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -54,6 +54,20 @@ my $test1Token = getTokenCookie("test1");
 # dstats.json
     my $dstats = viewerGet("/api/dstats?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
     is (@{$dstats}, 7, "dstats.json array size");
+
+    # Capture wrote these in the hour before its last stats, Elasticsearch 8+ reads a bare number bound as millis
+    my $lastStats = $stats->{data}->[0]->{currentTime};
+    $dstats = viewerGet("/api/dstats?nodeName=test&start=" . ($lastStats - 3600) . "&stop=$lastStats&step=5&interval=5&name=deltaPackets");
+    is (@{$dstats}, 720, "dstats.json last hour array size");
+    cmp_ok ((grep { $_ > 0 } @{$dstats}), '>', 0, "dstats.json last hour has packets");
+
+    # hide=old drops nodes with no stats in the last 5 minutes
+    SKIP: {
+        my $age = time() - $lastStats;
+        skip "stats are right at the 5 minute hide=old cutoff", 1 if (abs($age - 300) < 10);
+        my $hidden = viewerGet("/api/stats?hide=old");
+        is (scalar @{$hidden->{data}}, ($age < 300 ? 1 : 0), "stats.json hide=old with stats $age seconds old");
+    }
 
 SKIP: {
     skip "the OpenSearch/Elasticsearch admin apis need one", 96 if $ArkimeTest::noEs;
