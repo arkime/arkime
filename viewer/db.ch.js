@@ -1762,7 +1762,8 @@ class DbCHImpl {
       for (const field of projection) {
         if (field === 'id') { continue; }
         const value = row[field];
-        if (value === undefined || value === null) { continue; }
+        // Missing nested and typed array paths read as [], ES omits them
+        if (value === undefined || value === null || (Array.isArray(value) && value.length === 0)) { continue; }
         fields[field] = Array.isArray(value) ? value : [value];
         const parts = field.split('.');
         if (parts.some(p => p === '__proto__' || p === 'constructor' || p === 'prototype')) { continue; }

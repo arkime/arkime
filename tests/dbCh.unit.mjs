@@ -176,3 +176,13 @@ describe('ClickHouse field map', () => {
     ch.close();
   });
 });
+
+describe('ClickHouse rowsToHits', () => {
+  test('empty and null projected values are left out like ES', () => {
+    const ch = newCH();
+    const [hit] = ch.rowsToHits([{ id: 'a', protocol: ['udp'], tags: [], 'dns.host': [], 'http.uri': null }], ['id', 'protocol', 'tags', 'dns.host', 'http.uri']);
+    assert.deepEqual(hit.fields, { protocol: ['udp'] });
+    assert.deepEqual(hit._source, { protocol: ['udp'] });
+    ch.close();
+  });
+});
