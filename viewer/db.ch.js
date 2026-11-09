@@ -7,6 +7,7 @@
 'use strict';
 
 const fs = require('fs');
+const cryptoLib = require('crypto');
 const http = require('http');
 const https = require('https');
 const NodeURL = require('url').URL;
@@ -37,6 +38,8 @@ const BUCKET_QUERY_CONCURRENCY = 8;
 
 // Most buckets one search may create, ES's search.max_buckets default
 const MAX_BUCKETS = 65536;
+const MAX_SCROLLS = 500;
+const SCROLL_ID_PREFIX = 'arkime:ch:';
 
 // A longer body can't become a string
 const MAX_RESPONSE_BYTES = require('buffer').constants.MAX_STRING_LENGTH;
@@ -81,6 +84,13 @@ function jsonPath (field) {
 // Sub-path inside a nested object element (no `fields.` prefix).
 function subPath (sub) {
   return identPath(sub);
+}
+
+// An ES keep alive like 5m or 300s, how long an unread scroll stays open
+function scrollMs (keepAlive) {
+  const m = /^(\d+)(ms|s|m|h)?$/.exec(String(keepAlive ?? ''));
+  if (!m) { return 5 * 60 * 1000; }
+  return Number(m[1]) * { ms: 1, s: 1000, m: 60000, h: 3600000 }[m[2] ?? 'ms'];
 }
 
 function chError (feature) {
@@ -391,6 +401,7 @@ class DbCHImpl {
       this.refreshSchema().catch(() => {});
     }, 5 * 60 * 1000);
     this.schemaRefreshTimer.unref?.();
+    this.scrolls = new Map();
   }
 
   async refreshSchema () {
@@ -967,7 +978,7 @@ class DbCHImpl {
     let keyset = '';
     if (opts.searchAfter) {
       const idCol = `${quoteIdent(this.prefix + this.table)}.${quoteIdent('_id')}`;
-      keyset = ` AND (${this.lastPacketCol()}, ${idCol}) < (${sqlLiteral(opts.searchAfter.lastPacket, 'lastPacket')}, ${sqlLiteral(opts.searchAfter.id)})`;
+      keyset = ` AND (${this.lastPacketCol()}, ${idCol}) ${opts.searchAfter.asc ? '>' : '<'} (${sqlLiteral(opts.searchAfter.lastPacket, 'lastPacket')}, ${sqlLiteral(opts.searchAfter.id)})`;
     }
     if (opts.keyset && !projection.includes('lastPacket')) {
       // keyset pagination reads searchAfter.lastPacket from the row
@@ -978,8 +989,8 @@ class DbCHImpl {
       select.push(`toJSONString(fields) AS \`__fields_json__\``);
     }
     // A search gets its total from a count() beside it: exact_rows_before_limit reads every match in
-    // order instead of stopping at the LIMIT. The keyset iterator still uses it for its first page.
-    const settings = size > 0 && opts.keyset ? ' SETTINGS exact_rows_before_limit = 1' : '';
+    // order instead of stopping at the LIMIT. Keyset paging still uses it for its first page.
+    const settings = size > 0 && opts.keyset && !opts.searchAfter ? ' SETTINGS exact_rows_before_limit = 1' : '';
     const sql = `SELECT ${select.join(', ')}, formatDateTime(${quoteIdent(this.prefix + this.table)}.lastPacket, '%y%m%d') AS \`_dayIndex\` FROM ${this.tableName()} WHERE (${where})${keyset} ORDER BY ${order} LIMIT ${size}${from ? ` OFFSET ${from}` : ''}${settings}`;
     return { sql, projection, where, size };
   }
@@ -1572,15 +1583,12 @@ class DbCHImpl {
     return { result: 'deleted' };
   }
 
-  // Seam adapter: ClickHouse has no ES-style scroll. When scroll is
-  // requested, fetch up to a large cap in one shot and return a sentinel
-  // _scroll_id that Db.scroll/Db.clearScroll resolve to empty.
+  // ClickHouse has no scroll context, so a scroll keeps its query and the last (lastPacket, _id) it
+  // returned, and each scroll() reads the page after that
   async searchScroll (index, query, options, cb) {
     let result;
     try {
-      const chQuery = options?.scroll ? { ...query, size: 1000000 } : query;
-      result = await this.searchSessions(index, chQuery, options);
-      if (options?.scroll) { result._scroll_id = EsQuery.SCROLL_DONE; }
+      result = options?.scroll ? await this.startScroll(index, query, options.scroll) : await this.searchSessions(index, query, options);
     } catch (err) {
       if (cb) { return cb(err); }
       throw err;
@@ -1591,6 +1599,71 @@ class DbCHImpl {
 
   async * searchScrollIterator (index, query, options) {
     yield * this.searchSessionsIterator(index, query, options);
+  }
+
+  ownsScroll (scrollId) {
+    return typeof scrollId === 'string' && scrollId.startsWith(SCROLL_ID_PREFIX);
+  }
+
+  async scroll (scrollId) {
+    return this.readScroll(scrollId);
+  }
+
+  async clearScroll (scrollId) {
+    const state = this.scrolls.get(scrollId);
+    if (!state) { return; }
+    this.scrolls.delete(scrollId);
+    clearTimeout(state.timer);
+  }
+
+  // Pages follow lastPacket, ascending only when the first sort asks for it
+  async startScroll (index, query, keepAlive) {
+    await this.schemaReady;
+    if (this.scrolls.size >= MAX_SCROLLS) {
+      throw Object.assign(new Error(`CH backend: more than ${MAX_SCROLLS} open scrolls`), { statusCode: 400 });
+    }
+    const first = Array.isArray(query.sort) ? query.sort[0] : query.sort;
+    const asc = String(first?.lastPacket?.order ?? first?.lastPacket ?? '').toLowerCase() === 'asc';
+    const id = SCROLL_ID_PREFIX + cryptoLib.randomUUID();
+    this.scrolls.set(id, {
+      query: { ...query, sort: [{ lastPacket: { order: asc ? 'asc' : 'desc' } }] },
+      size: Math.min(Math.max(1, Number(query.size ?? 10) || 10), 10000),
+      asc,
+      timeClause: this.timeClauseFromIndex(index),
+      keepAliveMs: scrollMs(keepAlive)
+    });
+    return this.readScroll(id);
+  }
+
+  // A short page is the last one, its id is SCROLL_DONE so the caller's next scroll is empty
+  async readScroll (scrollId) {
+    const state = this.scrolls.get(scrollId);
+    if (!state) {
+      throw Object.assign(new Error(`CH backend: scroll ${scrollId} is gone`), { statusCode: 404 });
+    }
+    clearTimeout(state.timer);
+    let rows, translated;
+    try {
+      const q = state.searchAfter ? { ...state.query, from: 0 } : state.query;
+      translated = this.translateQuery(q, { size: state.size, keyset: true, searchAfter: state.searchAfter, timeClause: state.timeClause });
+      const result = await this.query(translated.sql);
+      rows = result.data || [];
+      state.total ??= Number(result.rows_before_limit_at_least ?? rows.length);
+    } catch (err) {
+      await this.clearScroll(scrollId);
+      throw err;
+    }
+    let id = scrollId;
+    if (rows.length < state.size) {
+      await this.clearScroll(scrollId);
+      id = EsQuery.SCROLL_DONE;
+    } else {
+      const last = rows[rows.length - 1];
+      state.searchAfter = { lastPacket: last.lastPacket, id: last.id, asc: state.asc };
+      state.timer = setTimeout(() => this.clearScroll(scrollId), state.keepAliveMs);
+      state.timer.unref?.();
+    }
+    return { _scroll_id: id, hits: { total: state.total, hits: this.rowsToHits(rows, translated.projection) } };
   }
 
   // ES refreshes the index and retries a not-found get; CH inserts are
@@ -1621,6 +1694,8 @@ class DbCHImpl {
 
   close () {
     clearInterval(this.schemaRefreshTimer);
+    for (const state of this.scrolls.values()) { clearTimeout(state.timer); }
+    this.scrolls.clear();
     this.agent.destroy();
   }
 

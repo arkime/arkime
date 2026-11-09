@@ -121,7 +121,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4430 Sessions supports OpenSearch/Elasticsearch or ClickHouse, cluster supports OpenSearch/Elasticsearch or Postgres,
           users supports OpenSearch/Elasticsearch, SQLite or Postgres
   - #4430 New dbPlugins setting loads plugins that add more db url schemes for viewer, cont3xt, parliament and wise
-  - #4430 A multiES viewer only uses elasticsearch, its multies, sessionsDbUrl and dbUrl are ignored
+  - #4430 A multiES viewer reads everything through its elasticsearch setting, the multies, so its own sessionsDbUrl
+          and dbUrl are ignored. A multiESNodes cluster with both sessionsDbUrl and dbUrl off OpenSearch/Elasticsearch
+          needs no OpenSearch/Elasticsearch, so a multi viewer can run with none
   - #4430 cont3xt dbUrl is the db for an OpenSearch/Elasticsearch url too, it used to be ignored in favor of elasticsearch.
           Without a users url the cont3xt, parliament and wise users db is dbUrl, then elasticsearch
   - Add Pushover notifier, with priority (including emergency alerts that repeat until acknowledged), sound,
@@ -320,8 +322,6 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           a wider time range (or All) shows why and searches nothing
   - #4430 A viewer with no OpenSearch/Elasticsearch db (sessions, cluster and users elsewhere and no elasticsearch
           setting) no longer connects to one, its ES health, ES stats tabs and ES Admin page are hidden
-  - #4430 A multiESNodes cluster with both sessionsDbUrl and dbUrl off OpenSearch/Elasticsearch needs no
-          OpenSearch/Elasticsearch, so a multi viewer can run with none
   - #4430 Fix saving user settings, password, table state or TOTP on a multi viewer removing the user's roles other
           than usersAdmin
 ## Cont3xt
