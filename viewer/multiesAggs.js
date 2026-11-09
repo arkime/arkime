@@ -105,7 +105,8 @@ function mergeBucket (b1, b2, subOps, nested) {
       continue;
     }
     if (typeof v2.value !== 'number') { continue; }
-    if (b1[sub] === undefined) {
+    // A cluster with no values for the metric (null) takes the other cluster's
+    if (b1[sub] === undefined || b1[sub].value === null) {
       b1[sub] = v2;
     } else if (typeof b1[sub].value === 'number') {
       b1[sub].value = mergeMetric(subOps?.[sub], b1[sub].value, v2.value, c1, b2.doc_count);
