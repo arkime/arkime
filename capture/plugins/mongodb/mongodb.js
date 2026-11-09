@@ -113,6 +113,11 @@ function withoutUndefined (v) {
   return out;
 }
 
+// A typed doc as the other typed backends return it, a null column isn't a field
+function withoutNulls (doc) {
+  return Object.fromEntries(Object.entries(doc).filter(([, v]) => v !== null));
+}
+
 // The stored form, a lone surrogate isn't valid UTF-8 so BSON would write it as U+FFFD anyway
 function stored (id, doc, v) {
   const row = { _id: id, d: withoutUndefined(doc), v };
@@ -244,16 +249,19 @@ function defineCollections () {
 
     prepare (doc) { return doc; }
 
+    // The doc as a caller sees it from its stored d
+    fromStored (d) { return d; }
+
     async get (id) {
       await this.init();
       const row = await this.coll.findOne({ _id: id }, { projection: { d: 1 } });
-      return row ? row.d : null;
+      return row ? this.fromStored(row.d) : null;
     }
 
     async getVersioned (id) {
       await this.init();
       const row = await this.coll.findOne({ _id: id }, { projection: { d: 1, v: 1 } });
-      return row ? { doc: row.d, version: row.v } : null;
+      return row ? { doc: this.fromStored(row.d), version: row.v } : null;
     }
 
     async put (id, doc, { createOnly } = {}) {
@@ -363,7 +371,7 @@ function defineCollections () {
       return {
         total,
         data: rows.map(r => {
-          const hit = { id: r._id, doc: r.d };
+          const hit = { id: r._id, doc: this.fromStored(r.d) };
           if (version && this.options.version) { hit.version = r.v; }
           return hit;
         })
@@ -467,10 +475,7 @@ function defineCollections () {
       return out;
     }
 
-    async get (id) {
-      const doc = await super.get(id);
-      return doc && Object.fromEntries(Object.entries(doc).filter(([, v]) => v !== null));
-    }
+    fromStored (d) { return withoutNulls(d); }
 
     fieldOp (field, op, c, q) {
       if (field === 'id') { return fieldFilter(field, op, c, q); }

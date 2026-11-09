@@ -196,13 +196,12 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
 
     // One pipeline over several collections, each branch filtered (and maybe sorted and cut) on its own
     // indexes. tag sets _coll to the collection a row came from.
-    // A scroll's cursor lives across many reads and maxTimeMS counts all of them, so it has none
-    #union (colls, branch, rest, tag, { keepOpen } = {}) {
+    #union (colls, branch, rest, tag) {
       const each = (coll) => tag ? [...branch, { $set: { _coll: { $literal: coll } } }] : branch;
       const [first, ...others] = colls;
       const pipeline = [...each(first)];
       for (const coll of others) { pipeline.push({ $unionWith: { coll, pipeline: each(coll) } }); }
-      return this.#db.collection(first).aggregate([...pipeline, ...rest], keepOpen ? { allowDiskUse: true } : { allowDiskUse: true, maxTimeMS: this.#timeout() });
+      return this.#db.collection(first).aggregate([...pipeline, ...rest], { allowDiskUse: true, maxTimeMS: this.#timeout() });
     }
 
     #timeout () {
@@ -246,7 +245,7 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
         for (const [o, v] of value) { checkValue(v); bounds[`$${o}`] = this.#isDate(field) ? this.#EsQuery.dateBound(o, v) : this.#value(field, v); }
         if (value.length === 1) { return { [path]: bounds }; }
         // One value has to meet every bound, the plain bounds narrow it down off an index first
-        const same = Object.entries(bounds).map(([o, v]) => ({ [o]: ['$$x', v] }));
+        const same = Object.entries(bounds).map(([o, v]) => ({ [o]: ['$$x', { $literal: v }] }));
         same.unshift(Object.values(bounds).every(v => typeof v === 'number') ? { $isNumber: '$$x' } : { $eq: [{ $type: '$$x' }, 'string'] });
         return { $and: [{ [path]: bounds }, { $expr: { $anyElementTrue: [{ $map: { input: flatValues(field), as: 'x', in: { $and: same } } }] } }] };
       }
@@ -327,6 +326,21 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
       if (Object.keys(out).length === 0) { out.lastPacket = -1; }
       if (!('_id' in out)) { out._id = Object.values(out)[0]; }
       return out;
+    }
+
+    // Keyset paging needs a scalar every session has, so a page follows firstPacket or lastPacket (which
+    // have indexes with _id) in the first sort key's direction, any other sort field follows lastPacket
+    #keysetSort (sort) {
+      const [[field, dir]] = Object.entries(sort);
+      const key = field === 'firstPacket' ? field : 'lastPacket';
+      return { [key]: dir, _id: sort._id ?? dir };
+    }
+
+    // The sessions after the last one read, in a keyset sort
+    #after (sort, last) {
+      const [[key, dir], [, idDir]] = Object.entries(sort);
+      const op = (d) => d === -1 ? '$lt' : '$gt';
+      return { $or: [{ [key]: { [op(dir)]: last[key] } }, { [key]: last[key], _id: { [op(idDir)]: last._id } }] };
     }
 
     // --------------------------------------------------------------------------
@@ -667,7 +681,9 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
       return { body: { responses } };
     }
 
-    // An ES style scroll, each read is the next query.size sessions from a cursor kept open between reads
+    // An ES style scroll. MongoDB kills an idle cursor after cursorTimeoutMillis whatever the keep alive asks,
+    // so a scroll keeps its filter, sort and the last (sort key, _id) it returned and each read is a fresh
+    // query for the page after that
     async searchScroll (index, query, options, cb) {
       try {
         const result = options?.scroll ? await this.#startScroll(index, query, options.scroll) : await this.searchSessions(index, query, options);
@@ -691,22 +707,31 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
       if (!state) { return; }
       this.#scrolls.delete(scrollId);
       clearTimeout(state.timer);
-      await state.cursor.close().catch(() => {});
     }
 
+    // The next n sessions of filter in a keyset sort, the ones after `after` when it is set
+    #page (colls, filter, sort, after, n, patterns) {
+      const match = after ? { $and: [filter, this.#after(sort, after)] } : filter;
+      const run = () => this.#union(colls, [{ $match: match }, { $sort: sort }, { $limit: n }], [{ $sort: sort }, { $limit: n }], true).toArray();
+      return patterns ? this.#conn.patternRun(run) : run();
+    }
+
+    // The total is counted once, with the first page
     async #startScroll (index, query, keepAlive) {
       if (this.#scrolls.size >= MAX_SCROLLS) { throw badRequest(`more than ${MAX_SCROLLS} open scrolls`); }
       const colls = await this.#resolve(index);
       if (!colls.length) { return { hits: { total: 0, hits: [] }, _scroll_id: this.#EsQuery.SCROLL_DONE }; }
       const filter = await this.#filter(query);
       const size = Math.min(Math.max(1, Number(query.size ?? 10) || 10), 10000);
-      const sort = this.#sort(query.sort);
+      const sort = this.#keysetSort(this.#sort(query.sort));
       const patterns = hasRegexp(query);
       const count = () => this.#count(colls, filter);
       const total = await (patterns ? this.#conn.patternRun(count) : count());
       const id = SCROLL_ID_PREFIX + cryptoLib.randomUUID();
       this.#scrolls.set(id, {
-        cursor: this.#union(colls, [{ $match: filter }], [{ $sort: sort }], true, { keepOpen: true }).batchSize(size),
+        colls,
+        filter,
+        sort,
         size,
         total,
         patterns,
@@ -725,14 +750,9 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
         throw err;
       }
       clearTimeout(state.timer);
-      const read = async () => {
-        const page = [];
-        while (page.length < state.size && await state.cursor.hasNext()) { page.push(await state.cursor.next()); }
-        return page;
-      };
       let rows;
       try {
-        rows = await (state.patterns ? this.#conn.patternRun(read) : read());
+        rows = await this.#page(state.colls, state.filter, state.sort, state.after, state.size, state.patterns);
       } catch (err) {
         await this.clearScroll(scrollId);
         throw err;
@@ -742,6 +762,9 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
         await this.clearScroll(scrollId);
         id = this.#EsQuery.SCROLL_DONE;
       } else {
+        const [key] = Object.keys(state.sort);
+        const last = rows.at(-1);
+        state.after = { [key]: last[key], _id: last._id };
         state.timer = setTimeout(() => this.clearScroll(scrollId), state.keepAliveMs);
         state.timer.unref?.();
       }
@@ -759,10 +782,8 @@ function defineSessions ({ ArkimeDb, ArkimeConfig, MongoConnection, helpers }) {
       const sort = { lastPacket: -1, _id: -1 };
       let after;
       while (remaining > 0) {
-        const page = after ? { $and: [filter, { $or: [{ lastPacket: { $lt: after.lastPacket } }, { lastPacket: after.lastPacket, _id: { $lt: after._id } }] }] } : filter;
         const n = Math.min(pageSize, remaining);
-        const run = () => this.#union(colls, [{ $match: page }, { $sort: sort }, { $limit: n }], [{ $sort: sort }, { $limit: n }], true).toArray();
-        const rows = await (patterns ? this.#conn.patternRun(run) : run());
+        const rows = await this.#page(colls, filter, sort, after, n, patterns);
         if (!rows.length) { break; }
         remaining -= rows.length;
         yield { hits: { total: rows.length, hits: rows.map(r => this.#hit(r)) } };

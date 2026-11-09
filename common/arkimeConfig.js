@@ -367,13 +367,13 @@ class ArkimeConfig {
   }
 
   /**
-   * True when any db is OpenSearch/Elasticsearch, or elasticsearch is set for the ES only parts. An empty
-   * elasticsearch is the same as none.
+   * True when the sessions or cluster db is OpenSearch/Elasticsearch, or elasticsearch is set for the ES only
+   * parts, the ones sessionsEsUrls() reaches. An ES users db alone doesn't count, nothing ES only would talk
+   * to it. An empty elasticsearch is the same as none.
    */
   static hasEs () {
-    const users = ArkimeConfig.usersDbUrls();
     return ArkimeConfig.isEsUrl(ArkimeConfig.sessionsDbUrls()[0]) || ArkimeConfig.isEsUrl(ArkimeConfig.dbUrls()[0]) ||
-      (users !== undefined && ArkimeConfig.isEsUrl(users[0])) || ArkimeConfig.#elasticsearchUrls() !== undefined;
+      ArkimeConfig.#elasticsearchUrls() !== undefined;
   }
 
   /**

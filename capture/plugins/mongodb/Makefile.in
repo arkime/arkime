@@ -25,7 +25,7 @@ check: ../mongodb.so node_modules
 install: ../mongodb.so
 	$(MKDIR_P) "$(PLUGINDIR)/mongodb"
 	$(INSTALL) ../mongodb.so $(PLUGINDIR)
-	$(INSTALL) -m 644 mongodb.js package.json package-lock.json README.md $(PLUGINDIR)/mongodb
+	$(INSTALL) -m 644 mongodb.js mongodb.sessions.js package.json package-lock.json README.md $(PLUGINDIR)/mongodb
 	(cd "$(PLUGINDIR)/mongodb" && $(NPM) ci --omit=dev --ignore-scripts)
 
 distclean realclean clean:

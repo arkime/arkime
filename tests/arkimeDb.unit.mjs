@@ -347,8 +347,9 @@ for (const backend of backends) {
 
     if (backend.name !== 'es') {
       test('rejects regexes RE2 can not run', async () => {
-        const refused = /invalid escape sequence|invalid perl operator|aren't supported/;
-        for (const pattern of ['(.*)(.*)\\2\\1', 'a(?=b)', 'a(?!b)', '\\mword']) {
+        const refused = /invalid escape sequence|invalid perl operator|aren't supported|unexpected \)|missing \)/;
+        // an unbalanced ) would close the ^(?: )$ anchoring group and match every value
+        for (const pattern of ['(.*)(.*)\\2\\1', 'a(?=b)', 'a(?!b)', '\\mword', 'x)|(.*', '(abc']) {
           const where = { $regex: pattern };
           await assert.rejects(coll.find({ where: { name: where } }), refused, pattern);
           await assert.rejects(coll.find({ where: { id: where } }), refused, pattern);

@@ -265,6 +265,7 @@ function regexPattern (c, params) {
   if (PG_ONLY_REGEX_RE.test(pattern)) {
     throw new Error(`Invalid db where $regex '${pattern}', backreferences, lookarounds, (?flags) and Postgres only escapes aren't supported`);
   }
+  ArkimeDb.regex(pattern);
   params[PATTERNS] = true;
   return pattern;
 }

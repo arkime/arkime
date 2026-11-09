@@ -82,6 +82,7 @@ $ArkimeTest::noEs = $ENV{ARKIME_TEST_NOES};
 @ArkimeTest::dbArgs = $ArkimeTest::noEs
     ? ('-o', "elasticsearch=", '-o', "dbUrl=$ENV{ARKIME_default__dbUrl}", '-o', "sessionsDbUrl=$ENV{ARKIME_default__sessionsDbUrl}")
     : ('-o', "elasticsearch=$ArkimeTest::elasticsearch");
+push @ArkimeTest::dbArgs, '-o', "dbPlugins=$ENV{ARKIME_default__dbPlugins}" if ($ENV{ARKIME_default__dbPlugins});
 $ENV{ARKIME_default__sessionsDbUrl} //= $ArkimeTest::elasticsearch if ($ArkimeTest::clusterDbNonES);
 
 ################################################################################

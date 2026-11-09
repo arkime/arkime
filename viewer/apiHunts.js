@@ -629,7 +629,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         from: 0,
         size: 100, // only fetch 100 items at a time
         _source: ['_id', 'node'],
-        sort: 'lastPacket:asc'
+        order: 'lastPacket:asc'
       }
     };
 

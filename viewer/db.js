@@ -1497,9 +1497,10 @@ Db.getShareableVersioned = async (id) => {
 
 Db.hasEs = () => internals.hasEs;
 
-// The db.pl schema version the cluster db matches, from the ES sessions template or the cluster db itself
+// The db.pl schema version the cluster db matches, from the ES sessions template when it shares the sessions ES,
+// else from the cluster db itself
 Db.clusterSchemaVersion = async () => {
-  if (internals.clusterEsClient) { return (await Db.healthCache())?.molochDbVersion; }
+  if (internals.clusterShared && internals.clusterEsClient) { return (await Db.healthCache())?.molochDbVersion; }
   return internals.clusterConn.schemaVersion?.();
 };
 
@@ -1770,6 +1771,10 @@ Db.checkVersion = async function (minVersion) {
   // the version lives in the ES sessions template, other sessions dbs have their own schema
   if (internals.sessionsImpl === internals.esImpl) {
     await ArkimeUtil.checkArkimeSchemaVersion(internals.client7, internals.prefix, minVersion);
+  }
+  // a separate cluster db was init'd on its own, an ES one has its own template version
+  if (!internals.clusterShared) {
+    await internals.clusterConn.schemaVersion?.(minVersion);
   }
 };
 

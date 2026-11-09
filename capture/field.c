@@ -155,7 +155,7 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
             info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
             info->dbFieldLen  = out[i + 3];
         } else if (strncmp("fieldECS", (char *)data + out[i], 7) == 0) {
-            // The stored field, fieldECS is an alias of it, so only a doc with no dbField2 uses it. Key order can't matter, jsonb sorts keys
+            // The viewer uses fieldECS over dbField2, applied after the loop so key order can't matter
             fieldECS = i;
         } else if (strncmp("type", (char *)data + out[i], 4) == 0) {
             g_free(info->kind);
@@ -180,7 +180,8 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
         }
     }
 
-    if (!info->dbField && fieldECS >= 0) {
+    if (fieldECS >= 0) {
+        g_free(info->dbFieldFull);
         info->dbFieldFull = info->dbField = g_strndup((char *)data + out[fieldECS + 2], out[fieldECS + 3]);
         info->dbFieldLen  = out[fieldECS + 3];
     }

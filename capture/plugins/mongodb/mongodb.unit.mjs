@@ -99,6 +99,7 @@ describe('mongodb', { skip: !url && 'set ARKIME_TEST_DB_URL to a mongodb:// url'
     await assert.rejects(coll.put('c', { nodeName: 'c', bogus: 1 }), /no column for 'bogus'/);
     assert.equal(await coll.update('b-5', { cpu: null, ver: 7 }), true);
     assert.deepEqual(await coll.get('b-5'), { nodeName: 'b', interval: 5, currentTime: 200, ver: '7' }, 'a null update removes the field');
+    assert.deepEqual((await coll.find({ where: { nodeName: 'b' } })).data, [{ id: 'b-5', doc: { nodeName: 'b', interval: 5, currentTime: 200, ver: '7' } }], 'find leaves the null out like get');
     await assert.rejects(coll.nextSequence('x'), /isn't supported/);
     assert.throws(() => conn.collection('typednested', { typed: true, fields: { 'a.b': 'long' } }), /can't be nested/);
   });
@@ -220,6 +221,7 @@ describe('mongodb', { skip: !url && 'set ARKIME_TEST_DB_URL to a mongodb:// url'
       assert.equal(await q({ ids: { values: ['s2'] } }), 's2');
       assert.equal(await q({ range: { 'cert.notAfter': { gte: 150, lte: 250 } } }), '', 'one value meets every bound');
       assert.equal(await q({ range: { 'cert.notAfter': { gte: 250, lte: 350 } } }), 's2');
+      assert.equal(await q({ range: { node: { gte: '$', lte: 'n1' } } }), 's1,s2', 'a $ string bound is a value, not a field path');
       assert.equal(await q({ regexp: { 'http.uri': '/a/[a-z]\\.html' } }), 's1');
       assert.equal(await q({ regexp: { 'http.uri': '/a' } }), '', 'regexps are anchored');
       await assert.rejects(q({ regexp: { 'http.uri': '(a)\\1' } }), (err) => err.statusCode === 400);
@@ -290,6 +292,15 @@ describe('mongodb', { skip: !url && 'set ARKIME_TEST_DB_URL to a mongodb:// url'
       }
       assert.deepEqual(read, ['s1', 's2', 's3']);
       assert.equal(chunk._scroll_id, EsQuery.SCROLL_DONE);
+
+      // Pages are keyset queries, a sort on a field that can be an array or missing follows lastPacket instead
+      const byPort = { query: { match_all: {} }, size: 2, sort: [{ 'destination.port': { order: 'desc' } }] };
+      let keyset = await sessions.searchScroll(`${prefix}sessions3-*`, byPort, { scroll: '1m' });
+      assert.deepEqual(keyset.hits.hits.map(h => h._id), ['s3', 's2']);
+      assert.deepEqual(keyset.hits.hits[0].sort, [day + 7201000, 's3'], 'the sort used');
+      keyset = await sessions.scroll(keyset._scroll_id);
+      assert.deepEqual(keyset.hits.hits.map(h => h._id), ['s1']);
+      assert.equal(keyset._scroll_id, EsQuery.SCROLL_DONE);
 
       const cleared = await sessions.searchScroll(`${prefix}sessions3-*`, scrollQuery, { scroll: '1m' });
       await sessions.clearScroll(cleared._scroll_id);

@@ -43,7 +43,15 @@ typedef struct {
     int              tries;
     ArkimeSeqNum_cb  func;
     gpointer         uw;
+    // A bulk's collections already written, and the docs still waiting on a server that is down
+    GHashTable      *done;
+    int              pending;
 } ArkimeMgOp_t;
+
+typedef struct {
+    mongoc_bulk_operation_t *bulk;
+    int                      docs;
+} ArkimeMgBulk_t;
 
 typedef struct {
     mongoc_client_pool_t *pool;
@@ -174,11 +182,25 @@ LOCAL void arkime_mongodb_log_error(const char *what, const bson_error_t *error)
     LOG("ERROR - MongoDB %s: %s", what, error->message);
 }
 /******************************************************************************/
-// A server that can't be reached, not one that refused the write
+// A server that can't be reached or is stepping down, not one that refused the write
 LOCAL gboolean arkime_mongodb_down(const bson_error_t *error)
 {
-    return error->domain == MONGOC_ERROR_SERVER_SELECTION || error->domain == MONGOC_ERROR_STREAM ||
-           (error->domain == MONGOC_ERROR_CLIENT && error->code == MONGOC_ERROR_CLIENT_AUTHENTICATE);
+    if (error->domain == MONGOC_ERROR_SERVER_SELECTION || error->domain == MONGOC_ERROR_STREAM)
+        return TRUE;
+    if (error->domain == MONGOC_ERROR_CLIENT && error->code == MONGOC_ERROR_CLIENT_AUTHENTICATE)
+        return TRUE;
+    if (error->domain == MONGOC_ERROR_SERVER) {
+        switch (error->code) {
+        case 91:    // ShutdownInProgress
+        case 189:   // PrimarySteppedDown
+        case 10107: // NotWritablePrimary
+        case 11600: // InterruptedAtShutdown
+        case 11602: // InterruptedDueToReplStateChange
+        case 13435: // NotPrimaryNoSecondaryOk
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 /******************************************************************************/
 LOCAL int arkime_mongodb_table_num(const char *name)
@@ -346,59 +368,71 @@ LOCAL void arkime_mongodb_ips(bson_iter_t *iter, const char *path, gboolean inAr
     }
 }
 /******************************************************************************/
+LOCAL void arkime_mongodb_bulk_free(gpointer p)
+{
+    ArkimeMgBulk_t *b = p;
+    mongoc_bulk_operation_destroy(b->bulk);
+    g_free(b);
+}
+/******************************************************************************/
 // One line per session, each with the index ES would use and its _id. Each goes in a collection named
 // after its index with the rest of the doc as the stored doc, replacing one with the same _id like ES.
-LOCAL void arkime_mongodb_do_bulk(mongoc_client_t *client, const ArkimeMgOp_t *op)
+// A bulk can't run twice, so a retry builds them again without the collections in op->done. Returns
+// FALSE with the error when a server that is down should have the rest tried again, a refused write
+// is counted failed here.
+LOCAL gboolean arkime_mongodb_do_bulk(mongoc_client_t *client, ArkimeMgOp_t *op, bson_error_t *error)
 {
-    GHashTable *bulks = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
-    int docs = 0;
+    static const bson_t *unordered, *upsert;
+    if (!unordered) {
+        unordered = arkime_mongodb_const("{\"ordered\": false}");
+        upsert = arkime_mongodb_const("{\"upsert\": true}");
+    }
+    if (!op->done)
+        op->done = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
+    GHashTable *bulks = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_mongodb_bulk_free);
     const char *line = op->json;
     const char *end = op->json + op->len;
     while (line < end) {
         const char *nl = memchr(line, '\n', end - line);
         const int len = (nl ? nl : end) - line;
         if (len > 1) {
-            docs++;
             bson_t *doc = arkime_mongodb_json(line, len, "session");
             bson_iter_t iter;
             if (doc && bson_iter_init_find(&iter, doc, "index") && BSON_ITER_HOLDS_UTF8(&iter)) {
-                char *collName = g_strdup(bson_iter_utf8(&iter, NULL));
-                bson_t stored = BSON_INITIALIZER;
-                bson_t selector = BSON_INITIALIZER;
-                bson_iter_init(&iter, doc);
-                while (bson_iter_next(&iter)) {
-                    if (strcmp(bson_iter_key(&iter), "index") == 0)
-                        continue;
-                    if (strcmp(bson_iter_key(&iter), "_id") == 0)
-                        bson_append_iter(&selector, "_id", 3, &iter);
-                    bson_append_iter(&stored, NULL, 0, &iter);
-                }
-                bson_array_builder_t *ips;
-                bson_append_array_builder_begin(&stored, "_ip", 3, &ips);
-                bson_iter_init(&iter, doc);
-                arkime_mongodb_ips(&iter, "", FALSE, ips);
-                bson_append_array_builder_end(&stored, ips);
-
-                mongoc_bulk_operation_t *bulk = g_hash_table_lookup(bulks, collName);
-                if (!bulk) {
+                const char *collName = bson_iter_utf8(&iter, NULL);
+                ArkimeMgBulk_t *b = g_hash_table_lookup(bulks, collName);
+                if (!b && !g_hash_table_contains(op->done, collName)) {
                     arkime_mongodb_session_indexes(client, collName);
                     mongoc_collection_t *coll = mongoc_client_get_collection(client, sessionsMg.database, collName);
-                    static const bson_t *unordered;
-                    if (!unordered)
-                        unordered = arkime_mongodb_const("{\"ordered\": false}");
-                    bulk = mongoc_collection_create_bulk_operation_with_opts(coll, unordered);
+                    b = g_new0(ArkimeMgBulk_t, 1);
+                    b->bulk = mongoc_collection_create_bulk_operation_with_opts(coll, unordered);
                     mongoc_collection_destroy(coll);
-                    g_hash_table_insert(bulks, collName, bulk);
-                } else {
-                    g_free(collName);
+                    g_hash_table_insert(bulks, g_strdup(collName), b);
                 }
-                static const bson_t *upsert;
-                if (!upsert)
-                    upsert = arkime_mongodb_const("{\"upsert\": true}");
-                mongoc_bulk_operation_replace_one_with_opts(bulk, &selector, &stored, upsert, NULL);
-                bson_destroy(&selector);
-                bson_destroy(&stored);
-            } else {
+                if (b) {
+                    bson_t stored = BSON_INITIALIZER;
+                    bson_t selector = BSON_INITIALIZER;
+                    bson_iter_init(&iter, doc);
+                    while (bson_iter_next(&iter)) {
+                        if (strcmp(bson_iter_key(&iter), "index") == 0)
+                            continue;
+                        if (strcmp(bson_iter_key(&iter), "_id") == 0)
+                            bson_append_iter(&selector, "_id", 3, &iter);
+                        bson_append_iter(&stored, NULL, 0, &iter);
+                    }
+                    bson_array_builder_t *ips;
+                    bson_append_array_builder_begin(&stored, "_ip", 3, &ips);
+                    bson_iter_init(&iter, doc);
+                    arkime_mongodb_ips(&iter, "", FALSE, ips);
+                    bson_append_array_builder_end(&stored, ips);
+
+                    mongoc_bulk_operation_replace_one_with_opts(b->bulk, &selector, &stored, upsert, NULL);
+                    b->docs++;
+                    bson_destroy(&selector);
+                    bson_destroy(&stored);
+                }
+            } else if (op->tries == 0) {
                 ARKIME_THREAD_INCR(mgSessionsFailed);
             }
             if (doc)
@@ -407,14 +441,23 @@ LOCAL void arkime_mongodb_do_bulk(mongoc_client_t *client, const ArkimeMgOp_t *o
         line += len + 1;
     }
 
+    gboolean ok = TRUE;
+    op->pending = 0;
     GHashTableIter hiter;
     gpointer key, value;
     g_hash_table_iter_init(&hiter, bulks);
     while (g_hash_table_iter_next(&hiter, &key, &value)) {
-        mongoc_bulk_operation_t *bulk = value;
+        ArkimeMgBulk_t *b = value;
         bson_t reply;
-        bson_error_t error;
-        if (!mongoc_bulk_operation_execute(bulk, &reply, &error)) {
+        bson_error_t err;
+        if (mongoc_bulk_operation_execute(b->bulk, &reply, &err)) {
+            g_hash_table_add(op->done, g_strdup(key));
+        } else if (arkime_mongodb_down(&err) || mongoc_error_has_label(&reply, "RetryableWriteError")) {
+            op->pending += b->docs;
+            if (ok)
+                *error = err;
+            ok = FALSE;
+        } else {
             bson_iter_t iter;
             int64_t failed = 0;
             if (bson_iter_init_find(&iter, &reply, "writeErrors") && BSON_ITER_HOLDS_ARRAY(&iter)) {
@@ -423,13 +466,14 @@ LOCAL void arkime_mongodb_do_bulk(mongoc_client_t *client, const ArkimeMgOp_t *o
                 while (bson_iter_next(&errs))
                     failed++;
             }
-            ARKIME_THREAD_INCR_NUM(mgSessionsFailed, failed ? failed : docs);
-            arkime_mongodb_log_error((char *)key, &error);
+            ARKIME_THREAD_INCR_NUM(mgSessionsFailed, failed ? failed : b->docs);
+            arkime_mongodb_log_error((char *)key, &err);
+            g_hash_table_add(op->done, g_strdup(key));
         }
         bson_destroy(&reply);
-        mongoc_bulk_operation_destroy(bulk);
     }
     g_hash_table_destroy(bulks);
+    return ok;
 }
 /******************************************************************************/
 LOCAL void arkime_mongodb_op_free(ArkimeMgOp_t *op)
@@ -439,6 +483,8 @@ LOCAL void arkime_mongodb_op_free(ArkimeMgOp_t *op)
         arkime_http_free_buffer(op->json);
     else
         g_free(op->json);
+    if (op->done)
+        g_hash_table_destroy(op->done);
     ARKIME_TYPE_FREE(ArkimeMgOp_t, op);
 }
 /******************************************************************************/
@@ -453,12 +499,12 @@ LOCAL void *arkime_mongodb_thread(void *mgp)
         }
 
         uint32_t seq = 0;
+        gboolean ok = TRUE;
         // A files or fields write waits in place for MongoDB to come back, so a file's create still
         // lands before its update. What queues up behind it is droppable, or waits too.
         while (1) {
             mongoc_client_t *client = mongoc_client_pool_pop(mg->pool);
             bson_error_t error = {0};
-            gboolean ok = TRUE;
             switch (op->type) {
             case MG_OP_PUT:
                 ok = arkime_mongodb_do_put(client, op, &error);
@@ -475,7 +521,7 @@ LOCAL void *arkime_mongodb_thread(void *mgp)
                 break;
             case MG_OP_BULK: {
                 const uint64_t start = g_get_monotonic_time();
-                arkime_mongodb_do_bulk(client, op);
+                ok = arkime_mongodb_do_bulk(client, op, &error);
                 mgHealthMs = (g_get_monotonic_time() - start) / 1000;
                 break;
             }
@@ -485,16 +531,22 @@ LOCAL void *arkime_mongodb_thread(void *mgp)
                 break;
 
             arkime_mongodb_log_error(op->table ? op->table : "write", &error);
-            // A refused write isn't retried, only a server that is down
-            if (!arkime_mongodb_down(&error) || op->type == MG_OP_SEQUENCE || op->priority == ARKIME_HTTP_PRIORITY_DROPPABLE || mg->exiting)
+            // A refused write isn't retried, only a server that is down, a bulk already sorted that out
+            if ((op->type != MG_OP_BULK && !arkime_mongodb_down(&error)) || op->type == MG_OP_SEQUENCE || op->priority == ARKIME_HTTP_PRIORITY_DROPPABLE || mg->exiting)
                 break;
             if (++op->tries >= MG_MAX_RETRIES) {
-                mgLost++;
-                LOG("ERROR - MongoDB %s write of %s lost after %d tries", op->table, op->id, op->tries);
+                if (op->type == MG_OP_BULK) {
+                    LOG("ERROR - MongoDB %d sessions lost after %d tries", op->pending, op->tries);
+                } else {
+                    mgLost++;
+                    LOG("ERROR - MongoDB %s write of %s lost after %d tries", op->table, op->id, op->tries);
+                }
                 break;
             }
             sleep(1);
         }
+        if (op->type == MG_OP_BULK && !ok)
+            ARKIME_THREAD_INCR_NUM(mgSessionsFailed, op->pending);
 
         // Callbacks run off this thread's client, they may take their own locks
         if (op->type == MG_OP_SEQUENCE && seq && op->func)
@@ -687,7 +739,7 @@ LOCAL void arkime_mongodb_exit()
         LOG("MongoDB dropped %" PRIu64 " droppable writes", mgDropped);
     if (mgLost)
         LOG("MongoDB lost %" PRIu64 " writes while it was down", mgLost);
-    if (!sessionsMg.queue && --mgInited == 0)
+    if (--mgInited == 0)
         mongoc_cleanup();
 }
 /******************************************************************************/
@@ -833,7 +885,7 @@ LOCAL void arkime_mongodb_sessions_exit()
     arkime_mongodb_stop(&sessionsMg);
     if (mgSessionsDropped || mgSessionsFailed)
         LOG("MongoDB sessions dropped %" PRIu64 " failed %" PRIu64, mgSessionsDropped, mgSessionsFailed);
-    if (!clusterMg.queue && --mgInited == 0)
+    if (--mgInited == 0)
         mongoc_cleanup();
 }
 /******************************************************************************/

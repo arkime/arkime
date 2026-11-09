@@ -347,6 +347,9 @@ class DbCHImpl {
   constructor (info) {
     const dbUrl = info.sessionsDbUrl;
     if (!dbUrl) { throw new Error('CH backend: sessionsDbUrl is required'); }
+    // The multi viewer passes its own field map, the single viewer's comes from the config
+    const fieldsMap = info.fieldsMap ?? dbFieldsMap;
+    this.fieldsMap = () => fieldsMap() || {};
     // capture reads the same clickhouse settings from the config
     info = { ...info };
     for (const opt of ['clickhouseUser', 'clickhousePassword', 'clickhouseDatabase', 'clickhouseSessionsTable']) {
@@ -532,7 +535,7 @@ class DbCHImpl {
     if (ARRAY_FIELDS.has(field)) { return true; }
     if (this.nestedArrayParent(field)) { return true; }
     if (NUMERIC_HINTS.has(field) || DATE_FIELDS.has(field)) { return false; }
-    const info = dbFieldsMap()[field];
+    const info = this.fieldsMap()[field];
     if (!info) { return false; }
     // textfield types are the *Tokens fields, which capture writes as arrays
     if (['termfield', 'lotermfield', 'uptermfield', 'textfield', 'lotextfield', 'uptextfield', 'ip'].includes(info.type)) { return true; }
@@ -560,7 +563,7 @@ class DbCHImpl {
     if (nested) {
       const subType = this.scalarTypeForField(field);
       const vals = `arrayFilter(x -> isNotNull(x), ${this.nestedValues(nested)})`;
-      const info = dbFieldsMap()[field];
+      const info = this.fieldsMap()[field];
       if (info?.type === 'date' || DATE_FIELDS.has(field)) {
         // ES returns date sub-fields as ISO strings; emit ISO strings so
         // viewer/db.js fixSessionFields' Date.parse() works.
@@ -619,7 +622,7 @@ class DbCHImpl {
     if (this.nestedArrayParent(field)) {
       return `${this.columnForField(field)} AS ${quoteIdent(field)}`;
     }
-    const info = dbFieldsMap()[field];
+    const info = this.fieldsMap()[field];
     if (info?.type === 'date') {
       return `formatDateTime(fromUnixTimestamp64Milli(toInt64OrZero(toString(${jsonPath(field)})), 'UTC'), '%Y-%m-%dT%H:%i:%S.%fZ', 'UTC') AS ${quoteIdent(field)}`;
     }
@@ -627,7 +630,7 @@ class DbCHImpl {
   }
 
   scalarTypeForField (field) {
-    const info = dbFieldsMap()[field];
+    const info = this.fieldsMap()[field];
     if (info?.type === 'integer') { return 'Int64'; }
     if (info?.type === 'seconds' || info?.type === 'float') { return 'Float64'; }
     if (info?.type === 'date') { return 'Int64'; }
@@ -656,7 +659,7 @@ class DbCHImpl {
   // in order within one value of the source field like match_phrase.
   // Returns null for non-tokens fields.
   tokensPredicate (field, op, value) {
-    const info = dbFieldsMap()[field];
+    const info = this.fieldsMap()[field];
     if (!info?.type?.endsWith('textfield')) { return null; }
     if (op !== '=' && op !== 'IN') { return null; }
     const col = this.columnForField(field);
@@ -667,7 +670,7 @@ class DbCHImpl {
       if (toks.length === 1) { return `has(${col}, ${sqlLiteral(toks[0], field)})`; }
       const all = `hasAll(${col}, [${toks.map(t => sqlLiteral(t, field)).join(', ')}])`;
       const source = field.endsWith('Tokens') ? field.slice(0, -6) : undefined;
-      if (!dbFieldsMap()[source]) { return all; }
+      if (!this.fieldsMap()[source]) { return all; }
       const re = sqlLiteral(phraseRegex(toks));
       const src = this.columnForField(source);
       return `(${all} AND ${this.isJsonArrayField(source) ? `arrayExists(x -> match(toString(x), ${re}), ${src})` : `match(toString(${src}), ${re})`})`;
@@ -689,7 +692,7 @@ class DbCHImpl {
       return [op, value];
     });
     const nested = this.nestedArrayParent(field);
-    const info = dbFieldsMap()[field];
+    const info = this.fieldsMap()[field];
     if (nested && (info?.type === 'date' || DATE_FIELDS.has(field))) {
       const msConds = conds.map(([op, v]) => [op, typeof v === 'number' ? v : Date.parse(v)]);
       if (!msConds.some(([, ms]) => Number.isNaN(ms))) {
@@ -761,7 +764,7 @@ class DbCHImpl {
   nestedDatePredicate (field, op, value) {
     const nested = this.nestedArrayParent(field);
     if (!nested) { return null; }
-    const info = dbFieldsMap()[field];
+    const info = this.fieldsMap()[field];
     if (info?.type !== 'date' && !DATE_FIELDS.has(field)) { return null; }
     const values = (op === 'IN' ? value : [value]).map(v => typeof v === 'number' ? v : Date.parse(v));
     if (values.some(ms => Number.isNaN(ms))) { return null; }
@@ -785,7 +788,7 @@ class DbCHImpl {
   }
 
   isIpField (field) {
-    if (dbFieldsMap()[field]?.type === 'ip') { return true; }
+    if (this.fieldsMap()[field]?.type === 'ip') { return true; }
     return field === 'ip' || /\.ip$/.test(field) || /Ip$/.test(field);
   }
 
@@ -974,7 +977,7 @@ class DbCHImpl {
     const order = this.translateSort(query.sort);
     const size = Math.max(0, Number(opts.size ?? query.size ?? 10) || 0);
     const from = Math.max(0, Number(opts.from ?? query.from ?? 0) || 0);
-    if (from > 10000 && !opts.keyset) { throw chError('from pagination beyond 10000'); }
+    if (from > 10000 && !opts.keyset && !opts.offsetPaging) { throw chError('from pagination beyond 10000'); }
     let keyset = '';
     if (opts.searchAfter) {
       const idCol = `${quoteIdent(this.prefix + this.table)}.${quoteIdent('_id')}`;
@@ -1123,7 +1126,7 @@ class DbCHImpl {
       }
     } else {
       // ES rejects terms aggs on text fields; match that instead of aggregating tokens
-      if (['textfield', 'lotextfield', 'uptextfield'].includes(dbFieldsMap()[field]?.type)) {
+      if (['textfield', 'lotextfield', 'uptextfield'].includes(this.fieldsMap()[field]?.type)) {
         throw new Error(`Fielddata is disabled on text field [${field}]`);
       }
       const baseCol = this.columnForField(field);
@@ -1277,11 +1280,11 @@ class DbCHImpl {
   // An ES histogram over a numeric field (the summary's bucketInterval ranges)
   // rather than over time. The viewer's time graphs are date_histogram aggs,
   // so a histogram is numeric unless it is on a date field, packetRange or
-  // @timestamp; it can't lean on the field map, multies doesn't load one
+  // @timestamp
   isNumericHistogram (histo) {
     const field = histo.field;
     if (!field || field === 'packetRange' || field === '@timestamp' || DATE_FIELDS.has(field)) { return false; }
-    return dbFieldsMap()[field]?.type !== 'date';
+    return this.fieldsMap()[field]?.type !== 'date';
   }
 
   // Fixed width ranges of a numeric field, like ES: a bucket's key is the
@@ -1422,24 +1425,53 @@ class DbCHImpl {
     }
   }
 
+  // The rows the ES scroll iterator yields, honoring the caller's from, size and sort: a lastPacket sort pages
+  // by keyset with the offset on the first page, any other sort pages by LIMIT/OFFSET
   async * searchSessionsIterator (index, query, options = {}) {
     await this.schemaReady;
     let remaining = Number(query.size ?? 10000);
-    let searchAfter;
+    const from = Math.max(0, Number(query.from ?? 0) || 0);
+    const sorts = (Array.isArray(query.sort) ? query.sort : (query.sort ? [query.sort] : [])).filter(s => s !== '_doc' && Object.keys(s)[0] !== '_doc');
+    const lastPacketSort = sorts.length === 0 || (sorts.length === 1 && sorts[0].lastPacket !== undefined);
+    if ((from > 0 || !lastPacketSort) && from + remaining <= 10000) {
+      yield await this.searchSessions(index, query, options);
+      return;
+    }
     const pageSize = Math.min(remaining || 2000, 2000);
+    const timeClause = this.timeClauseFromIndex(index);
+    let total;
+    if (lastPacketSort) {
+      const asc = String(sorts[0]?.lastPacket?.order ?? sorts[0]?.lastPacket ?? '').toLowerCase() === 'asc';
+      let searchAfter;
+      while (remaining > 0) {
+        const q = { ...query, size: Math.min(pageSize, remaining), from: searchAfter ? 0 : from, sort: [{ lastPacket: { order: asc ? 'asc' : 'desc' } }] };
+        const translated = this.translateQuery(q, { ...options, keyset: true, searchAfter, timeClause });
+        const rowsResult = await this.query(translated.sql);
+        const rows = rowsResult.data || [];
+        total ??= Number(rowsResult.rows_before_limit_at_least ?? rows.length);
+        if (rows.length === 0) { break; }
+        remaining -= rows.length;
+        yield { hits: { total, hits: this.rowsToHits(rows, translated.projection) } };
+        const last = rows[rows.length - 1];
+        searchAfter = { lastPacket: last.lastPacket, id: last.id, asc };
+        if (rows.length < pageSize) { break; }
+      }
+      return;
+    }
+    let offset = from;
     while (remaining > 0) {
-      // Ordering is fixed to match the keyset filter; callers consume the
-      // whole result set, so the request's sort doesn't apply here
-      const q = { ...query, size: Math.min(pageSize, remaining), from: 0, sort: [{ lastPacket: { order: 'desc' } }] };
-      const translated = this.translateQuery(q, { ...options, keyset: true, searchAfter, timeClause: this.timeClauseFromIndex(index) });
-      const rowsResult = await this.query(translated.sql);
+      const q = { ...query, size: Math.min(pageSize, remaining), from: offset };
+      const translated = this.translateQuery(q, { ...options, offsetPaging: true, timeClause });
+      const [rowsResult, countResult] = await Promise.all([
+        this.query(translated.sql),
+        total === undefined ? this.query(`SELECT count() AS count FROM ${this.tableName()} WHERE ${translated.where}`) : undefined
+      ]);
+      total ??= Number(countResult.data?.[0]?.count ?? 0);
       const rows = rowsResult.data || [];
       if (rows.length === 0) { break; }
       remaining -= rows.length;
-      const total = searchAfter ? remaining + rows.length : Number(rowsResult.rows_before_limit_at_least ?? rows.length);
+      offset += rows.length;
       yield { hits: { total, hits: this.rowsToHits(rows, translated.projection) } };
-      const last = rows[rows.length - 1];
-      searchAfter = { lastPacket: last.lastPacket, id: last.id };
       if (rows.length < pageSize) { break; }
     }
   }

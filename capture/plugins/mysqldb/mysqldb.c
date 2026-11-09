@@ -290,6 +290,12 @@ LOCAL gboolean arkime_mysqldb_gone(unsigned int err)
            err == CR_SERVER_LOST_EXTENDED || err == ER_CLIENT_INTERACTION_TIMEOUT;
 }
 /******************************************************************************/
+// Worth trying again on the same connection, the server is shutting down or the statement lost a lock
+LOCAL gboolean arkime_mysqldb_retry(unsigned int err)
+{
+    return err == ER_SERVER_SHUTDOWN || err == ER_LOCK_WAIT_TIMEOUT || err == ER_LOCK_DEADLOCK;
+}
+/******************************************************************************/
 // The calling thread holds the myConn lock, which every thread that uses the client library inits once
 LOCAL void arkime_mysqldb_lock()
 {
@@ -298,7 +304,8 @@ LOCAL void arkime_mysqldb_lock()
 }
 /******************************************************************************/
 // Caller holds the myConn lock. Reconnects once if the connection dropped, a
-// statement error isn't retried. Sets *down when the server can't be reached.
+// statement error isn't retried. Sets *down when the server can't be reached
+// or the write should be tried again later.
 LOCAL gboolean arkime_mysqldb_exec(const char *what, const char *sql, gboolean *down)
 {
     if (down)
@@ -312,11 +319,12 @@ LOCAL gboolean arkime_mysqldb_exec(const char *what, const char *sql, gboolean *
         if (mysql_real_query(myConn, sql, strlen(sql)) == 0)
             return TRUE;
 
-        if (!arkime_mysqldb_gone(mysql_errno(myConn))) {
-            arkime_mysqldb_log_error(what);
-            return FALSE;
-        }
+        const unsigned int err = mysql_errno(myConn);
         arkime_mysqldb_log_error(what);
+        if (arkime_mysqldb_retry(err))
+            continue;
+        if (!arkime_mysqldb_gone(err))
+            return FALSE;
         mysql_close(myConn);
         myConn = NULL;
     }

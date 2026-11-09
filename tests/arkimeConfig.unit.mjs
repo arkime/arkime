@@ -24,7 +24,7 @@ function resolve (lines) {
     (async () => {
       await C.initialize({ defaultConfigFile: ${JSON.stringify(file)}, defaultSections: 'default' });
       console.log(JSON.stringify({
-        db: C.dbUrls(), sessions: C.sessionsDbUrls(), sessionsEs: C.sessionsEsUrls(), users: C.usersDbUrls() ?? C.dbUrls(),
+        db: C.dbUrls(), sessions: C.sessionsDbUrls(), sessionsEs: C.sessionsEsUrls(), users: C.usersDbUrls() ?? C.dbUrls(), hasEs: C.hasEs(),
         dbPrefix: C.dbPrefix(), sessionsPrefix: C.sessionsDbPrefix(), usersPrefix: C.usersPrefix(),
         insecure: [['https://localhost:9200'], ['https://es:9200'], ['http://es:9200'], ['postgres://localhost/a'],
           ['postgres://pg.example/a'], ['postgres:///a?host=/tmp'], ['https://127.0.0.1:9200', 'postgres://pg.example/a']].map(u => C.isInsecure(u))
@@ -81,6 +81,15 @@ describe('ArkimeConfig db urls', () => {
     const r = resolve(['dbUrl=http://db:9200', 'sessionsDbUrl=clickhouse://ch:8123']);
     assert.deepEqual(r.sessions, ['clickhouse://ch:8123']);
     assert.deepEqual(r.sessionsEs, ['http://db:9200']);
+  });
+
+  test('hasEs follows the sessions and cluster dbs, not the users db', () => {
+    assert.equal(resolve([]).hasEs, true);
+    assert.equal(resolve(['dbUrl=http://db:9200', 'sessionsDbUrl=clickhouse://ch:8123']).hasEs, true);
+    assert.equal(resolve(['dbUrl=postgres://pg/arkime', 'sessionsDbUrl=clickhouse://ch:8123']).hasEs, false);
+    // an ES users db alone would point the ES only pages at a default localhost ES
+    assert.equal(resolve(['dbUrl=postgres://pg/arkime', 'sessionsDbUrl=clickhouse://ch:8123', 'usersDbUrl=http://users:9200']).hasEs, false);
+    assert.equal(resolve(['dbUrl=postgres://pg/arkime', 'sessionsDbUrl=clickhouse://ch:8123', 'elasticsearch=http://es:9200']).hasEs, true);
   });
 
   test('sessionsDbUrl alone is an error', () => {

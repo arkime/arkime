@@ -2,7 +2,7 @@
 /* taggerUpload.js -- Upload a file for capture's tagger plugin
  *
  * taggerUpload.js [<config options>] (ip|host|md5|email|uri) <filename> [<tag1>..<tagN>]
- * taggerUpload.js [--insecure] --url <db url> [--prefix <prefix>] (ip|host|md5|email|uri) <filename> [<tag1>..<tagN>]
+ * taggerUpload.js [--insecure] --url <db url> [--prefix <prefix>] [--dbPlugins <module>] (ip|host|md5|email|uri) <filename> [<tag1>..<tagN>]
  *
  * Copyright Andy Wick
  *
@@ -27,7 +27,7 @@ function help (msg) {
     console.log(`${msg}\n`);
   }
   console.log('taggerUpload.js [<config options>] (ip|host|md5|email|uri) <filename> [<tag1>..<tagN>]');
-  console.log('taggerUpload.js [--insecure] --url <db url> [--prefix <prefix>] (ip|host|md5|email|uri) <filename> [<tag1>..<tagN>]');
+  console.log('taggerUpload.js [--insecure] --url <db url> [--prefix <prefix>] [--dbPlugins <module>] (ip|host|md5|email|uri) <filename> [<tag1>..<tagN>]');
   console.log('');
   console.log('  Uploads to where capture\'s tagger plugin reads, the OpenSearch/Elasticsearch tagger index');
   console.log('  or with no OpenSearch/Elasticsearch the dbUrl tagger table. The file name is the id, so');
@@ -41,6 +41,7 @@ function help (msg) {
   console.log('Without a config:');
   console.log('  --url <db url>            An OpenSearch/Elasticsearch, or the dbUrl to use its tagger table');
   console.log('  --prefix <prefix>         The dbUrl tagger table prefix, default arkime_');
+  console.log('  --dbPlugins <module>      A db plugin module to load for its url scheme, like plugins/mongodb/mongodb.js');
 
   process.exit(msg ? 1 : 0);
 }
@@ -77,7 +78,7 @@ function esCollection (urls, options = {}) {
 
 function clusterCollection (urls, prefix) {
   if (!ArkimeUtil.dbHoldsCluster(urls[0])) {
-    help(`ERROR - '${urls[0].split(':')[0]}' can't hold the tagger table`);
+    help(`ERROR - '${urls[0].split(':')[0]}' can't hold the tagger table, a dbPlugins scheme needs -c <config> or --dbPlugins <module>`);
   }
   const conn = ArkimeDb.connect(urls.join(','), { prefix: ArkimeUtil.formatPrefix(prefix), insecure: ArkimeConfig.isInsecure([urls]) });
   return conn.collection('tagger');
@@ -104,6 +105,7 @@ async function main () {
   };
   let url = option('--url');
   const prefix = option('--prefix');
+  const dbPlugin = option('--dbPlugins');
 
   const [type, file, ...tags] = args;
   if (!TYPES.includes(type)) { help(`Must be ${TYPES.join(', ')} for file type instead of ${type}`); }
@@ -114,6 +116,8 @@ async function main () {
   let coll;
   if (url) {
     if (!url.includes('://')) { url = `http://${url}`; }
+    // Without a config dbPlugins isn't read, so the module is named here
+    if (dbPlugin) { ArkimeDb.loadDbPlugin(path.resolve(dbPlugin)); }
     coll = ArkimeConfig.isEsUrl(url) ? esCollection([url]) : clusterCollection([url], prefix);
   } else {
     await Config.initialize({});

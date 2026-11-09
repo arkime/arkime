@@ -324,6 +324,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           setting) no longer connects to one, its ES health, ES stats tabs and ES Admin page are hidden
   - #4430 Fix saving user settings, password, table state or TOTP on a multi viewer removing the user's roles other
           than usersAdmin
+  - #4430 Fix a hunt resumed after a pause or restart skipping sessions, hunts now search in lastPacket order
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

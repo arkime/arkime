@@ -432,6 +432,8 @@ class ArkimeDb {
     let re = ArkimeDb.#regexCache.get(key);
     if (!re) {
       const RE2 = require('re2');
+      // Compiled alone first, an unbalanced ) would otherwise close the anchoring group and match everything
+      new RE2(pattern, 's');
       re = new RE2(`^(?:${pattern})$`, 's');
       ArkimeDb.#regexCache.set(key, re);
     }

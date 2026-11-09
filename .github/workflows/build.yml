@@ -192,6 +192,7 @@ jobs:
             sleep 1
           done
           curl -fsS http://localhost:9200/_cat/health || (cat /tmp/os; exit 1)
+          ARKIME_TEST_ES_URL=http://localhost:9200 npm run test:unit
           free -h || true
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer --debug)
 
@@ -253,6 +254,7 @@ jobs:
             sleep 1
           done
           curl -fsS http://localhost:9200/_cat/health || (cat /tmp/os; exit 1)
+          ARKIME_TEST_ES_URL=http://localhost:9200 npm run test:unit
           (cd tests ; ARKIME_default__dbUrl=postgres://arkime@127.0.0.1:5433/arkimecap G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: viewer test noes
