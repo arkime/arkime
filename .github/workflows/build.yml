@@ -184,7 +184,7 @@ jobs:
         if: ${{ matrix.viewertest == 'normal' }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
+          (chown -R opensearch /opensearch; cd /opensearch ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
           npm run test:unit
           sleep 12
           for i in $(seq 1 12); do
@@ -195,6 +195,20 @@ jobs:
           ARKIME_TEST_ES_URL=http://localhost:9200 npm run test:unit
           free -h || true
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer --debug)
+
+      - name: viewer test es9
+        if: ${{ matrix.viewertest == 'es9' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          (chown -R elasticsearch /elasticsearch; cd /elasticsearch ; su elasticsearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/elasticsearch" > /tmp/es 2>&1 &)
+          npm run test:unit
+          for i in $(seq 1 60); do
+            curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=1s' >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9200/_cat/health || (cat /tmp/es; exit 1)
+          ARKIME_TEST_ES_URL=http://localhost:9200 npm run test:unit
+          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: viewer test arkimedb
         if: ${{ matrix.viewertest == 'packetpocket' }}

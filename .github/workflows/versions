@@ -12,7 +12,7 @@
 #   uitest - Should the UI tests be run
 #   python - instead of just 'python'
 #   notice - build the notice file, only need once
-#   viewertest - run the viewer tests can be normal, packetpocket, sanitize, clickhouse, postgres or noes (ClickHouse and Postgres, no OpenSearch/Elasticsearch)
+#   viewertest - run the viewer tests can be normal (OpenSearch 3), es9 (Elasticsearch 9), packetpocket, sanitize, clickhouse, postgres (OpenSearch 2.7) or noes (ClickHouse and Postgres, no OpenSearch/Elasticsearch)
 #   sanitizebuild - when set the command to use for latest-commit to build a sanitized version
 #   prbuild - if True then this build is used for PR builds & main, otherwise just main
 #   otherdbtest - if True then test sqlite users/cont3xt and the sqlite/lmdb/redis caches
@@ -88,7 +88,7 @@ include:
     prbuild: true
 
   - version: "arch-x86_64"
-    container: ghcr.io/arkime/arkime-build-arch:7.0.0-3
+    container: ghcr.io/arkime/arkime-build-arch:7.0.0-8
     buildopt: "--kafka"
     fpmdeps: "-d libmaxminddb -d libpcap -d yara -d perl-http-message -d perl-lwp-protocol-https -d perl-json -d libnet -d lua -d zstd -d glib2 -d openssl -d curl -d libxdp -d libpq"
     package: arch
@@ -117,7 +117,7 @@ include:
     package: deb
 
   - version: debian13_amd64
-    container: ghcr.io/arkime/arkime-build-d13:7.0.0-3
+    container: ghcr.io/arkime/arkime-build-d13:7.0.0-8
     buildopt: "--kafka"
     fpmdeps: "-d libwww-perl -d libjson-perl -d ethtool -d libyaml-0-2 -d liblua5.4-0 -d libmaxminddb0 -d libcurl4 -d libpcap0.8 -d libglib2.0-0 -d libnghttp2-14 -d libyara10 -d librdkafka1 -d libzstd1 -d libpython3.13 -d curl -d libxdp1 -d libatomic1 -d libpq5"
     package: deb
@@ -125,7 +125,7 @@ include:
     ja4plus: true
     prbuild: true
     runson: blacksmith-4vcpu-ubuntu-2404
-    viewertest: packetpocket
+    viewertest: es9
 
   - version: alpine324.x86_64
     container: ghcr.io/arkime/arkime-build-alpine324:7.0.0-3
