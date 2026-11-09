@@ -144,6 +144,23 @@ describe('terms buckets', () => {
   });
 });
 
+describe('buckets with no values for the order metric', () => {
+  // ES returns a null max for a bucket whose sessions have no network.bytes
+  const query = (dir) => ({ a: { terms: { field: 'source.ip', size: 5, order: { m: dir } }, aggs: { m: { max: { field: 'network.bytes' } } } } });
+  const cluster1 = { a: terms([{ key: 'x', doc_count: 1, m: { value: null } }, { key: 'y', doc_count: 1, m: { value: 10 } }]) };
+  const cluster2 = { a: terms([{ key: 'x', doc_count: 1, m: { value: 30 } }, { key: 'z', doc_count: 1, m: { value: null } }, { key: 'w', doc_count: 1, m: { value: 0 } }]) };
+  const ranked = (dir) => merge(query(dir), cluster1, cluster2).a.buckets.map(b => [b.key, b.m.value]);
+
+  test('rank last whichever way the metric is ordered, a 0 is still a value', () => {
+    assert.deepEqual(ranked('desc'), [['x', 30], ['y', 10], ['w', 0], ['z', null]]);
+    assert.deepEqual(ranked('asc'), [['w', 0], ['y', 10], ['x', 30], ['z', null]]);
+  });
+
+  test('take the value of a cluster that has one', () => {
+    assert.deepEqual(merge(query('desc'), cluster2, cluster1).a.buckets.map(b => [b.key, b.m.value]), [['x', 30], ['y', 10], ['w', 0], ['z', null]], 'either cluster first');
+  });
+});
+
 describe('histogram buckets', () => {
   const bucket = (key, docCount, bytes) => ({ key, doc_count: docCount, bytes: { value: bytes } });
   const histogram = (buckets) => ({ buckets });
