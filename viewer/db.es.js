@@ -60,6 +60,31 @@ const SESSION_SCRIPTS = {
       `
 };
 
+// Elasticsearch ranks a bucket with no values for an avg or percentile (NaN),
+// min or max (+-Infinity) ahead of the others, so first order by whether the
+// metric's field has a value, ranking those buckets last
+const EMPTY_METRICS = ['avg', 'min', 'max', 'percentiles'];
+function rankEmptyMetricsLast (aggs) {
+  if (!aggs || typeof aggs !== 'object') { return; }
+  for (const agg of Object.values(aggs)) {
+    const sub = agg?.aggregations ?? agg?.aggs;
+    if (!sub) { continue; }
+    rankEmptyMetricsLast(sub);
+    const bucketAgg = agg.terms ?? agg.histogram ?? agg.date_histogram;
+    if (!bucketAgg?.order) { continue; }
+    const order = Array.isArray(bucketAgg.order) ? bucketAgg.order : [bucketAgg.order];
+    for (let i = 0; i < order.length; i++) {
+      const metricName = Object.keys(order[i] ?? {})[0]?.replace(/[[.].*$/, '');
+      const field = EMPTY_METRICS.map(m => sub[metricName]?.[m]?.field).find(f => f);
+      const hasName = `${metricName}_has`;
+      if (!field || sub[hasName]) { continue; }
+      sub[hasName] = { max: { script: { source: 'doc.containsKey(params.f) && doc[params.f].size() > 0 ? 1 : 0', params: { f: field } } } };
+      bucketAgg.order = [...order.slice(0, i), { [hasName]: 'desc' }, ...order.slice(i)];
+      break;
+    }
+  }
+}
+
 class DbESImpl {
   #Db;
   #internals;
@@ -99,6 +124,7 @@ class DbESImpl {
   async searchScroll (index, query, options, cb) {
     const Db = this.#Db;
     const internals = this.#internals;
+    if (!internals.multiES) { rankEmptyMetricsLast(query?.aggregations ?? query?.aggs); }
 
     // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
     if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
@@ -246,6 +272,7 @@ class DbESImpl {
     const body = [];
 
     for (let i = 0, ilen = queries.length; i < ilen; i++) {
+      if (!this.#internals.multiES) { rankEmptyMetricsLast(queries[i]?.aggregations ?? queries[i]?.aggs); }
       body.push({ index: this.#fixIndex(index) });
       body.push(queries[i]);
     }
@@ -530,5 +557,7 @@ class DbESImpl {
 }
 
 DbESImpl.SESSION_SCRIPTS = SESSION_SCRIPTS;
+
+DbESImpl.rankEmptyMetricsLast = rankEmptyMetricsLast;
 
 module.exports = DbESImpl;

@@ -23,6 +23,7 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const { newAggregations, aggConvert2Obj, aggAdd, aggConvert2Arr } = require('./multiesAggs');
 const MultiesClusterDb = require('./multiesClusterDb');
 const DbClusterImpl = require('./db.cluster.js');
+const DbESImpl = require('./db.es.js');
 const ESConnection = require('../common/arkimeDb.es.js');
 const ArkimeDb = require('../common/arkimeDb');
 require('./db.ch.js').register();
@@ -1061,6 +1062,8 @@ function fixQuery (node, body, doneCb) {
   }
 
   delete body.from;
+  // an ES cluster ranks the buckets itself before they are merged
+  if (!sessionsImpls[node]) { DbESImpl.rankEmptyMetricsLast(body.aggregations ?? body.aggs); }
 
   let outstanding = 0;
   let finished = 0;

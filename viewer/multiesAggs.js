@@ -172,11 +172,13 @@ function agg2Arr (agg, type, order) {
   const orderValue = (bucket) => {
     if (orderKey === '_count') { return bucket.doc_count; }
     if (orderKey === '_key') { return bucket.key; }
-    return bucket[orderKey]?.value ?? 0;
+    return bucket[orderKey]?.value ?? null;
   };
   arr = arr.sort((a, b) => {
     const av = orderValue(a);
     const bv = orderValue(b);
+    // a metric with no values ranks last either way, as the clusters rank it
+    if ((av === null) !== (bv === null)) { return av === null ? 1 : -1; }
     if (av !== bv) {
       if (typeof av === 'string' || typeof bv === 'string') {
         return dir * String(av).localeCompare(String(bv));
