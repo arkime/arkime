@@ -221,6 +221,25 @@ class ESCollection extends ArkimeDb.Collection {
 
   async aggregate ({ where, groupBy, metrics = {}, size = 1000, cluster } = {}) {
     ArkimeDb.checkMetrics(metrics);
+    // ES 8+ can't aggregate on _id, every id is its own group so build them from the docs
+    if (groupBy === 'id') {
+      const fields = Object.values(metrics).map(m => Object.values(m)[0]);
+      const { data } = await this.find({ where, fields: fields.length ? fields : undefined, cluster });
+      data.sort((a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0);
+      return data.slice(0, size).map(({ id, doc }) => {
+        const bucket = { key: id, count: 1 };
+        for (const [metricName, metric] of Object.entries(metrics)) {
+          const [op, field] = Object.entries(metric)[0];
+          const values = [field.split('.').reduce((v, k) => v?.[k], doc)].flat().filter(v => typeof v === 'number');
+          if (op === 'sum') {
+            bucket[metricName] = values.reduce((s, v) => s + v, 0);
+          } else {
+            bucket[metricName] = values.length ? Math[op](...values) : null;
+          }
+        }
+        return bucket;
+      });
+    }
     const aggs = {};
     for (const [metricName, metric] of Object.entries(metrics)) {
       const [op, field] = Object.entries(metric)[0];
