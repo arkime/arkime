@@ -18,7 +18,7 @@ const ArkimeUtil = cjsRequire('../common/arkimeUtil.js');
 const {
   initUpdateCheck, checkForUpdates, optIn, updateCheckState, dismissUpdate,
   hasUndismissedUpdate, safeUrl, compareVersions, parseVersion,
-  isDevBuild, releasesUrl
+  isDevBuild, releasesUrl, isRc
 } = await import('../common/vueapp/UpdateCheckService.js');
 
 // ---------------------------------------------------------------- server half
@@ -97,9 +97,11 @@ describe('UpdateCheckService', () => {
 
   describe('version handling', () => {
     test('parses the forms we ship', () => {
-      assert.deepEqual(parseVersion('7.0.0'), [7, 0, 0]);
-      assert.deepEqual(parseVersion('v7.0.0'), [7, 0, 0]);
-      assert.deepEqual(parseVersion('7.0.0-GIT'), [7, 0, 0]);
+      assert.deepEqual(parseVersion('7.0.0'), [7, 0, 0, Infinity]);
+      assert.deepEqual(parseVersion('v7.0.0'), [7, 0, 0, Infinity]);
+      assert.deepEqual(parseVersion('7.0.0-GIT'), [7, 0, 0, Infinity]);
+      assert.deepEqual(parseVersion('7.0.1-rc2'), [7, 0, 1, 2]);
+      assert.deepEqual(parseVersion('v5.0.0-rc'), [5, 0, 0, 0]);
       assert.equal(parseVersion('nope'), undefined);
     });
 
@@ -107,6 +109,48 @@ describe('UpdateCheckService', () => {
       assert.equal(compareVersions('7.10.0', '7.9.0'), 1);
       assert.equal(compareVersions('8.0.0', '7.99.99'), 1);
       assert.equal(compareVersions('7.0.0', '7.0.0'), 0);
+    });
+
+    test('rc releases sort before their release', () => {
+      const order = ['7.0.0', '7.0.1-rc1', '7.0.1-rc2', '7.0.1', '7.0.2-rc1'];
+      const shuffled = ['7.0.1', '7.0.2-rc1', '7.0.1-rc2', '7.0.0', '7.0.1-rc1'];
+      assert.deepEqual(shuffled.sort(compareVersions), order);
+      assert.equal(compareVersions('7.0.1-rc10', '7.0.1-rc9'), 1);
+      assert.equal(compareVersions('7.0.1-rc1', '7.0.1-rc1'), 0);
+      assert.equal(compareVersions('7.0.1-rc1', '7.0.0'), 1);
+    });
+
+    test('an rc user is offered the newer rc and the release', () => {
+      fresh({ VERSION: '7.0.1-rc1' });
+      serve({ releases: [{ version: '7.0.1-rc2' }] });
+      return checkForUpdates({ force: true }).then(() => {
+        assert.equal(state.latest, '7.0.1-rc2');
+        serve({ releases: [{ version: '7.0.1-rc2' }, { version: '7.0.1' }, { version: '7.0.0' }] });
+        return checkForUpdates({ force: true });
+      }).then(() => assert.equal(state.latest, '7.0.1'));
+    });
+
+    test('isRc', () => {
+      assert.equal(isRc('7.0.1-rc1'), true);
+      assert.equal(isRc('7.0.1'), false);
+      assert.equal(isRc('7.0.0-GIT'), false);
+      assert.equal(isRc('nope'), false);
+    });
+
+    test('a stable install is never offered an rc', async () => {
+      fresh({ VERSION: '7.0.0' });
+      serve({ releases: [{ version: '7.0.1-rc1', security: true }, { version: '7.0.1-rc2' }] });
+      await checkForUpdates({ force: true });
+      assert.equal(state.latest, undefined);
+      assert.equal(state.security, false);
+
+      serve({ latest: '7.0.1-rc2' });
+      await checkForUpdates({ force: true });
+      assert.equal(state.latest, undefined);
+
+      serve({ releases: [{ version: '7.0.1' }, { version: '7.0.2-rc1' }] });
+      await checkForUpdates({ force: true });
+      assert.equal(state.latest, '7.0.1');
     });
 
     test('requests the file for its own major', () => {

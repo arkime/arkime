@@ -47,21 +47,33 @@ function writeStorage (key, value) {
   try { localStorage.setItem(key, value); } catch { /* private mode */ }
 }
 
-/** Turns 7.0.1 / v7.0.1 / 7.0.1-GIT into [7, 0, 1], or undefined */
+/**
+ * Turns 7.0.1 / v7.0.1 / 7.0.1-GIT into [7, 0, 1, Infinity] and 7.0.1-rc2 into
+ * [7, 0, 1, 2], or undefined. The 4th slot is the rc number, Infinity for a
+ * release, so an rc sorts before its release. A bare -rc counts as rc0.
+ */
 export function parseVersion (version) {
-  const match = /^v?(\d+)\.(\d+)\.(\d+)/.exec(String(version ?? '').trim());
-  return match ? [+match[1], +match[2], +match[3]] : undefined;
+  const match = /^v?(\d+)\.(\d+)\.(\d+)(?:-?rc(\d*))?/i.exec(String(version ?? '').trim());
+  if (!match) { return undefined; }
+  const rc = match[4] === undefined ? Infinity : +match[4];
+  return [+match[1], +match[2], +match[3], rc];
 }
 
-/** Numeric compare so 7.10.0 sorts after 7.9.0 */
+/** Numeric compare so 7.10.0 sorts after 7.9.0 and 7.0.1-rc1 < 7.0.1-rc2 < 7.0.1 */
 export function compareVersions (a, b) {
   const pa = parseVersion(a);
   const pb = parseVersion(b);
   if (!pa || !pb) { return 0; }
-  for (let i = 0; i < 3; i++) {
+  for (let i = 0; i < 4; i++) {
     if (pa[i] !== pb[i]) { return pa[i] < pb[i] ? -1 : 1; }
   }
   return 0;
+}
+
+/** True for 7.0.1-rc1 and friends */
+export function isRc (version) {
+  const parsed = parseVersion(version);
+  return !!parsed && parsed[3] !== Infinity;
 }
 
 /** The feed is off origin, so never hand the UI a javascript: or data: link */
@@ -104,6 +116,12 @@ function hideIfDismissed () {
   if (state.latest && state.latest === state.dismissed) { hideDismissed(); }
 }
 
+// only someone already running an rc is offered rcs, a stable install
+// waits for the release
+function wanted (version) {
+  return compareVersions(version, state.version) > 0 && (!isRc(version) || isRc(state.version));
+}
+
 function applyPayload (payload) {
   const releases = Array.isArray(payload?.releases) ? payload.releases : [];
 
@@ -113,7 +131,7 @@ function applyPayload (payload) {
 
   for (const release of releases) {
     if (!parseVersion(release?.version)) { continue; }
-    if (compareVersions(release.version, state.version) <= 0) { continue; }
+    if (!wanted(release.version)) { continue; }
     if (release.security) { security = true; }
     if (!newest || compareVersions(release.version, newest) > 0) {
       newest = release.version;
@@ -122,7 +140,7 @@ function applyPayload (payload) {
   }
 
   // fall back to the precomputed `latest` when no releases[] is published
-  if (!newest && compareVersions(payload?.latest, state.version) > 0) {
+  if (!newest && parseVersion(payload?.latest) && wanted(payload.latest)) {
     newest = payload.latest;
     newestUrl = safeUrl(payload.url);
     security = !!payload.security;
