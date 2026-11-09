@@ -402,7 +402,7 @@ class DbCHImpl {
     // periodically so newly-seen JSON paths (e.g. from new parsers) become
     // addressable as nested object arrays without code changes.
     // searches wait for it, until then typed paths would be read as Dynamic and fail
-    this.schemaReady = this.refreshSchema().catch((err) => {
+    this.schemaReady = this.checkVersion().then(() => this.refreshSchema()).catch((err) => {
       if (Config?.debug >= 1) { console.log('CH backend: initial schema refresh failed:', err.message); }
     });
     this.schemaRefreshTimer = setInterval(() => {
@@ -410,6 +410,17 @@ class DbCHImpl {
     }, 5 * 60 * 1000);
     this.schemaRefreshTimer.unref?.();
     this.scrolls = new Map();
+  }
+
+  // The oldest supported LTS, lightweight UPDATEs need 25.8 and only 26.x is tested
+  async checkVersion () {
+    const res = await this.query('SELECT version() AS v');
+    const version = String(res?.data?.[0]?.v ?? '');
+    const m = version.match(/^(\d+)\.(\d+)/);
+    if (m && (+m[1] < 26 || (+m[1] === 26 && +m[2] < 3))) {
+      console.log(`ERROR - ClickHouse ${ArkimeUtil.sanitizeStr(version)} is too old, Arkime needs 26.3 or newer`);
+      process.exit(1);
+    }
   }
 
   async refreshSchema () {
@@ -1554,30 +1565,8 @@ class DbCHImpl {
     let where = `\`_id\` = ${sqlLiteral(id)}${this.timeClauseFromIndex(index, { qualify: false })}`;
     if (nodes) { where += ` AND node IN (${nodes.length ? nodes.map(n => sqlLiteral(n)).join(', ') : "''"})`; }
 
-    // Prefer a lightweight UPDATE (patch parts, CH 25.7+): no part rewrite,
-    // synchronous, immediately visible to the re-search the viewer does after
-    // tagging. Fall back to a heavyweight mutation on servers/tables without
-    // patch part support and remember the answer.
-    if (this.lightweightUpdates !== false) {
-      try {
-        await this.query(`UPDATE ${this.tableName()} SET ${assignments.join(', ')} WHERE ${where} SETTINGS enable_lightweight_update = 1`, { text: true });
-        this.lightweightUpdates = true;
-        return { result: 'updated' };
-      } catch (err) {
-        // Only a no-op probe failing means the server or table can't, not this one update (too big, say)
-        try {
-          await this.query(`UPDATE ${this.tableName()} SET fields = fields WHERE 0 SETTINGS enable_lightweight_update = 1`, { text: true });
-        } catch (probeErr) {
-          this.lightweightUpdates = false;
-          console.log('CH backend: lightweight UPDATE unavailable, using ALTER TABLE UPDATE mutations:', ArkimeUtil.sanitizeLine(probeErr.message.split('\n')[0]));
-        }
-        if (this.lightweightUpdates !== false) { throw err; }
-      }
-    }
-
-    // mutations_sync so the change is visible to the immediate re-search the
-    // viewer does after tagging (matches ES update-then-refresh semantics).
-    await this.query(`ALTER TABLE ${this.tableName()} UPDATE ${assignments.join(', ')} WHERE ${where}`, { text: true, mutationsSync: true });
+    // A lightweight UPDATE writes a patch part and is visible to the re-search the viewer does after tagging
+    await this.query(`UPDATE ${this.tableName()} SET ${assignments.join(', ')} WHERE ${where} SETTINGS enable_lightweight_update = 1`, { text: true });
     return { result: 'updated' };
   }
 
