@@ -1197,25 +1197,25 @@ SKIP: {
     my $noid = {node => "test", lastPacket => 1704067200000, protocol => ["tls"], tags => ["tee-noid"]};
     my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk?refresh=true");
     $r->header('Content-Type' => 'application/x-ndjson');
-    $r->content(join("\n", '{"index":{"_index":"tests_sessions3-2024","_id":"tee-own"}}', to_json($own),
-                           '{"index":{"_index":"tests_sessions3-2024","_id":"tee-other"}}', to_json($other),
-                           '{"index":{"_index":"tests_sessions3-2024"}}', to_json($noid)) . "\n");
+    $r->content(join("\n", '{"index":{"_index":"tests_sessions3-240101","_id":"tee-own"}}', to_json($own),
+                           '{"index":{"_index":"tests_sessions3-240101","_id":"tee-other"}}', to_json($other),
+                           '{"index":{"_index":"tests_sessions3-240101"}}', to_json($noid)) . "\n");
     is ($ArkimeTest::userAgent->request($r)->code, 200, "bulk sessions with the sessions tee");
 
     my $docs;
     waitUntil(sub { $docs = $teeDocs->(["tee-own"]); @$docs == 1; });
     my $d = $docs->[0] // {};
     is_deeply ([$d->{http}{uriTokens}, $d->{http}{hostTokens}, $d->{dns}[0]{hostTokens}, $d->{index}, $d->{node}],
-               [["example", "com", "login", "admin", "x", "1"], ["www", "example", "com"], ["a", "b", "c", "com"], "teech_sessions3-2024", "test"],
+               [["example", "com", "login", "admin", "x", "1"], ["www", "example", "com"], ["a", "b", "c", "com"], "teech_sessions3-240101", "test"],
                "tee doc has the doc, its index with the tee prefix and the wordSplit tokens");
 
     $docs = $teeDocs->(undef, "tee-noid");
     is (scalar @$docs, 1, "a session without an _id is teed");
-    like ($docs->[0]{_id} // "", qr/^2024-[A-Za-z0-9_-]{20}$/, "and gets an id from its index");
+    like ($docs->[0]{_id} // "", qr/^240101-[A-Za-z0-9_-]{20}$/, "and gets an id from its index");
 
     my $hunt = to_json({script => {source => $addHunt, lang => "painless", params => {huntId => "tee-hunt", huntName => "tee"}}});
     foreach my $id ("tee-own", "tee-other") {
-        $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-2024/_update/$id");
+        $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_sessions3-240101/_update/$id");
         $r->header('Content-Type' => 'application/json');
         $r->content($hunt);
         $ArkimeTest::userAgent->request($r);
@@ -1224,7 +1224,7 @@ SKIP: {
     is_deeply ($docs->[1]{huntId}, ["tee-hunt"], "hunt update teed to the sensor's own session");
     is_deeply ($docs->[0]{huntId} // [], [], "hunt update not teed to another host's session");
 
-    esPost("/tests_sessions3-2024/_delete_by_query?refresh=true", '{"query":{"bool":{"should":[{"ids":{"values":["tee-own","tee-other"]}},{"term":{"tags":"tee-noid"}}]}}}');
+    esPost("/tests_sessions3-240101/_delete_by_query?refresh=true", '{"query":{"bool":{"should":[{"ids":{"values":["tee-own","tee-other"]}},{"term":{"tags":"tee-noid"}}]}}}');
     if ($ArkimeTest::sessionsDbCH) {
         $ArkimeTest::sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$};
         $ArkimeTest::userAgent->post(($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2/", Content => "TRUNCATE TABLE arkime.teech_sessions3", "Content-Type" => "text/plain;charset=UTF-8");
