@@ -921,6 +921,165 @@ class StatsAPIs {
 
   // --------------------------------------------------------------------------
   /**
+   * GET - /api/db/:db/queries
+   *
+   * Lists the queries running on a non OpenSearch/Elasticsearch db, like ClickHouse for the sessions.
+   * The query text is only returned to dbAdmin users.
+   * @name /db/:db/queries
+   * @param {string} db - The db, sessions, cluster or users.
+   * @param {string} filter - A regex to filter the user, db user or query by.
+   * @param {string} sortField=elapsed - The field to sort by.
+   * @param {boolean} desc=true - Sort descending.
+   * @returns {Array} data - The queries: id, user, dbUser, app, state, elapsed, rowsRead, bytesRead, memory, cancelled, query, each backend fills what it can.
+   * @returns {number} recordsTotal - The number of running queries.
+   * @returns {number} recordsFiltered - The number of queries returned.
+   */
+  static async getDbQueries (req, res) {
+    const impl = Db.adminDb(req.params.db);
+    if (!impl) { return res.serverError(404, 'Unknown db'); }
+
+    let regex;
+    if (ArkimeUtil.isString(req.query.filter) && req.query.filter !== '') {
+      try {
+        regex = new RE2(req.query.filter);
+      } catch (e) {
+        return res.serverError(400, `Regex Error: ${e}`);
+      }
+    }
+
+    try {
+      const queries = await impl.adminQueries();
+      const isDbAdmin = req.user.hasRole('dbAdmin');
+      let data = queries.filter(q => !regex || regex.test(q.user ?? '') || regex.test(q.dbUser ?? '') || regex.test(q.app ?? '') || (isDbAdmin && regex.test(q.query ?? '')));
+      if (!isDbAdmin) { data.forEach((q) => { delete q.query; }); }
+
+      const sortField = impl.adminFields?.includes(req.query.sortField) ? req.query.sortField : 'elapsed';
+      const dir = req.query.desc === 'false' ? 1 : -1;
+      data.sort((a, b) => dir * (typeof a[sortField] === 'string' ? a[sortField].localeCompare(b[sortField] ?? '') : (a[sortField] ?? 0) - (b[sortField] ?? 0)));
+      data = data.slice(0, Math.min(Math.max(parseInt(req.query.size) || 500, 1), 10000));
+
+      return res.send({ recordsTotal: queries.length, recordsFiltered: data.length, data });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/db/%s/queries`, ArkimeUtil.sanitizeStr(req.params.db), util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * POST - /api/db/:db/queries/:id/kill
+   *
+   * Kills a query running on a non OpenSearch/Elasticsearch db (dbAdmin only).
+   * @name /db/:db/queries/:id/kill
+   * @param {string} db - The db, sessions, cluster or users.
+   * @param {string} id - The query id from /api/db/:db/queries.
+   * @returns {boolean} success - Whether the query was found and killed.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async killDbQuery (req, res) {
+    const impl = Db.adminDb(req.params.db);
+    if (!impl) { return res.serverError(404, 'Unknown db'); }
+    if (!ArkimeUtil.isString(req.params.id) || req.params.id.length > 1000) {
+      return res.serverError(400, 'Missing ID of query to kill');
+    }
+
+    try {
+      if (!await impl.adminKillQuery(req.params.id)) {
+        return res.serverError(404, 'Query not found');
+      }
+      return res.json({ success: true, text: 'Query killed' });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/db/%s/queries/%s/kill`, ArkimeUtil.sanitizeStr(req.params.db), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/db/:db/tables
+   *
+   * Lists the tables, or for ClickHouse the table partitions, of a non OpenSearch/Elasticsearch db.
+   * @name /db/:db/tables
+   * @param {string} db - The db, sessions, cluster or users.
+   * @param {string} filter - A regex to filter the table or partition by.
+   * @param {string} sortField=table - The field to sort by.
+   * @param {boolean} desc=false - Sort descending.
+   * @returns {Array} data - The tables, each backend fills the fields it has: id, table, partition, rows, parts,
+   *   patchParts, dead, bytes, compressed, uncompressed, tableBytes, indexBytes, memory, cached, first, last, modified,
+   *   lastVacuum, lastAnalyze.
+   * @returns {number} recordsTotal - The number of tables.
+   * @returns {number} recordsFiltered - The number of tables returned.
+   */
+  static async getDbTables (req, res) {
+    const impl = Db.adminDb(req.params.db);
+    if (typeof impl?.adminTables !== 'function') { return res.serverError(404, 'Unknown db'); }
+
+    let regex;
+    if (ArkimeUtil.isString(req.query.filter) && req.query.filter !== '') {
+      try {
+        regex = new RE2(req.query.filter);
+      } catch (e) {
+        return res.serverError(400, `Regex Error: ${e}`);
+      }
+    }
+
+    try {
+      const tables = await impl.adminTables();
+      let data = tables.filter(t => !regex || regex.test(t.table) || regex.test(t.partition ?? ''));
+      const sortField = impl.adminTableFields?.includes(req.query.sortField) ? req.query.sortField : 'table';
+      const dir = req.query.desc === 'true' ? -1 : 1;
+      data.sort((a, b) => {
+        const av = a[sortField] ?? (typeof b[sortField] === 'string' ? '' : 0);
+        const bv = b[sortField] ?? (typeof a[sortField] === 'string' ? '' : 0);
+        const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+        return dir * (cmp || (a.partition ?? '').localeCompare(b.partition ?? ''));
+      });
+      data = data.slice(0, Math.min(Math.max(parseInt(req.query.size) || 10000, 1), 10000));
+
+      return res.send({ recordsTotal: tables.length, recordsFiltered: data.length, data });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/db/%s/tables`, ArkimeUtil.sanitizeStr(req.params.db), util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * POST - /api/db/:db/tables/:id/:action
+   * DELETE - /api/db/:db/tables/:id
+   *
+   * Runs an action on a table or partition of a non OpenSearch/Elasticsearch db (dbAdmin only), the DELETE drops it
+   * and also needs removeEnabled. ClickHouse can optimize and drop partitions, Postgres can vacuum tables.
+   * @name /db/:db/tables/:id/:action
+   * @param {string} db - The db, sessions, cluster or users.
+   * @param {string} id - The table id from /api/db/:db/tables.
+   * @param {string} action - optimize or vacuum, the ones the db supports.
+   * @returns {boolean} success - Whether the action ran (an optimize is only started).
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async dbTableAction (req, res) {
+    // Only the DELETE route, which also needs removeEnabled, drops
+    const action = req.method === 'DELETE' ? 'drop' : req.params.action;
+    const impl = Db.adminDb(req.params.db);
+    if ((req.method !== 'DELETE' && action === 'drop') || !impl?.adminTableActions?.includes(action)) { return res.serverError(404, 'Unknown db or action'); }
+    if (!ArkimeUtil.isString(req.params.id) || req.params.id.length > 2000) {
+      return res.serverError(400, 'Missing table id');
+    }
+
+    try {
+      if (!await impl.adminTableAction(req.params.id, action)) {
+        return res.serverError(404, 'Table not found');
+      }
+      return res.json({ success: true, text: `${action} ${action === 'optimize' ? 'started' : 'done'}` });
+    } catch (err) {
+      if (err.statusCode === 409) { return res.serverError(409, err.message); }
+      console.log(`ERROR - ${req.method} /api/db/%s/tables/%s %s`, ArkimeUtil.sanitizeStr(req.params.db), ArkimeUtil.sanitizeStr(req.params.id), action, util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
    * POST - /api/estasks/cancelall
    *
    * Cancels all running OpenSearch/Elasticsearch tasks (admin only).

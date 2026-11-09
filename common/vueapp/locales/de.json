@@ -1018,7 +1018,10 @@
       "esShards": "ES-Shards",
       "esNodes": "ES-Knoten",
       "esTasks": "ES-Aufgaben",
-      "esRecovery": "ES-Wiederherstellung"
+      "esRecovery": "ES-Wiederherstellung",
+      "dbQueries": "{name}-Abfragen",
+      "dbPartitions": "{name}-Partitionen",
+      "dbTables": "{name}-Tabellen"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>HINWEIS:</strong> Diese Graphen sind 1440 Pixel breit. Erweitern Sie Ihr Browserfenster auf mindestens 1500 Pixel Breite für die beste Ansicht.",
@@ -1206,6 +1209,46 @@
       "node": "Knoten",
       "taskId": "Aufgaben-ID",
       "type": "Typ"
+    },
+    "dbQueries": {
+      "noResults": "Es laufen keine Abfragen",
+      "kill": "Abfrage abbrechen",
+      "user": "Benutzer",
+      "elapsed": "Laufzeit (s)",
+      "rowsRead": "Gelesene Zeilen",
+      "bytesRead": "Gelesene Bytes",
+      "memory": "Speicher",
+      "state": "Status",
+      "query": "Abfrage",
+      "dbUser": "DB-Benutzer",
+      "app": "Anwendung",
+      "cancelled": "Abgebrochen",
+      "id": "Abfrage-ID"
+    },
+    "dbTables": {
+      "noResults": "Keine Tabellen",
+      "table": "Tabelle",
+      "partition": "Partition",
+      "rows": "Zeilen",
+      "dead": "Tote Zeilen",
+      "parts": "Teile",
+      "patchParts": "Patch-Teile",
+      "bytes": "Größe",
+      "tableBytes": "Tabellengröße",
+      "indexBytes": "Indexgröße",
+      "memory": "Speicher",
+      "cached": "Im Cache",
+      "ratio": "Kompression",
+      "first": "Erstes Paket",
+      "last": "Letztes Paket",
+      "lastVacuum": "Letztes Vacuum",
+      "lastAnalyze": "Letzte Analyse",
+      "compressed": "Komprimiert",
+      "uncompressed": "Unkomprimiert",
+      "modified": "Geändert",
+      "optimize": "Optimieren",
+      "drop": "Löschen",
+      "vacuum": "Vacuum Analyze"
     }
   },
   "errors": {

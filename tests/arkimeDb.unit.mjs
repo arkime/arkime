@@ -813,6 +813,43 @@ describe('ArkimeDb', () => {
     }
   });
 
+  test('Postgres admin queries list and cancel this db\'s running queries', { skip: !process.env.ARKIME_TEST_PG_URL }, async () => {
+    const conn = ArkimeUtil.dbConnect(process.env.ARKIME_TEST_PG_URL, { prefix: `arkimedb_admin_${run}_` });
+    assert.equal(conn.adminName, 'PG');
+    assert.equal(conn.withPrefix('other_').adminKey, conn.adminKey, 'another prefix on the same url is the same db');
+    const sleeper = conn.pool.query('SELECT pg_sleep(30)').then(() => 'finished', err => err.message);
+    let running;
+    for (let i = 0; i < 50 && !running; i++) {
+      await new Promise(resolve => setTimeout(resolve, 100));
+      running = (await conn.adminQueries()).find(q => q.query.includes('pg_sleep(30)'));
+    }
+    assert.ok(running, 'the sleeping query is listed');
+    assert.equal(running.app, 'arkime');
+    assert.match(running.id, /^\d+$/);
+    assert.equal(await conn.adminKillQuery('not a pid'), false);
+    assert.equal(await conn.adminKillQuery('9999999999'), false, 'a pid past int4 is not found, not an error');
+    assert.equal(await conn.adminKillQuery(running.id), true);
+    assert.match(await sleeper, /cancel/i);
+  });
+
+  test('Postgres admin tables list and vacuum this db\'s tables', { skip: !process.env.ARKIME_TEST_PG_URL }, async () => {
+    const prefix = `arkimedb_admintables_${run}_`;
+    const conn = ArkimeUtil.dbConnect(process.env.ARKIME_TEST_PG_URL, { prefix });
+    const coll = conn.collection('things');
+    await coll.put('a', { n: 1 });
+    const tables = await conn.adminTables();
+    const mine = tables.find(t => t.table === `${prefix}things`);
+    assert.ok(mine, 'the collection table is listed');
+    assert.ok(mine.tableBytes > 0);
+    // Cached is only filled when the optional pg_buffercache extension is installed
+    assert.ok(mine.cached === null || mine.cached >= 0);
+    assert.equal(await conn.adminTableAction(mine.id, 'vacuum'), true);
+    assert.equal(await conn.adminTableAction(mine.id, 'drop'), false, 'Postgres tables can only be vacuumed');
+    assert.equal(await conn.adminTableAction(JSON.stringify(['public', 'no such table']), 'vacuum'), false);
+    assert.equal(await conn.adminTableAction('not json', 'vacuum'), false);
+    await conn.pool.query(`DROP TABLE IF EXISTS "${prefix}things"`);
+  });
+
   test('unknown schemes throw', () => {
     assert.throws(() => ArkimeUtil.dbConnect('nope://x'), /Unknown db url scheme 'nope'/);
     assert.throws(() => ArkimeUtil.dbConnect('lmdb:///tmp/x'), /no longer supported/);

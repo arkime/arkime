@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
   <div
     v-if="infoOnly"
     class="pagination-info info-only">
-    {{ t('common.showingAllTip', { start: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
+    {{ t('common.showingAllTip', { count: commaString(recordsFiltered), total: commaString(recordsTotal) }) }}
   </div>
 
   <!-- show info and controls -->

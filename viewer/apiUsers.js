@@ -298,6 +298,16 @@ class UserAPIs {
       const columnWidths = UserAPIs.findUserState('esTasksColWidths', req.user);
       return res.send({ tableState, columnWidths });
     }
+    case 'dbTables': {
+      const tableState = UserAPIs.findUserState('dbTablesCols', req.user);
+      const columnWidths = UserAPIs.findUserState('dbTablesColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
+    case 'dbQueries': {
+      const tableState = UserAPIs.findUserState('dbQueriesCols', req.user);
+      const columnWidths = UserAPIs.findUserState('dbQueriesColWidths', req.user);
+      return res.send({ tableState, columnWidths });
+    }
     case 'summary': {
       const summaryConfig = UserAPIs.findUserState('summary', req.user);
       return res.send({ summaryConfig });

@@ -1018,7 +1018,10 @@
       "esShards": "Shards de ES",
       "esNodes": "Nodos de ES",
       "esTasks": "Tareas de ES",
-      "esRecovery": "Recuperación de ES"
+      "esRecovery": "Recuperación de ES",
+      "dbQueries": "Consultas de {name}",
+      "dbPartitions": "Particiones de {name}",
+      "dbTables": "Tablas de {name}"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>CONSEJO:</strong> Estos gráficos tienen 1440 píxeles de ancho. Expande tu ventana del navegador a al menos 1500 píxeles de ancho para una mejor visualización.",
@@ -1206,6 +1209,46 @@
       "node": "Nodo",
       "taskId": "ID de tarea",
       "type": "Tipo"
+    },
+    "dbQueries": {
+      "noResults": "No hay consultas en ejecución",
+      "kill": "Detener consulta",
+      "user": "Usuario",
+      "elapsed": "Transcurrido (s)",
+      "rowsRead": "Filas leídas",
+      "bytesRead": "Bytes leídos",
+      "memory": "Memoria",
+      "state": "Estado",
+      "query": "Consulta",
+      "dbUser": "Usuario de BD",
+      "app": "Aplicación",
+      "cancelled": "Cancelada",
+      "id": "ID de consulta"
+    },
+    "dbTables": {
+      "noResults": "No hay tablas",
+      "table": "Tabla",
+      "partition": "Partición",
+      "rows": "Filas",
+      "dead": "Filas muertas",
+      "parts": "Partes",
+      "patchParts": "Partes de parche",
+      "bytes": "Tamaño",
+      "tableBytes": "Tamaño de tabla",
+      "indexBytes": "Tamaño de índices",
+      "memory": "Memoria",
+      "cached": "En caché",
+      "ratio": "Compresión",
+      "first": "Primer paquete",
+      "last": "Último paquete",
+      "lastVacuum": "Último vacuum",
+      "lastAnalyze": "Último análisis",
+      "compressed": "Comprimido",
+      "uncompressed": "Sin comprimir",
+      "modified": "Modificado",
+      "optimize": "Optimizar",
+      "drop": "Eliminar",
+      "vacuum": "Vacuum Analyze"
     }
   },
   "errors": {

@@ -95,6 +95,7 @@ async function initializeApp() {
     MULTIVIEWER,
     HASUSERSES,
     HASES,
+    DB_ADMIN,
     HASTSHARK,
     HUNTWARN,
     HUNTLIMIT,

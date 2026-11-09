@@ -1,4 +1,4 @@
-use Test::More tests => 142;
+use Test::More tests => 165;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -350,6 +350,60 @@ SKIP: {
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
 
 }
+# db queries, the running queries of a sessions db that isn't OpenSearch/Elasticsearch
+SKIP: {
+    skip "the db queries apis need ClickHouse sessions", 13 if !$ArkimeTest::sessionsDbCH;
+    my $dbq = viewerGet("/api/db/sessions/queries");
+    is (ref $dbq->{data}, "ARRAY", "db queries data");
+    cmp_ok ($dbq->{recordsTotal}, ">=", $dbq->{recordsFiltered}, "db queries recordsTotal");
+
+    $dbq = viewerGet("/api/db/sessions/queries?filter=" . uri_escape("("));
+    is ($dbq->{success}, 0, "db queries bad filter regex");
+
+    my $kill = viewerPostToken("/api/db/sessions/queries/nosuchquery/kill", "", $token);
+    is ($kill->{success}, 0, "db queries kill unknown query");
+
+    $kill = viewerPostToken("/api/db/sessions/queries/nosuchquery/kill?arkimeRegressionUser=test1", "", $test1Token);
+    is ($kill->{i18n}, "api.viewer.noPermission", "db queries kill needs dbAdmin");
+
+    my $cancel = viewerPostToken("/api/estasks/nosuchcancel/cancelwith", "", $token);
+    is ($cancel->{success}, 0, "cancel an unknown search on ClickHouse");
+    unlike ($cancel->{text} // "", qr/No OpenSearch/, "cancel reaches the ClickHouse sessions db");
+
+    my $parts = viewerGet("/api/db/sessions/tables");
+    ok ((grep { $_->{table} =~ /\.tests_sessions3$/ && $_->{rows} > 0 } @{$parts->{data}}), "ch partitions has the sessions table");
+    $parts = viewerGet("/api/db/sessions/tables?filter=" . uri_escape("tests_sessions3\$"));
+    ok (!grep({ $_->{table} !~ /tests_sessions3$/ } @{$parts->{data}}), "ch partitions filter");
+
+    my $badId = uri_escape('["arkime","nosuchtable","1"]');
+    is (viewerPostToken("/api/db/sessions/tables/$badId/optimize", "", $token)->{success}, 0, "ch partitions optimize unknown partition");
+    is (viewerDeleteToken("/api/db/sessions/tables/$badId", $token)->{success}, 0, "ch partitions drop unknown partition");
+    is (viewerPostToken("/api/db/sessions/tables/$badId/vacuum", "", $token)->{success}, 0, "ch partitions has no vacuum");
+    is (viewerPostToken("/api/db/sessions/tables/$badId/drop", "", $token)->{text}, "Unknown db or action", "ch partitions only drop with DELETE");
+}
+    is (viewerGet("/api/db/nosuchdb/queries")->{success}, 0, "db queries unknown db");
+
+SKIP: {
+    skip "the cluster db queries apis need Postgres", 9 if ($ArkimeTest::dbUrl // "") !~ /^postgres/;
+    my $dbq = viewerGet("/api/db/cluster/queries");
+    is (ref $dbq->{data}, "ARRAY", "pg db queries data");
+    ok (!grep({ ($_->{elapsed} // "") !~ /^[\d.]+$/ } @{$dbq->{data}}), "pg db queries elapsed is seconds");
+
+    my $kill = viewerPostToken("/api/db/cluster/queries/notapid/kill", "", $token);
+    is ($kill->{success}, 0, "pg db queries kill bad pid");
+
+    $kill = viewerPostToken("/api/db/cluster/queries/1/kill", "", $token);
+    is ($kill->{success}, 0, "pg db queries kill another db's pid");
+
+    my $pgTables = viewerGet("/api/db/cluster/tables");
+    my ($stats) = grep { $_->{table} =~ /stats$/ } @{$pgTables->{data}};
+    ok ($stats, "pg tables has the stats table");
+    is (viewerPostToken("/api/db/cluster/tables/" . uri_escape($stats->{id} // '[]') . "/vacuum", "", $token)->{success}, 1, "pg tables vacuum");
+    is (viewerPostToken("/api/db/cluster/tables/" . uri_escape($stats->{id} // '[]') . "/vacuum?arkimeRegressionUser=test1", "", $test1Token)->{i18n}, "api.viewer.noPermission", "pg tables vacuum needs dbAdmin");
+    is (viewerDeleteToken("/api/db/cluster/tables/" . uri_escape($stats->{id} // '[]'), $token)->{success}, 0, "pg tables can't be dropped");
+    is (viewerPostToken("/api/db/cluster/tables/" . uri_escape('["public","nosuchtable"]') . "/vacuum", "", $token)->{success}, 0, "pg tables vacuum unknown table");
+}
+
 # parliament.json
     my $stats = viewerGet("/api/parliament");
     is (@{$stats->{data}}, 1, "parliament.json data set ");

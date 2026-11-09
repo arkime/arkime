@@ -781,9 +781,14 @@ async function patternQuery (pool, sql, params) {
   }
 }
 
+// pg_buffercache has a row per shared buffer, millions on a big server, so its scan is reused for a minute
+const CACHED_MS = 60000;
+
 class PGConnection {
   pool;
   prefix;
+  #dbKey;
+  #cached = { at: 0, map: undefined };
   #closed = false;
   #collections = new Map();
 
@@ -792,10 +797,12 @@ class PGConnection {
     this.prefix = options.prefix ?? '';
     if (options.pool) {
       this.pool = options.pool;
+      this.#dbKey = options.dbKey;
       return;
     }
     const connectionString = url.replace(/^postgres(ql)?:/, 'postgres:');
-    this.pool = new Pool({ connectionString, ssl: sslOptions(connectionString, options) });
+    this.#dbKey = connectionString;
+    this.pool = new Pool({ connectionString, ssl: sslOptions(connectionString, options), application_name: 'arkime' });
     // An idle client losing its connection, like a Postgres restart, is an error event that would
     // otherwise end the process. The pool drops that client and the next query connects again.
     this.pool.on('error', (err) => {
@@ -804,7 +811,7 @@ class PGConnection {
   }
 
   withPrefix (prefix) {
-    return prefix === this.prefix ? this : new PGConnection(undefined, { pool: this.pool, prefix });
+    return prefix === this.prefix ? this : new PGConnection(undefined, { pool: this.pool, prefix, dbKey: this.#dbKey });
   }
 
   // Collections make their own tables, so Postgres has everything the db.pl schema version it matches has
@@ -819,6 +826,99 @@ class PGConnection {
       this.#collections.set(collName, coll);
     }
     return coll;
+  }
+
+  // --------------------------------------------------------------------------
+  // Admin: the Stats tab's running queries, connections to the same url are one db
+  // --------------------------------------------------------------------------
+  get adminName () { return 'PG'; }
+  get adminFields () { return ['elapsed', 'state', 'query', 'dbUser', 'app', 'id']; }
+  get adminKey () { return this.#dbKey ?? this.pool; }
+
+  // The active connections to this database, the Arkime ones have application_name arkime
+  async adminQueries () {
+    const { rows } = await this.pool.query(`SELECT pid, usename, application_name, state,
+        EXTRACT(EPOCH FROM (now() - query_start)) AS elapsed, left(query, 2000) AS query
+      FROM pg_stat_activity
+      WHERE datname = current_database() AND pid <> pg_backend_pid() AND backend_type = 'client backend' AND state <> 'idle'`);
+    return rows.map(row => ({
+      id: String(row.pid),
+      user: '',
+      dbUser: row.usename ?? '',
+      app: row.application_name ?? '',
+      state: row.state ?? '',
+      elapsed: Number(row.elapsed) || 0,
+      cancelled: false,
+      query: row.query ?? ''
+    }));
+  }
+
+  // Cancels the query running on that connection of this database, Postgres only lets the same role or a
+  // pg_signal_backend one do it
+  async adminKillQuery (id) {
+    if (!/^\d{1,10}$/.test(id) || Number(id) > 2147483647) { return false; }
+    const { rows } = await this.pool.query(`SELECT pg_cancel_backend(pid) AS ok FROM pg_stat_activity
+      WHERE pid = $1 AND datname = current_database()`, [Number(id)]);
+    return rows[0]?.ok === true;
+  }
+
+  // Every table of this database the role can see, like ES Indices lists every index
+  get adminTablesName () { return 'Tables'; }
+  get adminTableFields () { return ['table', 'rows', 'dead', 'tableBytes', 'indexBytes', 'cached', 'lastVacuum', 'lastAnalyze']; }
+  get adminTableActions () { return ['vacuum']; }
+
+  async adminTables () {
+    const { rows } = await this.pool.query(`SELECT relid, schemaname, relname, n_live_tup, n_dead_tup,
+        pg_table_size(relid) AS table_bytes, pg_indexes_size(relid) AS index_bytes,
+        EXTRACT(EPOCH FROM greatest(last_vacuum, last_autovacuum)) AS last_vacuum,
+        EXTRACT(EPOCH FROM greatest(last_analyze, last_autoanalyze)) AS last_analyze
+      FROM pg_stat_user_tables`);
+    const cached = await this.#adminCached();
+    return rows.map(row => ({
+      id: JSON.stringify([row.schemaname, row.relname]),
+      table: row.schemaname === 'public' ? row.relname : `${row.schemaname}.${row.relname}`,
+      rows: Number(row.n_live_tup),
+      dead: Number(row.n_dead_tup),
+      tableBytes: Number(row.table_bytes),
+      indexBytes: Number(row.index_bytes),
+      cached: cached ? (cached.get(row.relid) ?? 0) : null,
+      lastVacuum: Number(row.last_vacuum) * 1000 || null,
+      lastAnalyze: Number(row.last_analyze) * 1000 || null
+    }));
+  }
+
+  // Bytes of each table and its indexes in shared buffers, only with the pg_buffercache extension and a role
+  // that may read it, else undefined. The scan is reused for CACHED_MS
+  async #adminCached () {
+    if (Date.now() - this.#cached.at < CACHED_MS) { return this.#cached.map; }
+    this.#cached = { at: Date.now(), map: await this.#readCached() };
+    return this.#cached.map;
+  }
+
+  async #readCached () {
+    try {
+      const { rows } = await this.pool.query(`WITH cached AS (
+          SELECT c.oid AS relid, count(*) AS buffers FROM pg_buffercache b JOIN pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
+          WHERE b.reldatabase = (SELECT oid FROM pg_database WHERE datname = current_database()) GROUP BY c.oid)
+        SELECT t.relid, sum(cached.buffers) * current_setting('block_size')::bigint AS bytes
+        FROM pg_stat_user_tables t JOIN cached ON cached.relid = t.relid
+          OR cached.relid IN (SELECT indexrelid FROM pg_index WHERE indrelid = t.relid)
+        GROUP BY t.relid`);
+      return new Map(rows.map(row => [row.relid, Number(row.bytes)]));
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  async adminTableAction (id, action) {
+    let schema, table;
+    try { [schema, table] = JSON.parse(id); } catch (err) { return false; }
+    if (action !== 'vacuum' || typeof schema !== 'string' || typeof table !== 'string') { return false; }
+    const { rows } = await this.pool.query('SELECT 1 FROM pg_stat_user_tables WHERE schemaname = $1 AND relname = $2', [schema, table]);
+    if (!rows.length) { return false; }
+    const ident = (s) => '"' + s.replace(/"/g, '""') + '"';
+    await this.pool.query(`VACUUM (ANALYZE) ${ident(schema)}.${ident(table)}`);
+    return true;
   }
 
   /**
