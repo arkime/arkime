@@ -584,8 +584,10 @@ const LOSSY_KEYS = ['splitLength', 'length'];
 export const graphOnSpigraph = (saved, page) => {
   if (!page) { return null; }
   if (!saved) { return page; }
-  let merged = graphFromWidget({ ...saved, ...page, compare: saved.compare });
   const kept = graphFromWidget(saved);
+  // an unchanged page is the saved graph
+  if (sameSpigraphGraph(kept, page)) { return kept; }
+  let merged = graphFromWidget({ ...saved, ...page, compare: saved.compare });
   for (const key of LOSSY_KEYS) {
     const withSaved = { ...merged, [key]: kept[key] };
     if (kept[key] !== merged[key] && sameSpigraphGraph(withSaved, merged)) { merged = withSaved; }

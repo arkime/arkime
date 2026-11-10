@@ -181,7 +181,7 @@ describe('cells', () => {
 });
 
 describe('fetchSessions', () => {
-  const route = { query: { expression: 'port.dst == 80', bounding: 'first', interval: 'auto' } };
+  const route = { name: 'Arkime', query: { expression: 'port.dst == 80', bounding: 'first', interval: 'auto' } };
   const store = { state: { views: [{ id: 'v1', expression: 'ip.src == 10.0.0.1' }], timeRange: '-1', time: {} } };
 
   test('POSTs /api/sessions with the combined search, time and columns', async () => {
@@ -219,7 +219,7 @@ describe('fetchSessions', () => {
 
 describe('dashboardPageQuery', () => {
   test('is the page url query, url encoded, a list param repeated', () => {
-    const route = { query: { dashboard: 'sys:overview', expression: 'a && b', date: '24', 'var.host': ['x.com', 'y&z'], empty: null } };
+    const route = { name: 'Arkime', query: { dashboard: 'sys:overview', expression: 'a && b', date: '24', 'var.host': ['x.com', 'y&z'], empty: null } };
     const query = dashboardPageQuery(route);
     assert.equal(query, 'dashboard=sys%3Aoverview&expression=a+%26%26+b&date=24&var.host=x.com&var.host=y%26z');
     const back = new URLSearchParams(query);
@@ -228,7 +228,12 @@ describe('dashboardPageQuery', () => {
   });
 
   test('no query is an empty string (still a dashboard call)', () => {
-    assert.equal(dashboardPageQuery({ query: {} }), '');
-    assert.equal(dashboardPageQuery({}), '');
+    assert.equal(dashboardPageQuery({ name: 'Arkime', query: {} }), '');
+    assert.equal(dashboardPageQuery({ name: 'Arkime' }), '');
+  });
+
+  test('another page drawing a widget is not a dashboard call', () => {
+    assert.equal(dashboardPageQuery({ name: 'Spigraph', query: { expression: 'a' } }), undefined);
+    assert.equal(dashboardPageQuery({ query: {} }), undefined);
   });
 });
