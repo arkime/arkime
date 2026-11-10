@@ -326,8 +326,8 @@ if [ -f "/etc/alpine-release" ] ; then
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-net-ssleay perl-io-socket-ssl perl-json perl-socket6 perl-clone perl-html-parser zstd librdkafka openssl pkg-config
-    sudo pacman -S --noconfirm --needed libpq || echo "ARKIME: libpq not installed, capture won't support a Postgres dbUrl"
+    sudo pacman -Syu --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-net-ssleay perl-io-socket-ssl perl-json perl-socket6 perl-clone perl-html-parser zstd librdkafka openssl pkg-config
+    sudo pacman -S --noconfirm --needed postgresql-libs || sudo pacman -S --noconfirm --needed libpq || echo "ARKIME: libpq not installed, capture won't support a Postgres dbUrl"
 fi
 
 if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then
