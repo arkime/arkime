@@ -742,6 +742,7 @@ sub addUser {
         die "exec: $!";
     }
     waitpid($pid, 0);
+    diag("addUser.js $_[0] exited " . ($? >> 8)) if $?;
     return $?;
 }
 

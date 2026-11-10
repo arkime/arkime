@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 158;
+use Test::More tests => 160;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -427,8 +427,9 @@ ok(grep(/^arkimeUser$/, @{$response->{roles}}), "jwtuser2 still has arkimeUser")
 
 #### Form Auth tests (test5 node on port 8128)
 
-addUser("-n test5 formuser formuser formuser --roles arkimeUser");
-addUser("-n test5 formuser8 formuser8 formuser8 --roles 'parliamentUser' ");
+# a session auth node must not open the sids store from the script and die after adding
+is(addUser("-n test5 formuser formuser formuser --roles arkimeUser"), 0, "addUser exits 0 on a form auth node");
+is(addUser("-n test5 formuser8 formuser8 formuser8 --roles 'parliamentUser' "), 0, "addUser exits 0 on a form auth node");
 esGet("/_refresh");
 
 sub formLogin {
