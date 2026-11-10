@@ -870,6 +870,16 @@ describe('ArkimeDb', () => {
     await conn.pool.query(`DROP TABLE IF EXISTS "${prefix}things"`);
   });
 
+  test('sql backends report their server version for health', async () => {
+    const sqlite = ArkimeUtil.dbConnect(`sqlite://${tmp}/version.db`);
+    assert.equal(sqlite.dbName, 'SQLite');
+    assert.match(await sqlite.serverVersion(), /^\d+\.\d+/);
+    if (!process.env.ARKIME_TEST_PG_URL) { return; }
+    const pg = ArkimeUtil.dbConnect(process.env.ARKIME_TEST_PG_URL);
+    assert.equal(pg.dbName, 'Postgres');
+    assert.match(await pg.serverVersion(), /^\d+(\.\d+)?$/);
+  });
+
   test('unknown schemes throw', () => {
     assert.throws(() => ArkimeUtil.dbConnect('nope://x'), /Unknown db url scheme 'nope'/);
     assert.throws(() => ArkimeUtil.dbConnect('lmdb:///tmp/x'), /no longer supported/);

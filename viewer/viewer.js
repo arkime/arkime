@@ -435,13 +435,13 @@ app.get(
 );
 
 // stats apis - no auth -------------------------------------------------------
-app.use(['/api/eshealth', '/api/esstats', '/api/esindices', '/api/estasks', '/api/esadmin', '/api/esshards', '/api/esrecovery', '/eshealth.json', '/esstats.json'], (req, res, next) => {
+app.use(['/api/esstats', '/api/esindices', '/api/estasks', '/api/esadmin', '/api/esshards', '/api/esrecovery', '/esstats.json'], (req, res, next) => {
   // cancelwith cancels a user's own search, which a non ES sessions db that can does itself
   if (internals.hasEs || (Db.cancelsSearches() && /^\/[^/]+\/cancelwith$/.test(req.path))) { return next(); }
   return res.serverError(404, 'No OpenSearch/Elasticsearch is configured');
 });
 
-app.get( // es health endpoint
+app.get( // es health endpoint, the health of the other dbs without OpenSearch/Elasticsearch
   ['/api/eshealth', '/eshealth.json'],
   [ArkimeUtil.noCacheJson],
   StatsAPIs.getESHealth

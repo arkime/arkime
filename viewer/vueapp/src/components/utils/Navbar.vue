@@ -56,9 +56,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-tooltip activator="parent">{{ $t('navigation.helpTip') }}</v-tooltip>
         </v-btn>
 
-        <e-s-health
-          v-if="$constants.HASES"
-          class="ms-2" />
+        <e-s-health class="ms-2" />
 
         <v-btn
           v-if="isAToolBarPage"

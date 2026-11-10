@@ -1568,6 +1568,32 @@ Db.arkimeNodeStatsCache = async function (nodeName) {
   return stat;
 };
 
+// Without OpenSearch/Elasticsearch, health is whether each db answers, in the ES health shape Parliament reads
+async function dbHealth () {
+  const list = [];
+  for (const [role, impl] of [['sessions', internals.sessionsImpl], ['cluster', internals.clusterConn], ['users', User.dbConnect()]]) {
+    if (typeof impl?.serverVersion !== 'function' || list.some(e => (e.impl.adminKey ?? e.impl) === (impl.adminKey ?? impl))) { continue; }
+    list.push({ role, impl });
+  }
+  let up = true;
+  const versions = await Promise.all(list.map(async ({ role, impl }) => {
+    try {
+      return `${impl.dbName} ${await impl.serverVersion()}`;
+    } catch (err) {
+      up = false;
+      console.log(`ERROR - ${role} db health check`, ArkimeUtil.sanitizeStr(err.message ?? err));
+      return `${impl.dbName} down`;
+    }
+  }));
+  return {
+    status: up ? 'green' : 'red',
+    db: [...new Set(list.map(e => e.impl.dbName))].join('+'),
+    version: versions.join(' / '),
+    number_of_nodes: 1,
+    number_of_data_nodes: 1
+  };
+}
+
 Db.healthCache = async (cluster) => {
   const key = `health-${cluster}`;
   const value = cache10.get(key);
@@ -1576,7 +1602,11 @@ Db.healthCache = async (cluster) => {
     return value;
   }
 
-  if (!internals.hasEs) { throw new Error('No OpenSearch/Elasticsearch is configured'); }
+  if (!internals.hasEs) {
+    const dbs = await dbHealth();
+    cache10.set(key, dbs);
+    return dbs;
+  }
   const health = await Db.health(cluster);
   if (cluster === undefined) {
     // a sessions db that isn't ES has no sessions template there
