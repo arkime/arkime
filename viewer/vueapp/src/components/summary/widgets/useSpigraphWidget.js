@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 
 Shared self-fetch lifecycle for SPIGraph-backed field widgets (heatmap/treemap):
 fetches /api/spigraph for the widget on mount, on global reload (nonce), and when
-the widget's field/expression/length change; aborts the in-flight request on
+a setting it is fetched with changes; aborts the in-flight request on
 change and on unmount. The caller supplies onResult(res) to store the response.
 */
 import { ref, watch, onMounted, onBeforeUnmount } from 'vue';
@@ -13,6 +13,12 @@ import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import { resolveMessage } from '@common/resolveI18nMessage';
 import { fetchSpigraph } from './widgetData';
+
+// The settings that only change how a widget is drawn, and what the dashboard
+// keeps beside a definition. A change of any other setting fetches again, so
+// one missing from here costs a fetch, never stale data
+const DRAWN_KEYS = new Set(['id', 'title', 'width', 'height', 'text', 'barMode', 'orientation', 'seriesType', 'yScale', 'gaugeMax', 'gaugeWarn', 'gaugeCrit',
+  'sparkline', 'treeRoot', 'treeDepth', 'data', 'otherData', 'loading', 'error']);
 
 /**
  * @param {() => object} getWidget       returns the current widget definition
@@ -46,10 +52,8 @@ export function useSpigraphWidget (getWidget, getReloadNonce, onResult, fetcher 
     }
   };
 
-  watch(() => {
-    const w = getWidget();
-    return [getReloadNonce(), w.field, (w.fields || []).join(','), w.expression, w.length, w.view, w.metricType, w.metricAgg, w.order, w.orderBy, (w.metrics || []).join(','), w.sortMetric, w.sortField, w.splitField, w.splitLength, w.other, w.bucketInterval, w.compare, w.controlType];
-  }, fetchData);
+  // a string, so a rebuilt widget with the same settings doesn't fetch again
+  watch(() => JSON.stringify([getReloadNonce(), Object.entries(getWidget()).filter(([key]) => !DRAWN_KEYS.has(key))]), fetchData);
 
   onMounted(fetchData);
   onBeforeUnmount(() => { if (controller) { controller.abort(); } });

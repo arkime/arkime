@@ -10,7 +10,7 @@ filter and the global time window.
 import { fetchWrapper } from '@common/fetchWrapper.js';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
-import { defaultLength, fieldCountLimits, slotMetrics, isPercentileAgg, PERCENTILE_VIEW_MODES } from './viewModes';
+import { defaultLength, fieldCountLimits, slotMetrics, isPercentileAgg, PERCENTILE_VIEW_MODES, allowsSplit, allowsOther, allowsBucketInterval } from './viewModes';
 import { spigraphQueryFromGraph } from '../dashboardConfig';
 import { controlFilters, substituteExpression, withoutPicks } from './dashboardVariables';
 
@@ -135,6 +135,10 @@ export function widgetLocalExpression (widget, views, vars) {
   return parts.length === 1 ? parts[0] : parts.map(p => `(${p})`).join(' && ');
 }
 
+// the dashboard's filter and control picks are its own: SPI Graph draws some
+// graphs with the same widgets
+const onDashboard = (route) => route?.name === 'Arkime';
+
 /**
  * The page's search: the global search expression AND the dashboard's own
  * filter (store.state.dashboardExpression, the config's data.expression) AND
@@ -145,6 +149,7 @@ export function widgetLocalExpression (widget, views, vars) {
  * @returns {string|undefined} the combined expression (or undefined if none)
  */
 export function pageExpression (route, store, excludeVariable) {
+  if (!onDashboard(route)) { return route.query.expression || undefined; }
   const vars = withoutPicks(store.state.dashboardVariables, excludeVariable);
   const parts = [
     route.query.expression,
@@ -271,6 +276,7 @@ function shiftWindow (params, store, shift) {
  * dashboard filter, controls and widget filter, so it can't)
  */
 export function dashboardPageQuery (route) {
+  if (!onDashboard(route)) { return undefined; }
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(route.query || {})) {
     for (const v of (Array.isArray(value) ? value : [value])) {
@@ -519,6 +525,41 @@ export async function fetchSummaryFields (route, store, widget, { signal, exclud
       error: chunk?.error || null
     };
   });
+}
+
+/**
+ * A widget as the summary endpoint takes it (only what the server needs). The
+ * View (if any) is folded into the local expression; the server ANDs it with
+ * the global search.
+ */
+export function summaryRequestWidget (w, store) {
+  return {
+    id: w.id,
+    field: w.field,
+    length: w.length,
+    order: w.order,
+    ...(w.orderBy === 'key' ? { orderBy: 'key' } : {}),
+    metricType: w.metricType,
+    metricAgg: w.metricAgg,
+    ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
+    ...(allowsOther(w.viewMode) && w.other ? { other: true } : {}),
+    ...(allowsBucketInterval(w.viewMode) && w.bucketInterval > 0 ? { bucketInterval: w.bucketInterval } : {}),
+    expression: widgetLocalExpression(w, store.state.views, store.state.dashboardVariables)
+  };
+}
+
+/**
+ * Fetch one bar, pie, tag cloud or waffle's rows (the dashboard batches these
+ * into its page stream; SPI Graph fetches the one it draws). Returns
+ * { data, other }: the top values, each split by the split field when the
+ * widget has one, and the "Other" share when it shows one.
+ */
+export async function fetchSummaryWidget (route, store, widget, { signal } = {}) {
+  const body = { facets: 1, noStats: true, widgets: [{ ...summaryRequestWidget(widget, store), id: 'w' }] };
+  const res = await postSummary(route, store, body, signal);
+  const chunk = (Array.isArray(res) ? res : []).find(c => c && c.id === 'w');
+  if (chunk?.error) { throw new Error(chunk.error); }
+  return { data: chunk?.data || [], other: chunk?.other || null };
 }
 
 /** A summary row's value of one metric: the session count, or the metric's

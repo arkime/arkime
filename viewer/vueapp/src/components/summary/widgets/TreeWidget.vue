@@ -69,6 +69,9 @@ const { loading, error, fetchData } = useSpigraphWidget(
   fetchConnections
 );
 
+// a new configured root is looked from, not the host clicked before it
+watch(() => props.widget.treeRoot, () => { rootOverride.value = ''; });
+
 const fieldExps = computed(() => widgetFields(props.widget));
 const fieldObjs = computed(() => fieldExps.value.map(exp => FieldService.getField(exp, true)));
 const title = computed(() => props.widget.title ||

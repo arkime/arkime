@@ -686,6 +686,7 @@ export default {
   body.arkime-print .help-notes,
   body.arkime-print .footer,
   body.arkime-print .widget-resize,
+  body.arkime-print .widget-menu-btn,
   body.arkime-print .v-snackbar {
     display: none !important;
   }

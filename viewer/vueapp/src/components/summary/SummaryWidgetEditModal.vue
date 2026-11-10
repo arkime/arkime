@@ -9,7 +9,7 @@ SPDX-License-Identifier: Apache-2.0
     @update:model-value="(val) => { if (!val) $emit('close'); }">
     <v-card density="compact">
       <v-card-title>
-        {{ graphOnly ? $t('settings.graphs.editGraph') : $t('sessions.summary.editWidget') }}
+        {{ pageGraph ? $t('spigraph.settings.title') : graphOnly ? $t('settings.graphs.editGraph') : $t('sessions.summary.editWidget') }}
       </v-card-title>
       <v-card-text>
         <!-- Visualization type leads: it decides which inputs below apply -->
@@ -589,7 +589,7 @@ SPDX-License-Identifier: Apache-2.0
              top of the global search). Disabled for session-wide widgets, which
              always describe the whole result set. -->
         <v-select
-          v-if="viewsSupported && !staticMode && !navMode"
+          v-if="viewsSupported && !staticMode && !navMode && !pageGraph"
           v-model="form.view"
           :items="viewItems"
           :label="$t('sessions.summary.widget.localView')"
@@ -609,7 +609,7 @@ SPDX-License-Identifier: Apache-2.0
         </v-select>
 
         <div
-          v-if="!staticMode && !navMode"
+          v-if="!staticMode && !navMode && !pageGraph"
           class="arkime-input-group arkime-input-group--fluid mb-1"
           :class="{ 'input-disabled': !localFilterEnabled }">
           <span
@@ -628,6 +628,8 @@ SPDX-License-Identifier: Apache-2.0
             :disabled="!localFilterEnabled"
             placeholder="protocols == tls">
         </div>
+
+        <slot name="extra" />
 
         <!-- Error message -->
         <v-alert
@@ -697,6 +699,11 @@ const props = defineProps({
   },
   // editing a saved graph (settings page): only the graph view modes, no layout
   graphOnly: {
+    type: Boolean,
+    default: false
+  },
+  // the graph SPI Graph is showing: its filter is the page's search and view
+  pageGraph: {
     type: Boolean,
     default: false
   },
@@ -1184,6 +1191,11 @@ const save = () => {
   // types wanting an exact count (connections' src + dst) need all of them
   if (needsField.value && fieldList.length < minFields.value) {
     error.value = t('sessions.summary.widget.exactFieldsRequired', { count: minFields.value });
+    return;
+  }
+  // a timeline, area or time of day grid is only a graph once split by a field
+  if (props.graphOnly && (timelineSplit.value || timeOfDaySplit.value) && !form.value.splitField) {
+    error.value = t('sessions.summary.widget.splitRequired');
     return;
   }
   const variable = form.value.variable?.trim() || '';

@@ -378,8 +378,8 @@ import NavigationWidget from './widgets/NavigationWidget.vue';
 import ControlWidget from './widgets/ControlWidget.vue';
 import { controlVariable, substituteExpression, withoutVariableParams } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsOther, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare } from './widgets/viewModes';
-import { widgetLocalExpression, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle, dashboardPageQuery } from './widgets/widgetData';
+import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare } from './widgets/viewModes';
+import { summaryRequestWidget, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle, dashboardPageQuery } from './widgets/widgetData';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -558,23 +558,6 @@ const makeEntry = (def) => ({
   // pie/table and self-fetch modes manage their own loading
   loading: !!def.field && isStreamMode(def.viewMode) && !selfFetches(def),
   error: null
-});
-
-// Map a widget definition to the request payload (only what the server needs).
-// The View (if any) is folded into the local expression here; the server ANDs
-// it with the global search.
-const toRequestWidget = (w) => ({
-  id: w.id,
-  field: w.field,
-  length: w.length,
-  order: w.order,
-  ...(w.orderBy === 'key' ? { orderBy: 'key' } : {}),
-  metricType: w.metricType,
-  metricAgg: w.metricAgg,
-  ...(allowsSplit(w.viewMode) && w.splitField ? { splitField: w.splitField, splitLength: w.splitLength } : {}),
-  ...(allowsOther(w.viewMode) && w.other ? { other: true } : {}),
-  ...(allowsBucketInterval(w.viewMode) && w.bucketInterval > 0 ? { bucketInterval: w.bucketInterval } : {}),
-  expression: widgetLocalExpression(w, store.state.views, store.state.dashboardVariables)
 });
 
 // Each widget as saved-graph data (null for the ones that aren't graphs), so
@@ -777,7 +760,7 @@ const cancelLoading = () => {
 const buildRequestBody = (widgetDefs, cancelId, statsless = false) => {
   const body = {
     cancelId,
-    widgets: widgetDefs.map(toRequestWidget)
+    widgets: widgetDefs.map(w => summaryRequestWidget(w, store))
   };
 
   if (statsless) { body.noStats = true; }
@@ -1721,21 +1704,14 @@ defineExpose({
   visibility: visible;
 }
 
-/* Info icon + action buttons (edit/export/remove) take no room until hover,
-   so the title gets the whole row; on hover the title shortens to make room
-   for them. The header keeps the buttons' height so revealing them doesn't
-   move the widget's body. :focus-within keeps them reachable by keyboard
-   (d-flex is !important, so these are too) */
+/* The info icon takes no room until hover, so the title gets the row; the
+   header keeps the menu button's height. :focus-within keeps the icon
+   reachable by keyboard (d-flex is !important, so these are too) */
 .widget-wrapper :deep(.widget-header) {
   min-height: 37px;
 }
-.widget-wrapper :deep(.widget-actions),
 .widget-wrapper :deep(.widget-info-icon) {
   display: none !important;
-}
-.widget-wrapper:hover :deep(.widget-actions),
-.widget-wrapper:focus-within :deep(.widget-actions) {
-  display: flex !important;
 }
 .widget-wrapper:hover :deep(.widget-info-icon),
 .widget-wrapper:focus-within :deep(.widget-info-icon) {

@@ -52,10 +52,11 @@ const fieldsArr = globalThis.testFields;
 
 const {
   GRAPH_KEYS, widgetsFromConfig, defaultWidgets, graphFromWidget, widgetFromGraph, normalizeWidget, widgetIsGraph,
-  graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph, migrateDashboard, DASHBOARD_VERSION
+  graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph, graphDrawnAsWidget, graphIsHierarchyFed, sameSpigraphGraph,
+  migrateDashboard, DASHBOARD_VERSION
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
 const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor, allowsCompare, hasLevels } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
-const { widgetFullPageLink, widgetFields, hierarchyFields, defaultWidgetTitle, pageExpression, combinedExpression, metricHistoKey, compareOffset, widgetThresholds, thresholdColor } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
+const { widgetFullPageLink, widgetFields, hierarchyFields, defaultWidgetTitle, pageExpression, combinedExpression, metricHistoKey, compareOffset, widgetThresholds, thresholdColor, summaryRequestWidget } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 const { findTreeRoot, buildConnectionTree, MAX_TREE_CHILDREN, MAX_TREE_NODES } = await import('../viewer/vueapp/src/components/summary/widgets/connectionTree.js');
 const { showsOwnLayout, defaultDashboardId, FALLBACK_DEFAULT_ID } = await import('../viewer/vueapp/src/components/summary/systemDashboards.js');
 
@@ -333,7 +334,18 @@ describe('spigraphQueryFromGraph', () => {
       graph({ viewMode: 'combo', field: 'ip.src', metrics: ['sessions', 'bytes'], length: 20 }),
       graph({ viewMode: 'combo', field: 'ip.dst', metrics: ['packets', 'bytes'], metricType: 'packets', sortMetric: 'packets', length: 10, view: 'v1' }),
       graph({ viewMode: 'scatter', field: 'ip.src', metrics: ['sessions', 'bytes', ''], length: 50 }),
-      graph({ viewMode: 'scatter', field: 'ip.src', metrics: ['bytes', 'packets', 'sessions'], metricType: 'bytes', sortMetric: 'bytes', yScale: 'log' })
+      graph({ viewMode: 'scatter', field: 'ip.src', metrics: ['bytes', 'packets', 'sessions'], metricType: 'bytes', sortMetric: 'bytes', yScale: 'log' }),
+      // a metric, its aggregation, the order, a bucket interval, levels and a split count
+      graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'avg', order: 'asc', orderBy: 'key' }),
+      graph({ viewMode: 'bar', field: 'port.dst', bucketInterval: 100, splitField: 'protocols', splitLength: 3, gaugeWarn: 10, gaugeCrit: 20 }),
+      graph({ viewMode: 'pie', field: 'protocols', metricType: 'bytes', metricAgg: 'p95', order: 'asc' }),
+      graph({ viewMode: 'tagcloud', field: 'protocols', metricType: 'packets', metricAgg: 'max' }),
+      graph({ viewMode: 'treemap', field: 'ip.src', metricType: 'bytes' }),
+      graph({ viewMode: 'table', fields: ['ip.src', 'ip.dst'], metrics: ['sessions', 'bytes', 'packets'], sortMetric: 'bytes', metricType: 'bytes', metricAgg: 'avg', gaugeWarn: 100 }),
+      graph({ viewMode: 'timeline', splitField: 'protocols', splitLength: 5, seriesType: 'lines', yScale: 'log', gaugeCrit: 50 }),
+      graph({ viewMode: 'timeline', splitField: 'protocols', splitLength: 5, barMode: 'grouped', seriesType: 'lines' }),
+      graph({ viewMode: 'area', splitField: 'protocols', splitLength: 5, yScale: 'log' }),
+      graph({ viewMode: 'combo', field: 'ip.src', metrics: ['sessions', 'bytes'], metricAgg: 'max', order: 'asc' })
     ];
     for (const g of graphs) {
       const query = spigraphQueryFromGraph(g);
@@ -341,10 +353,19 @@ describe('spigraphQueryFromGraph', () => {
     }
   });
 
-  test('a summed metric ranks the graph; a heatmap always names its intensity', () => {
+  test('a metric is named with its aggregation; a heatmap always names its intensity', () => {
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes' })).graphType, 'totBytesHisto');
-    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'avg' })).graphType, undefined);
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes' })).metricAgg, undefined);
+    const avg = spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'avg' }));
+    assert.equal(avg.graphType, 'totBytesHisto');
+    assert.equal(avg.metricAgg, 'avg');
+    // a count has no aggregation, and a waffle only sums
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricAgg: 'avg' })).metricAgg, undefined);
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'waffle', field: 'ip.src', metricType: 'bytes', metricAgg: 'avg' })).metricAgg, undefined);
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'pie', field: 'ip.src' })).graphType, undefined);
+    // the graphs of the hierarchy endpoint only count sessions
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'pie', fields: ['ip.src', 'ip.dst'], metricType: 'bytes', metricAgg: 'avg' })).graphType, undefined);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'pie', exp: 'ip.src', subFields: 'ip.dst', graphType: 'totBytesHisto' }, { fieldsArr }).metricType, 'sessions');
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'heatmap', field: 'ip.src' })).graphType, 'sessionsHisto');
   });
 
@@ -367,8 +388,9 @@ describe('spigraphQueryFromGraph', () => {
   });
 
   test('a combo and a scatter name every metric, a scatter its scale', () => {
-    assert.deepEqual(spigraphQueryFromGraph(graph({ viewMode: 'combo', field: 'ip.src', metrics: ['sessions', 'bytes'] })),
-      { exp: 'ip.src', size: 20, view: undefined, graphType: 'sessionsHisto', spiGraphType: 'combo', lineMetric: 'totBytesHisto' });
+    // (the settings left at their defaults are undefined, so not in the url)
+    assert.deepEqual(JSON.parse(JSON.stringify(spigraphQueryFromGraph(graph({ viewMode: 'combo', field: 'ip.src', metrics: ['sessions', 'bytes'] })))),
+      { exp: 'ip.src', size: 20, graphType: 'sessionsHisto', spiGraphType: 'combo', lineMetric: 'totBytesHisto' });
     const q = spigraphQueryFromGraph(graph({ viewMode: 'scatter', field: 'ip.src', metrics: ['bytes', 'packets', ''], yScale: 'log' }));
     assert.equal(q.graphType, 'totBytesHisto');
     assert.equal(q.yMetric, 'totPacketsHisto');
@@ -403,16 +425,38 @@ describe('graphOnSpigraph', () => {
     assert.equal(graphOnSpigraph(null, page), page);
   });
 
-  test('keeps the saved settings SPI Graph cannot show', () => {
-    const page = graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'ip.dst', size: '50' });
-    const merged = graphOnSpigraph(saved, page);
+  test('the page shows every setting, so its own replace the saved ones', () => {
+    const query = spigraphQueryFromGraph(saved);
+    const merged = graphOnSpigraph(saved, graphFromSpigraphQuery({ ...query, exp: 'ip.dst', size: '50' }, { fieldsArr }));
     assert.equal(merged.field, 'ip.dst');
     assert.equal(merged.length, 50);
     assert.deepEqual(merged.metrics, ['sessions', 'bytes']);
     assert.equal(merged.metricAgg, 'avg');
     assert.equal(merged.sortMetric, 'bytes');
     assert.equal(merged.order, 'asc');
-    assert.equal(merged.splitLength, 10);
+    // taken off on the page, they are gone from the saved graph
+    const plain = graphOnSpigraph(saved, graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'ip.dst', size: '50' }));
+    assert.deepEqual(plain.metrics, []);
+    assert.equal(plain.metricAgg, 'sum');
+    assert.equal(plain.order, 'desc');
+  });
+
+  test('compare stays the saved graph\'s, the page has none', () => {
+    const tl = graph({ viewMode: 'bar', field: 'ip.src', compare: 'week' });
+    assert.equal(graphOnSpigraph(tl, graphFromSpigraphQuery({ spiGraphType: 'bar', exp: 'ip.dst' })).compare, 'week');
+  });
+
+  test('a value the url can\'t hold stays while the page shows the graph the same with it', () => {
+    // a timeline of 3 series opens with 5, Max Elements' smallest
+    const tl = graph({ viewMode: 'timeline', splitField: 'protocols', splitLength: 3, length: 50 });
+    const query = spigraphQueryFromGraph(tl);
+    assert.equal(query.size, 5);
+    const layout = graphOnSpigraph(tl, graphFromSpigraphQuery({ ...query, timelineMode: 'percent' }, { fieldsArr }));
+    assert.equal(layout.yScale, 'percent');
+    assert.equal(layout.splitLength, 3);
+    assert.equal(layout.length, 50);
+    // Max Elements changed on the page is the page's
+    assert.equal(graphOnSpigraph(tl, graphFromSpigraphQuery({ ...query, size: '10' }, { fieldsArr })).splitLength, 10);
   });
 
   test('a split pie\'s pie count comes from the page', () => {
@@ -420,15 +464,27 @@ describe('graphOnSpigraph', () => {
     assert.equal(graphOnSpigraph(saved, page).splitLength, 3);
   });
 
-  test('SPI Graph\'s layout sets or clears a timeline\'s percent axis and leaves a log one alone', () => {
+  test('a timeline\'s y axis is the page\'s: its percent layout, else its log scale', () => {
     const log = graph({ viewMode: 'timeline', splitField: 'protocols', yScale: 'log' });
     const percent = graph({ viewMode: 'timeline', splitField: 'protocols', yScale: 'percent' });
-    const stackedPage = graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'protocols', timelineMode: 'stacked' });
-    const percentPage = graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'protocols', timelineMode: 'percent' });
-    assert.equal(graphOnSpigraph(log, stackedPage).yScale, 'log');
-    assert.equal(graphOnSpigraph(log, percentPage).yScale, 'percent');
-    assert.equal(graphOnSpigraph(percent, stackedPage).yScale, 'linear');
-    assert.equal(graphOnSpigraph(percent, percentPage).yScale, 'percent');
+    const page = (q) => graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'protocols', ...q });
+    assert.equal(spigraphQueryFromGraph(log).yScale, 'log');
+    assert.equal(graphOnSpigraph(log, page({ timelineMode: 'stacked', yScale: 'log' })).yScale, 'log');
+    assert.equal(graphOnSpigraph(log, page({ timelineMode: 'stacked' })).yScale, 'linear');
+    assert.equal(graphOnSpigraph(log, page({ timelineMode: 'percent', yScale: 'log' })).yScale, 'percent');
+    assert.equal(graphOnSpigraph(percent, page({ timelineMode: 'stacked' })).yScale, 'linear');
+    assert.equal(graphOnSpigraph(percent, page({ timelineMode: 'percent' })).yScale, 'percent');
+  });
+
+  test('a timeline names its bars or lines, overlaid ones are lines', () => {
+    const q = (o) => spigraphQueryFromGraph(graph({ viewMode: 'timeline', splitField: 'protocols', ...o }));
+    assert.equal(q({}).seriesType, 'bars');
+    assert.equal(q({ seriesType: 'lines' }).seriesType, 'lines');
+    assert.equal(q({ barMode: 'grouped' }).timelineMode, 'overlaid');
+    assert.equal(q({ barMode: 'grouped' }).seriesType, 'lines');
+    const overlaid = graphFromSpigraphQuery({ spiGraphType: 'default', exp: 'protocols', timelineMode: 'overlaid' });
+    assert.equal(overlaid.barMode, 'grouped');
+    assert.equal(overlaid.seriesType, 'lines');
   });
 
   test('an unchanged page is the saved graph', () => {
@@ -444,22 +500,78 @@ describe('graphOnSpigraph', () => {
     const page = graphFromSpigraphQuery(query, { fieldsArr });
     assert.deepEqual(graphOnSpigraph(table, page), table);
     // a field taken off on the page is gone from the saved graph; the metric
-    // columns SPI Graph can't show stay
-    const changed = graphFromSpigraphQuery({ spiGraphType: 'table', exp: 'protocols', subFields: 'ip.dst', tableMode: 'unique' });
+    // columns are the page's too
+    const changed = graphFromSpigraphQuery({ ...query, exp: 'protocols', subFields: 'ip.dst' }, { fieldsArr });
     assert.deepEqual(graphOnSpigraph(table, changed).fields, ['protocols', 'ip.dst']);
     assert.deepEqual(graphOnSpigraph(table, changed).metrics, ['bytes']);
     // switched to the intersection layout on the page, it saves as an intersection
     assert.equal(graphOnSpigraph(table, graphFromSpigraphQuery({ ...query, tableMode: undefined })).viewMode, 'intersection');
   });
 
-  test('a heatmap takes the page intensity, other types keep the saved metric', () => {
+  test('every type takes the page\'s metric', () => {
     const heat = graph({ viewMode: 'heatmap', field: 'ip.src', metricType: 'bytes' });
     const heatPage = graphFromSpigraphQuery({ spiGraphType: 'heatmap', exp: 'ip.src', graphType: 'totPacketsHisto' }, { fieldsArr });
     assert.equal(graphOnSpigraph(heat, heatPage).metricType, 'packets');
 
     const bar = graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes' });
-    const barPage = graphFromSpigraphQuery({ spiGraphType: 'bar', exp: 'ip.src' });
-    assert.equal(graphOnSpigraph(bar, barPage).metricType, 'bytes');
+    const barPage = (graphType) => graphFromSpigraphQuery({ spiGraphType: 'bar', exp: 'ip.src', graphType }, { fieldsArr });
+    assert.equal(graphOnSpigraph(bar, barPage('totBytesHisto')).metricType, 'bytes');
+    assert.equal(graphOnSpigraph(bar, barPage('totPacketsHisto')).metricType, 'packets');
+    assert.equal(graphOnSpigraph(bar, barPage()).metricType, 'sessions');
+  });
+});
+
+describe('the graphs SPI Graph draws with their dashboard widget', () => {
+  const drawn = (o) => graphDrawnAsWidget(graph({ viewMode: 'bar', field: 'ip.src', ...o }));
+
+  test('a count by its top values is SPI Graph\'s own chart', () => {
+    assert.equal(drawn({}), false);
+    assert.equal(drawn({ viewMode: 'pie' }), false);
+    assert.equal(drawn({ viewMode: 'table' }), false);
+    assert.equal(drawn({ splitField: 'protocols', gaugeWarn: 10 }), false, 'a bar draws its levels itself');
+    assert.equal(drawn({ viewMode: 'combo', metrics: ['sessions', 'bytes'] }), false);
+    assert.equal(graphDrawnAsWidget(null), false);
+  });
+
+  test('a metric, an order, a bucket interval or a table\'s columns and levels need the widget', () => {
+    assert.equal(drawn({ metricType: 'bytes' }), true);
+    assert.equal(drawn({ order: 'asc' }), true);
+    assert.equal(drawn({ orderBy: 'key' }), true);
+    assert.equal(drawn({ bucketInterval: 10 }), true);
+    assert.equal(drawn({ viewMode: 'treemap', metricType: 'bytes' }), true);
+    assert.equal(drawn({ viewMode: 'table', metrics: ['sessions', 'bytes'] }), true);
+    assert.equal(drawn({ viewMode: 'table', gaugeWarn: 10 }), true);
+    assert.equal(drawn({ viewMode: 'combo', metrics: ['sessions', 'bytes'], metricAgg: 'avg' }), true);
+  });
+
+  test('the hierarchy endpoint\'s graphs only count sessions, so never', () => {
+    const nested = graph({ viewMode: 'pie', fields: ['ip.src', 'ip.dst'], metricType: 'bytes' });
+    assert.equal(graphIsHierarchyFed(nested), true);
+    assert.equal(graphDrawnAsWidget(nested), false);
+    assert.equal(graphIsHierarchyFed(graph({ viewMode: 'pie', field: 'ip.src', splitField: 'protocols' })), true);
+    assert.equal(graphIsHierarchyFed(graph({ viewMode: 'waffle', field: 'ip.src', splitField: 'protocols' })), true);
+    assert.equal(graphIsHierarchyFed(graph({ viewMode: 'treemap', fields: ['ip.src', 'ip.dst'] })), true);
+    assert.equal(graphIsHierarchyFed(graph({ viewMode: 'bar', field: 'ip.src', splitField: 'protocols' })), false);
+    assert.equal(graphIsHierarchyFed(graph({ viewMode: 'pie', field: 'ip.src' })), false);
+  });
+
+  test('sameSpigraphGraph: the same url and search, whatever the settings the type has no use for', () => {
+    const bar = graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes' });
+    assert.equal(sameSpigraphGraph(bar, { ...bar, treeDepth: 5, compare: 'day' }), true);
+    assert.equal(sameSpigraphGraph(bar, { ...bar, order: 'asc' }), false);
+    assert.equal(sameSpigraphGraph(bar, { ...bar, expression: 'port.dst == 53' }), false);
+  });
+
+  test('summaryRequestWidget: what the summary endpoint takes, each option only for the types with it', () => {
+    const store = { state: { views: [], dashboardVariables: {} } };
+    const w = { ...graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'avg', order: 'asc', orderBy: 'key', splitField: 'protocols', splitLength: 3, other: true, bucketInterval: 10, expression: 'port.dst == 53' }), id: 'w1' };
+    assert.deepEqual(summaryRequestWidget(w, store), {
+      id: 'w1', field: 'ip.src', length: 20, order: 'asc', orderBy: 'key', metricType: 'bytes', metricAgg: 'avg', splitField: 'protocols', splitLength: 3, bucketInterval: 10, expression: 'port.dst == 53'
+    });
+    const pie = summaryRequestWidget({ ...w, viewMode: 'pie', orderBy: 'value', splitField: '' }, store);
+    assert.equal(pie.other, true);
+    assert.equal(pie.orderBy, undefined);
+    assert.equal(pie.splitField, undefined);
   });
 });
 
@@ -649,12 +761,13 @@ describe('migrateDashboard', () => {
 
 describe('dashboard filter', () => {
   const views = [{ id: 'v1', name: 'web', expression: 'port.dst == 80' }];
+  const dash = (query = {}) => ({ name: 'Arkime', query });
 
   test('pageExpression ANDs the global search and the dashboard filter', () => {
-    assert.equal(pageExpression({ query: {} }, { state: {} }), undefined);
-    assert.equal(pageExpression({ query: { expression: 'ip == 1.1.1.1' } }, { state: { dashboardExpression: '' } }), 'ip == 1.1.1.1');
-    assert.equal(pageExpression({ query: {} }, { state: { dashboardExpression: 'protocols == dns' } }), 'protocols == dns');
-    assert.equal(pageExpression({ query: { expression: 'ip == 1.1.1.1' } }, { state: { dashboardExpression: 'protocols == dns' } }), '(ip == 1.1.1.1) && (protocols == dns)');
+    assert.equal(pageExpression(dash(), { state: {} }), undefined);
+    assert.equal(pageExpression(dash({ expression: 'ip == 1.1.1.1' }), { state: { dashboardExpression: '' } }), 'ip == 1.1.1.1');
+    assert.equal(pageExpression(dash(), { state: { dashboardExpression: 'protocols == dns' } }), 'protocols == dns');
+    assert.equal(pageExpression(dash({ expression: 'ip == 1.1.1.1' }), { state: { dashboardExpression: 'protocols == dns' } }), '(ip == 1.1.1.1) && (protocols == dns)');
   });
 
   test('pageExpression fills ${name} and adds the controls, a control\'s own list leaves its picks out', () => {
@@ -665,22 +778,30 @@ describe('dashboard filter', () => {
         proto: { field: 'protocols', applyAll: true, values: ['tls'] }
       }
     };
-    assert.equal(pageExpression({ query: {} }, { state }), '(node == [a]) && (protocols == [tls])');
-    assert.equal(pageExpression({ query: {} }, { state }, 'node'), 'protocols == [tls]');
-    assert.equal(pageExpression({ query: {} }, { state }, 'proto'), 'node == [a]');
+    assert.equal(pageExpression(dash(), { state }), '(node == [a]) && (protocols == [tls])');
+    assert.equal(pageExpression(dash(), { state }, 'node'), 'protocols == [tls]');
+    assert.equal(pageExpression(dash(), { state }, 'proto'), 'node == [a]');
   });
 
   test('combinedExpression puts the widget filter on top of the page search', () => {
     const store = { state: { dashboardExpression: 'protocols == dns', views } };
-    assert.equal(combinedExpression({ query: {} }, store, { expression: 'dns.status == NXDOMAIN' }), '(protocols == dns) && (dns.status == NXDOMAIN)');
-    assert.equal(combinedExpression({ query: { expression: 'node == a' } }, store, { view: 'v1' }), '((node == a) && (protocols == dns)) && (port.dst == 80)');
-    assert.equal(combinedExpression({ query: {} }, store, {}), 'protocols == dns');
-    assert.equal(combinedExpression({ query: {} }, { state: { views } }, {}), undefined);
+    assert.equal(combinedExpression(dash(), store, { expression: 'dns.status == NXDOMAIN' }), '(protocols == dns) && (dns.status == NXDOMAIN)');
+    assert.equal(combinedExpression(dash({ expression: 'node == a' }), store, { view: 'v1' }), '((node == a) && (protocols == dns)) && (port.dst == 80)');
+    assert.equal(combinedExpression(dash(), store, {}), 'protocols == dns');
+    assert.equal(combinedExpression(dash(), { state: { views } }, {}), undefined);
+  });
+
+  test('off the dashboard the page search is the url\'s alone', () => {
+    const state = { dashboardExpression: 'protocols == dns', dashboardVariables: { proto: { field: 'protocols', applyAll: true, values: ['tls'] } }, views };
+    const spigraph = (query = {}) => ({ name: 'Spigraph', query });
+    assert.equal(pageExpression(spigraph({ expression: 'node == a' }), { state }), 'node == a');
+    assert.equal(pageExpression(spigraph(), { state }), undefined);
+    assert.equal(combinedExpression(spigraph({ expression: 'node == a' }), { state }, {}), 'node == a');
   });
 
   test('the full page link carries the dashboard filter', () => {
     const store = { state: { timeRange: '1', dashboardExpression: 'protocols == dns', views: [] } };
-    assert.equal(widgetFullPageLink({ query: {} }, store, { viewMode: 'timeline' }).query.expression, 'protocols == dns');
+    assert.equal(widgetFullPageLink(dash(), store, { viewMode: 'timeline' }).query.expression, 'protocols == dns');
   });
 });
 
@@ -763,8 +884,8 @@ describe('percentiles', () => {
     const heat = spigraphQueryFromGraph(graph({ viewMode: 'heatmap', field: 'ip.src', metricType: 'bytes', metricAgg: 'p99' }));
     assert.equal(heat.metricAgg, 'p99');
     assert.equal(graphFromSpigraphQuery(heat, { fieldsArr }).metricAgg, 'p99');
-    // a bar's percentile has no SPI Graph equivalent, nor a sessions percentile
-    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'p95' })).metricAgg, undefined);
+    // a bar's percentile is the widget's on SPI Graph; a sessions percentile is nothing
+    assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'bar', field: 'ip.src', metricType: 'bytes', metricAgg: 'p95' })).metricAgg, 'p95');
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'heatmap', field: 'ip.src', metricAgg: 'p95' })).metricAgg, undefined);
     // the area can't draw one
     assert.equal(graphFromSpigraphQuery({ spiGraphType: 'area', exp: 'ip.src', graphType: 'totBytesHisto', metricAgg: 'p95' }, { fieldsArr }).metricAgg, 'sum');
