@@ -1034,6 +1034,8 @@ gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy
 
 uint32_t arkime_string_hash(const void *key);
 uint32_t arkime_string_hash_len(const void *key, int len);
+uint32_t arkime_string_hash_keyed(const void *key);
+uint32_t arkime_string_hash_keyed_len(const void *key, int len);
 int arkime_string_cmp(const void *keyv, const void *elementv);
 int arkime_string_ncmp(const void *keyv, const void *elementv);
 

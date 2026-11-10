@@ -7,6 +7,7 @@
  */
 
 #include "arkime.h"
+#include "siphash.h"
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
@@ -36,8 +37,7 @@ char                  *arkime_char_to_hex = "0123456789abcdef"; /* don't change 
 uint8_t                arkime_char_to_hexstr[256][3];
 uint8_t                arkime_hex_to_char[256][256];
 char                   arkime_ip_byte_lookup[256][4];
-uint32_t               hashSalt;
-uint64_t               hashKey[2];  // SipHash key for session hashing and dedup
+uint64_t               hashKey[2];  // SipHash key for session, keyed string and dedup hashing
 LOCAL pthread_t        mainThread;
 
 ArkimeThreadData_t     arkimeThreadData[ARKIME_MAX_PACKET_THREADS];
@@ -402,7 +402,6 @@ LOCAL void parse_args(int argc, char **argv)
     if (config.tests) {
         config.dryRun = 1;
         // Same session to packet thread assignment every run so output is reproducible
-        hashSalt = 0;
         memset(hashKey, 0, sizeof(hashKey));
     }
 
@@ -766,11 +765,15 @@ gboolean arkime_string_add(void *hashv, char *string, gpointer uw, gboolean copy
     return TRUE;
 }
 /******************************************************************************/
+/* Fast unkeyed hash, strings can be crafted to collide. Use it for tables with
+ * a small fixed number of buckets or whose contents come from config. A large
+ * table that traffic adds to should use arkime_string_hash_keyed.
+ */
 SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash(const void *key)
 {
     const uint8_t *p = (uint8_t *)key;
-    uint32_t n = hashSalt;
+    uint32_t n = 0;
     while (*p) {
         n = (n << 5) - n + *p;
         p++;
@@ -783,7 +786,7 @@ SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
 uint32_t arkime_string_hash_len(const void *key, int len)
 {
     const uint8_t *p = (uint8_t *)key;
-    uint32_t n = hashSalt;
+    uint32_t n = 0;
     while (len) {
         n = (n << 5) - n + *p;
         p++;
@@ -791,6 +794,19 @@ uint32_t arkime_string_hash_len(const void *key, int len)
     }
 
     return n;
+}
+/******************************************************************************/
+/* Keyed SipHash-1-3, so strings from traffic can't be crafted to all land in
+ * the same hash bucket. Slower than arkime_string_hash for short strings.
+ */
+uint32_t arkime_string_hash_keyed(const void *key)
+{
+    return (uint32_t)arkime_siphash(hashKey, key, (int)strlen(key));
+}
+/******************************************************************************/
+uint32_t arkime_string_hash_keyed_len(const void *key, int len)
+{
+    return (uint32_t)arkime_siphash(hashKey, key, len);
 }
 
 /******************************************************************************/
@@ -1275,7 +1291,6 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.nodeName = strdup("fuzz");
     config.ignoreErrors = 1;
 
-    hashSalt = 0;
     memset(hashKey, 0, sizeof(hashKey));
     arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
@@ -1339,7 +1354,6 @@ LLVMFuzzerInitialize(int *UNUSED(argc), char ***UNUSED(argv))
     config.nodeName = strdup("fuzz");
     config.ignoreErrors = 1;
 
-    hashSalt = 0;
     memset(hashKey, 0, sizeof(hashKey));
     arkime_packet_set_interface(0, 0, DLT_EN10MB, config.snapLen);
 
@@ -1429,10 +1443,9 @@ int main(int argc, char **argv)
 
     mainLoop = g_main_loop_new(NULL, FALSE);
 
-    // Random so traffic can't be crafted to collide in the session table or dedup
-    if (RAND_bytes((unsigned char *)&hashSalt, sizeof(hashSalt)) != 1 ||
-        RAND_bytes((unsigned char *)hashKey, sizeof(hashKey)) != 1)
-        LOGEXIT("ERROR - Couldn't generate random hash keys");
+    // Random so traffic can't be crafted to collide in the session table, keyed string hashes or dedup
+    if (RAND_bytes((unsigned char *)hashKey, sizeof(hashKey)) != 1)
+        LOGEXIT("ERROR - Couldn't generate random hash key");
 
     parse_args(argc, argv);
     if (config.debug)

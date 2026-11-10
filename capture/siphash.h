@@ -74,13 +74,13 @@ static inline __attribute__((always_inline)) uint64_t arkime_siphash_internal(co
 }
 /******************************************************************************/
 // 64 bit output
-static inline uint64_t arkime_siphash(const uint64_t key[2], const void *in, int len)
+static inline __attribute__((always_inline)) uint64_t arkime_siphash(const uint64_t key[2], const void *in, int len)
 {
     return arkime_siphash_internal(key, (const uint8_t *)in, len, NULL);
 }
 /******************************************************************************/
 // 128 bit output
-static inline void arkime_siphash128(const uint64_t key[2], const void *in, int len, uint8_t out[16])
+static inline __attribute__((always_inline)) void arkime_siphash128(const uint64_t key[2], const void *in, int len, uint8_t out[16])
 {
     arkime_siphash_internal(key, (const uint8_t *)in, len, out);
 }

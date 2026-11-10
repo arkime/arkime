@@ -20,7 +20,6 @@ extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 /******************************************************************************/
 
 LOCAL int                   protocolField;
-extern uint32_t             hashSalt;
 extern uint64_t             hashKey[2];
 
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
@@ -289,72 +288,14 @@ char *arkime_session_pretty_string(ArkimeSession_t *session, char *buf, int len)
     return buf;
 }
 
-#if !defined(MURMUR1) && !defined(MURMUR3)
 /******************************************************************************/
 /* Keyed SipHash-1-3, so traffic can't be crafted to pile into one packet thread
- * and bucket. Build with -DMURMUR1 (the old default) or -DMURMUR3 to compare.
+ * and bucket.
  */
 uint32_t arkime_session_hash(const void *key)
 {
     return (uint32_t)arkime_siphash(hashKey, key, ((const uint8_t *)key)[0]);
 }
-#elif defined(MURMUR1)
-/******************************************************************************/
-/* https://github.com/aappleby/smhasher/blob/master/src/MurmurHash1.cpp
- * MurmurHash based
- */
-SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-uint32_t arkime_session_hash(const void *key)
-{
-    uint32_t *p = (uint32_t *)key;
-    const uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0]);
-    uint32_t h = 0;
-
-    while (p < end) {
-        h = (h + *p) * 0xc6a4a793;
-        h ^= h >> 16;
-        p += 1;
-    }
-
-    h ^= hashSalt;
-
-    return h;
-}
-#else
-SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
-// MurmurHash3 based
-// https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp
-uint32_t arkime_session_hash(const void *key)
-{
-    const uint32_t *p = (const uint32_t *)key;
-    const uint32_t *end = (uint32_t *)((uint8_t *)key + ((uint8_t *)key)[0]);
-
-    uint32_t h1 = hashSalt;
-
-    while (p < end) {
-        uint32_t k1 = *p;
-        k1 *= 0xcc9e2d51;
-        k1 = (k1 << 15) | (k1 >> 17); // Rotate left 15 bits
-        k1 *= 0x1b873593;
-
-        h1 ^= k1;
-        h1 = (h1 << 13) | (h1 >> 19); // Rotate left 13 bits
-        h1 = h1 * 5 + 0xe6546b64;
-        p++;
-    }
-
-    // Final mixing step
-    h1 ^= ((uint8_t *)key)[0];
-    h1 ^= h1 >> 16;
-    h1 *= 0x85ebca6b;
-    h1 ^= h1 >> 13;
-    h1 *= 0xc2b2ae35;
-    h1 ^= h1 >> 16;
-
-    return h1;
-}
-
-#endif
 
 /******************************************************************************/
 LOCAL gboolean arkime_session_equal(const uint8_t *a, const uint8_t *b)
