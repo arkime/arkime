@@ -756,7 +756,18 @@ Db.search = async (index, query, options) => {
   }
 };
 
+// Whether the sessions db cancels a search itself, without OpenSearch/Elasticsearch tasks
+Db.cancelsSearches = () => typeof internals.sessionsImpl?.cancelByOpaqueId === 'function';
+
 Db.cancelByOpaqueId = async (cancelId, cluster) => {
+  // Searches run on the sessions db, a non ES one cancels them itself
+  if (Db.cancelsSearches()) {
+    if (!await internals.sessionsImpl.cancelByOpaqueId(cancelId)) {
+      throw new Error('Cancel ID not found, cannot cancel the query');
+    }
+    return { body: 'Query cancelled successfully' };
+  }
+
   const { body: results } = await internals.client7.tasks.list({
     detailed: false,
     group_by: 'parents',
@@ -782,6 +793,41 @@ Db.cancelByOpaqueId = async (cancelId, cluster) => {
   }
 
   return 'OpenSearch/Elasticsearch task cancelled successfully';
+};
+
+// The dbs whose running queries the Stats page can show and kill, not through the multi viewer
+const ADMIN_DBS = ['sessions', 'cluster', 'users'];
+Db.adminDb = (db) => {
+  if (internals.multiES) { return undefined; }
+  const impl = db === 'sessions' ? internals.sessionsImpl : db === 'cluster' ? internals.clusterConn : db === 'users' ? User.dbConnect() : undefined;
+  return typeof impl?.adminQueries === 'function' ? impl : undefined;
+};
+
+// One entry per db server, a cluster and users db on the same one is just the cluster. The tab is the
+// name camel cased, PG Users -> pgUsersQueries
+Db.adminDbs = () => {
+  const list = [];
+  for (const db of ADMIN_DBS) {
+    const impl = Db.adminDb(db);
+    if (!impl || list.some(e => (e.impl.adminKey ?? e.impl) === (impl.adminKey ?? impl))) { continue; }
+    list.push({ db, impl });
+  }
+  return list.map(({ db, impl }) => {
+    const first = list.find(e => e.impl.adminName === impl.adminName).db === db;
+    const label = first ? impl.adminName : `${impl.adminName} ${db[0].toUpperCase()}${db.slice(1)}`;
+    const tab = label.split(' ').map((w, i) => i === 0 ? w.toLowerCase() : w[0].toUpperCase() + w.slice(1).toLowerCase()).join('') + 'Queries';
+    const tablesName = impl.adminTablesName;
+    return {
+      db,
+      name: label,
+      tab,
+      fields: impl.adminFields,
+      tablesTab: tablesName ? tab.replace(/Queries$/, tablesName) : undefined,
+      tablesName,
+      tableFields: impl.adminTableFields,
+      tableActions: impl.adminTableActions
+    };
+  });
 };
 
 Db.searchScroll = async (index, query, options, cb) => {

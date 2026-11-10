@@ -436,7 +436,8 @@ app.get(
 
 // stats apis - no auth -------------------------------------------------------
 app.use(['/api/eshealth', '/api/esstats', '/api/esindices', '/api/estasks', '/api/esadmin', '/api/esshards', '/api/esrecovery', '/eshealth.json', '/esstats.json'], (req, res, next) => {
-  if (internals.hasEs) { return next(); }
+  // cancelwith cancels a user's own search, which a non ES sessions db that can does itself
+  if (internals.hasEs || (Db.cancelsSearches() && /^\/[^/]+\/cancelwith$/.test(req.path))) { return next(); }
   return res.serverError(404, 'No OpenSearch/Elasticsearch is configured');
 });
 
@@ -2015,6 +2016,36 @@ app.post( // cancel OpenSearch/Elasticsearch task by opaque id endpoint
   StatsAPIs.cancelUserESTask
 );
 
+app.get( // non OpenSearch/Elasticsearch db running queries endpoint
+  ['/api/db/:db/queries'],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
+  StatsAPIs.getDbQueries
+);
+
+app.post( // kill a non OpenSearch/Elasticsearch db query endpoint
+  ['/api/db/:db/queries/:id/kill'],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
+  StatsAPIs.killDbQuery
+);
+
+app.get( // non OpenSearch/Elasticsearch db tables endpoint
+  ['/api/db/:db/tables'],
+  [ArkimeUtil.noCacheJson, recordResponseTime, User.checkPermissions(['hideStats']), setCookie],
+  StatsAPIs.getDbTables
+);
+
+app.post( // non OpenSearch/Elasticsearch db table action endpoint
+  ['/api/db/:db/tables/:id/:action'],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
+  StatsAPIs.dbTableAction
+);
+
+app.delete( // drop a non OpenSearch/Elasticsearch db table or partition endpoint
+  ['/api/db/:db/tables/:id'],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin, User.checkPermissions(['removeEnabled'])],
+  StatsAPIs.dbTableAction
+);
+
 app.post( // cancel all OpenSearch/Elasticsearch tasks endpoint
   ['/api/estasks/cancelall'],
   [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin],
@@ -2570,6 +2601,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     multiViewer: internals.multiES,
     hasUsersES: !!ArkimeConfig.usersDbUrls(),
     hasEs: internals.hasEs,
+    dbAdmin: JSON.stringify(Db.adminDbs()),
     hasTshark: !!internals.tsharkPath,
     huntWarn: Config.getInt('huntWarn', 100000),
     huntLimit: limit,

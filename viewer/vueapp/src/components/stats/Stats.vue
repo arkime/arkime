@@ -52,7 +52,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- graph type select -->
             <v-col
               cols="auto"
-              v-if="tabIndex === 0">
+              v-if="statsTab === 'captureGraphs'">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">
                   {{ $t('stats.graphType') }}
@@ -167,7 +167,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- graph interval select -->
             <v-col
               cols="auto"
-              v-if="tabIndex === 0">
+              v-if="statsTab === 'captureGraphs'">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">
                   {{ $t('stats.graphInterval') }}
@@ -192,7 +192,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- graph hide select -->
             <v-col
               cols="auto"
-              v-if="tabIndex === 0 || tabIndex === 1">
+              v-if="statsTab === 'captureGraphs' || statsTab === 'captureStats'">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">{{ $t('stats.graphHide') }}</span>
                 <select
@@ -218,7 +218,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- graph sort select -->
             <v-col
               cols="auto"
-              v-if="tabIndex === 0">
+              v-if="statsTab === 'captureGraphs'">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">{{ $t('stats.graphSort') }}</span>
                 <select
@@ -237,7 +237,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- page size select -->
             <v-col
               cols="auto"
-              v-if="tabIndex === 4">
+              v-if="statsTab === 'esTasks' || dbTab">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">{{ $t('stats.pageSize') }}</span>
                 <select
@@ -269,7 +269,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- table/dashboard view toggle -->
             <v-col
               cols="auto"
-              v-if="tabIndex === 1 || tabIndex === 2">
+              v-if="statsTab === 'captureStats' || statsTab === 'esNodes'">
               <v-btn-toggle
                 :model-value="statsView"
                 @update:model-value="statsViewChange($event)"
@@ -300,7 +300,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- table data interval select -->
             <v-col
               cols="auto"
-              v-if="tabIndex !== 0">
+              v-if="statsTab !== 'captureGraphs'">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">{{ $t('stats.refreshEvery') }}</span>
                 <select
@@ -332,7 +332,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- shards show select -->
             <v-col
               cols="auto"
-              v-if="tabIndex === 5">
+              v-if="statsTab === 'esShards'">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">{{ $t('stats.shardsShow') }}</span>
                 <select
@@ -361,7 +361,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- recovery show select -->
             <v-col
               cols="auto"
-              v-if="tabIndex === 6">
+              v-if="statsTab === 'esRecovery'">
               <div class="arkime-input-group">
                 <span class="arkime-input-label">{{ $t('stats.recoveryShow') }}</span>
                 <select
@@ -381,7 +381,7 @@ SPDX-License-Identifier: Apache-2.0
             <!-- refresh button -->
             <v-col
               cols="auto"
-              v-if="tabIndex !== 0">
+              v-if="statsTab !== 'captureGraphs'">
               <v-btn
                 variant="flat"
                 size="large"
@@ -530,7 +530,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="multiviewer">
               <Clusters
                 @update-cluster="updateCluster"
-                :select-one="clusterParamOverride && tabIndex > 1" />
+                :select-one="clusterParamOverride && isEsTab" />
             </v-col> <!-- /select cluster(s) -->
           </v-row> <!-- /stats sub navbar -->
         </div>
@@ -541,20 +541,20 @@ SPDX-License-Identifier: Apache-2.0
       <div class="stats-tabs">
         <div class="page-tab-bar">
           <v-btn-toggle
-            :model-value="tabIndex"
-            @update:model-value="tabIndexChange($event)"
+            :model-value="statsTab"
+            @update:model-value="statsTabChange($event)"
             density="compact"
             variant="text"
             color="primary"
             mandatory
             class="page-tab-strip">
-            <v-btn :value="0">
+            <v-btn value="captureGraphs">
               <v-icon
                 start
                 icon="mdi-chart-areaspline" />
               {{ $t('stats.nav.captureGraphs') }}
             </v-btn>
-            <v-btn :value="1">
+            <v-btn value="captureStats">
               <v-icon
                 start
                 icon="mdi-speedometer" />
@@ -562,36 +562,57 @@ SPDX-License-Identifier: Apache-2.0
             </v-btn>
             <template v-if="$constants.HASES">
               <span class="page-tab-divider" />
-              <v-btn :value="2">
+              <v-btn value="esNodes">
                 <v-icon
                   start
                   icon="mdi-server" />
                 {{ $t('stats.nav.esNodes') }}
               </v-btn>
-              <v-btn :value="3">
+              <v-btn value="esIndices">
                 <v-icon
                   start
                   icon="mdi-database" />
                 {{ $t('stats.nav.esIndices') }}
               </v-btn>
-              <v-btn :value="4">
+              <v-btn value="esTasks">
                 <v-icon
                   start
                   icon="mdi-format-list-checks" />
                 {{ $t('stats.nav.esTasks') }}
               </v-btn>
-              <v-btn :value="5">
+              <v-btn value="esShards">
                 <v-icon
                   start
                   icon="mdi-sitemap" />
                 {{ $t('stats.nav.esShards') }}
               </v-btn>
-              <v-btn :value="6">
+              <v-btn value="esRecovery">
                 <v-icon
                   start
                   icon="mdi-lifebuoy" />
                 {{ $t('stats.nav.esRecovery') }}
               </v-btn>
+            </template>
+            <template v-if="dbAdmins.length">
+              <span class="page-tab-divider" />
+              <template
+                v-for="dbAdmin in dbAdmins"
+                :key="dbAdmin.tab">
+                <v-btn
+                  v-if="dbAdmin.tablesTab"
+                  :value="dbAdmin.tablesTab">
+                  <v-icon
+                    start
+                    icon="mdi-database" />
+                  {{ $t('stats.nav.db' + dbAdmin.tablesName, { name: dbAdmin.name }) }}
+                </v-btn>
+                <v-btn :value="dbAdmin.tab">
+                  <v-icon
+                    start
+                    icon="mdi-format-list-checks" />
+                  {{ $t('stats.nav.dbQueries', { name: dbAdmin.name }) }}
+                </v-btn>
+              </template>
             </template>
           </v-btn-toggle>
         </div>
@@ -604,7 +625,7 @@ SPDX-License-Identifier: Apache-2.0
            when their tab is active. -->
       <div class="stats-tab-content">
         <capture-graphs
-          v-if="tabIndex === 0"
+          v-if="statsTab === 'captureGraphs'"
           :refresh-data="refreshData"
           :search-term="searchTerm"
           :graph-type="statsType"
@@ -614,7 +635,7 @@ SPDX-License-Identifier: Apache-2.0
           :cluster="cluster"
           :user="user" />
         <capture-stats
-          v-else-if="tabIndex === 1"
+          v-else-if="statsTab === 'captureStats'"
           :graph-hide="graphHide"
           :refresh-data="refreshData"
           :search-term="searchTerm"
@@ -623,14 +644,14 @@ SPDX-License-Identifier: Apache-2.0
           :cluster="cluster"
           :user="user" />
         <es-nodes
-          v-else-if="tabIndex === 2"
+          v-else-if="statsTab === 'esNodes'"
           :refresh-data="refreshData"
           :search-term="searchTerm"
           :data-interval="dataInterval"
           :stats-view="statsView"
           :cluster="cluster" />
         <es-indices
-          v-else-if="tabIndex === 3"
+          v-else-if="statsTab === 'esIndices'"
           :refresh-data="refreshData"
           :data-interval="dataInterval"
           @errored="onError"
@@ -641,7 +662,7 @@ SPDX-License-Identifier: Apache-2.0
           :user="user"
           :cluster="cluster" />
         <es-tasks
-          v-else-if="tabIndex === 4"
+          v-else-if="statsTab === 'esTasks'"
           :data-interval="dataInterval"
           :refresh-data="refreshData"
           :search-term="searchTerm"
@@ -650,20 +671,46 @@ SPDX-License-Identifier: Apache-2.0
           @errored="onError"
           :cluster="cluster" />
         <es-shards
-          v-else-if="tabIndex === 5"
+          v-else-if="statsTab === 'esShards'"
           :shards-show="shardsShow"
           :refresh-data="refreshData"
           :search-term="searchTerm"
           :data-interval="dataInterval"
           :cluster="cluster" />
         <es-recovery
-          v-else-if="tabIndex === 6"
+          v-else-if="statsTab === 'esRecovery'"
           :recovery-show="recoveryShow"
           :data-interval="dataInterval"
           :refresh-data="refreshData"
           :search-term="searchTerm"
           :user="user"
           :cluster="cluster" />
+        <db-tables
+          v-else-if="dbTablesTab"
+          :key="dbTablesTab.tablesTab"
+          :tab="dbTablesTab.tablesTab"
+          :db="dbTablesTab.db"
+          :fields="dbTablesTab.tableFields"
+          :actions="dbTablesTab.tableActions"
+          :data-interval="dataInterval"
+          :refresh-data="refreshData"
+          :search-term="searchTerm"
+          :issue-confirmation="issueConfirmation"
+          :user="user"
+          @confirm="confirm"
+          @errored="onError" />
+        <db-queries
+          v-else-if="dbTab"
+          :key="dbTab.tab"
+          :tab="dbTab.tab"
+          :db="dbTab.db"
+          :fields="dbTab.fields"
+          :data-interval="dataInterval"
+          :refresh-data="refreshData"
+          :search-term="searchTerm"
+          :page-size="pageSize"
+          :user="user"
+          @errored="onError" />
       </div>
     </div> <!-- /stats content -->
   </page-layout>
@@ -674,6 +721,8 @@ import EsShards from './EsShards.vue';
 import EsNodes from './EsNodes.vue';
 import EsTasks from './EsTasks.vue';
 import EsRecovery from './EsRecovery.vue';
+import DbQueries from './DbQueries.vue';
+import DbTables from './DbTables.vue';
 import EsIndices from './EsIndices.vue';
 import CaptureGraphs from './CaptureGraphs.vue';
 import CaptureStats from './CaptureStats.vue';
@@ -687,12 +736,14 @@ import { resolveMessage } from '@common/resolveI18nMessage';
 
 let searchInputTimeout;
 
-// the tabs past capture stats are all OpenSearch/Elasticsearch
-const LAST_TAB = HASES ? 6 : 1;
-// out of range selects no tab and renders an empty body, which an old
-// statsTab=7 ES Admin bookmark would otherwise do
-function clampTab (value) {
-  return Math.min(Math.max(parseInt(value, 10) || 0, 0), LAST_TAB);
+// The tabs by name, before 7.0 statsTab was this list's index, which parliament and old bookmarks still use
+const NUMBERED_TABS = ['captureGraphs', 'captureStats', 'esNodes', 'esIndices', 'esTasks', 'esShards', 'esRecovery'];
+const ES_TABS = new Set(NUMBERED_TABS.slice(2));
+// a tab that isn't shown selects the first one, an old statsTab=7 ES Admin bookmark is one
+function validTab (value) {
+  const tab = /^\d+$/.test(value ?? '') ? NUMBERED_TABS[value] : value;
+  if (tab === 'captureStats' || (ES_TABS.has(tab) && HASES) || DB_ADMIN.some(d => d.tab === tab || d.tablesTab === tab)) { return tab; }
+  return 'captureGraphs';
 }
 
 export default {
@@ -705,6 +756,8 @@ export default {
     EsIndices,
     EsTasks,
     EsRecovery,
+    DbQueries,
+    DbTables,
     ArkimeCollapsible,
     PageLayout,
     Clusters
@@ -712,7 +765,8 @@ export default {
   directives: { Focus },
   data: function () {
     return {
-      tabIndex: clampTab(this.$route.query.statsTab),
+      statsTab: validTab(this.$route.query.statsTab),
+      dbAdmins: DB_ADMIN,
       statsType: this.$route.query.type || 'deltaPacketsPerSec',
       graphInterval: parseInt(this.$route.query.gtime, 10) || 5,
       graphHide: this.$route.query.hide || 'none',
@@ -750,6 +804,17 @@ export default {
     };
   },
   computed: {
+    isEsTab: function () {
+      return ES_TABS.has(this.statsTab);
+    },
+    // the non OpenSearch/Elasticsearch db whose queries tab is shown
+    dbTab: function () {
+      return this.dbAdmins.find(d => d.tab === this.statsTab);
+    },
+    // the non OpenSearch/Elasticsearch db whose tables tab is shown
+    dbTablesTab: function () {
+      return this.dbAdmins.find(d => d.tablesTab === this.statsTab);
+    },
     user: function () {
       return this.$store.state.user;
     },
@@ -804,17 +869,17 @@ export default {
       this.statsView = newView;
       this.$router.push({ query: { ...this.$route.query, statsView: newView } });
     },
-    tabIndexChange: function (newTabIndex) {
+    statsTabChange: function (newTab) {
       // override the query params for the cluster selected
       // if the user is on any of the ES tabs, they can select only one cluster
       // so even if the route query is set, we want to override it with only one cluster
       // this flag is toggled so that the children components can override the route queries
       // the cluster dropdown component watches for selectOne and updates the cluster prop to override the route queries
       // but the route queries stay the same so that the user can navigate back to the previous tab without losing their selection
-      this.tabIndex = newTabIndex;
+      this.statsTab = newTab;
       this.clusterParamOverride = false;
       setTimeout(() => { this.clusterParamOverride = true; });
-      this.$router.push({ query: { ...this.$route.query, statsTab: newTabIndex } });
+      this.$router.push({ query: { ...this.$route.query, statsTab: newTab } });
     },
     // overrides the cluster route query
     updateCluster: function ({ cluster }) {
@@ -824,7 +889,7 @@ export default {
       const queryParams = this.$route.query;
 
       if (queryParams.statsTab) {
-        this.tabIndex = clampTab(queryParams.statsTab);
+        this.statsTab = validTab(queryParams.statsTab);
       }
       if (queryParams.type) {
         this.statsType = queryParams.type;

@@ -1018,7 +1018,10 @@
       "esShards": "ES Kilde",
       "esNodes": "ES Sõlmed",
       "esTasks": "ES Ülesanded",
-      "esRecovery": "ES Taaste"
+      "esRecovery": "ES Taaste",
+      "dbQueries": "{name} päringud",
+      "dbPartitions": "{name} partitsioonid",
+      "dbTables": "{name} tabelid"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>VIHJE:</strong> Need graafikud on 1440 pikslit laiad. Laienda oma brauser aknaan vähemalt 1500 piksli laiuseks parima vaatamise jaoks.",
@@ -1206,6 +1209,46 @@
       "node": "Sõlm",
       "taskId": "Ülesande ID",
       "type": "Tüüp"
+    },
+    "dbQueries": {
+      "noResults": "Ühtegi päringut ei käi",
+      "kill": "Peata päring",
+      "user": "Kasutaja",
+      "elapsed": "Kestus (s)",
+      "rowsRead": "Loetud read",
+      "bytesRead": "Loetud baidid",
+      "memory": "Mälu",
+      "state": "Olek",
+      "query": "Päring",
+      "dbUser": "AB kasutaja",
+      "app": "Rakendus",
+      "cancelled": "Tühistatud",
+      "id": "Päringu ID"
+    },
+    "dbTables": {
+      "noResults": "Tabeleid pole",
+      "table": "Tabel",
+      "partition": "Partitsioon",
+      "rows": "Read",
+      "dead": "Surnud read",
+      "parts": "Osad",
+      "patchParts": "Paikade osad",
+      "bytes": "Suurus",
+      "tableBytes": "Tabeli suurus",
+      "indexBytes": "Indeksi suurus",
+      "memory": "Mälu",
+      "cached": "Puhvris",
+      "ratio": "Tihendus",
+      "first": "Esimene pakett",
+      "last": "Viimane pakett",
+      "lastVacuum": "Viimane vacuum",
+      "lastAnalyze": "Viimane analüüs",
+      "compressed": "Tihendatud",
+      "uncompressed": "Tihendamata",
+      "modified": "Muudetud",
+      "optimize": "Optimeeri",
+      "drop": "Kustuta",
+      "vacuum": "Vacuum Analyze"
     }
   },
   "errors": {

@@ -10,6 +10,7 @@
 const util = require('util');
 const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
+const Db = require('./db');
 const internals = require('./internals');
 const ViewerUtils = require('./viewerUtils');
 const ViewConfig = require('../common/viewConfig');
@@ -302,8 +303,16 @@ class UserAPIs {
       const summaryConfig = UserAPIs.findUserState('summary', req.user);
       return res.send({ summaryConfig });
     }
-    default:
+    default: {
+      // Each non OpenSearch/Elasticsearch db tab has its own columns
+      const page = req.params.page;
+      if (Db.adminDbs().some(d => d.tab === page || d.tablesTab === page)) {
+        const tableState = UserAPIs.findUserState(`${page}Cols`, req.user);
+        const columnWidths = UserAPIs.findUserState(`${page}ColWidths`, req.user);
+        return res.send({ tableState, columnWidths });
+      }
       return res.serverError(501, 'Requested page is not supported', 'api.users.unsupportedPage');
+    }
     }
   }
 }

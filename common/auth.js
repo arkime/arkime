@@ -44,6 +44,7 @@ class Auth {
   static #caTrustCerts;
   static #passwordSecretSection;
   static #app;
+  static #sessionAuth = false;
   static #keyCache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 5 });
   static #logoutUrl;
   static #logoutUrlMethod;
@@ -57,6 +58,9 @@ class Auth {
     Auth.#app = app;
     app.use(Auth.#ppChecker);
     app.use(Auth.#authRouter);
+    if (Auth.#sessionAuth) {
+      DbStore.start();
+    }
 
     app.post('/api/login', bodyParser.urlencoded({ extended: true }));
     app.use(Auth.doAuth);
@@ -332,6 +336,11 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
+      Auth.#sessionAuth = true;
+      // Scripts like addUser.js never mount an app, so they never open the sids store
+      if (Auth.#app) {
+        DbStore.start();
+      }
       Auth.#authRouter.use(expressSession({
         name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
@@ -1669,11 +1678,13 @@ class Auth {
 // ----------------------------------------------------------------------------
 class DbStore extends expressSession.Store {
   static #sids;
+  static #started = false;
   static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
   static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no users db
 
-  constructor (options) {
-    super();
+  static start () {
+    if (DbStore.#started) { return; }
+    DbStore.#started = true;
     DbStore.#start(0);
   }
 

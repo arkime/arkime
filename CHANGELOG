@@ -324,6 +324,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4430 Fix a hunt resumed after a pause or restart skipping sessions, hunts now search in lastPacket order
   - #4433 Add a Start Page setting, Arkime or Sessions (the default), for where the viewer opens when no page is given
   - #4433 Add a Session Detail Tab setting for which tab an opened session shows: Details (the default), Packets, Shark or Last Used
+  - #4442 Stats has CH Partitions and CH Queries tabs when sessions are in ClickHouse, and PG Tables and PG Queries tabs when
+          the cluster or users db is in Postgres: sizes, rows and memory, the running queries, and for dbAdmin optimize or
+          drop a partition, vacuum a table and kill a query. PG Tables shows what is cached when pg_buffercache is installed
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

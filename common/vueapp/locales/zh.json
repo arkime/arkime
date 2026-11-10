@@ -1018,7 +1018,10 @@
       "esShards": "ES 分片",
       "esNodes": "ES 节点",
       "esTasks": "ES 任务",
-      "esRecovery": "ES 恢复"
+      "esRecovery": "ES 恢复",
+      "dbQueries": "{name} 查询",
+      "dbPartitions": "{name} 分区",
+      "dbTables": "{name} 表"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>提示：</strong>这些图表宽度为 1440 像素。将浏览器窗口扩展到至少 1500 像素宽以获得最佳查看效果。",
@@ -1206,6 +1209,46 @@
       "node": "节点",
       "taskId": "任务ID",
       "type": "类型"
+    },
+    "dbQueries": {
+      "noResults": "没有正在运行的查询",
+      "kill": "终止查询",
+      "user": "用户",
+      "elapsed": "已用时间 (秒)",
+      "rowsRead": "读取行数",
+      "bytesRead": "读取字节数",
+      "memory": "内存",
+      "state": "状态",
+      "query": "查询",
+      "dbUser": "数据库用户",
+      "app": "应用程序",
+      "cancelled": "已取消",
+      "id": "查询 ID"
+    },
+    "dbTables": {
+      "noResults": "没有表",
+      "table": "表",
+      "partition": "分区",
+      "rows": "行数",
+      "dead": "死行",
+      "parts": "数据片段",
+      "patchParts": "补丁片段",
+      "bytes": "大小",
+      "tableBytes": "表大小",
+      "indexBytes": "索引大小",
+      "memory": "内存",
+      "cached": "已缓存",
+      "ratio": "压缩比",
+      "first": "首个数据包",
+      "last": "最后数据包",
+      "lastVacuum": "上次 Vacuum",
+      "lastAnalyze": "上次 Analyze",
+      "compressed": "压缩后",
+      "uncompressed": "未压缩",
+      "modified": "修改时间",
+      "optimize": "优化",
+      "drop": "删除",
+      "vacuum": "Vacuum Analyze"
     }
   },
   "errors": {

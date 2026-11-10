@@ -1018,7 +1018,10 @@
       "esShards": "ES シャード",
       "esNodes": "ES ノード",
       "esTasks": "ES タスク",
-      "esRecovery": "ES リカバリ"
+      "esRecovery": "ES リカバリ",
+      "dbQueries": "{name} クエリ",
+      "dbPartitions": "{name} パーティション",
+      "dbTables": "{name} テーブル"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>ヒント:</strong> これらのグラフは幅1440ピクセルです。最適に表示するにはブラウザのウィンドウ幅を1500ピクセル以上に広げてください。",
@@ -1206,6 +1209,46 @@
       "node": "ノード",
       "taskId": "タスク ID",
       "type": "タイプ"
+    },
+    "dbQueries": {
+      "noResults": "実行中のクエリはありません",
+      "kill": "クエリを停止",
+      "user": "ユーザー",
+      "elapsed": "経過時間 (秒)",
+      "rowsRead": "読み取り行数",
+      "bytesRead": "読み取りバイト数",
+      "memory": "メモリ",
+      "state": "状態",
+      "query": "クエリ",
+      "dbUser": "DB ユーザー",
+      "app": "アプリケーション",
+      "cancelled": "キャンセル済み",
+      "id": "クエリ ID"
+    },
+    "dbTables": {
+      "noResults": "テーブルはありません",
+      "table": "テーブル",
+      "partition": "パーティション",
+      "rows": "行数",
+      "dead": "不要行",
+      "parts": "パーツ",
+      "patchParts": "パッチパーツ",
+      "bytes": "サイズ",
+      "tableBytes": "テーブルサイズ",
+      "indexBytes": "インデックスサイズ",
+      "memory": "メモリ",
+      "cached": "キャッシュ",
+      "ratio": "圧縮率",
+      "first": "最初のパケット",
+      "last": "最後のパケット",
+      "lastVacuum": "最終 Vacuum",
+      "lastAnalyze": "最終 Analyze",
+      "compressed": "圧縮後",
+      "uncompressed": "圧縮前",
+      "modified": "更新日時",
+      "optimize": "最適化",
+      "drop": "削除",
+      "vacuum": "Vacuum Analyze"
     }
   },
   "errors": {

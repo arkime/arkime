@@ -1019,7 +1019,10 @@
       "esShards": "ESway Ardsshay",
       "esNodes": "ESway Odesnay",
       "esTasks": "ESway Askstay",
-      "esRecovery": "ESway Ecveryray"
+      "esRecovery": "ESway Ecveryray",
+      "dbQueries": "{name} Ueriesqay",
+      "dbPartitions": "{name} Artitionspay",
+      "dbTables": "{name} Ablestay"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>INTHAY:</strong> Esethay raphsgray areway 1440 ixelspay ideway. Expandway ouryay owserbray indowway otay atway eastlay 1500 ixelspay ideway orfay estbay iewingvay.",
@@ -1207,6 +1210,46 @@
       "node": "Odenay",
       "taskId": "AskTay IDWAY",
       "type": "Ypetay"
+    },
+    "dbQueries": {
+      "noResults": "Onay ueriesqay areway unningray",
+      "kill": "Illkay ueryqay",
+      "user": "Userway",
+      "elapsed": "Elapsedway (s)",
+      "rowsRead": "Owsray Eadray",
+      "bytesRead": "Ytesbay Eadray",
+      "memory": "Emorymay",
+      "state": "Atestay",
+      "query": "Ueryqay",
+      "dbUser": "DBWAY Userway",
+      "app": "Applicationway",
+      "cancelled": "Ancelledcay",
+      "id": "Ueryqay IDWAY"
+    },
+    "dbTables": {
+      "noResults": "Onay ablestay",
+      "table": "Abletay",
+      "partition": "Artitionpay",
+      "rows": "Owsray",
+      "dead": "Eadday Owsray",
+      "parts": "Artspay",
+      "patchParts": "Atchpay Artspay",
+      "bytes": "Izesay",
+      "tableBytes": "Abletay Izesay",
+      "indexBytes": "Indexway Izesay",
+      "memory": "Emorymay",
+      "cached": "Achedcay",
+      "ratio": "Ompressioncay",
+      "first": "Irstfay Acketpay",
+      "last": "Astlay Acketpay",
+      "lastVacuum": "Astlay Acuumvay",
+      "lastAnalyze": "Astlay Analyzeway",
+      "compressed": "Ompressedcay",
+      "uncompressed": "Uncompressedway",
+      "modified": "Odifiedmay",
+      "optimize": "Optimizeway",
+      "drop": "Opdray",
+      "vacuum": "Acuumvay Analyzeway"
     }
   },
   "errors": {

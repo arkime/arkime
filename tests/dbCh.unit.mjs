@@ -7,6 +7,7 @@ The ClickHouse sessions backend's scroll, sessions iterator and field map, with 
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
+import { EventEmitter } from 'node:events';
 
 const cjsRequire = createRequire(import.meta.url);
 const DbCHImpl = cjsRequire('../viewer/db.ch.js');
@@ -183,6 +184,151 @@ describe('ClickHouse rowsToHits', () => {
     const [hit] = ch.rowsToHits([{ id: 'a', protocol: ['udp'], tags: [], 'dns.host': [], 'http.uri': null }], ['id', 'protocol', 'tags', 'dns.host', 'http.uri']);
     assert.deepEqual(hit.fields, { protocol: ['udp'] });
     assert.deepEqual(hit._source, { protocol: ['udp'] });
+    ch.close();
+  });
+});
+
+// queryInternal over a fake http module: records each request's query_id and sql, answers with reply(sql)
+function newRecordingCH (reply = () => ({ data: [] })) {
+  const ch = new DbCHImpl({ sessionsDbUrl: 'clickhouse://127.0.0.1:1/arkime', prefix: 'tests_' });
+  ch.requests = [];
+  ch.schemaReady = Promise.resolve();
+  ch.httpModule = {
+    request (url, opts, cb) {
+      const req = new EventEmitter();
+      req.destroy = (err) => req.emit('error', err);
+      req.end = (body) => {
+        const sql = body.replace(/\nFORMAT JSON$/, '');
+        ch.requests.push({ queryId: url.searchParams.get('query_id'), sql, timeout: opts.timeout });
+        const res = new EventEmitter();
+        res.statusCode = 200;
+        cb(res);
+        setImmediate(() => { res.emit('data', Buffer.from(JSON.stringify(reply(sql)))); res.emit('end'); });
+      };
+      return req;
+    }
+  };
+  return ch;
+}
+
+describe('ClickHouse query ids', () => {
+  const tagOf = (queryId) => decodeURIComponent(queryId.slice('arkime::'.length, queryId.lastIndexOf('::')));
+
+  test('every query of a search carries its cancelId, others carry none', async () => {
+    const ch = newRecordingCH();
+    await ch.searchSessions('tests_sessions3-*', { size: 1, query: { match_all: {} }, aggregations: { p: { terms: { field: 'protocol' } } } }, { cancelId: 'bob::c1' });
+    await ch.searchSessions('tests_sessions3-*', { size: 1, query: { match_all: {} } });
+    const tagged = ch.requests.filter(r => tagOf(r.queryId) === 'bob::c1');
+    assert.ok(tagged.length >= 3, `rows, count and the terms agg are tagged, got ${tagged.length}`);
+    const untagged = ch.requests.filter(r => tagOf(r.queryId) === '');
+    assert.equal(untagged.length, 2);
+    assert.equal(new Set(ch.requests.map(r => r.queryId)).size, ch.requests.length, 'every query id is unique');
+    ch.close();
+  });
+
+  test('scroll pages keep the cancelId', async () => {
+    const rows = Array.from({ length: 3 }, (_, i) => ({ id: `id${i}`, lastPacket: new Date(1000 + i).toISOString() }));
+    const ch = newRecordingCH((sql) => sql.includes('LIMIT') ? { data: rows, rows_before_limit_at_least: 9 } : { data: [] });
+    const first = await ch.searchScroll('tests_sessions3-*', { size: 3, query: { match_all: {} } }, { scroll: '1m', cancelId: 'amy::s1' });
+    await ch.scroll(first._scroll_id);
+    assert.ok(ch.requests.length >= 2);
+    for (const r of ch.requests) { assert.equal(tagOf(r.queryId), 'amy::s1'); }
+    ch.close();
+  });
+
+  test('cancel kills the search by its query id prefix', async () => {
+    const ch = newRecordingCH(() => ({ data: [{ kill_status: 'waiting' }] }));
+    assert.equal(await ch.cancelByOpaqueId("o'brien::c2"), true);
+    assert.equal(ch.requests[0].sql, `KILL QUERY WHERE startsWith(query_id, '${'arkime::' + encodeURIComponent("o'brien::c2").replace(/'/g, "\\'") + '::'}') ASYNC`);
+    ch.close();
+  });
+
+  test('cancel of nothing running is false', async () => {
+    const ch = newRecordingCH(() => ({ data: [] }));
+    assert.equal(await ch.cancelByOpaqueId('bob::gone'), false);
+    ch.close();
+  });
+
+  test('adminQueries gives the Arkime user of our queries', async () => {
+    const ch = newRecordingCH(() => ({
+      data: [
+        { query_id: 'arkime::' + encodeURIComponent('bob::c1') + '::u1', user: 'arkime', elapsed: 2.5, read_rows: 10, read_bytes: 100, memory_usage: 1000, is_cancelled: 0, query: 'SELECT 1' },
+        { query_id: 'arkime::::u2', user: 'arkime', elapsed: 1, read_rows: 0, read_bytes: 0, memory_usage: 0, is_cancelled: 1, query: 'SELECT 2' },
+        { query_id: 'other-tool-1', user: 'default', elapsed: 9, read_rows: 1, read_bytes: 1, memory_usage: 1, is_cancelled: 0, query: 'INSERT' }
+      ]
+    }));
+    const queries = await ch.adminQueries();
+    assert.deepEqual(queries.map(q => [q.user, q.dbUser, q.cancelled]), [['bob', 'arkime', false], ['', 'arkime', true], ['', 'default', false]]);
+    assert.equal(queries[0].elapsed, 2.5);
+    assert.match(ch.requests[0].sql, /FROM system\.processes WHERE query_id != queryID\(\)/);
+    ch.close();
+  });
+});
+
+describe('ClickHouse admin tables', () => {
+  const part = (over) => ({ database: 'arkime', table: 'tests_sessions3', pid: '202601', partition: '202601', parts: 2, patchParts: 1, rows: 10, bytes: 100, compressed: 50, uncompressed: 200, indexBytes: 7, memory: 720, first: 1767225600, last: 1767312000, modified: 1767312000, ...over });
+
+  test('lists every partition with its patch parts and real times', async () => {
+    const ch = newRecordingCH(() => ({ data: [part(), part({ table: 'other', pid: 'all', partition: 'tuple()', first: 0, last: 0 })] }));
+    const tables = await ch.adminTables();
+    assert.deepEqual(JSON.parse(tables[0].id), ['arkime', 'tests_sessions3', '202601']);
+    assert.equal(tables[0].table, 'arkime.tests_sessions3');
+    assert.equal(tables[0].patchParts, 1);
+    assert.equal(tables[0].indexBytes, 7);
+    assert.equal(tables[0].memory, 720);
+    assert.equal(tables[0].first, 1767225600000);
+    assert.equal(tables[1].partition, '', 'an unpartitioned table has no partition name');
+    assert.equal(tables[1].first, null);
+    assert.match(ch.requests[0].sql, /startsWith\(partition_id, 'patch-'\)/);
+    assert.match(ch.requests[0].sql, /NOT IN \('system', 'information_schema'\)/);
+    assert.match(ch.requests[0].sql, /primary_key_bytes_in_memory_allocated \+ index_granularity_bytes_in_memory_allocated/);
+    ch.close();
+  });
+
+  test('optimize and drop quote the table and use the partition id', async () => {
+    const ch = newRecordingCH((sql) => sql.startsWith('SELECT 1') ? { data: [{ 1: 1 }] } : {});
+    const id = JSON.stringify(['arkime', 'we`ird', '202601']);
+    assert.equal(await ch.adminTableAction(id, 'optimize'), true);
+    assert.equal(await ch.adminTableAction(id, 'drop'), true);
+    await new Promise(resolve => setImmediate(resolve));
+    const sqls = ch.requests.map(r => r.sql);
+    assert.ok(sqls.includes("OPTIMIZE TABLE `arkime`.`we``ird` PARTITION ID '202601' FINAL"));
+    assert.equal(ch.requests.find(r => r.sql.startsWith('OPTIMIZE')).timeout, 0, 'an optimize is never timed out');
+    assert.ok(ch.requests.find(r => r.sql.startsWith('ALTER')).timeout > 0);
+    assert.ok(sqls.includes("ALTER TABLE `arkime`.`we``ird` DROP PARTITION ID '202601'"));
+    ch.close();
+  });
+
+  test('only a couple of optimizes run at once, and one partition only once', async () => {
+    const ch = newRecordingCH((sql) => sql.startsWith('SELECT 1') ? { data: [{ 1: 1 }] } : {});
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    const query = ch.query.bind(ch);
+    ch.query = (sql, opts) => sql.startsWith('OPTIMIZE') ? gate.then(() => query(sql, opts)) : query(sql, opts);
+    const id = (pid) => JSON.stringify(['arkime', 'tests_sessions3', pid]);
+    assert.equal(await ch.adminTableAction(id('202601'), 'optimize'), true);
+    await assert.rejects(ch.adminTableAction(id('202601'), 'optimize'), { statusCode: 409 });
+    assert.equal(await ch.adminTableAction(id('202602'), 'optimize'), true);
+    await assert.rejects(ch.adminTableAction(id('202603'), 'optimize'), { statusCode: 409 });
+    release();
+    await new Promise(resolve => setTimeout(resolve, 10));
+    assert.equal(await ch.adminTableAction(id('202603'), 'optimize'), true, 'a slot is free once one finishes');
+    ch.close();
+  });
+
+  test('the partition check only treats patch parts as belonging to another partition', async () => {
+    const ch = newRecordingCH(() => ({ data: [] }));
+    await ch.adminTableAction(JSON.stringify(['arkime', 't', '2']), 'drop');
+    assert.match(ch.requests[0].sql, /partition_id = '2' OR \(startsWith\(partition_id, 'patch-'\) AND substring\(partition_id, 40\) = '2'\)/);
+    ch.close();
+  });
+
+  test('an unknown partition, bad id or action does nothing', async () => {
+    const ch = newRecordingCH(() => ({ data: [] }));
+    assert.equal(await ch.adminTableAction(JSON.stringify(['arkime', 'nope', '1']), 'drop'), false);
+    assert.equal(await ch.adminTableAction('not json', 'drop'), false);
+    assert.equal(await ch.adminTableAction(JSON.stringify(['a', 1, 'b']), 'drop'), false);
+    assert.ok(!ch.requests.some(r => /DROP|OPTIMIZE/.test(r.sql)));
     ch.close();
   });
 });

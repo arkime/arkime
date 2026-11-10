@@ -1018,7 +1018,10 @@
       "esShards": "ES Shards",
       "esNodes": "ES Nodes",
       "esTasks": "ES Tasks",
-      "esRecovery": "ES Recovery"
+      "esRecovery": "ES Recovery",
+      "dbQueries": "{name} Queries",
+      "dbPartitions": "{name} Partitions",
+      "dbTables": "{name} Tables"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>HINT:</strong> These graphs are 1440 pixels wide.  Expand your browser window to at least 1500 pixels wide for best viewing.",
@@ -1206,6 +1209,46 @@
       "node": "Node",
       "taskId": "Task ID",
       "type": "Type"
+    },
+    "dbQueries": {
+      "noResults": "No queries are running",
+      "kill": "Kill query",
+      "user": "User",
+      "elapsed": "Elapsed (s)",
+      "rowsRead": "Rows Read",
+      "bytesRead": "Bytes Read",
+      "memory": "Memory",
+      "state": "State",
+      "query": "Query",
+      "dbUser": "DB User",
+      "app": "Application",
+      "cancelled": "Cancelled",
+      "id": "Query ID"
+    },
+    "dbTables": {
+      "noResults": "No tables",
+      "table": "Table",
+      "partition": "Partition",
+      "rows": "Rows",
+      "dead": "Dead Rows",
+      "parts": "Parts",
+      "patchParts": "Patch Parts",
+      "bytes": "Size",
+      "tableBytes": "Table Size",
+      "indexBytes": "Index Size",
+      "memory": "Memory",
+      "cached": "Cached",
+      "ratio": "Compression",
+      "first": "First Packet",
+      "last": "Last Packet",
+      "lastVacuum": "Last Vacuum",
+      "lastAnalyze": "Last Analyze",
+      "compressed": "Compressed",
+      "uncompressed": "Uncompressed",
+      "modified": "Modified",
+      "optimize": "Optimize",
+      "drop": "Drop",
+      "vacuum": "Vacuum Analyze"
     }
   },
   "errors": {

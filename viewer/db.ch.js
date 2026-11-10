@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const cryptoLib = require('crypto');
+const { AsyncLocalStorage } = require('async_hooks');
 const http = require('http');
 const https = require('https');
 const NodeURL = require('url').URL;
@@ -40,6 +41,13 @@ const BUCKET_QUERY_CONCURRENCY = 8;
 const MAX_BUCKETS = 65536;
 const MAX_SCROLLS = 500;
 const SCROLL_ID_PREFIX = 'arkime:ch:';
+
+// Every query's query_id is QUERY_ID_PREFIX, the url encoded cancelId (<userId>::<cancelId>) of the search it is
+// part of or nothing, :: and a uuid, so a cancel kills all of a search's queries and the Queries tab knows the user
+const QUERY_ID_PREFIX = 'arkime::';
+const queryTag = new AsyncLocalStorage();
+// OPTIMIZE ... FINAL rewrites a whole partition, only a couple run at once
+const MAX_OPTIMIZES = 2;
 
 // A longer body can't become a string
 const MAX_RESPONSE_BYTES = require('buffer').constants.MAX_STRING_LENGTH;
@@ -485,6 +493,8 @@ class DbCHImpl {
     // metric values and field values match the ES response shape
     reqUrl.searchParams.set('output_format_json_quote_64bit_integers', '0');
     if (opts.mutationsSync) { reqUrl.searchParams.set('mutations_sync', '1'); }
+    const tag = opts.cancelId ?? queryTag.getStore();
+    reqUrl.searchParams.set('query_id', `${QUERY_ID_PREFIX}${tag ? encodeURIComponent(tag) : ''}::${cryptoLib.randomUUID()}`);
 
     const body = opts.raw || opts.text ? sql : (opts.format === 'TabSeparated' ? sql : `${sql}\nFORMAT JSON`);
 
@@ -492,7 +502,7 @@ class DbCHImpl {
       const req = this.httpModule.request(reqUrl, {
         method: 'POST',
         agent: this.agent,
-        timeout: this.requestTimeout,
+        timeout: opts.timeout ?? this.requestTimeout,
         headers: {
           ...this.headers,
           'Content-Type': 'text/plain; charset=UTF-8',
@@ -1400,7 +1410,16 @@ class DbCHImpl {
     return result.hits.hits[0];
   }
 
+  // Runs fn with options.cancelId as the query tag, so every query it makes can be cancelled together
+  #tagged (options, fn) {
+    return options?.cancelId ? queryTag.run(String(options.cancelId), fn) : fn();
+  }
+
   async searchSessions (index, query, options = {}) {
+    return this.#tagged(options, () => this.#searchSessions(index, query, options));
+  }
+
+  async #searchSessions (index, query, options) {
     await this.schemaReady;
     const translated = this.translateQuery(query, { ...options, timeClause: this.timeClauseFromIndex(index) });
     const [rowsResult, countResult, aggregations] = await Promise.all([
@@ -1466,7 +1485,7 @@ class DbCHImpl {
       while (remaining > 0) {
         const q = { ...query, size: Math.min(pageSize, remaining), from: searchAfter ? 0 : from, sort: [{ lastPacket: { order: asc ? 'asc' : 'desc' } }] };
         const translated = this.translateQuery(q, { ...options, keyset: true, searchAfter, timeClause });
-        const rowsResult = await this.query(translated.sql);
+        const rowsResult = await this.query(translated.sql, { cancelId: options.cancelId });
         const rows = rowsResult.data || [];
         total ??= Number(rowsResult.rows_before_limit_at_least ?? rows.length);
         if (rows.length === 0) { break; }
@@ -1483,8 +1502,8 @@ class DbCHImpl {
       const q = { ...query, size: Math.min(pageSize, remaining), from: offset };
       const translated = this.translateQuery(q, { ...options, offsetPaging: true, timeClause });
       const [rowsResult, countResult] = await Promise.all([
-        this.query(translated.sql),
-        total === undefined ? this.query(`SELECT count() AS count FROM ${this.tableName()} WHERE ${translated.where}`) : undefined
+        this.query(translated.sql, { cancelId: options.cancelId }),
+        total === undefined ? this.query(`SELECT count() AS count FROM ${this.tableName()} WHERE ${translated.where}`, { cancelId: options.cancelId }) : undefined
       ]);
       total ??= Number(countResult.data?.[0]?.count ?? 0);
       const rows = rowsResult.data || [];
@@ -1618,7 +1637,7 @@ class DbCHImpl {
   async searchScroll (index, query, options, cb) {
     let result;
     try {
-      result = options?.scroll ? await this.startScroll(index, query, options.scroll) : await this.searchSessions(index, query, options);
+      result = options?.scroll ? await this.startScroll(index, query, options.scroll, options.cancelId) : await this.searchSessions(index, query, options);
     } catch (err) {
       if (cb) { return cb(err); }
       throw err;
@@ -1647,7 +1666,7 @@ class DbCHImpl {
   }
 
   // Pages follow lastPacket, ascending only when the first sort asks for it
-  async startScroll (index, query, keepAlive) {
+  async startScroll (index, query, keepAlive, cancelId) {
     await this.schemaReady;
     if (this.scrolls.size >= MAX_SCROLLS) {
       throw Object.assign(new Error(`CH backend: more than ${MAX_SCROLLS} open scrolls`), { statusCode: 400 });
@@ -1660,9 +1679,120 @@ class DbCHImpl {
       size: Math.min(Math.max(1, Number(query.size ?? 10) || 10), 10000),
       asc,
       timeClause: this.timeClauseFromIndex(index),
-      keepAliveMs: scrollMs(keepAlive)
+      keepAliveMs: scrollMs(keepAlive),
+      cancelId
     });
     return this.readScroll(id);
+  }
+
+  // --------------------------------------------------------------------------
+  // Admin: the Stats tab's running queries
+  // --------------------------------------------------------------------------
+  get adminName () { return 'CH'; }
+  get adminFields () { return ['user', 'elapsed', 'rowsRead', 'bytesRead', 'memory', 'query', 'dbUser', 'cancelled', 'id']; }
+
+  // Kill every running query of the search with this <userId>::<cancelId>, true when there were any
+  async cancelByOpaqueId (cancelId) {
+    const prefix = `${QUERY_ID_PREFIX}${encodeURIComponent(cancelId)}::`;
+    const result = await this.query(`KILL QUERY WHERE startsWith(query_id, ${sqlLiteral(prefix)}) ASYNC`);
+    return (result.data?.length ?? 0) > 0;
+  }
+
+  // Every query running on the server, ours with the Arkime user that started it
+  async adminQueries () {
+    const result = await this.query(`SELECT query_id, user, elapsed, read_rows, read_bytes, memory_usage, is_cancelled, substring(query, 1, 2000) AS query
+      FROM system.processes WHERE query_id != queryID()`);
+    return (result.data || []).map((row) => {
+      let user = '';
+      if (row.query_id.startsWith(QUERY_ID_PREFIX)) {
+        const tag = row.query_id.slice(QUERY_ID_PREFIX.length, row.query_id.lastIndexOf('::'));
+        try { user = ArkimeUtil.splitRemain(decodeURIComponent(tag), '::', 1)[0] ?? ''; } catch (err) { }
+      }
+      return {
+        id: row.query_id,
+        user,
+        dbUser: row.user,
+        elapsed: Number(row.elapsed),
+        rowsRead: Number(row.read_rows),
+        bytesRead: Number(row.read_bytes),
+        memory: Number(row.memory_usage),
+        cancelled: !!row.is_cancelled,
+        query: row.query
+      };
+    });
+  }
+
+  async adminKillQuery (id) {
+    const result = await this.query(`KILL QUERY WHERE query_id = ${sqlLiteral(id)} ASYNC`);
+    return (result.data?.length ?? 0) > 0;
+  }
+
+  // Every partition of every MergeTree table outside the system databases, like ES Indices lists every index.
+  // A patch part, which a lightweight UPDATE writes, is counted with the partition it patches. Index bytes are the
+  // data skipping indexes on disk, memory is the primary key and granule index each part keeps loaded.
+  get adminTablesName () { return 'Partitions'; }
+  get adminTableFields () { return ['table', 'partition', 'rows', 'parts', 'patchParts', 'bytes', 'indexBytes', 'memory', 'compressed', 'uncompressed', 'ratio', 'first', 'last', 'modified']; }
+  get adminTableActions () { return ['optimize', 'drop']; }
+
+  async adminTables () {
+    const result = await this.query(`SELECT database, table, pid, anyIf(partition, NOT patch) AS partition,
+        countIf(NOT patch) AS parts, countIf(patch) AS patchParts, sumIf(rows, NOT patch) AS rows,
+        sum(bytes_on_disk) AS bytes, sum(data_compressed_bytes) AS compressed, sum(data_uncompressed_bytes) AS uncompressed,
+        sum(secondary_indices_compressed_bytes) AS indexBytes,
+        sum(primary_key_bytes_in_memory_allocated + index_granularity_bytes_in_memory_allocated) AS memory,
+        minIf(toUnixTimestamp(min_time), NOT patch AND toUnixTimestamp(min_time) > 0) AS first,
+        maxIf(toUnixTimestamp(max_time), NOT patch) AS last, toUnixTimestamp(max(modification_time)) AS modified
+      FROM (SELECT database, table, startsWith(partition_id, 'patch-') AS patch,
+          if(patch, substring(partition_id, 40), partition_id) AS pid, partition, rows, bytes_on_disk,
+          data_compressed_bytes, data_uncompressed_bytes, secondary_indices_compressed_bytes,
+          primary_key_bytes_in_memory_allocated, index_granularity_bytes_in_memory_allocated, min_time, max_time, modification_time
+        FROM system.parts WHERE active AND lower(database) NOT IN ('system', 'information_schema'))
+      GROUP BY database, table, pid`);
+    return (result.data || []).map(row => ({
+      id: JSON.stringify([row.database, row.table, row.pid]),
+      table: `${row.database}.${row.table}`,
+      partition: row.partition === 'tuple()' ? '' : row.partition,
+      rows: Number(row.rows),
+      parts: Number(row.parts),
+      patchParts: Number(row.patchParts),
+      bytes: Number(row.bytes),
+      compressed: Number(row.compressed),
+      uncompressed: Number(row.uncompressed),
+      indexBytes: Number(row.indexBytes),
+      memory: Number(row.memory),
+      first: Number(row.first) * 1000 || null,
+      last: Number(row.last) * 1000 || null,
+      modified: Number(row.modified) * 1000 || null
+    }));
+  }
+
+  #optimizing = new Set();
+
+  // Optimize merges the partition's parts and folds in its patch parts, it can take a while so it isn't waited for
+  // and never times out, ClickHouse keeps optimizing after a dropped request
+  async adminTableAction (id, action) {
+    let database, table, pid;
+    try { [database, table, pid] = JSON.parse(id); } catch (err) { return false; }
+    if (![database, table, pid].every(v => typeof v === 'string')) { return false; }
+    const found = await this.query(`SELECT 1 FROM system.parts WHERE active AND database = ${sqlLiteral(database)} AND table = ${sqlLiteral(table)}
+      AND (partition_id = ${sqlLiteral(pid)} OR (startsWith(partition_id, 'patch-') AND substring(partition_id, 40) = ${sqlLiteral(pid)})) LIMIT 1`);
+    if (!found.data?.length) { return false; }
+    const target = `${quoteIdent(database)}.${quoteIdent(table)}`;
+    if (action === 'optimize') {
+      const key = `${target} ${pid}`;
+      if (this.#optimizing.has(key)) { throw Object.assign(new Error('That partition is already being optimized'), { statusCode: 409 }); }
+      if (this.#optimizing.size >= MAX_OPTIMIZES) { throw Object.assign(new Error(`Already optimizing ${MAX_OPTIMIZES} partitions, try again later`), { statusCode: 409 }); }
+      this.#optimizing.add(key);
+      this.query(`OPTIMIZE TABLE ${target} PARTITION ID ${sqlLiteral(pid)} FINAL`, { text: true, timeout: 0 }).catch((err) => {
+        console.log(`CH backend: optimize ${ArkimeUtil.sanitizeStr(target)} partition ${ArkimeUtil.sanitizeStr(pid)} failed`, ArkimeUtil.sanitizeLine(err.message));
+      }).finally(() => { this.#optimizing.delete(key); });
+      return true;
+    }
+    if (action === 'drop') {
+      await this.query(`ALTER TABLE ${target} DROP PARTITION ID ${sqlLiteral(pid)}`, { text: true });
+      return true;
+    }
+    return false;
   }
 
   // A short page is the last one, its id is SCROLL_DONE so the caller's next scroll is empty
@@ -1676,7 +1806,7 @@ class DbCHImpl {
     try {
       const q = state.searchAfter ? { ...state.query, from: 0 } : state.query;
       translated = this.translateQuery(q, { size: state.size, keyset: true, searchAfter: state.searchAfter, timeClause: state.timeClause });
-      const result = await this.query(translated.sql);
+      const result = await this.query(translated.sql, { cancelId: state.cancelId });
       rows = result.data || [];
       state.total ??= Number(result.rows_before_limit_at_least ?? rows.length);
     } catch (err) {

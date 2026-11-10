@@ -1018,7 +1018,10 @@
       "esShards": "ES 샤드",
       "esNodes": "ES 노드",
       "esTasks": "ES 작업",
-      "esRecovery": "ES 복구"
+      "esRecovery": "ES 복구",
+      "dbQueries": "{name} 쿼리",
+      "dbPartitions": "{name} 파티션",
+      "dbTables": "{name} 테이블"
     },
     "cgraphs": {
       "helpTipHtml": "<strong>힌트:</strong> 이 그래프들은 너비가 1440픽셀입니다. 최적의 보기를 위해 브라우저 창 너비를 최소 1500픽셀로 넓혀주세요.",
@@ -1206,6 +1209,46 @@
       "node": "노드",
       "taskId": "작업 ID",
       "type": "유형"
+    },
+    "dbQueries": {
+      "noResults": "실행 중인 쿼리가 없습니다",
+      "kill": "쿼리 중지",
+      "user": "사용자",
+      "elapsed": "경과 시간 (초)",
+      "rowsRead": "읽은 행",
+      "bytesRead": "읽은 바이트",
+      "memory": "메모리",
+      "state": "상태",
+      "query": "쿼리",
+      "dbUser": "DB 사용자",
+      "app": "애플리케이션",
+      "cancelled": "취소됨",
+      "id": "쿼리 ID"
+    },
+    "dbTables": {
+      "noResults": "테이블이 없습니다",
+      "table": "테이블",
+      "partition": "파티션",
+      "rows": "행",
+      "dead": "죽은 행",
+      "parts": "파트",
+      "patchParts": "패치 파트",
+      "bytes": "크기",
+      "tableBytes": "테이블 크기",
+      "indexBytes": "인덱스 크기",
+      "memory": "메모리",
+      "cached": "캐시됨",
+      "ratio": "압축률",
+      "first": "첫 패킷",
+      "last": "마지막 패킷",
+      "lastVacuum": "마지막 Vacuum",
+      "lastAnalyze": "마지막 Analyze",
+      "compressed": "압축됨",
+      "uncompressed": "압축 안 됨",
+      "modified": "수정됨",
+      "optimize": "최적화",
+      "drop": "삭제",
+      "vacuum": "Vacuum Analyze"
     }
   },
   "errors": {
