@@ -1,4 +1,4 @@
-use Test::More tests => 165;
+use Test::More tests => 167;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -352,7 +352,7 @@ SKIP: {
 }
 # db queries, the running queries of a sessions db that isn't OpenSearch/Elasticsearch
 SKIP: {
-    skip "the db queries apis need ClickHouse sessions", 13 if !$ArkimeTest::sessionsDbCH;
+    skip "the db queries apis need ClickHouse sessions", 15 if !$ArkimeTest::sessionsDbCH;
     my $dbq = viewerGet("/api/db/sessions/queries");
     is (ref $dbq->{data}, "ARRAY", "db queries data");
     cmp_ok ($dbq->{recordsTotal}, ">=", $dbq->{recordsFiltered}, "db queries recordsTotal");
@@ -380,6 +380,10 @@ SKIP: {
     is (viewerDeleteToken("/api/db/sessions/tables/$badId", $token)->{success}, 0, "ch partitions drop unknown partition");
     is (viewerPostToken("/api/db/sessions/tables/$badId/vacuum", "", $token)->{success}, 0, "ch partitions has no vacuum");
     is (viewerPostToken("/api/db/sessions/tables/$badId/drop", "", $token)->{text}, "Unknown db or action", "ch partitions only drop with DELETE");
+
+    # each db tab saves its own table state
+    is (ref viewerGetToken("/api/user/config/chPartitions", $token)->{tableState}, "HASH", "ch partitions table state");
+    is (viewerGetToken("/api/user/config/dbTables", $token)->{i18n}, "api.users.unsupportedPage", "no table state shared by the db tabs");
 }
     is (viewerGet("/api/db/nosuchdb/queries")->{success}, 0, "db queries unknown db");
 

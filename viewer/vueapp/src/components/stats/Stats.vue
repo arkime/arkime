@@ -688,6 +688,7 @@ SPDX-License-Identifier: Apache-2.0
         <db-tables
           v-else-if="dbTablesTab"
           :key="dbTablesTab.tablesTab"
+          :tab="dbTablesTab.tablesTab"
           :db="dbTablesTab.db"
           :fields="dbTablesTab.tableFields"
           :actions="dbTablesTab.tableActions"
@@ -700,7 +701,8 @@ SPDX-License-Identifier: Apache-2.0
           @errored="onError" />
         <db-queries
           v-else-if="dbTab"
-          :key="dbTab.db"
+          :key="dbTab.tab"
+          :tab="dbTab.tab"
           :db="dbTab.db"
           :fields="dbTab.fields"
           :data-interval="dataInterval"

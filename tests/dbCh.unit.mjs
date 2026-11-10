@@ -199,7 +199,7 @@ function newRecordingCH (reply = () => ({ data: [] })) {
       req.destroy = (err) => req.emit('error', err);
       req.end = (body) => {
         const sql = body.replace(/\nFORMAT JSON$/, '');
-        ch.requests.push({ queryId: url.searchParams.get('query_id'), sql });
+        ch.requests.push({ queryId: url.searchParams.get('query_id'), sql, timeout: opts.timeout });
         const res = new EventEmitter();
         res.statusCode = 200;
         cb(res);
@@ -293,6 +293,8 @@ describe('ClickHouse admin tables', () => {
     await new Promise(resolve => setImmediate(resolve));
     const sqls = ch.requests.map(r => r.sql);
     assert.ok(sqls.includes("OPTIMIZE TABLE `arkime`.`we``ird` PARTITION ID '202601' FINAL"));
+    assert.equal(ch.requests.find(r => r.sql.startsWith('OPTIMIZE')).timeout, 0, 'an optimize is never timed out');
+    assert.ok(ch.requests.find(r => r.sql.startsWith('ALTER')).timeout > 0);
     assert.ok(sqls.includes("ALTER TABLE `arkime`.`we``ird` DROP PARTITION ID '202601'"));
     ch.close();
   });

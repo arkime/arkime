@@ -502,7 +502,7 @@ class DbCHImpl {
       const req = this.httpModule.request(reqUrl, {
         method: 'POST',
         agent: this.agent,
-        timeout: this.requestTimeout,
+        timeout: opts.timeout ?? this.requestTimeout,
         headers: {
           ...this.headers,
           'Content-Type': 'text/plain; charset=UTF-8',
@@ -1769,6 +1769,7 @@ class DbCHImpl {
   #optimizing = new Set();
 
   // Optimize merges the partition's parts and folds in its patch parts, it can take a while so it isn't waited for
+  // and never times out, ClickHouse keeps optimizing after a dropped request
   async adminTableAction (id, action) {
     let database, table, pid;
     try { [database, table, pid] = JSON.parse(id); } catch (err) { return false; }
@@ -1782,7 +1783,7 @@ class DbCHImpl {
       if (this.#optimizing.has(key)) { throw Object.assign(new Error('That partition is already being optimized'), { statusCode: 409 }); }
       if (this.#optimizing.size >= MAX_OPTIMIZES) { throw Object.assign(new Error(`Already optimizing ${MAX_OPTIMIZES} partitions, try again later`), { statusCode: 409 }); }
       this.#optimizing.add(key);
-      this.query(`OPTIMIZE TABLE ${target} PARTITION ID ${sqlLiteral(pid)} FINAL`, { text: true }).catch((err) => {
+      this.query(`OPTIMIZE TABLE ${target} PARTITION ID ${sqlLiteral(pid)} FINAL`, { text: true, timeout: 0 }).catch((err) => {
         console.log(`CH backend: optimize ${ArkimeUtil.sanitizeStr(target)} partition ${ArkimeUtil.sanitizeStr(pid)} failed`, ArkimeUtil.sanitizeLine(err.message));
       }).finally(() => { this.#optimizing.delete(key); });
       return true;

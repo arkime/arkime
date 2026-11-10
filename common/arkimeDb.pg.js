@@ -783,12 +783,15 @@ async function patternQuery (pool, sql, params) {
 
 // pg_buffercache has a row per shared buffer, millions on a big server, so its scan is reused for a minute
 const CACHED_MS = 60000;
+// A VACUUM holds a pool connection until it ends, only a couple run at once
+const MAX_VACUUMS = 2;
 
 class PGConnection {
   pool;
   prefix;
   #dbKey;
   #cached = { at: 0, map: undefined };
+  #vacuuming = new Set();
   #closed = false;
   #collections = new Map();
 
@@ -853,12 +856,13 @@ class PGConnection {
     }));
   }
 
-  // Cancels the query running on that connection of this database, Postgres only lets the same role or a
-  // pg_signal_backend one do it
+  // Cancels the query running on that connection of this database, an idle in transaction one has no query
+  // to cancel so its connection is ended. Postgres only lets the same role or a pg_signal_backend one do it
   async adminKillQuery (id) {
     if (!/^\d{1,10}$/.test(id) || Number(id) > 2147483647) { return false; }
-    const { rows } = await this.pool.query(`SELECT pg_cancel_backend(pid) AS ok FROM pg_stat_activity
-      WHERE pid = $1 AND datname = current_database()`, [Number(id)]);
+    const { rows } = await this.pool.query(`SELECT CASE WHEN state LIKE 'idle in transaction%' THEN pg_terminate_backend(pid)
+        ELSE pg_cancel_backend(pid) END AS ok
+      FROM pg_stat_activity WHERE pid = $1 AND datname = current_database()`, [Number(id)]);
     return rows[0]?.ok === true;
   }
 
@@ -887,11 +891,12 @@ class PGConnection {
     }));
   }
 
-  // Bytes of each table and its indexes in shared buffers, only with the pg_buffercache extension and a role
-  // that may read it, else undefined. The scan is reused for CACHED_MS
-  async #adminCached () {
-    if (Date.now() - this.#cached.at < CACHED_MS) { return this.#cached.map; }
-    this.#cached = { at: Date.now(), map: await this.#readCached() };
+  // Bytes of each table, its TOAST and their indexes in shared buffers, only with the pg_buffercache extension
+  // and a role that may read it, else undefined. The scan is reused for CACHED_MS, a running one included
+  #adminCached () {
+    if (Date.now() - this.#cached.at >= CACHED_MS) {
+      this.#cached = { at: Date.now(), map: this.#readCached() };
+    }
     return this.#cached.map;
   }
 
@@ -901,8 +906,9 @@ class PGConnection {
           SELECT c.oid AS relid, count(*) AS buffers FROM pg_buffercache b JOIN pg_class c ON b.relfilenode = pg_relation_filenode(c.oid)
           WHERE b.reldatabase = (SELECT oid FROM pg_database WHERE datname = current_database()) GROUP BY c.oid)
         SELECT t.relid, sum(cached.buffers) * current_setting('block_size')::bigint AS bytes
-        FROM pg_stat_user_tables t JOIN cached ON cached.relid = t.relid
-          OR cached.relid IN (SELECT indexrelid FROM pg_index WHERE indrelid = t.relid)
+        FROM pg_stat_user_tables t JOIN pg_class tc ON tc.oid = t.relid
+          JOIN cached ON cached.relid IN (t.relid, tc.reltoastrelid)
+            OR cached.relid IN (SELECT indexrelid FROM pg_index WHERE indrelid IN (t.relid, tc.reltoastrelid))
         GROUP BY t.relid`);
       return new Map(rows.map(row => [row.relid, Number(row.bytes)]));
     } catch (err) {
@@ -910,6 +916,7 @@ class PGConnection {
     }
   }
 
+  // A vacuum can take a while so it isn't waited for
   async adminTableAction (id, action) {
     let schema, table;
     try { [schema, table] = JSON.parse(id); } catch (err) { return false; }
@@ -917,7 +924,13 @@ class PGConnection {
     const { rows } = await this.pool.query('SELECT 1 FROM pg_stat_user_tables WHERE schemaname = $1 AND relname = $2', [schema, table]);
     if (!rows.length) { return false; }
     const ident = (s) => '"' + s.replace(/"/g, '""') + '"';
-    await this.pool.query(`VACUUM (ANALYZE) ${ident(schema)}.${ident(table)}`);
+    const target = `${ident(schema)}.${ident(table)}`;
+    if (this.#vacuuming.has(target)) { throw Object.assign(new Error('That table is already being vacuumed'), { statusCode: 409 }); }
+    if (this.#vacuuming.size >= MAX_VACUUMS) { throw Object.assign(new Error(`Already vacuuming ${MAX_VACUUMS} tables, try again later`), { statusCode: 409 }); }
+    this.#vacuuming.add(target);
+    this.pool.query(`VACUUM (ANALYZE) ${target}`).catch((err) => {
+      console.log(`ERROR - Postgres vacuum of ${ArkimeUtil.sanitizeStr(target)} failed:`, ArkimeUtil.sanitizeLine(err.message));
+    }).finally(() => { this.#vacuuming.delete(target); });
     return true;
   }
 

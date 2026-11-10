@@ -29,9 +29,9 @@ SPDX-License-Identifier: Apache-2.0
         :desc="query.desc"
         :sort-field="query.sortField"
         :no-results-msg="$t('stats.dbTables.noResults')"
-        page="dbTables"
-        table-state-name="dbTablesCols"
-        table-widths-state-name="dbTablesColWidths"
+        :page="tab"
+        :table-state-name="tab + 'Cols'"
+        :table-widths-state-name="tab + 'ColWidths'"
         table-classes="text-end small mt-2">
         <template #actions="item">
           <span
@@ -85,6 +85,11 @@ export default {
   emits: ['errored', 'confirm'],
   props: {
     db: {
+      type: String,
+      required: true
+    },
+    // the tab, which names the saved table state as each db has its own columns
+    tab: {
       type: String,
       required: true
     },

@@ -436,8 +436,8 @@ app.get(
 
 // stats apis - no auth -------------------------------------------------------
 app.use(['/api/eshealth', '/api/esstats', '/api/esindices', '/api/estasks', '/api/esadmin', '/api/esshards', '/api/esrecovery', '/eshealth.json', '/esstats.json'], (req, res, next) => {
-  // cancelwith cancels a user's own search, which a non ES sessions db does itself
-  if (internals.hasEs || /^\/[^/]+\/cancelwith$/.test(req.path)) { return next(); }
+  // cancelwith cancels a user's own search, which a non ES sessions db that can does itself
+  if (internals.hasEs || (Db.cancelsSearches() && /^\/[^/]+\/cancelwith$/.test(req.path))) { return next(); }
   return res.serverError(404, 'No OpenSearch/Elasticsearch is configured');
 });
 

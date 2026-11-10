@@ -756,9 +756,12 @@ Db.search = async (index, query, options) => {
   }
 };
 
+// Whether the sessions db cancels a search itself, without OpenSearch/Elasticsearch tasks
+Db.cancelsSearches = () => typeof internals.sessionsImpl?.cancelByOpaqueId === 'function';
+
 Db.cancelByOpaqueId = async (cancelId, cluster) => {
   // Searches run on the sessions db, a non ES one cancels them itself
-  if (internals.sessionsImpl?.cancelByOpaqueId) {
+  if (Db.cancelsSearches()) {
     if (!await internals.sessionsImpl.cancelByOpaqueId(cancelId)) {
       throw new Error('Cancel ID not found, cannot cancel the query');
     }

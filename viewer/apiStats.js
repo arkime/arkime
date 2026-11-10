@@ -1054,7 +1054,7 @@ class StatsAPIs {
    * @param {string} db - The db, sessions, cluster or users.
    * @param {string} id - The table id from /api/db/:db/tables.
    * @param {string} action - optimize or vacuum, the ones the db supports.
-   * @returns {boolean} success - Whether the action ran (an optimize is only started).
+   * @returns {boolean} success - Whether the action ran (an optimize or vacuum is only started).
    * @returns {string} text - The success/error message to (optionally) display to the user.
    */
   static async dbTableAction (req, res) {
@@ -1070,7 +1070,7 @@ class StatsAPIs {
       if (!await impl.adminTableAction(req.params.id, action)) {
         return res.serverError(404, 'Table not found');
       }
-      return res.json({ success: true, text: `${action} ${action === 'optimize' ? 'started' : 'done'}` });
+      return res.json({ success: true, text: `${action} ${action === 'drop' ? 'done' : 'started'}` });
     } catch (err) {
       if (err.statusCode === 409) { return res.serverError(409, err.message); }
       console.log(`ERROR - ${req.method} /api/db/%s/tables/%s %s`, ArkimeUtil.sanitizeStr(req.params.db), ArkimeUtil.sanitizeStr(req.params.id), action, util.inspect(err, false, 50));
