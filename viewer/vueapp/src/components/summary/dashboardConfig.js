@@ -2,7 +2,7 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, isPercentileAgg, COMPARES, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, MAX_FIELDS, TREE_DEPTHS, DEFAULT_TREE_DEPTH, slotMetrics } from './widgets/viewModes';
+import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, isPercentileAgg, metricAggsFor, hasOrder, hasLevels, allowsBucketInterval, COMPARES, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, MAX_FIELDS, TREE_DEPTHS, DEFAULT_TREE_DEPTH, slotMetrics } from './widgets/viewModes';
 import FieldService from '../search/FieldService';
 import { VARIABLE_NAME_RE, CONTROL_TYPES } from './widgets/dashboardVariables';
 import Utils from '../utils/utils';
@@ -240,6 +240,45 @@ const DEFAULT_SPIGRAPH_METRIC2 = 'network.bytesHisto';
 export const widgetIsGraph = (w) => GRAPH_VIEW_MODES.includes(w?.viewMode) &&
   (SPLIT_GRAPH_VIEW_MODES.includes(w.viewMode) ? !!w.splitField : (Array.isArray(w.fields) ? w.fields.length > 0 : !!w.field));
 
+/**
+ * True for the graphs drawn from the hierarchy endpoint, which only counts
+ * sessions: a split or nested pie, a split waffle, a nested treemap (the
+ * dashboard and SPI Graph both draw them that way).
+ */
+export const graphIsHierarchyFed = (g) => {
+  const nested = Array.isArray(g?.fields) && g.fields.length > 1;
+  return (g?.viewMode === 'pie' && (!!g.splitField || nested)) || (g?.viewMode === 'waffle' && !!g.splitField) || (g?.viewMode === 'treemap' && nested);
+};
+
+/**
+ * True when SPI Graph draws the graph with the dashboard's own widget: its
+ * settings are the summary endpoint's (a metric the values are sized by, an
+ * aggregation, Top/Bottom order, a bucket interval, a table's metric columns
+ * and levels), which SPI Graph's own charts of session counts can't show.
+ */
+export const graphDrawnAsWidget = (graph) => {
+  const g = normalizeWidget(graph || {});
+  if (!g.fields.length || graphIsHierarchyFed(g)) { return false; }
+  const ordered = g.order === 'asc' || g.orderBy === 'key';
+  const metric = g.metricType !== 'sessions';
+  switch (g.viewMode) {
+  case 'bar':
+  case 'pie':
+  case 'tagcloud':
+  case 'waffle':
+    return metric || ordered || g.bucketInterval > 0;
+  case 'table':
+    return metric || ordered || g.bucketInterval > 0 || g.metrics.some(m => m !== 'sessions') || g.gaugeWarn > 0 || g.gaugeCrit > 0;
+  case 'treemap':
+    return metric;
+  case 'combo':
+  case 'scatter':
+    return ordered || g.metricAgg !== 'sum';
+  default:
+    return false;
+  }
+};
+
 /** The saved-graph data of a widget (normalized, layout and title dropped). */
 export const graphFromWidget = (w) => {
   const n = normalizeWidget(w || {});
@@ -271,6 +310,15 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
   if (!viewMode) { return null; }
   // the timeline and heatmap can draw a percentile of their metric (?metricAgg=p95)
   const percentile = (type === 'default' || type === 'heatmap') && isPercentileAgg(query.metricAgg) ? query.metricAgg : undefined;
+  // the settings every type keeps in the url the same way, each only for the
+  // types that have it (the url keeps the others' while the type is changed)
+  const shared = (vm) => ({
+    ...(hasOrder(vm) ? { order: query.order === 'asc' ? 'asc' : 'desc', orderBy: query.orderBy === 'key' ? 'key' : 'value' } : {}),
+    ...(allowsBucketInterval(vm) ? { bucketInterval: nonNeg(query.bucketInterval) } : {}),
+    ...(hasLevels(vm) ? { gaugeWarn: nonNeg(query.warn), gaugeCrit: nonNeg(query.crit) } : {})
+  });
+  // a metric's aggregation, for the types that take one other than a sum
+  const aggOf = (vm, metrics) => (metrics.some(m => m && m !== 'sessions') && metricAggsFor(vm).includes(query.metricAgg) ? query.metricAgg : 'sum');
   const subFields = str(query.subFields).split(',').filter(Boolean);
   const exp = str(query.exp) || str(query.field);
   // a <dbField>Histo key back to its field exp (undefined for sessionsHisto)
@@ -289,10 +337,12 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
       splitLength: SPLIT_LENGTHS.includes(size) ? size : (size > 10 ? 10 : 5),
       metricType: histoMetric(query.graphType) || 'sessions',
       ...(percentile && histoMetric(query.graphType) ? { metricAgg: percentile } : {}),
-      // SPI Graph's percent layout is the widget's percent y axis, an area's
-      // overlaid layout the widget's grouped one
-      ...((type === 'default' || type === 'area') && query.timelineMode === 'percent' ? { yScale: 'percent' } : {}),
-      ...(type === 'area' ? { barMode: query.timelineMode === 'overlaid' ? 'grouped' : 'stacked' } : {}),
+      // SPI Graph's percent layout is the widget's percent y axis, its
+      // overlaid layout the widget's grouped one (always lines)
+      ...((type === 'default' || type === 'area') ? { yScale: query.timelineMode === 'percent' ? 'percent' : query.yScale === 'log' ? 'log' : 'linear' } : {}),
+      ...((type === 'default' || type === 'area') ? { barMode: query.timelineMode === 'overlaid' ? 'grouped' : 'stacked' } : {}),
+      ...(type === 'default' ? { seriesType: query.timelineMode === 'overlaid' || query.seriesType === 'lines' ? 'lines' : 'bars' } : {}),
+      ...shared(viewMode),
       expression: str(expression),
       view: str(query.view)
     });
@@ -307,6 +357,7 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     fields = exp ? [exp] : [];
     overrides = {
       splitField: subFields[0] || '',
+      splitLength: SPLIT_LENGTHS.includes(int(query.splitLength)) ? int(query.splitLength) : 5,
       barMode: query.barMode === 'grouped' ? 'grouped' : 'stacked',
       orientation: query.barOrientation === 'horizontal' ? 'horizontal' : 'vertical'
     };
@@ -360,10 +411,22 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     const second = histoMetric(str(query[type === 'combo' ? 'lineMetric' : 'yMetric']) || DEFAULT_SPIGRAPH_METRIC2) || 'sessions';
     const metrics = [first, second];
     if (type === 'scatter') { metrics.push(str(query.sizeMetric) ? (histoMetric(query.sizeMetric) || 'sessions') : ''); }
-    overrides = { metrics, metricType: first, sortMetric: first };
+    overrides = { metrics, metricType: first, sortMetric: first, metricAgg: aggOf(viewMode, metrics) };
     if (type === 'scatter' && query.yScale === 'log') { overrides.yScale = 'log'; }
   }
   if (!fields.length || !fields[0]) { return null; }
+  const mode = overrides.viewMode || viewMode;
+  if (mode === 'table') {
+    // a table's metric columns and the one it ranks by are field exps
+    const metrics = str(query.metrics).split(',').filter(Boolean).slice(0, 4);
+    const sortMetric = str(query.sortMetric) || histoMetric(query.graphType) || 'sessions';
+    overrides = { ...overrides, metrics: metrics.length ? metrics : (sortMetric !== 'sessions' ? [sortMetric] : []), sortMetric, metricType: sortMetric };
+    overrides.metricAgg = aggOf(mode, [sortMetric, ...overrides.metrics]);
+  } else if (['bar', 'pie', 'tagcloud', 'waffle', 'treemap'].includes(mode) && !graphIsHierarchyFed({ viewMode: mode, fields, splitField: overrides.splitField })) {
+    // the metric the values are sized by, a <dbField>Histo key like the heatmap's
+    const metric = histoMetric(query.graphType) || 'sessions';
+    overrides = { ...overrides, metricType: metric, metricAgg: aggOf(mode, [metric]) };
+  }
   // connections' limit is its session sample size, a url param of its own
   const limit = int((type === 'connections' || type === 'tree') ? query.connectionsLength : query.size);
   return graphFromWidget({
@@ -373,6 +436,7 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     length: limit > 0 ? limit : defaultLength(viewMode),
     expression: str(expression),
     view: str(query.view),
+    ...shared(mode),
     ...overrides
   });
 };
@@ -389,11 +453,23 @@ const histoKey = (metricType) => {
  */
 export const spigraphQueryFromGraph = (graph) => {
   const g = normalizeWidget(graph || {});
-  // a summed metric ranks SPI Graph; other aggregations have no equivalent
-  const histo = histoKey(g.metricType);
-  const graphType = g.metricAgg === 'sum' && histo !== 'sessionsHisto' ? histo : undefined;
+  const mode = g.viewMode;
+  // the metric the values are ranked and sized by; the hierarchy endpoint's
+  // graphs only count sessions
+  const histo = graphIsHierarchyFed(g) ? 'sessionsHisto' : histoKey(g.metricType);
+  const graphType = histo !== 'sessionsHisto' ? histo : undefined;
   // SPI Graph draws a timeline's or heatmap's percentile of its metric too
   const metricAgg = (g.viewMode === 'timeline' || g.viewMode === 'heatmap') && isPercentileAgg(g.metricAgg) && histo !== 'sessionsHisto' ? g.metricAgg : undefined;
+  // any other aggregation of a metric, for the types that take one
+  const aggOf = (metrics) => (g.metricAgg !== 'sum' && !graphIsHierarchyFed(g) && metrics.some(m => m && m !== 'sessions') && metricAggsFor(mode).includes(g.metricAgg) ? g.metricAgg : undefined);
+  // the settings every type keeps in the url the same way
+  const shared = {
+    order: hasOrder(mode) && g.order === 'asc' ? 'asc' : undefined,
+    orderBy: hasOrder(mode) && g.orderBy === 'key' ? 'key' : undefined,
+    bucketInterval: allowsBucketInterval(mode) && g.bucketInterval > 0 ? g.bucketInterval : undefined,
+    warn: hasLevels(mode) && g.gaugeWarn > 0 ? g.gaugeWarn : undefined,
+    crit: hasLevels(mode) && g.gaugeCrit > 0 ? g.gaugeCrit : undefined
+  };
   if (SPLIT_GRAPH_VIEW_MODES.includes(g.viewMode)) {
     // SPI Graph's Timeline (or Time of day) of the split field; its smallest
     // Max Elements is 5, so a 3 series split opens with 5. A widget's split
@@ -401,19 +477,25 @@ export const spigraphQueryFromGraph = (graph) => {
     // The metric is always named (as for the heatmap): left out, SPI Graph
     // would draw whichever one it showed last
     if (!g.splitField) { return null; }
-    const q = { exp: g.splitField, size: Math.max(5, g.splitLength), view: g.view || undefined, graphType: histo, spiGraphType: g.viewMode === 'timeline' ? 'default' : g.viewMode };
-    if (g.viewMode === 'timeline') { q.timelineMode = g.yScale === 'percent' && !metricAgg ? 'percent' : 'stacked'; }
+    const q = { ...shared, exp: g.splitField, size: Math.max(5, g.splitLength), view: g.view || undefined, graphType: histo, spiGraphType: g.viewMode === 'timeline' ? 'default' : g.viewMode };
+    // the timeline's bars or lines are always named too, the page would
+    // otherwise draw whichever the user last picked
+    if (g.viewMode === 'timeline') {
+      q.timelineMode = g.yScale === 'percent' && !metricAgg ? 'percent' : g.barMode === 'grouped' ? 'overlaid' : 'stacked';
+      q.seriesType = g.barMode === 'grouped' ? 'lines' : g.seriesType;
+    }
     if (metricAgg) { q.metricAgg = metricAgg; }
     // an area is stacked unless it is a percent or an overlaid one
     if (g.viewMode === 'area') { q.timelineMode = g.yScale === 'percent' ? 'percent' : g.barMode === 'grouped' ? 'overlaid' : undefined; }
+    if (g.viewMode !== 'timeofday' && g.yScale === 'log') { q.yScale = 'log'; }
     return q;
   }
   const fields = g.fields.length ? g.fields : (g.field ? [g.field] : []);
   if (!fields.length) { return null; }
-  const base = { exp: fields[0], size: g.length, view: g.view || undefined, graphType };
+  const base = { ...shared, exp: fields[0], size: g.length, view: g.view || undefined, graphType, metricAgg: aggOf([g.metricType]) };
   switch (g.viewMode) {
   case 'bar':
-    return { ...base, spiGraphType: 'bar', subFields: g.splitField || undefined, barMode: g.barMode, barOrientation: g.orientation === 'horizontal' ? 'horizontal' : undefined };
+    return { ...base, spiGraphType: 'bar', subFields: g.splitField || undefined, splitLength: g.splitField && g.splitLength !== 5 ? g.splitLength : undefined, barMode: g.barMode, barOrientation: g.orientation === 'horizontal' ? 'horizontal' : undefined };
   case 'pie':
     // a split pie is SPI Graph's split pie mode: its first field (the split)
     // draws one pie per value of the fields after it
@@ -429,17 +511,28 @@ export const spigraphQueryFromGraph = (graph) => {
       return { ...base, exp: g.splitField, spiGraphType: 'waffle', subFields: fields[0], pieCount: g.splitLength, other: g.other ? 'true' : undefined };
     }
     return { ...base, spiGraphType: 'waffle', other: g.other ? 'true' : undefined };
-  case 'treemap':
-  case 'sankey':
-    return { ...base, spiGraphType: g.viewMode, subFields: fields.slice(1).join(',') || undefined };
   case 'table':
-    // each field's own top values are SPI Graph's unique table
-    return { ...base, spiGraphType: 'table', subFields: fields.slice(1).join(',') || undefined, tableMode: fields.length > 1 ? 'unique' : undefined };
+    // each field's own top values are SPI Graph's unique table; its metric
+    // columns and the one it ranks by are field exps
+    return {
+      ...base,
+      spiGraphType: 'table',
+      subFields: fields.slice(1).join(',') || undefined,
+      tableMode: fields.length > 1 ? 'unique' : undefined,
+      // left out when they are just the one it ranks by
+      metrics: g.metrics.join(',') !== (g.sortMetric !== 'sessions' ? g.sortMetric : '') ? (g.metrics.join(',') || undefined) : undefined,
+      sortMetric: g.sortMetric !== 'sessions' ? g.sortMetric : undefined,
+      graphType: histoKey(g.sortMetric) !== 'sessionsHisto' ? histoKey(g.sortMetric) : undefined,
+      metricAgg: aggOf([g.sortMetric, ...g.metrics])
+    };
   case 'intersection':
     return { ...base, spiGraphType: 'table', subFields: fields.slice(1).join(',') || undefined };
   case 'heatmap':
     // always named, so the page doesn't keep its last intensity
     return { ...base, spiGraphType: 'heatmap', graphType: histo, metricAgg };
+  case 'treemap':
+  case 'sankey':
+    return { ...base, spiGraphType: g.viewMode, subFields: fields.slice(1).join(',') || undefined };
   case 'matrix':
   case 'mosaic':
     return { ...base, spiGraphType: g.viewMode, subFields: fields[1] || undefined };
@@ -447,7 +540,7 @@ export const spigraphQueryFromGraph = (graph) => {
   case 'scatter': {
     // every metric is named, as for the heatmap; SPI Graph draws sums
     const [first, second, size] = slotMetrics(g);
-    const q = { ...base, spiGraphType: g.viewMode, graphType: histoKey(first) };
+    const q = { ...base, spiGraphType: g.viewMode, graphType: histoKey(first), metricAgg: aggOf([first, second, size]) };
     if (g.viewMode === 'combo') {
       q.lineMetric = histoKey(second);
     } else {
@@ -470,39 +563,34 @@ export const spigraphQueryFromGraph = (graph) => {
   }
 };
 
-// the graph keys SPI Graph shows and lets the user change (a heatmap's
-// metricType is its intensity); it can't show the others (metric columns,
-// aggregation, sort metric, order, a bar's split length)
-const SPIGRAPH_KEYS = ['field', 'fields', 'viewMode', 'splitField', 'barMode', 'orientation', 'other', 'length', 'expression', 'view'];
+/** True when SPI Graph shows two graphs the same way (their urls and searches match). */
+export const sameSpigraphGraph = (a, b) => {
+  const shown = (g) => JSON.stringify([spigraphQueryFromGraph(g), normalizeWidget(g || {}).expression]);
+  return shown(a) === shown(b);
+};
+
+// what the url can't hold exactly: a timeline of 3 series opens with 5 (Max
+// Elements' smallest), one of 20 reads back as 10, and its limit isn't shown
+const LOSSY_KEYS = ['splitLength', 'length'];
 
 /**
  * The graph SPI Graph shows, as saved-graph data: what the page shows on top of
- * the saved graph it loaded, if any, so the settings it can't show survive a
- * save over that graph.
+ * the saved graph it loaded, if any. The saved graph keeps compare, which no
+ * graph SPI Graph draws can have, and a value the url can't hold exactly while
+ * the page still shows the graph the same with it.
  * @param {object|null} saved - the loaded saved graph's data
  * @param {object|null} page - graphFromSpigraphQuery for the page (null: no graph)
  */
 export const graphOnSpigraph = (saved, page) => {
   if (!page) { return null; }
   if (!saved) { return page; }
-  // a heatmap's intensity and a timeline's series metric are on the page, as
-  // are a combo's or scatter's metrics and a scatter's scale
-  // (and a timeline's or heatmap's sum or percentile of it)
-  let keys = (page.viewMode === 'heatmap' || SPLIT_GRAPH_VIEW_MODES.includes(page.viewMode)) ? [...SPIGRAPH_KEYS, 'metricType', 'metricAgg'] : SPIGRAPH_KEYS;
-  if (page.viewMode === 'combo' || page.viewMode === 'scatter') { keys = [...SPIGRAPH_KEYS, 'metricType', 'metrics', 'sortMetric', 'yScale']; }
-  const merged = { ...saved };
-  for (const key of keys) { merged[key] = page[key]; }
-  // a split pie's (waffle's) count and a timeline's series count are on the
-  // page too (a bar's split length isn't), as is a timeline's percent layout
-  if (((page.viewMode === 'pie' || page.viewMode === 'waffle') && page.splitField) || SPLIT_GRAPH_VIEW_MODES.includes(page.viewMode)) { merged.splitLength = page.splitLength; }
-  // an area's stacked or overlaid layout is on the page
-  if (page.viewMode === 'area') { merged.barMode = page.barMode; }
-  // SPI Graph can show a percent timeline, not a log one: its layout sets or
-  // clears percent and leaves a saved log axis alone
-  if (page.viewMode === 'timeline' || page.viewMode === 'area') {
-    if (page.yScale === 'percent') { merged.yScale = 'percent'; } else if (saved.yScale === 'percent') { merged.yScale = 'linear'; }
+  let merged = graphFromWidget({ ...saved, ...page, compare: saved.compare });
+  const kept = graphFromWidget(saved);
+  for (const key of LOSSY_KEYS) {
+    const withSaved = { ...merged, [key]: kept[key] };
+    if (kept[key] !== merged[key] && sameSpigraphGraph(withSaved, merged)) { merged = withSaved; }
   }
-  return graphFromWidget(merged);
+  return merged;
 };
 
 // map v7-only field view modes to the closest mode a v6 viewer can render

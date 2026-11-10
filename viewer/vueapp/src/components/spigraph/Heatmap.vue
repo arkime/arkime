@@ -120,6 +120,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import moment from 'moment-timezone';
 import { metricHistoKeys, parsePercentileKey } from '../visualizations/metrics.js';
+import FieldService from '../search/FieldService';
 import { heatmapInterpolator } from '../summary/widgets/chartColors';
 import { commaString, timezoneDateString, humanReadableBytes, humanReadableNumber } from '@common/vueFilters.js';
 
@@ -164,7 +165,7 @@ export default {
       // a percentile of a metric reads as "P95 Bytes"
       const pct = parsePercentileKey(this.metric);
       const dbField = pct ? pct.dbField : this.metric.slice(0, -5);
-      const label = this.timelineDataFilters.find(f => f.dbField === dbField)?.friendlyName || (pct ? dbField : this.metric);
+      const label = this.timelineDataFilters.find(f => f.dbField === dbField)?.friendlyName || FieldService.getField(dbField)?.friendlyName || (pct ? dbField : this.metric);
       return pct ? `${this.$t(`sessions.summary.agg.${pct.agg}`)} ${label}` : label;
     },
     // legend bar gradient matching the cell palette (empty -> CSS accent gradient)

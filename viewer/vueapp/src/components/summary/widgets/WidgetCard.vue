@@ -2,8 +2,9 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
-Shared chrome for non-field dashboard widgets: title, settings menu
-(Edit / optional Export / Remove), and loading / error / empty states.
+Shared chrome for dashboard widgets: title (a link to the widget's full
+page), menu (Edit / Open / Save as graph / Export / Remove), and loading /
+error / empty states.
 The widget content is provided via the default slot.
 -->
 <template>
@@ -11,8 +12,11 @@ The widget content is provided via the default slot.
   <div
     v-if="loading"
     class="widget-card loading-widget"
+    :class="{ 'widget-card--bare': bare }"
     aria-hidden="true">
-    <h4 class="loading-title">
+    <h4
+      v-if="!bare"
+      class="loading-title">
       {{ shownTitle }}
     </h4>
     <div class="bouncing-dots">
@@ -22,13 +26,27 @@ The widget content is provided via the default slot.
     </div>
   </div>
 
-  <!-- Error state -->
   <div
-    v-else-if="error"
-    class="widget-card widget-error widget-loaded">
-    <!-- keep Edit/Remove reachable so a persistently-erroring widget
-         (bad field/expression) can still be fixed or removed -->
-    <div class="widget-header d-flex align-center mb-1">
+    v-else
+    class="widget-card widget-loaded"
+    :class="{ 'widget-error': error, 'widget-card--bare': bare }">
+    <!-- SPI Graph draws the widget as its page: no title or menu, just the export -->
+    <div
+      v-if="bare"
+      class="d-flex justify-end">
+      <v-btn
+        v-if="!error && hasData && showExport"
+        variant="outlined"
+        size="small"
+        density="comfortable"
+        prepend-icon="mdi-download"
+        @click="$emit('export')">
+        {{ exportLabel || $t('sessions.summary.downloadPNG') }}
+      </v-btn>
+    </div>
+    <div
+      v-else
+      class="widget-header d-flex align-center mb-1">
       <div class="widget-heading d-flex align-baseline">
         <v-icon
           icon="mdi-drag-vertical"
@@ -37,8 +55,16 @@ The widget content is provided via the default slot.
           :title="$t('sessions.summary.dragToReorder')" />
         <h4
           class="widget-title"
-          :title="shownTitle">
-          {{ shownTitle }}
+          :title="link ? `${shownTitle} (${openLabel})` : shownTitle">
+          <router-link
+            v-if="link"
+            :to="link"
+            class="widget-title-link">
+            {{ shownTitle }}
+          </router-link>
+          <template v-else>
+            {{ shownTitle }}
+          </template>
         </h4>
         <span
           v-if="infoItems.length"
@@ -62,23 +88,45 @@ The widget content is provided via the default slot.
           </v-tooltip>
         </span>
       </div>
-      <div class="widget-actions no-wrap d-flex align-center">
-        <v-btn
-          v-for="a in actions"
-          :key="a.key"
-          variant="outlined"
-          size="large"
-          icon
-          :to="a.to"
-          :title="a.title"
-          @click="a.run && a.run()">
-          <v-icon
-            :icon="a.icon"
-            :class="{ 'text-danger': a.danger }" />
-        </v-btn>
-      </div>
+      <v-menu location="bottom end">
+        <template #activator="{ props: menuProps }">
+          <v-btn
+            v-bind="menuProps"
+            variant="text"
+            size="small"
+            density="comfortable"
+            icon
+            class="widget-menu-btn"
+            :title="$t('sessions.summary.widgetMenu')"
+            :aria-label="$t('sessions.summary.widgetMenu')">
+            <v-icon icon="mdi-dots-vertical" />
+          </v-btn>
+        </template>
+        <v-list
+          density="compact"
+          class="widget-menu">
+          <template
+            v-for="a in actions"
+            :key="a.key">
+            <v-divider v-if="a.danger" />
+            <v-list-item
+              :to="a.to"
+              :class="{ 'text-error': a.danger }"
+              @click="a.run && a.run()">
+              <v-icon
+                :icon="a.icon"
+                class="me-2" />
+              {{ a.title }}
+            </v-list-item>
+          </template>
+        </v-list>
+      </v-menu>
     </div>
-    <div class="error-content">
+
+    <!-- an erroring widget keeps its menu, so it can still be fixed or removed -->
+    <div
+      v-if="error"
+      class="error-content">
       <v-icon
         icon="mdi-alert-circle"
         size="large"
@@ -99,65 +147,8 @@ The widget content is provided via the default slot.
         {{ $t('sessions.summary.retryField') }}
       </v-btn>
     </div>
-  </div>
-
-  <!-- Normal content -->
-  <div
-    v-else
-    class="widget-card widget-loaded">
-    <div class="widget-header d-flex align-center mb-1">
-      <div class="widget-heading d-flex align-baseline">
-        <v-icon
-          icon="mdi-drag-vertical"
-          size="large"
-          class="widget-drag"
-          :title="$t('sessions.summary.dragToReorder')" />
-        <h4
-          class="widget-title"
-          :title="shownTitle">
-          {{ shownTitle }}
-        </h4>
-        <span
-          v-if="infoItems.length"
-          class="widget-info-icon ps-1"
-          tabindex="0">
-          <v-icon
-            icon="mdi-information-outline"
-            class="text-medium-emphasis" />
-          <v-tooltip
-            activator="parent"
-            location="bottom end"
-            open-delay="100"
-            max-width="340">
-            <div
-              v-for="row in infoItems"
-              :key="row.label"
-              class="widget-info-row">
-              <span class="widget-info-label">{{ row.label }}:</span>
-              <span class="widget-info-value">{{ row.value }}</span>
-            </div>
-          </v-tooltip>
-        </span>
-      </div>
-      <div class="widget-actions no-wrap d-flex align-center">
-        <v-btn
-          v-for="a in actions"
-          :key="a.key"
-          variant="outlined"
-          size="large"
-          icon
-          :to="a.to"
-          :title="a.title"
-          @click="a.run && a.run()">
-          <v-icon
-            :icon="a.icon"
-            :class="{ 'text-danger': a.danger }" />
-        </v-btn>
-      </div>
-    </div>
-
     <div
-      v-if="hasData"
+      v-else-if="hasData"
       class="widget-body"
       :class="{ 'widget-body--scroll': scroll }">
       <slot />
@@ -184,6 +175,8 @@ import { substituteTitle } from './dashboardVariables';
 
 // the dashboard provides this; it opens the save-graph dialog for a widget
 const saveWidgetGraph = inject('saveWidgetGraph', null);
+// SPI Graph provides this: the widget is the page's graph, not a dashboard card
+const bare = inject('widgetBare', false);
 const store = useStore();
 const { t } = useI18n();
 
@@ -209,12 +202,14 @@ const props = defineProps({
 
 const emit = defineEmits(['edit', 'remove', 'export', 'retry']);
 
-// the header's action buttons; an erroring widget keeps only open, save,
-// edit and remove
+// the full page a widget opens on: SPI Graph, or Sessions for the session-wide ones
+const openLabel = computed(() => t(props.link?.path === '/sessions' ? 'sessions.summary.openInSessions' : 'sessions.summary.openInSpigraph'));
+
+// the menu's items; an erroring widget has no export
 const actions = computed(() => [
-  props.link && { key: 'open', icon: 'mdi-open-in-new', title: t('sessions.summary.openFullPage'), to: props.link },
-  props.graph && saveWidgetGraph && { key: 'save', icon: 'mdi-bookmark-plus-outline', title: t('sessions.summary.widget.saveAsGraph'), run: () => saveWidgetGraph(props.graph) },
   { key: 'edit', icon: 'mdi-pencil', title: t('sessions.summary.editWidget'), run: () => emit('edit') },
+  props.link && { key: 'open', icon: 'mdi-open-in-new', title: openLabel.value, to: props.link },
+  props.graph && saveWidgetGraph && { key: 'save', icon: 'mdi-bookmark-plus-outline', title: t('sessions.summary.widget.saveAsGraph'), run: () => saveWidgetGraph(props.graph) },
   !props.error && props.showExport && { key: 'export', icon: 'mdi-download', title: props.exportLabel || t('sessions.summary.downloadPNG'), run: () => emit('export') },
   { key: 'remove', icon: 'mdi-close', title: t('sessions.summary.removeWidget'), run: () => emit('remove'), danger: true }
 ].filter(Boolean));
@@ -230,12 +225,29 @@ const shownTitle = computed(() => substituteTitle(props.title, store.state.dashb
   min-width: 0;
 }
 
-/* the buttons center on the title's line, not on the row its bottom margin
-   makes taller: (28.8px line - 32px button) / 2; 6px apart */
-.widget-actions {
+/* dim until hovered, like the reorder grip */
+.widget-menu-btn {
   align-self: flex-start;
-  margin-top: -2px;
-  gap: 6px;
+  flex-shrink: 0;
+  margin-right: -6px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+.widget-menu-btn:hover,
+.widget-menu-btn:focus-visible,
+.widget-menu-btn[aria-expanded="true"] {
+  opacity: 1;
+}
+
+/* the title opens the widget's full page; it reads as a title until hovered */
+.widget-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.widget-title-link:hover,
+.widget-title-link:focus-visible {
+  color: rgb(var(--v-theme-foreground-accent));
+  text-decoration: underline;
 }
 
 /* reorder grip: a dots handle in the header, left of the title. Always present
@@ -298,6 +310,12 @@ const shownTitle = computed(() => substituteTitle(props.title, store.state.dashb
   flex-direction: column;
   height: 100%;
   min-height: 0; /* height comes from the grid row span (160px units) */
+}
+
+.widget-card--bare {
+  background: none;
+  box-shadow: none;
+  padding: 0;
 }
 
 .widget-body {

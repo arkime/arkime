@@ -79,6 +79,7 @@ SPDX-License-Identifier: Apache-2.0
         :split-field-config="barSplitField"
         :bar-mode="barMode"
         :orientation="barOrientation"
+        :thresholds="thresholds"
         :width="barWidth"
         :height="barHeight"
         metric-type="sessions"
@@ -617,6 +618,16 @@ export default {
       type: Number,
       default: 5
     },
+    // bar: how many of the second field's values each bar is split by
+    splitLength: {
+      type: Number,
+      default: 5
+    },
+    // bar: reference lines at the warning and critical levels, [{ value, color }]
+    thresholds: {
+      type: Array,
+      default: () => []
+    },
     baseField: {
       type: String,
       default: ''
@@ -739,6 +750,9 @@ export default {
     },
     pieCount: function () {
       if ((this.spiGraphType === 'pie' && this.splitPie) || this.splitWaffle) { this.loadData(); }
+    },
+    splitLength: function () {
+      if (this.spiGraphType === 'bar' && this.fieldTypeaheadList.length) { this.loadData(); }
     },
     showOther: function (show) {
       this.closeInfo();
@@ -939,9 +953,13 @@ export default {
      */
     hierarchyShape: function () {
       const size = this.query.size;
-      const sizes = (this.spiGraphType === 'pie' && this.splitPie) || this.splitWaffle
-        ? [this.pieCount, ...this.fieldTypeaheadList.map(() => size)].join(',')
-        : '';
+      let sizes = '';
+      if ((this.spiGraphType === 'pie' && this.splitPie) || this.splitWaffle) {
+        sizes = [this.pieCount, ...this.fieldTypeaheadList.map(() => size)].join(',');
+      } else if (this.spiGraphType === 'bar' && this.fieldTypeaheadList.length) {
+        // a bar's segments are cut to its split length
+        sizes = [size, this.splitLength].join(',');
+      }
       return { other: !!this.wantsOther, sizes };
     },
     showBarTooltip: function (evt) {

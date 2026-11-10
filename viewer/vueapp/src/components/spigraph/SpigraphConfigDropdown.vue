@@ -193,7 +193,7 @@ import { useI18n } from 'vue-i18n';
 import { createShareableService } from '../users/ShareableService';
 import SummaryConfigSaveModal from '../summary/SummaryConfigSaveModal.vue';
 import AddToDashboardModal from '../summary/AddToDashboardModal.vue';
-import { graphFromWidget, graphOnSpigraph } from '../summary/dashboardConfig';
+import { graphFromWidget, graphOnSpigraph, sameSpigraphGraph } from '../summary/dashboardConfig';
 
 const GraphService = createShareableService('spigraphConfig');
 
@@ -229,11 +229,9 @@ const user = computed(() => store.state.user);
 // the loaded graph's details come from the list, fetched up front when the
 // page starts with a graph in its url
 const loadedGraph = computed(() => (props.loadedGraphId ? graphs.value.find(g => g.id === props.loadedGraphId) || null : null));
-// what the page shows on top of the loaded graph, so the settings SPI Graph
-// can't show (metric columns, aggregation, order...) aren't lost on a save
+// what the page shows on top of the loaded graph
 const pageGraph = computed(() => graphOnSpigraph(loadedGraph.value?.data || null, props.currentGraph));
-const sameGraph = (a, b) => JSON.stringify(graphFromWidget(a)) === JSON.stringify(graphFromWidget(b));
-const dirty = computed(() => !!(loadedGraph.value && pageGraph.value && !sameGraph(loadedGraph.value.data, pageGraph.value)));
+const dirty = computed(() => !!(loadedGraph.value && pageGraph.value && !sameSpigraphGraph(loadedGraph.value.data, pageGraph.value)));
 onMounted(() => { if (props.loadedGraphId) { loadGraphs(); } });
 
 const filteredGraphs = computed(() => {

@@ -329,6 +329,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           drop a partition, vacuum a table and kill a query. PG Tables shows what is cached when pg_buffercache is installed
   - #4443 With no OpenSearch/Elasticsearch, the health icon and Parliament show the ClickHouse, Postgres or SQLite versions
           and whether they answer, so Parliament no longer reports ES Down for these clusters
+  - #4445 Dashboard widgets have a single menu button instead of a row of icons, the title opens the full page view
+  - #4445 SPI Graph has a settings dialog (gear button) with every option a dashboard widget has, plus sort and refresh
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password
