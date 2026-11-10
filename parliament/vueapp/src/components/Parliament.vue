@@ -573,7 +573,7 @@ SPDX-License-Identifier: Apache-2.0
                   </h5>
                   <v-chip
                     v-if="cluster.type !== 'disabled' && stats[cluster.id]"
-                    :href="`${cluster.url}/stats?statsTab=2`"
+                    :href="`${cluster.url}/stats?statsTab=${stats[cluster.id].db ? 'captureStats' : 2}`"
                     :color="clusterStatusColor(cluster.id)"
                     size="small"
                     variant="flat"
@@ -591,9 +591,9 @@ SPDX-License-Identifier: Apache-2.0
                     <v-tooltip
                       activator="parent"
                       location="top">
-                      <span>{{ $t('parliament.esStatus') }}: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
+                      <span>{{ $t(stats[cluster.id].db ? 'parliament.dbStatus' : 'parliament.esStatus') }}: <strong>{{ stats[cluster.id].healthError || stats[cluster.id].status || 'unreachable' }}</strong></span>
                       <span v-if="stats[cluster.id].esVersion">
-                        <br>{{ $t('parliament.esVersion') }}: <strong>{{ stats[cluster.id].esVersion }}</strong>
+                        <br>{{ $t(stats[cluster.id].db ? 'parliament.dbVersion' : 'parliament.esVersion') }}: <strong>{{ stats[cluster.id].esVersion }}</strong>
                       </span>
                     </v-tooltip>
                   </v-chip>
@@ -680,7 +680,7 @@ SPDX-License-Identifier: Apache-2.0
                     </v-chip>
 
                     <v-chip
-                      v-if="!cluster.hideDataNodes || !cluster.hideTotalNodes"
+                      v-if="!stats[cluster.id].db && (!cluster.hideDataNodes || !cluster.hideTotalNodes)"
                       :id="'dataNodes-' + cluster.id"
                       color="neutral"
                       variant="flat"

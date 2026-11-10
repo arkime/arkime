@@ -339,6 +339,11 @@ class SQLiteConnection {
     return !!this.db.prepare("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?").get(table);
   }
 
+  get dbName () { return 'SQLite'; }
+  async serverVersion () {
+    return this.db.prepare('SELECT sqlite_version() AS v').get().v;
+  }
+
   async close () {
     if (this.db.open) { this.db.close(); }
   }

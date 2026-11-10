@@ -327,6 +327,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4442 Stats has CH Partitions and CH Queries tabs when sessions are in ClickHouse, and PG Tables and PG Queries tabs when
           the cluster or users db is in Postgres: sizes, rows and memory, the running queries, and for dbAdmin optimize or
           drop a partition, vacuum a table and kill a query. PG Tables shows what is cached when pg_buffercache is installed
+  - #4443 With no OpenSearch/Elasticsearch, the health icon and Parliament show the ClickHouse, Postgres or SQLite versions
+          and whether they answer, so Parliament no longer reports ES Down for these clusters
 ## Cont3xt
   - #4075 Redesigned the integrations settings tab
   - Mask integration secret fields that were not declared type=password

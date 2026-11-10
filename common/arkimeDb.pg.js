@@ -835,6 +835,11 @@ class PGConnection {
   // Admin: the Stats tab's running queries, connections to the same url are one db
   // --------------------------------------------------------------------------
   get adminName () { return 'PG'; }
+  get dbName () { return 'Postgres'; }
+  async serverVersion () {
+    const { rows } = await this.pool.query("SELECT current_setting('server_version') AS v");
+    return rows[0].v.split(' ')[0];
+  }
   get adminFields () { return ['elapsed', 'state', 'query', 'dbUser', 'app', 'id']; }
   get adminKey () { return this.#dbKey ?? this.pool; }
 

@@ -1689,6 +1689,11 @@ class DbCHImpl {
   // Admin: the Stats tab's running queries
   // --------------------------------------------------------------------------
   get adminName () { return 'CH'; }
+  get dbName () { return 'ClickHouse'; }
+  async serverVersion () {
+    const res = await this.query('SELECT version() AS v');
+    return String(res?.data?.[0]?.v ?? '');
+  }
   get adminFields () { return ['user', 'elapsed', 'rowsRead', 'bytesRead', 'memory', 'query', 'dbUser', 'cancelled', 'id']; }
 
   // Kill every running query of the search with this <userId>::<cancelId>, true when there were any

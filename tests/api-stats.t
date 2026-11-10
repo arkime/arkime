@@ -1,4 +1,4 @@
-use Test::More tests => 167;
+use Test::More tests => 172;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -68,6 +68,17 @@ my $test1Token = getTokenCookie("test1");
         my $hidden = viewerGet("/api/stats?hide=old");
         is (scalar @{$hidden->{data}}, ($age < 300 ? 1 : 0), "stats.json hide=old with stats $age seconds old");
     }
+
+# eshealth.json reports the other dbs when there is no OpenSearch/Elasticsearch
+SKIP: {
+    skip "eshealth reports OpenSearch/Elasticsearch", 5 if !$ArkimeTest::noEs;
+    my $health = viewerGet("/eshealth.json");
+    is ($health->{status}, "green", "db health status");
+    like ($health->{version}, qr/^ClickHouse \d/, "db health has the ClickHouse version");
+    like ($health->{db}, qr/^ClickHouse/, "db health names the dbs");
+    is ($health->{number_of_data_nodes}, 1, "db health data nodes");
+    is (viewerGet("/api/esstats")->{success}, 0, "esstats still needs OpenSearch/Elasticsearch");
+}
 
 SKIP: {
     skip "the OpenSearch/Elasticsearch admin apis need one", 96 if $ArkimeTest::noEs;
