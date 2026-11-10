@@ -480,7 +480,7 @@ LOCAL void wise_lookup(ArkimeSession_t *session, char *value, int type, uint16_t
 
     ARKIME_LOCK(item);
     WiseItem_t *wi;
-    uint32_t hhash = arkime_string_hash(value);
+    uint32_t hhash = arkime_string_hash_keyed_len(value, nlen);
     HASH_FIND_HASH(wih_, types[type].itemHash, hhash, value, wi);
 
     if (wi) {
@@ -1095,7 +1095,7 @@ void arkime_plugin_init()
 
     int type;
     for (type = 0; type < INTEL_TYPE_SIZE; type++) {
-        HASH_INIT(wih_, types[type].itemHash, arkime_string_hash, wise_item_cmp);
+        HASH_INIT(wih_, types[type].itemHash, arkime_string_hash_keyed, wise_item_cmp);
         DLL_INIT(wil_, &types[type].itemList);
     }
     g_timeout_add_seconds(1, wise_flush, 0);
