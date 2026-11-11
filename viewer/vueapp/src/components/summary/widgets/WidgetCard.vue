@@ -35,12 +35,12 @@ The widget content is provided via the default slot.
       v-if="bare"
       class="d-flex justify-end">
       <v-btn
-        v-if="!error && hasData && showExport"
+        v-if="!error && hasData && (showExport || png)"
         variant="outlined"
         size="small"
         density="comfortable"
         prepend-icon="mdi-download"
-        @click="$emit('export')">
+        @click="runExport">
         {{ exportLabel || $t('sessions.summary.downloadPNG') }}
       </v-btn>
     </div>
@@ -149,6 +149,7 @@ The widget content is provided via the default slot.
     </div>
     <div
       v-else-if="hasData"
+      ref="body"
       class="widget-body"
       :class="{ 'widget-body--scroll': scroll }">
       <slot />
@@ -168,10 +169,12 @@ The widget content is provided via the default slot.
 </template>
 
 <script setup>
-import { inject, computed } from 'vue';
+import { inject, computed, ref } from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import { substituteTitle } from './dashboardVariables';
+import { downloadWidgetPng } from './widgetPng';
+import { themedColor } from '@common/themes/themedColor.js';
 
 // the dashboard provides this; it opens the save-graph dialog for a widget
 const saveWidgetGraph = inject('saveWidgetGraph', null);
@@ -185,7 +188,10 @@ const props = defineProps({
   loading: { type: Boolean, default: false },
   error: { type: String, default: '' },
   hasData: { type: Boolean, default: true },
+  // the widget's own export (a CSV, a chart's PNG) instead of the card's PNG
   showExport: { type: Boolean, default: false },
+  // the card saves what the widget draws as a PNG (false: nothing to save)
+  png: { type: Boolean, default: true },
   exportLabel: { type: String, default: '' },
   noDataMessage: { type: String, default: 'sessions.summary.noDataAvailable' },
   emptyText: { type: String, default: '' },
@@ -205,12 +211,23 @@ const emit = defineEmits(['edit', 'remove', 'export', 'retry']);
 // the full page a widget opens on: SPI Graph, or Sessions for the session-wide ones
 const openLabel = computed(() => t(props.link?.path === '/sessions' ? 'sessions.summary.openInSessions' : 'sessions.summary.openInSpigraph'));
 
+const body = ref(null);
+const runExport = async () => {
+  if (props.showExport) { emit('export'); return; }
+  if (!body.value) { return; }
+  try {
+    await downloadWidgetPng(body.value, shownTitle.value, themedColor('background', '#ffffff'));
+  } catch (err) {
+    console.error('Failed to export widget as PNG', err);
+  }
+};
+
 // the menu's items; an erroring widget has no export
 const actions = computed(() => [
   { key: 'edit', icon: 'mdi-pencil', title: t('sessions.summary.editWidget'), run: () => emit('edit') },
   props.link && { key: 'open', icon: 'mdi-open-in-new', title: openLabel.value, to: props.link },
   props.graph && saveWidgetGraph && { key: 'save', icon: 'mdi-bookmark-plus-outline', title: t('sessions.summary.widget.saveAsGraph'), run: () => saveWidgetGraph(props.graph) },
-  !props.error && props.showExport && { key: 'export', icon: 'mdi-download', title: props.exportLabel || t('sessions.summary.downloadPNG'), run: () => emit('export') },
+  !props.error && props.hasData && (props.showExport || props.png) && { key: 'export', icon: 'mdi-download', title: (props.showExport && props.exportLabel) || t('sessions.summary.downloadPNG'), run: runExport },
   { key: 'remove', icon: 'mdi-close', title: t('sessions.summary.removeWidget'), run: () => emit('remove'), danger: true }
 ].filter(Boolean));
 

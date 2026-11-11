@@ -240,6 +240,7 @@ pre {
 .v-list .v-divider {
   margin: 2px 0 !important;
   border-color: rgb(var(--v-theme-neutral-light)) !important;
+  opacity: 1 !important;
 }
 
 /* v-btn outlined (toggle buttons, btn-toggle radio groups): bridge to

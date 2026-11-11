@@ -7,6 +7,7 @@ fed by the host's global stats chunk (no self-fetch).
 -->
 <template>
   <WidgetCard
+    :png="false"
     :title="displayTitle"
     :has-data="hasData"
     :info-items="infoItems"

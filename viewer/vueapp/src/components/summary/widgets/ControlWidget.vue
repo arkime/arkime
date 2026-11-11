@@ -13,6 +13,7 @@ the slider is let go and text on Enter, so each reloads the dashboard once.
 -->
 <template>
   <WidgetCard
+    :png="false"
     :title="title"
     :loading="loading && !hasBounds && !error && !taken"
     :error="taken || error"

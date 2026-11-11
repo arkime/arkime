@@ -11,6 +11,7 @@ inline before its dashboards.
 -->
 <template>
   <WidgetCard
+    :png="false"
     :title="title"
     :loading="loading"
     :has-data="true"

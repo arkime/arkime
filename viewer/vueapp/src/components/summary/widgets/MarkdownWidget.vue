@@ -10,6 +10,7 @@ into elements and text nodes only, never as HTML.
 -->
 <template>
   <WidgetCard
+    :png="false"
     :title="title"
     :has-data="true"
     :info-items="infoItems"

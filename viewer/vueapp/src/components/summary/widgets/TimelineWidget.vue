@@ -20,6 +20,7 @@ the host.
     :has-data="hasData"
     :info-items="infoItems"
     :link="link"
+    :graph="graphDef"
     @edit="$emit('edit')"
     @remove="$emit('remove')"
     @retry="fetchData">
@@ -77,7 +78,9 @@ const props = defineProps({
   timelineDataFilters: { type: Array, default: () => [] },
   colorScheme: { type: String, default: 'rainbow' },
   infoItems: { type: Array, default: () => [] },
-  link: { type: Object, default: null }
+  link: { type: Object, default: null },
+  // the widget as saved-graph data (null: it can't be saved as one)
+  graphDef: { type: Object, default: null }
 });
 
 defineEmits(['edit', 'remove', 'time-range']);

@@ -118,6 +118,7 @@ SPDX-License-Identifier: Apache-2.0
             :reload-nonce="reloadNonce"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
@@ -232,6 +233,7 @@ SPDX-License-Identifier: Apache-2.0
             :timeline-data-filters="timelineDataFilters"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
             @time-range="onTimeRange"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />

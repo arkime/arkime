@@ -16,9 +16,12 @@ combinations (a column pair per field level, grouped by parent). Count-based.
     :info-items="infoItems"
     :link="link"
     :graph="graphDef"
+    :show-export="hasData"
+    :export-label="$t('sessions.summary.downloadCSV')"
     scroll
     @edit="$emit('edit')"
     @remove="$emit('remove')"
+    @export="exportCSV"
     @retry="fetchData">
     <table
       v-if="hasData"
@@ -67,12 +70,13 @@ combinations (a column pair per field level, grouped by parent). Count-based.
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
 import ArkimeSessionField from '../../sessions/SessionField.vue';
 import FieldService from '../../search/FieldService';
 import { commaString } from '@common/vueFilters.js';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { fetchHierarchy, widgetFields } from './widgetData';
+import { fetchHierarchy, widgetFields, downloadCSV } from './widgetData';
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -105,6 +109,12 @@ const rows = computed(() => tableResults.value.map(r => [...(r.parents || []), {
 const hasData = computed(() => rows.value.length > 0);
 
 const formatNumber = (n) => commaString(n || 0);
+
+const { t } = useI18n();
+const exportCSV = () => {
+  const headers = fieldExps.value.flatMap((exp, i) => [fieldObjs.value[i]?.friendlyName || exp, t('sessions.summary.count')]);
+  downloadCSV(headers, rows.value.map(row => row.flatMap(cell => [cell.name, cell.size])), `arkime-summary-${fieldExps.value.join('-') || 'intersection'}.csv`);
+};
 </script>
 
 <style scoped>
