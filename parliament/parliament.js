@@ -114,6 +114,10 @@ if (ArkimeConfig.regressionTests) {
     const { data } = await Parliament.issues.find({ where: { parliament: Parliament.name } });
     res.json(data.map(h => h.doc));
   });
+  app.get('/regressionTests/loadIssues', async function (req, res) {
+    await loadIssues();
+    res.send('{}');
+  });
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
@@ -302,14 +306,8 @@ class Parliament {
         // a message for esDown and a number for the rest, keyword takes both
         value: 'keyword'
       },
-      es: {
-        create: {
-          settings: esSettings,
-          mappings: {
-            dynamic_templates: [{ string_template: { match_mapping_type: 'string', mapping: { type: 'keyword', ignore_above: 1024 } } }]
-          }
-        }
-      }
+      // parliament_issues is the alias, so db.pl backs it up and restores it
+      es: { create: { version: 'v70', settings: esSettings, mappings: { dynamic: false } } }
     });
     await Parliament.issues.init();
   }
@@ -962,7 +960,18 @@ function processAlerts () {
   }
 }
 
-function formatIssueMessage (cluster, issue) {
+// The display strings come from the type and values, so only those are saved and the strings can be localized
+const ISSUE_STRINGS = ['text', 'title', 'severity', 'message'];
+function addIssueStrings (issue) {
+  const issueType = issueTypes[issue.type];
+  issue.text = issueType.text;
+  issue.title = issueType.name;
+  issue.severity = issueType.severity;
+  issue.message = formatIssueMessage(issue);
+  return issue;
+}
+
+function formatIssueMessage (issue) {
   let message = '';
 
   if (issue.node) { message += `${issue.node} `; }
@@ -1056,7 +1065,7 @@ function findIssue (clusterId, issueType, node) {
 
 // Initializes the parliament, creating it in the DB if it doesn't exist
 async function initializeParliament () {
-  User.checkSchemaVersion(MIN_DB_VERSION);
+  await User.checkSchemaVersion(MIN_DB_VERSION);
   Notifier.initialize({
     issueTypes,
     prefix: ArkimeConfig.usersPrefix()
@@ -1163,13 +1172,9 @@ function setIssue (cluster, newIssue) {
   if (newIssue.freeSpaceM !== undefined) { newIssue.freeSpaceM = remoteNumber(newIssue.freeSpaceM); }
 
   // build issue
-  const issueType = issueTypes[newIssue.type];
-  newIssue.text = issueType.text;
-  newIssue.title = issueType.name;
-  newIssue.severity = issueType.severity;
   newIssue.clusterId = cluster.id;
   newIssue.cluster = cluster.title;
-  newIssue.message = formatIssueMessage(cluster, newIssue);
+  addIssueStrings(newIssue);
   newIssue.provisional = true;
 
   let existingIssue = false;
@@ -1460,8 +1465,12 @@ function issueId (issue) {
 // Loads this parliament's issues, importing the old issues file the first time
 async function loadIssues () {
   const { data } = await Parliament.issues.find({ where: { parliament: Parliament.name } });
-  issues = data.map(({ doc }) => { delete doc.parliament; return doc; });
-  savedIssues = new Map(data.map(({ id, doc }) => [id, JSON.stringify(issueDoc(doc))]));
+  // an issue type this version doesn't know is left in the db untouched
+  const known = data.filter(({ doc }) => Object.hasOwn(issueTypes, doc.type));
+  // a doc saved with the display strings doesn't match, so the next save rewrites it without them
+  savedIssues = new Map(known.map(({ id, doc }) => [id, ISSUE_STRINGS.some(f => f in doc) ? null : JSON.stringify(issueDoc(doc))]));
+  issues = known.map(({ doc }) => { delete doc.parliament; return addIssueStrings(doc); });
+  if ([...savedIssues.values()].includes(null)) { internals.issuesDirty = true; }
   if (issues.length > 0) { return; }
 
   const configFile = ArkimeConfig.get('file');
@@ -1471,7 +1480,7 @@ async function loadIssues () {
   try {
     const fileIssues = JSON.parse(fs.readFileSync(issuesFile, 'utf8'));
     if (Array.isArray(fileIssues)) {
-      issues = fileIssues;
+      issues = fileIssues.filter(issue => Object.hasOwn(issueTypes, issue?.type ?? '')).map(addIssueStrings);
       await saveIssues();
     }
     fs.renameSync(issuesFile, `${issuesFile}.imported`);
@@ -1482,7 +1491,9 @@ async function loadIssues () {
 }
 
 function issueDoc (issue) {
-  return { ...issue, parliament: Parliament.name };
+  const doc = { ...issue, parliament: Parliament.name };
+  for (const field of ISSUE_STRINGS) { delete doc[field]; }
+  return doc;
 }
 
 // Saves the issues to the db. The dirty flag is cleared before the async writes so

@@ -343,10 +343,15 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           for an https://localhost url like the OpenSearch/Elasticsearch connections do unless the section sets insecure=false.
           The client certificate and caTrustFile are only used for the configured url's origin, a redirect elsewhere gets
           the system CAs. A urlapi maxRedirects that isn't a number is now 0 instead of following redirects
+## db.pl
+  - #4449 Fix restore failing when a cont3xt index was empty at backup time
 ## ESProxy
   - #4430 [tee] sessionsDbUrl also writes the sessions sensors send to ClickHouse or a dbPlugins sessions db like
           MongoDB, the way capture writes them to that db. A ClickHouse table is created with db/ch.pl init. [tee]
           takes prefix, maxBatchBytes and the db's own settings, like clickhouseDatabase or clickhouseUser
+## Parliament
+  - #4449 Parliament keeps its issues in a parliament_issues index it creates, importing parliament.issues.json the first time
+  - #4449 Issue names and messages are shown in the selected language, and the Issues page searches and sorts on the translated text
 ## WISE
   - #4279 New MISP source that either periodically bulk loads attributes or queries per item, configured with [misp:<name>] sections
   - #4384 New esClientKey/esClientCert/esClientKeyPass settings present a client certificate (mTLS) to the users OpenSearch/Elasticsearch

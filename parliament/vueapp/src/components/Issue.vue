@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
       :group-id="groupId"
       :cluster-id="clusterId"
       @issue-change="issueChange" />
-    {{ issue.message }}
+    {{ message }}
     <br>
     <small class="cursor-help issue-date">
       {{ moment(issue.lastNoticed || issue.firstNoticed, 'MM/DD HH:mm:ss') }}
@@ -30,6 +30,7 @@ SPDX-License-Identifier: Apache-2.0
 <script>
 import IssueActions from './IssueActions.vue';
 import moment from 'moment-timezone';
+import { issueMessage } from './issueText.js';
 
 export default {
   name: 'Issue',
@@ -58,6 +59,9 @@ export default {
   computed: {
     isUser () {
       return this.$store.state.isUser;
+    },
+    message () {
+      return issueMessage(this.issue, this.$t);
     },
     alertType () {
       if (this.issue.severity === 'red') return 'error';
