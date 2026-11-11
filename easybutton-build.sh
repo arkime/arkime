@@ -26,7 +26,7 @@ NGHTTP2=1.57.0
 ZSTD=1.5.5
 KAFKA=1.5.3
 
-NODE=22.23.4
+NODE=22.23.5
 
 TDIR="/opt/arkime"
 DOPFRING=0
@@ -316,7 +316,7 @@ if [ -f "/etc/alpine-release" ] ; then
   NODEHOST=unofficial-builds.nodejs.org
   NODEARCH="$NODEARCH-musl"
 elif [ -f "/etc/arch-release" ]; then
-    sudo pacman -Sy --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-net-ssleay perl-io-socket-ssl perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
+    sudo pacman -Syu --noconfirm gcc make python-pip git perl perl-test-differences sudo gawk lua geoip yara file libpcap libmaxminddb libnet libtool autoconf gettext automake perl-http-message perl-lwp-protocol-https perl-net-ssleay perl-io-socket-ssl perl-json perl-socket6 perl-clone perl-html-parser zstd pcre librdkafka openssl pkg-config
 fi
 
 if [ $DOJEMALLOC -eq 1 ] && [ $DOTCMALLOC -eq 1 ]; then
