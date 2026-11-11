@@ -1,4 +1,4 @@
-use Test::More tests => 135;
+use Test::More tests => 142;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -372,6 +372,31 @@ for (my $i = 0; $i < 10; $i++) {
     sleep(1);
 }
 ok((grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesSaved), "poll issues are saved to the db");
+my ($savedDown) = grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesSaved;
+ok(!(grep { exists $savedDown->{$_} } qw(text title severity message)), "saved issues leave out the display strings");
+ok(defined $savedDown->{value}, "saved issues keep the value");
+
+# reloading from the db rebuilds the display strings
+parliamentGet("/regressionTests/loadIssues");
+$result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+my ($reloadedDown) = grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @{$result->{issues}};
+is($reloadedDown->{title}, "ES Down", "reloaded issue has its title");
+is($reloadedDown->{severity}, "red", "reloaded issue has its severity");
+is($reloadedDown->{message}, "ES is down: $savedDown->{value}", "reloaded issue message is rebuilt");
+
+# a doc saved with the display strings is rewritten without them after a reload
+esPost("/tests_parliament_issues/_update_by_query?refresh=true", '{"script": {"source": "ctx._source.title = \'old\'; ctx._source.message = \'old\'"}}');
+parliamentGet("/regressionTests/loadIssues");
+parliamentGet("/regressionTests/updateParliament");
+for (my $i = 0; $i < 10; $i++) {
+    $issuesSaved = parliamentGet("/regressionTests/savedIssues");
+    last if ref $issuesSaved eq 'ARRAY' && scalar @$issuesSaved && !grep { exists $_->{title} || exists $_->{message} } @$issuesSaved;
+    sleep(1);
+}
+ok(scalar @$issuesSaved && !(grep { exists $_->{title} || exists $_->{message} } @$issuesSaved), "old display strings are removed from saved issues");
+$result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+($reloadedDown) = grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @{$result->{issues}};
+is($reloadedDown->{title}, "ES Down", "an old saved title isn't used");
 
 # a cluster sending huge names and number strings still has its issues saved, with bounded values
 $result = parliamentPostToken("/parliament/api/groups/$issueGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "hostile", "url": "http://127.0.0.1:8123/regressionTests/hostileCluster"}', $parliamentAdminToken);

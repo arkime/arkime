@@ -8655,7 +8655,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}parliament_issues_v70,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -8989,7 +8989,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my %cont3xtIndices = map { $_->{index} => $_ } @{ esGet("/_cat/indices/cont3xt*?format=json", 1) };
 
     # Indices we want to backup, if there is an alias
-    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "sequence", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
+    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "parliament_issues", "queries", "shareables", "sequence", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     # find which we have aliases for or are in cont3xt
     @indices = grep { exists $allAliases{"${PREFIX}${_}"} || $cont3xtIndices{$_} } @indices;
@@ -9702,6 +9702,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "notifiers_v40");
 
     printIndex($status, "parliament_v50");
+    printIndex($status, "parliament_issues_v70");
 
     printIndex($status, "queries_v30");
 
@@ -10936,6 +10937,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}parliament_v50?ignore_unavailable=true", 1);
+        esDelete("/${PREFIX}parliament_issues_v70,${PREFIX}parliament_issues?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}configs_v50,${PREFIX}configs?ignore_unavailable=true", 1);
     }
     esDelete("/tagger", 1);
@@ -10975,7 +10977,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     # backup writes the prefix into the file names, and the cont3xt indices
     # aren't prefixed, so work with full index names here
-    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "shareables", "featherprint", "featherprint_history", "featherprint_alerts");
+    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "parliament_issues", "shareables", "featherprint", "featherprint_history", "featherprint_alerts");
     push(@indices, "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     my @filelist = ();
@@ -11021,9 +11023,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
 
-    # Only remove the cont3xt indices we actually have a backup of
+    # Only replace the newer indices the backup has, an empty index has settings but no docs file
+    foreach my $index ("featherprint", "featherprint_history", "featherprint_alerts", "parliament_issues") {
+        esDelete("/${PREFIX}${index}_v70,${PREFIX}${index}?ignore_unavailable=true", 1) if (-e "$ARGV[2].${PREFIX}${index}.settings.json");
+    }
     foreach my $index ("cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history") {
-        esDelete("/${index}?ignore_unavailable=true", 1) if (-e "$ARGV[2].${index}.json");
+        esDelete("/${index}?ignore_unavailable=true", 1) if (-e "$ARGV[2].${index}.settings.json");
     }
 
     esDelete("/_template/${PREFIX}sessions3_ecs_template", 1);
@@ -11218,9 +11223,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}parliament_issues_v70,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}parliament_issues_v70,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

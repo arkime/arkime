@@ -19,6 +19,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- search & paging -->
     <div class="d-flex align-center flex-nowrap mb-2 ga-2 arkime-toolbar">
       <Pagination
+        :key="pagingKey"
         style="height: 32px;"
         :records-total="recordsTotal"
         :records-filtered="recordsFiltered"
@@ -349,7 +350,7 @@ SPDX-License-Identifier: Apache-2.0
               {{ issue.cluster }}
             </td>
             <td>
-              {{ issue.title }}
+              {{ title(issue) }}
             </td>
             <td>
               {{ moment(issue.firstNoticed, 'YYYY/MM/DD HH:mm:ss') }}
@@ -415,6 +416,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { toRaw } from 'vue';
 import { mapGetters } from 'vuex';
 
 import ParliamentService from './parliament.service.js';
@@ -422,6 +424,10 @@ import IssueActions from './IssueActions.vue';
 import Pagination from '@common/Pagination.vue';
 import moment from 'moment-timezone';
 import { commaString } from '@common/vueFilters.js';
+import { issueTitle, issueMessage } from './issueText.js';
+import { issueList } from './issueList.js';
+
+const LOCAL_QUERY = new Set(['sort', 'order', 'length', 'start']);
 
 let interval;
 let searchInputTimeout;
@@ -439,7 +445,10 @@ export default {
       error: '',
       // page data loading
       loading: true,
-      // page data
+      // page data, fetchedIssues is every issue the hide filters leave and issues is the page shown
+      fetchedIssues: [],
+      // Pagination keeps its own page, a new key puts it back on the first one
+      pagingKey: 0,
       issues: [],
       allIssuesSelected: false,
       atLeastOneIssueSelected: false,
@@ -481,6 +490,10 @@ export default {
     parliament: function () {
       return this.$store.state.parliament;
     },
+    // the translated title and message of each fetched issue
+    issueTexts: function () {
+      return new Map(this.fetchedIssues.map(issue => [toRaw(issue), { title: issueTitle(issue, this.$t), message: issueMessage(issue, this.$t) }]));
+    },
     // table sorting and paging
     query: {
       get: function () {
@@ -491,9 +504,10 @@ export default {
         };
       },
       set: function (val) {
+        // keep the hide filters that are also in the url
         this.$router.replace({
           path: '/issues',
-          query: val
+          query: { ...this.$route.query, ...val }
         });
       }
     },
@@ -543,10 +557,16 @@ export default {
   },
   watch: {
     '$route.query': {
-      handler () {
-        this.loadData();
+      handler (newQuery, oldQuery) {
+        // only the hide filters need the server
+        const keys = new Set([...Object.keys(newQuery), ...Object.keys(oldQuery ?? {})]);
+        const refetch = [...keys].some(key => !LOCAL_QUERY.has(key) && newQuery[key] !== oldQuery?.[key]);
+        refetch ? this.loadData() : this.showIssues();
       },
       deep: true
+    },
+    issueTexts () {
+      this.showIssues();
     },
     atLeastOneIssueSelected: function (newVal) {
       // don't refresh the page when the user has at least one issue selected
@@ -558,6 +578,9 @@ export default {
     /* page functions ------------------------------------------------------ */
     moment (date, format) {
       return moment(date).format(format);
+    },
+    title (issue) {
+      return this.issueTexts.get(toRaw(issue))?.title;
     },
     getIssueValue (input, type) {
       let result = input;
@@ -790,7 +813,7 @@ export default {
         order: this.query.order,
         length: args.length
       };
-      this.loadData();
+      this.showIssues();
     },
     debounceSearchInput: function () {
       if (searchInputTimeout) { clearTimeout(searchInputTimeout); }
@@ -798,21 +821,19 @@ export default {
       searchInputTimeout = setTimeout(() => {
         clearTimeout(searchInputTimeout);
         searchInputTimeout = null;
-        this.loadData();
+        this.firstPage();
       }, 400);
     },
     clear: function () {
       this.searchTerm = undefined;
-      this.loadData();
+      this.firstPage();
     },
     /* helper functions ---------------------------------------------------- */
     loadData: function () {
       this.error = '';
       this.loading = true;
 
-      const query = { // set up query parameters (order, sort, paging, filters)
-        start: this.start,
-        length: this.query.length,
+      const query = { // the hide filters, searching, sorting and paging happen in showIssues
         hideAckd: this.filterAckd,
         hideEsRed: this.filterEsRed,
         hideEsDown: this.filterEsDown,
@@ -824,25 +845,42 @@ export default {
         hideLowDiskSpaceES: this.filterLowDiskSpaceES
       };
 
-      if (this.query.sort) {
-        query.sort = this.query.sort;
-        query.order = this.query.order;
-      }
-
-      if (this.searchTerm) {
-        query.filter = this.searchTerm;
-      }
-
       ParliamentService.getIssues(query).then((data) => {
         this.error = '';
         this.loading = false;
-        this.issues = data.issues;
-        this.recordsFiltered = data.recordsFiltered;
-        this.recordsTotal = data.recordsTotal ?? data.recordsFiltered;
+        this.fetchedIssues = data.issues;
+        this.recordsTotal = data.recordsFiltered;
       }).catch((error) => {
         this.loading = false;
         this.error = error || 'Error fetching issues. The issues below are likely out of date';
       });
+    },
+    firstPage: function () {
+      this.start = 0;
+      this.pagingKey++;
+      this.showIssues();
+    },
+    // Search and sort here, the titles and messages are in the user's language
+    showIssues: function () {
+      const texts = (issue) => this.issueTexts.get(toRaw(issue));
+      const list = issueList(this.fetchedIssues, { term: this.searchTerm, sort: this.query.sort, order: this.query.order, locale: this.$i18n.locale, texts });
+
+      this.recordsFiltered = list.length;
+      if (this.start > 0 && this.start >= list.length) {
+        this.start = 0;
+        this.pagingKey++;
+      }
+      this.issues = list.slice(this.start, this.start + (parseInt(this.query.length) || 50));
+
+      // the bulk actions only see this page, so nothing off it stays selected
+      const shown = new Set(this.issues.map(toRaw));
+      for (const issue of this.fetchedIssues) {
+        if (issue.selected && !shown.has(toRaw(issue))) { issue.selected = false; }
+      }
+      this.atLeastOneIssueSelected = this.issues.some(issue => issue.selected);
+      this.allIssuesSelected = this.issues.length > 0 && this.issues.every(issue => issue.selected);
+      // the rows moved, so a shift click starts a new range
+      lastChecked = -1;
     },
     startAutoRefresh: function () {
       if (!this.refreshInterval) { return; }

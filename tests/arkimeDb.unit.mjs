@@ -217,6 +217,18 @@ for (const backend of backends) {
         await conn.client.indices.delete({ index: mapped.index });
       });
 
+      test('es.create.version moves a plain index of the same name behind the alias', async () => {
+        const plain = `${backend.prefix}moved${run}`;
+        await conn.client.index({ index: plain, id: 'a', body: { creator: 'bob', title: 'old' }, refresh: true });
+        const moved = conn.collection(`moved${run}`, { fields: { creator: { type: 'keyword', indexed: true } }, es: { create: { version: 'v1', mappings: { dynamic: false } } } });
+        await moved.init();
+        await moved.init();
+        const { body } = await conn.client.indices.getAlias({ name: plain });
+        assert.deepEqual(Object.keys(body), [`${plain}_v1`]);
+        assert.deepEqual((await moved.get('a')), { creator: 'bob', title: 'old' });
+        await conn.client.indices.delete({ index: `${plain}_v1` });
+      });
+
       test('find scrolls when from + size is past 10000', async () => {
         const big = conn.collection(`big${run}`, { fields: { i: 'long' } });
         await big.init();
@@ -889,5 +901,50 @@ describe('ArkimeDb', () => {
   after(async () => {
     await ArkimeDb.closeAll();
     fs.rmSync(tmp, { recursive: true, force: true });
+  });
+});
+
+describe('es.create.version with a plain index', () => {
+  // a client where the plain index is there until it is deleted
+  const fake = ({ failures, aliasErrors = 0 }) => {
+    const calls = [];
+    let plain = true;
+    const indices = {
+      create: async () => { calls.push('create'); },
+      putMapping: async () => { calls.push('putMapping'); },
+      existsAlias: async () => ({ body: false }),
+      exists: async () => ({ body: plain }),
+      delete: async () => { calls.push('delete'); plain = false; },
+      putAlias: async () => {
+        calls.push('putAlias');
+        if (aliasErrors-- > 0) { plain = true; throw new Error('an index exists with the same name as the alias'); }
+      }
+    };
+    const client = { indices, reindex: async () => { calls.push('reindex'); return { body: { failures } }; } };
+    const coll = new ESConnection(undefined, { client, prefix: 'u_' }).collection('things', { fields: { a: 'keyword' }, es: { create: { version: 'v1' } } });
+    return { calls, coll };
+  };
+  const quiet = async (fn) => {
+    const log = console.log;
+    console.log = () => {};
+    try { return await fn(); } finally { console.log = log; }
+  };
+
+  test('is reindexed, deleted, then aliased', async () => {
+    const { calls, coll } = fake({ failures: [] });
+    await quiet(() => coll.init());
+    assert.deepEqual(calls, ['create', 'putMapping', 'reindex', 'delete', 'putAlias']);
+  });
+
+  test('is left in place when a doc fails to move', async () => {
+    const { calls, coll } = fake({ failures: [{ id: 'a' }] });
+    await assert.rejects(quiet(() => coll.init()), /left in place/);
+    assert.ok(!calls.includes('delete') && !calls.includes('putAlias'));
+  });
+
+  test('is moved again when a write remakes it before the alias', async () => {
+    const { calls, coll } = fake({ failures: [], aliasErrors: 1 });
+    await quiet(() => coll.init());
+    assert.deepEqual(calls.slice(2), ['reindex', 'delete', 'putAlias', 'reindex', 'delete', 'putAlias']);
   });
 });

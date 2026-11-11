@@ -11,6 +11,7 @@ const ArkimeDb = require('./arkimeDb');
 
 // Each collection is an index, <prefix><name> unless es.index is set. Indices
 // are only created when fields or es.create are set and es.dbpl isn't, otherwise db.pl owns them.
+// With es.create.version the index made is <index>_<version>, with <index> as its alias.
 // With es.writeIndex the index is a read pattern and each put goes to
 // writeIndex(), so gets and deletes by id search across the pattern.
 // Every call takes an optional cluster, which multi cluster viewers route on.
@@ -42,17 +43,49 @@ class ESCollection extends ArkimeDb.Collection {
       mappings.properties = { ...ArkimeDb.esProperties(fields), ...mappings.properties };
     }
 
-    try {
-      await this.#client.indices.create({ index: this.#index, body: { settings: create?.settings } });
-    } catch (err) {
-      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log(`ERROR - creating ${this.#index}`, util.inspect(err, false, 10));
-        throw err;
-      }
+    let index = this.#index;
+    if (create?.version) { index = `${this.#index}_${create.version}`; }
+
+    await this.#createIndex(index, create?.settings);
+    if (Object.keys(mappings).length) {
+      await this.#client.indices.putMapping({ index, body: mappings });
     }
 
-    if (Object.keys(mappings).length) {
-      await this.#client.indices.putMapping({ index: this.#index, body: mappings });
+    if (create?.version) {
+      // putAlias fails when a write makes the plain index after it was moved, so try again
+      for (let i = 0; ; i++) {
+        try {
+          await this.#movePlainIndex(this.#index, index);
+          await this.#client.indices.putAlias({ index, name: this.#index });
+          break;
+        } catch (err) {
+          if (i === 2) { throw err; }
+          console.log(`WARNING - aliasing ${this.#index} to ${index}, trying again`, err.meta?.body?.error?.reason ?? err.message ?? err);
+        }
+      }
+    }
+  }
+
+  // A plain index with the alias name was made before the index was versioned, or by a write while there was no alias
+  async #movePlainIndex (alias, index) {
+    if ((await this.#client.indices.existsAlias({ name: alias })).body) { return; }
+    if (!(await this.#client.indices.exists({ index: alias })).body) { return; }
+    console.log(`Moving the plain ${alias} index to ${index}`);
+    const { body } = await this.#client.reindex({ refresh: true, body: { source: { index: alias }, dest: { index } } });
+    if (body?.failures?.length) {
+      throw new Error(`Moving ${alias} to ${index} failed for ${body.failures.length} docs, ${alias} was left in place: ${JSON.stringify(body.failures[0])}`);
+    }
+    await this.#client.indices.delete({ index: alias });
+  }
+
+  async #createIndex (index, settings) {
+    try {
+      await this.#client.indices.create({ index, body: { settings } });
+    } catch (err) {
+      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
+        console.log(`ERROR - creating ${index}`, util.inspect(err, false, 10));
+        throw err;
+      }
     }
   }
 
