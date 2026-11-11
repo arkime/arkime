@@ -106,7 +106,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4280 Each release now includes a CycloneDX SBOM, arkime-sbom.cdx.json, covering the server and browser npm
           packages, the libraries built into capture, the bundled Node.js and CyberChef
   - #4346 Alpine 3.24 apk packages for x86_64 and aarch64, unsigned so install with apk add --allow-untrusted
-  - #4389 Node 26.12.1
+  - Node 26.13.1
   - #4430 Add Fedora 45 builds
   - #4446 Releases no longer include the moloch el9 rpm with the old /data/moloch layout, use the arkime rpm
 ## All
@@ -361,6 +361,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Breaking
   - #4415 uploadCommand {CONFIG} is now the -c value as given, with .hiddenconfig or urlinfile:// the dropUser must be able to read that file
   - #4415 capture -c file.hiddenconfig now reads the config location from that file like viewer does, instead of from the file without the suffix
+## Release
+  - #4448 Node 22.23.5
 ## All
   - #4402 Email and Slack notifier alerts escape < and >, and Teams alerts replace Markdown link brackets, so values in the alert text can't inject HTML, links or @mentions
 ## Capture

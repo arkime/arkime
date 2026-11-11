@@ -17,7 +17,7 @@ YARA=4.5.8
 DAQ=2.0.7
 KAFKA=2.15.1
 
-NODE=26.12.1
+NODE=26.13.1
 
 TDIR="/opt/arkime"
 DOPFRING=0
