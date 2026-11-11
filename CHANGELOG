@@ -39,6 +39,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Breaking
   - #4415 uploadCommand {CONFIG} is now the -c value as given, with .hiddenconfig or urlinfile:// the dropUser must be able to read that file
   - #4415 capture -c file.hiddenconfig now reads the config location from that file like viewer does, instead of from the file without the suffix
+## Release
+  - #4448 Node 22.23.5
 ## All
   - #4402 Email and Slack notifier alerts escape < and >, and Teams alerts replace Markdown link brackets, so values in the alert text can't inject HTML, links or @mentions
 ## Capture
