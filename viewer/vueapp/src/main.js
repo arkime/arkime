@@ -13,9 +13,6 @@ import { initUpdateCheck } from '@common/UpdateCheckService.js';
 // css frameworks
 import 'vuetify/styles';
 
-// vue color picker styles
-import 'vue-color/style.css';
-
 // internal deps
 import App from './App.vue';
 import ArkimeSessionField from './components/sessions/SessionField.vue';
