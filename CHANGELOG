@@ -35,7 +35,7 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
-6.9.2 2026/11/xx
+6.9.2 2026/11/12
 ## Breaking
   - #4415 uploadCommand {CONFIG} is now the -c value as given, with .hiddenconfig or urlinfile:// the dropUser must be able to read that file
   - #4415 capture -c file.hiddenconfig now reads the config location from that file like viewer does, instead of from the file without the suffix
