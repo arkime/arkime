@@ -37,6 +37,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 7.0.0-rc2 2026/12/xx
+## Viewer
+  - #4456 Add a connection circle widget and SPI Graph type: hosts on a ring, each talking pair an arc across it, colored by protocol or a field you pick
+  - #4456 Fix the widget and graph settings editor resetting a connections sample size to 100 when opened
 
 7.0.0-rc1 2026/11/12
 ## Breaking

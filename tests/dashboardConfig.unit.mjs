@@ -56,7 +56,7 @@ const {
   migrateDashboard, DASHBOARD_VERSION
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
 const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor, allowsCompare, hasLevels } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
-const { widgetFullPageLink, widgetFields, hierarchyFields, defaultWidgetTitle, pageExpression, combinedExpression, metricHistoKey, compareOffset, widgetThresholds, thresholdColor, summaryRequestWidget } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
+const { widgetFullPageLink, widgetFields, hierarchyFields, defaultWidgetTitle, pageExpression, combinedExpression, metricHistoKey, compareOffset, widgetThresholds, thresholdColor, summaryRequestWidget, circleColorFieldUsable, circleColorDbField } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 const { findTreeRoot, buildConnectionTree, MAX_TREE_CHILDREN, MAX_TREE_NODES } = await import('../viewer/vueapp/src/components/summary/widgets/connectionTree.js');
 const { showsOwnLayout, defaultDashboardId, FALLBACK_DEFAULT_ID } = await import('../viewer/vueapp/src/components/summary/systemDashboards.js');
 
@@ -703,6 +703,47 @@ describe('viewModeLabelKey', () => {
     assert.equal(viewModeLabelKey('bar'), 'sessions.summary.barChart');
     assert.equal(viewModeLabelKey('constructor'), undefined);
     assert.equal(viewModeLabelKey('__proto__'), undefined);
+  });
+});
+
+describe('circle graphs', () => {
+  test('a circle widget and the SPI Graph circle page are the same graph', () => {
+    const q = spigraphQueryFromGraph({ viewMode: 'circle', fields: ['ip.src', 'ip.dst'], length: 500 });
+    assert.equal(q.spiGraphType, 'circle');
+    assert.equal(q.connectionsLength, 500);
+    assert.equal(q.treeRoot, undefined);
+    const g = graphFromSpigraphQuery({ spiGraphType: 'circle', srcField: 'source.ip', dstField: 'destination.ip', connectionsLength: 100 }, { fieldsArr });
+    assert.equal(g.viewMode, 'circle');
+    assert.equal(g.length, 100);
+  });
+  test('the field a circle is colored by goes both ways', () => {
+    const q = spigraphQueryFromGraph({ viewMode: 'circle', fields: ['ip.src', 'ip.dst'], length: 500, colorField: 'ip.src' });
+    assert.equal(q.colorField, 'source.ip');
+    const g = graphFromSpigraphQuery({ spiGraphType: 'circle', srcField: 'source.ip', dstField: 'destination.ip', colorField: 'source.ip' }, { fieldsArr });
+    assert.equal(g.colorField, 'ip.src');
+  });
+  test('how many hosts a circle shows goes both ways', () => {
+    const q = spigraphQueryFromGraph({ viewMode: 'circle', fields: ['ip.src', 'ip.dst'], length: 5000, maxNodes: 20 });
+    assert.deepEqual([q.connectionsLength, q.maxNodes], [5000, 20]);
+    const g = graphFromSpigraphQuery({ spiGraphType: 'circle', srcField: 'source.ip', dstField: 'destination.ip', connectionsLength: '5000', maxNodes: '50' }, { fieldsArr });
+    assert.deepEqual([g.length, g.maxNodes], [5000, 50]);
+    assert.equal(graphFromSpigraphQuery({ spiGraphType: 'circle', maxNodes: '7' }, { fieldsArr }).maxNodes, 100);
+  });
+  test('a circle colors by a field whose values come with each link', () => {
+    assert.equal(circleColorFieldUsable({ exp: 'protocols', dbField: 'protocol', type: 'termfield' }), true);
+    assert.equal(circleColorFieldUsable({ exp: 'port.dst', dbField: 'destination.port', type: 'integer', category: 'port' }), true);
+    // a count is summed per link, so every arc would be its own color
+    assert.equal(circleColorFieldUsable({ exp: 'packets', dbField: 'totPackets', type: 'integer' }), false);
+    assert.equal(circleColorFieldUsable({ exp: 'ip', dbField: 'ipall', noFacet: true }), false);
+    assert.equal(circleColorFieldUsable({ exp: 'http.uri.tokens', dbField: 'http.uriTokens', type: 'textfield' }), false);
+    assert.equal(circleColorFieldUsable(undefined), false);
+  });
+  test('a circle color field resolves from its exp or dbField, else protocols', () => {
+    assert.equal(circleColorDbField('ip.src'), 'source.ip');
+    assert.equal(circleColorDbField('source.ip'), 'source.ip');
+    assert.equal(circleColorDbField(''), 'protocol');
+    assert.equal(circleColorDbField('no.such.field'), 'protocol');
+    assert.equal(circleColorDbField(['ip.src']), 'protocol');
   });
 });
 

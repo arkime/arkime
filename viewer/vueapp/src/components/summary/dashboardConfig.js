@@ -3,6 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
 import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, isPercentileAgg, metricAggsFor, hasOrder, hasLevels, allowsBucketInterval, COMPARES, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, MAX_FIELDS, TREE_DEPTHS, DEFAULT_TREE_DEPTH, slotMetrics } from './widgets/viewModes';
+import { CIRCLE_MAX_NODES, DEFAULT_CIRCLE_MAX_NODES } from './widgets/connectionCircle';
 import FieldService from '../search/FieldService';
 import { VARIABLE_NAME_RE, CONTROL_TYPES } from './widgets/dashboardVariables';
 import Utils from '../utils/utils';
@@ -52,6 +53,8 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
     text: '', // markdown widget content
     treeRoot: '', // connection tree: the value the tree starts from ('' = the busiest source)
     treeDepth: DEFAULT_TREE_DEPTH, // connection tree: hops drawn from the root
+    colorField: '', // connection circle: the field its arcs are colored by ('' = protocols)
+    maxNodes: DEFAULT_CIRCLE_MAX_NODES, // connection circle: how many hosts the ring shows
     // top-N cap, or a session sample size for connections
     length: defaultLength(viewMode),
     order: 'desc',
@@ -104,6 +107,8 @@ export const normalizeWidget = (w) => {
     compare: COMPARES.includes(w.compare) ? w.compare : '',
     text: str(w.text),
     treeRoot: str(w.treeRoot),
+    colorField: str(w.colorField),
+    maxNodes: CIRCLE_MAX_NODES.includes(w.maxNodes) ? w.maxNodes : DEFAULT_CIRCLE_MAX_NODES,
     treeDepth: TREE_DEPTHS.includes(w.treeDepth) ? w.treeDepth : DEFAULT_TREE_DEPTH,
     length: limit > 0 ? limit : defaultLength(viewMode),
     order: w.order === 'asc' ? 'asc' : 'desc',
@@ -221,12 +226,12 @@ export const widgetsFromConfig = (cfg) => {
    dashboard copies a graph in; it never references one. See SHAREABLES.md. */
 
 // the widget keys a saved graph carries (everything but id/title/width/height/text)
-export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics', 'metricAgg', 'sortMetric', 'splitField', 'splitLength', 'barMode', 'orientation', 'seriesType', 'yScale', 'other', 'bucketInterval', 'treeRoot', 'treeDepth', 'length', 'order', 'orderBy', 'gaugeWarn', 'gaugeCrit', 'compare', 'expression', 'view'];
+export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics', 'metricAgg', 'sortMetric', 'splitField', 'splitLength', 'barMode', 'orientation', 'seriesType', 'yScale', 'other', 'bucketInterval', 'treeRoot', 'treeDepth', 'colorField', 'maxNodes', 'length', 'order', 'orderBy', 'gaugeWarn', 'gaugeCrit', 'compare', 'expression', 'view'];
 
 // view modes a graph can have: the field-bound dashboard types SPI Graph
 // draws, and a timeline, area or time of day grid split by a field (SPI
 // Graph's Timeline, Area and Time of day)
-export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
+export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'circle', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
 
 // the session-wide types that are a graph once split by a field
 const SPLIT_GRAPH_VIEW_MODES = ['timeline', 'area', 'timeofday'];
@@ -292,7 +297,7 @@ export const widgetFromGraph = (graph, overrides = {}) => normalizeWidget({ ...(
 
 // SPI Graph's types and the graph each is (its Timeline, one histogram per
 // value, is a timeline split by the field)
-const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', area: 'area', timeofday: 'timeofday', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', matrix: 'matrix', mosaic: 'mosaic', waffle: 'waffle', connections: 'connections', tree: 'tree', table: 'table', combo: 'combo', scatter: 'scatter' };
+const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', area: 'area', timeofday: 'timeofday', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', matrix: 'matrix', mosaic: 'mosaic', waffle: 'waffle', connections: 'connections', tree: 'tree', circle: 'circle', table: 'table', combo: 'combo', scatter: 'scatter' };
 
 /**
  * The graph the SPI Graph page is showing, from its url query and the current
@@ -390,13 +395,15 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
       const pieCount = parseInt(query.pieCount, 10);
       if (SPLIT_LENGTHS.includes(pieCount)) { overrides.splitLength = pieCount; }
     }
-  } else if (type === 'connections' || type === 'tree') {
+  } else if (type === 'connections' || type === 'tree' || type === 'circle') {
     // the connections url carries database field names
     const byDb = (db) => ((db === 'ip.dst:port' || db === 'destination.ip:port') ? 'ip.dst:port' : (fieldsArr || []).find(f => f.dbField === db)?.exp || '');
     fields = [byDb(str(query.srcField) || 'source.ip'), byDb(str(query.dstField) || 'destination.ip')];
     if (type === 'tree') {
       // the tree's root and depth are url params of its own
       overrides = { treeRoot: str(query.treeRoot), treeDepth: int(query.treeDepth) };
+    } else if (type === 'circle') {
+      overrides = { colorField: str(query.colorField) ? byDb(str(query.colorField)) : '', maxNodes: int(query.maxNodes) };
     }
   } else if (type === 'heatmap') {
     // the intensity metric is a <dbField>Histo key
@@ -428,7 +435,7 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     overrides = { ...overrides, metricType: metric, metricAgg: aggOf(mode, [metric]) };
   }
   // connections' limit is its session sample size, a url param of its own
-  const limit = int((type === 'connections' || type === 'tree') ? query.connectionsLength : query.size);
+  const limit = int((type === 'connections' || type === 'tree' || type === 'circle') ? query.connectionsLength : query.size);
   return graphFromWidget({
     field: fields[0],
     fields,
@@ -551,11 +558,16 @@ export const spigraphQueryFromGraph = (graph) => {
     return q;
   }
   case 'connections':
-  case 'tree': {
+  case 'tree':
+  case 'circle': {
     const toDb = (e) => ((e === 'ip.dst:port' || e === 'destination.ip:port') ? e : FieldService.getField(e, true)?.dbField);
     const q = { spiGraphType: g.viewMode, srcField: toDb(fields[0]), dstField: toDb(fields[1]), connectionsLength: g.length, view: base.view };
     // the tree's root and depth are url params of its own
     if (g.viewMode === 'tree') { q.treeRoot = g.treeRoot || undefined; q.treeDepth = g.treeDepth; }
+    if (g.viewMode === 'circle') {
+      q.colorField = g.colorField ? toDb(g.colorField) : undefined;
+      q.maxNodes = g.maxNodes;
+    }
     return q;
   }
   default:

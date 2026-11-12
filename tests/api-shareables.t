@@ -1,4 +1,4 @@
-use Test::More tests => 262;
+use Test::More tests => 265;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -438,6 +438,9 @@ my $idGraph2 = $info->{id};
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph tree","type":"spigraphConfig","data":{"field":"source.ip","fields":["source.ip","destination.ip"],"viewMode":"tree","treeRoot":"10.0.0.1","treeDepth":3,"orderBy":"key"}}', $token);
 ok($info->{success}, "create spigraphConfig with the tree view, its root, depth and order by succeeds");
 viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph circle","type":"spigraphConfig","data":{"field":"source.ip","fields":["source.ip","destination.ip"],"viewMode":"circle","colorField":"protocols","maxNodes":50,"length":500}}', $token);
+ok($info->{success}, "create spigraphConfig with the circle view, its color field and max shown succeeds");
+viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph time of day","type":"spigraphConfig","data":{"viewMode":"timeofday","splitField":"protocols","splitLength":5}}', $token);
 ok($info->{success}, "create spigraphConfig with the time of day view split by a field succeeds");
 viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
@@ -472,6 +475,10 @@ $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name
 is($info->{i18n}, "api.shareables.invalidGraph", "create spigraphConfig with a non-integer treeDepth fails");
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph bad root","type":"spigraphConfig","data":{"field":"source.ip","viewMode":"tree","treeRoot":5}}', $token);
 is($info->{i18n}, "api.shareables.invalidGraph", "create spigraphConfig with a non-string treeRoot fails");
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph bad max shown","type":"spigraphConfig","data":{"field":"source.ip","viewMode":"circle","maxNodes":"50"}}', $token);
+is($info->{i18n}, "api.shareables.invalidGraph", "create spigraphConfig with a non-integer maxNodes fails");
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph bad color field","type":"spigraphConfig","data":{"field":"source.ip","viewMode":"circle","colorField":5}}', $token);
+is($info->{i18n}, "api.shareables.invalidGraph", "create spigraphConfig with a non-string colorField fails");
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph bad order by","type":"spigraphConfig","data":{"field":"source.ip","viewMode":"bar","orderBy":["key"]}}', $token);
 is($info->{i18n}, "api.shareables.invalidGraph", "create spigraphConfig with a non-string orderBy fails");
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph no mode","type":"spigraphConfig","data":{"fields":["source.ip"]}}', $token);

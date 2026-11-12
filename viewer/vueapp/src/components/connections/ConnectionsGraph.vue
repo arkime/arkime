@@ -82,6 +82,26 @@ SPDX-License-Identifier: Apache-2.0
         page="ConnectionsDst" />
     </div> <!-- /dst select -->
 
+    <!-- circle: how many hosts the ring shows -->
+    <div
+      class="arkime-input-group"
+      v-if="layout === 'circle'">
+      <span class="arkime-input-label">
+        {{ $t('sessions.summary.widget.maxNodes') }}
+      </span>
+      <select
+        class="arkime-input-control"
+        :value="circleMax"
+        @change="changeCircleMax(Number($event.target.value))">
+        <option
+          v-for="opt in circleMaxOptions"
+          :key="opt"
+          :value="opt">
+          {{ opt }}
+        </option>
+      </select>
+    </div> <!-- /circle max shown -->
+
     <!-- src & dst color -->
     <span
       class="connections-legend-cell connections-legend-standalone tertiary-legend cursor-help"
@@ -409,11 +429,35 @@ SPDX-License-Identifier: Apache-2.0
       {{ $t('sessions.summary.widget.treeRootMissing', { root: treeRoot }) }}
     </div>
 
+    <!-- circle: only the busiest fit on the ring -->
+    <div
+      v-if="!error && !loading && layout === 'circle' && circleDropped"
+      class="mt-2 text-center text-medium-emphasis">
+      {{ $t('sessions.summary.widget.circleCapped', { shown: circleShown, total: circleShown + circleDropped }) }}
+    </div>
+
     <!-- connections graph container -->
     <svg
       ref="svgEl"
       class="connections-graph"
       v-if="!error" /> <!-- /connections graph container -->
+
+    <!-- circle: what each arc color is -->
+    <div
+      v-if="!error && layout === 'circle' && circleLegend.length"
+      class="connections-circle-legend"
+      @mouseleave="focusCircleColor()">
+      <div
+        v-for="p in circleLegend"
+        :key="p.name"
+        class="d-flex align-center ga-1"
+        @mouseenter="focusCircleColor(p.name)">
+        <span
+          class="connections-circle-swatch"
+          :style="{ background: p.color }" />
+        {{ p.name || $t('sessions.summary.other') }}
+      </div>
+    </div> <!-- /circle legend -->
 
     <!-- popup area -->
     <div
@@ -452,7 +496,7 @@ SPDX-License-Identifier: Apache-2.0
           density="comfortable"
           icon
           id="unlockNodes"
-          v-if="layout !== 'tree'"
+          v-if="layout === 'force'"
           :aria-label="$t('connections.unlockNodesTip')"
           @click.stop.prevent="unlock">
           <v-icon icon="mdi-lock-open" />
@@ -481,9 +525,9 @@ SPDX-License-Identifier: Apache-2.0
         </v-btn>
       </div>
 
-      <!-- node distance (a tree has fixed spacing) -->
+      <!-- node distance (a tree and a circle have fixed spacing) -->
       <div
-        v-if="layout !== 'tree'"
+        v-if="layout === 'force'"
         class="d-flex ga-1">
         <v-btn
           id="nodeDistUp"
@@ -617,7 +661,10 @@ import ConfigService from '../utils/ConfigService';
 import store from '@/store';
 import Utils from '../utils/utils';
 import { TREE_DEPTHS, DEFAULT_TREE_DEPTH } from '../summary/widgets/viewModes';
+import { OTHER_COLOR } from '../summary/widgets/chartColors';
 import { findTreeRoot, buildConnectionTree } from '../summary/widgets/connectionTree';
+import { buildConnectionCircle, circlePoint, circleLinkPath, circleLabel, circleTouches, circlePeers, circleLegend, CIRCLE_MAX_NODES, DEFAULT_CIRCLE_MAX_NODES } from '../summary/widgets/connectionCircle';
+import { circleColorDbField } from '../summary/widgets/widgetData';
 import { timezoneDateString, searchFields } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // lazy import these
@@ -640,6 +687,7 @@ const maxLog = Math.ceil(Math.pow(Math.E, 9));
 const idRegex = /[\[\]:. ]/g;
 let pendingPromise; // save a pending promise to be able to cancel it
 let lastData; // the last /api/connections response, redrawn when the layout changes
+let lastColorField; // the circle color field lastData was fetched with
 
 // drag helpers
 function dragstarted (e, d) {
@@ -688,6 +736,11 @@ function itemFocus (d) {
   }
 }
 
+// a drawn node's id: tree and ring nodes wrap the sample's node in data
+function drawnId (d) {
+  return d?.data?.id ?? d?.id;
+}
+
 function unfocus () {
   nodeLabel.attr('display', 'block');
   node.style('opacity', 1);
@@ -724,7 +777,8 @@ export default {
   },
   props: {
     // 'force': the force directed graph; 'tree': the same sample as a rooted
-    // tree fanned out from one host (the `tree` SPIGraph type)
+    // tree fanned out from one host (the `tree` SPIGraph type); 'circle': the
+    // sample's hosts on a ring, each pair an arc (the `circle` SPIGraph type)
     layout: { type: String, default: 'force' }
   },
   data: function () {
@@ -754,6 +808,10 @@ export default {
       showPopup: false, // whether to show the node/link data popup
       treeRootMissing: false, // tree: the asked for root isn't in the sample
       treeDepths: TREE_DEPTHS,
+      circleShown: 0, // circle: hosts on the ring and the ones past its cap
+      circleDropped: 0,
+      circleLegend: [], // circle: { name, color } per arc color
+      circleMaxOptions: CIRCLE_MAX_NODES,
       dataNode: undefined, // data for the node popup
       dataLink: undefined, // data for the link popup
       // node + link field-visibility menus share one v-menu template;
@@ -833,6 +891,15 @@ export default {
     },
     fields () {
       return FieldService.addIpDstPortField(store.state.fieldsArr);
+    },
+    // circle: how many hosts the ring shows
+    circleMax: function () {
+      const n = parseInt(this.$route.query.maxNodes, 10);
+      return CIRCLE_MAX_NODES.includes(n) ? n : DEFAULT_CIRCLE_MAX_NODES;
+    },
+    // circle: the database field its arcs are colored by (set in the graph's settings)
+    colorField: function () {
+      return circleColorDbField(this.$route.query.colorField);
     }
   },
   watch: {
@@ -844,6 +911,13 @@ export default {
     },
     '$route.query.minConn': function (newVal, oldVal) {
       this.cancelAndLoad(true);
+    },
+    // the ring is cut from the sample already fetched
+    '$route.query.maxNodes': function () {
+      if (this.layout === 'circle') { this.redraw(); }
+    },
+    '$route.query.colorField': function () {
+      if (this.layout === 'circle') { this.cancelAndLoad(true); }
     },
     '$route.query.nodeDist': function (newVal, oldVal) {
       simulation.force('link',
@@ -868,9 +942,14 @@ export default {
     '$route.query.treeDepth': function () {
       if (this.layout === 'tree') { this.redraw(); }
     },
-    layout: function () {
+    layout: function (newVal) {
       // the tree pans itself into place; the force graph starts centered
       if (svg && zoom && d3) { svg.call(zoom.transform, d3.zoomIdentity); }
+      // only a circle's sample carries the field it colors by
+      if (newVal === 'circle' && lastColorField !== this.colorField) {
+        this.cancelAndLoad(true);
+        return;
+      }
       this.redraw();
     },
     '$route.query.dstField': function (newVal, oldVal) {
@@ -1002,6 +1081,8 @@ export default {
     },
     changeWeight: function (weight) {
       this.weight = weight;
+      // the ring is ordered by the weight
+      if (this.layout === 'circle') { this.redraw(); return; }
       if (this.weight) { this.getMinMaxForScale(); }
 
       svg.selectAll('.node')
@@ -1144,17 +1225,15 @@ export default {
       }
     },
     hideNode () {
-      const id = '#id' + this.dataNode.id.replace(idRegex, '_');
-      svg.select(id).remove();
-      svg.select(id + '-label').remove();
-      svg.selectAll('.link').filter((d) => {
-        return d.source.id === this.dataNode.id || d.target.id === this.dataNode.id;
-      }).remove();
+      const isIt = d => drawnId(d) === this.dataNode.id;
+      svg.selectAll('.node').filter(isIt).remove();
+      svg.selectAll('.node-label').filter(isIt).remove();
+      svg.selectAll('.link').filter(d => isIt(d.source) || isIt(d.target)).remove();
       this.closePopups();
     },
     hideLink () {
-      svg.selectAll('.link').filter((d, i) => {
-        return d.source.id === this.dataLink.source.id && d.target.id === this.dataLink.target.id;
+      svg.selectAll('.link').filter((d) => {
+        return drawnId(d.source) === this.dataLink.source.id && drawnId(d.target) === this.dataLink.target.id;
       }).remove();
       this.closePopups();
     },
@@ -1185,7 +1264,9 @@ export default {
         if (fields.indexOf(id) > -1) { continue; }
         fields.push(id);
       }
-      this.query.fields = fields.join(',');
+      // the field the circle colors its arcs by comes with its sample
+      const colorField = this.layout === 'circle' ? this.colorField : undefined;
+      this.query.fields = (!colorField || fields.includes(colorField) ? fields : [...fields, colorField]).join(',');
 
       // create unique cancel id to make cancel req for corresponding es task
       const cancelId = Utils.createRandomString();
@@ -1201,6 +1282,7 @@ export default {
         this.loading = false;
         this.recordsFiltered = response.recordsFiltered;
         lastData = response;
+        lastColorField = colorField;
         this.drawGraphWrapper(response);
       } catch (error) {
         pendingPromise = null;
@@ -1271,6 +1353,8 @@ export default {
       }
       // a tree's missing root is decided per sample
       this.treeRootMissing = false;
+      this.circleDropped = 0;
+      this.circleLegend = [];
 
       // don't do anything if there's no data to process
       if (!data.nodes.length) { return; }
@@ -1321,6 +1405,10 @@ export default {
 
       if (this.layout === 'tree') {
         this.drawTree(data, width, height);
+        return;
+      }
+      if (this.layout === 'circle') {
+        this.drawCircle(data, width, height);
         return;
       }
 
@@ -1563,6 +1651,121 @@ export default {
         .style('pointer-events', 'none')
         .text(d => d.data.id + this.calculateNodeLabelSuffix(d.data.node));
     },
+    /**
+     * Draws the sample as a ring (connectionCircle.js, shared with the
+     * dashboard circle widget): hosts around it, each pair an arc across it.
+     * Hovering a host leaves only its arcs and peers lit.
+     */
+    drawCircle: function (data, width, height) {
+      if (simulation) { simulation.stop(); }
+      const circle = buildConnectionCircle(data, this.weight || 'sessions', this.colorField, this.circleMax);
+      this.circleShown = circle.nodes.length;
+      this.circleDropped = circle.dropped;
+
+      const colors = d3.scaleOrdinal(d3.schemeTableau10).domain(circle.colorValues);
+      const linkColor = d => (d.colorValue ? colors(d.colorValue) : OTHER_COLOR);
+      this.circleLegend = circleLegend(circle, colors);
+
+      const labelW = 130;
+      // room for every label, the canvas zooms out when that outgrows the view
+      const r = Math.max(60, Math.min(width, height) / 2 - labelW, (circle.nodes.length * 11) / (2 * Math.PI));
+
+      if (!svg) {
+        svg = d3.select(this.$refs.svgEl)
+          .attr('width', width)
+          .attr('height', height)
+          .attr('id', 'graphSvg');
+      }
+      if (!container) { container = svg.append('g'); }
+      svg.call(
+        zoom = d3.zoom()
+          .scaleExtent([0.1, 4])
+          .on('zoom', (e) => { container.attr('transform', e.transform); })
+      );
+      // start centered and whole; a redraw keeps where the user panned to
+      const current = d3.zoomTransform(svg.node());
+      if (current.k === 1 && current.x === 0 && current.y === 0) {
+        const k = Math.max(0.1, Math.min(1, Math.min(width, height) / (2 * (r + labelW))));
+        svg.call(zoom.transform, d3.zoomIdentity.translate(width / 2, height / 2).scale(k));
+      }
+
+      const hoverTimer = (fn) => {
+        if (popupTimer) { clearTimeout(popupTimer); }
+        popupTimer = setTimeout(fn, 600);
+      };
+      const clearTimer = () => { if (popupTimer) { clearTimeout(popupTimer); } };
+      const nodeVis = d => this.calculateNodeBaselineVisibility(d.data.node);
+      const linkVis = d => ((nodeVis(d.source) === 'hidden' || nodeVis(d.target) === 'hidden') ? 'hidden' : 'visible');
+
+      link = container.append('g')
+        .selectAll('path')
+        .data(circle.links)
+        .enter().append('path')
+        .attr('class', 'link')
+        .attr('fill', 'none')
+        .attr('stroke', linkColor)
+        .attr('stroke-opacity', 0.45)
+        .attr('stroke-width', this.calculateLinkWeight)
+        .attr('visibility', linkVis)
+        .attr('d', d => circleLinkPath(d, r))
+        .on('mouseover', (e, d) => {
+          link.style('opacity', o => (o === d ? 1 : 0.1));
+          hoverTimer(() => this.showLinkPopup({ ...d, source: d.source.data.node, target: d.target.data.node }));
+        })
+        .on('mouseout', () => { clearTimer(); link.style('opacity', 1); });
+
+      const focusCircle = (d) => {
+        const peers = circlePeers(circle.links, d);
+        link.style('opacity', l => (circleTouches(l, d) ? 1 : 0.05))
+          .attr('stroke-opacity', l => (circleTouches(l, d) ? 0.9 : 0.45));
+        node.style('opacity', o => (peers.has(o) ? 1 : 0.15));
+        nodeLabel.style('opacity', o => (peers.has(o) ? 1 : 0.15));
+      };
+      const unfocusCircle = () => {
+        link.style('opacity', 1).attr('stroke-opacity', 0.45);
+        node.style('opacity', 1);
+        nodeLabel.style('opacity', 1);
+      };
+
+      node = container.append('g')
+        .selectAll('circle')
+        .data(circle.nodes)
+        .enter().append('circle')
+        .attr('class', 'node')
+        .attr('cx', d => circlePoint(d.angle, r)[0])
+        .attr('cy', d => circlePoint(d.angle, r)[1])
+        .attr('fill', d => nodeFillColors[d.data.node.type])
+        .attr('r', this.calculateNodeWeight)
+        .attr('stroke', this.foregroundColor)
+        .attr('stroke-width', 0.5)
+        .attr('visibility', nodeVis)
+        .on('mouseover', (e, d) => { focusCircle(d); hoverTimer(() => this.showNodePopup(d.data.node)); })
+        .on('mouseout', () => { clearTimer(); unfocusCircle(); });
+
+      nodeLabel = container.append('g')
+        .selectAll('text')
+        .data(circle.nodes)
+        .enter().append('text')
+        .attr('class', 'node-label')
+        .attr('transform', d => circleLabel(d.angle, r + 16).transform)
+        .attr('text-anchor', d => circleLabel(d.angle, r + 16).anchor)
+        .attr('dy', '0.32em')
+        .style('font-size', this.fontSize + 'em')
+        .style('font-weight', d => this.calculateNodeLabelWeight(d.data.node))
+        .style('font-style', d => this.calculateNodeLabelStyle(d.data.node))
+        .attr('visibility', nodeVis)
+        .style('pointer-events', 'none')
+        .text(d => d.data.id + this.calculateNodeLabelSuffix(d.data.node));
+    },
+    /* circle: leaves only one color's arcs lit (undefined lights them all) */
+    focusCircleColor: function (value) {
+      if (!link) { return; }
+      link.style('opacity', l => (value === undefined || l.colorValue === value ? 1 : 0.05));
+    },
+    changeCircleMax: function (maxNodes) {
+      if (maxNodes === this.circleMax) { return; }
+      this.$router.push({ query: { ...this.$route.query, maxNodes } });
+    },
     getMinMaxForScale: function () {
       let weightField = this.weight;
 
@@ -1726,6 +1929,7 @@ export default {
       pendingPromise = null;
     }
     lastData = undefined; // the next visit's redraw must not show this sample
+    lastColorField = undefined;
 
     // remove listeners
     this._svgResizeObserver?.disconnect();
@@ -1841,6 +2045,20 @@ export default {
 
 /* buttons overlaying the graph (in the page shell's overlay slot, which
    tracks the content area — no toolbar offset math) */
+.connections-circle-legend {
+  position: absolute;
+  top: 44px;
+  right: 10px;
+  font-size: 0.8rem;
+  cursor: default;
+}
+.connections-circle-swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
 .connections-buttons {
   position: absolute;
   top: 8px;
