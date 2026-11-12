@@ -4,7 +4,7 @@ use Carp;
 use strict;
 use Test::More;
 @ArkimeTest::ISA = qw(Exporter);
-@ArkimeTest::EXPORT = qw (sessionsPost sessionsDeleteByTag sessionsDeleteByNode sessionGet sessionDelete esGet esPost esPut esDelete clusterSearch clusterPut clusterDelete clusterDeleteWhere clusterCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 multiDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
+@ArkimeTest::EXPORT = qw (timedSystem hungReport sessionsPost sessionsDeleteByTag sessionsDeleteByNode sessionGet sessionDelete esGet esPost esPut esDelete clusterSearch clusterPut clusterDelete clusterDeleteWhere clusterCopy viewerGet viewerGetToken viewerGet2 viewerDelete viewerDeleteToken viewerDeleteToken2 multiDeleteToken viewerPost viewerPost2 viewerPostToken viewerPostToken2 countTest countTestToken countTest2 countTestMulti errTest bin2hex mesGet mesPost multiGet multiGetToken multiPost multiPostToken getTokenCookie getTokenCookie2 parliamentGet parliamentGetToken parliamentPost parliamentPostToken parliamentPut parliamentPutToken parliamentDelete parliamentDeleteToken getParliamentTokenCookie waitFor viewerPutToken viewerPut getCont3xtTokenCookie cont3xtGet cont3xtGetToken cont3xtPut cont3xtPutToken cont3xtDelete cont3xtDeleteToken cont3xtPost cont3xtPostToken addUser changePasswordSecret clearIndex generate_totp waitUntil);
 
 use LWP::UserAgent;
 use HTTP::Request::Common;
@@ -15,6 +15,7 @@ use IO::Socket::INET;
 use Time::HiRes ();
 use Try::Tiny;
 use Text::ParseWords qw(shellwords);
+use POSIX ();
 
 $ArkimeTest::userAgent = LWP::UserAgent->new(timeout => 120, keep_alive => 10);
 $ArkimeTest::host = "127.0.0.1";
@@ -814,6 +815,74 @@ sub generate_totp {
     my $offset = ord(substr($hash, -1)) & 0x0F;
     my $code = (unpack('N', substr($hash, $offset, 4)) & 0x7FFFFFFF) % 1000000;
     return sprintf('%06d', $code);
+}
+
+################################################################################
+# A timedSystem command still running after this many seconds has hung
+$ArkimeTest::hungSecs = $ENV{ARKIME_TEST_HUNG_SECS} // 120;
+# Optional sub a test sets to add to the report of a hung command
+$ArkimeTest::hungExtra = undef;
+
+# Says where a hung command is stuck: its log and each of its processes'
+# threads, since nothing else survives a CI job timeout
+sub hungReport {
+my ($pgid, $cmd) = @_;
+    diag "HUNG [>${ArkimeTest::hungSecs}s] $cmd";
+    my ($log) = $cmd =~ m{> (/tmp/\S+) 2>&1};
+    diag "--- last of $log\n" . `tail -40 $log 2>&1` if ($log && -s $log);
+    $ArkimeTest::hungExtra->($pgid, $cmd) if ($ArkimeTest::hungExtra);
+
+    foreach my $line (`ps -eo pid=,pgid=,etime=,args=`) {
+        my ($pid, $pg, $etime, $args) = $line =~ /^\s*(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/ or next;
+        next if ($pg != $pgid);
+        diag "--- pid $pid running $etime: " . substr($args, 0, 200);
+        # thread name, state and the syscall it sits in (202 futex: waiting on a lock, 7/271 poll)
+        foreach my $task (glob("/proc/$pid/task/*")) {
+            my $comm = `cat $task/comm 2>/dev/null`; chomp $comm;
+            my ($state) = `cat $task/stat 2>/dev/null` =~ /\) (\S)/;
+            my $syscall = `cat $task/syscall 2>/dev/null`; chomp $syscall;
+            diag sprintf("    %-16s %s syscall %s", $comm, $state // '?', $syscall);
+        }
+        if ($args =~ m{capture/capture} && system("which gdb > /dev/null 2>&1") == 0) {
+            diag `gdb -p $pid -batch -ex 'thread apply all bt' 2>&1 | grep -v '^\\[New LWP' | tail -150`;
+        }
+    }
+}
+
+################################################################################
+# system() that says when a command took over 3s, a slow CI runner then shows
+# which one. A command that never returns is reported and killed, so the test
+# fails instead of the CI job timing out
+sub timedSystem {
+my ($cmd) = @_;
+    my $start = Time::HiRes::time();
+    my $pid = fork();
+    die "fork failed: $!" if (!defined $pid);
+    if ($pid == 0) {
+        setpgrp(0, 0);
+        exec("/bin/sh", "-c", $cmd) or POSIX::_exit(127);
+    }
+    my $rc = eval {
+        local $SIG{ALRM} = sub { die "hung\n" };
+        alarm($ArkimeTest::hungSecs);
+        waitpid($pid, 0);
+        alarm(0);
+        $?;
+    };
+    if (!defined $rc) {
+        alarm(0);
+        hungReport($pid, $cmd);
+        kill('KILL', -$pid);
+        waitpid($pid, 0);
+        die "$0: command hung, see the report above\n";
+    }
+    my $ms = int((Time::HiRes::time() - $start) * 1000);
+    if ($ms > 3000) {
+        (my $short = $cmd) =~ s/^.*?(\.\.\/capture\/capture|aws |curl |grep |diff )/$1/;
+        $short =~ s/ (-o '?(users)?[Ee]lasticsearch=\S+|-o disablePython=true|-c config\.test\.ini)//g;
+        diag sprintf("SLOW [%dms] %s", $ms, substr($short, 0, 200));
+    }
+    return $rc;
 }
 
 return 1;
