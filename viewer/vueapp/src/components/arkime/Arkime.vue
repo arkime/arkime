@@ -593,11 +593,19 @@ export default {
     clearControls: function () {
       this.$router.replace({ query: withoutVariableParams(this.$route.query) });
     },
-    resetSummaryToDefaults: function () {
-      this.widgets = this.defaultWidgets();
-      this.colorScheme = 'rainbow';
-      this.setDashboardExpression('');
-      this.setDashboardParam('');
+    // back to the default dashboard (the user's pick, else the Overview), in
+    // the url too so the dashboard menu and navigation widget show it as the
+    // current one; the built in layout only when that can't be loaded
+    resetSummaryToDefaults: async function () {
+      const defaultId = defaultDashboardId(this.user?.settings);
+      if (await this.loadDashboardById(defaultId)) {
+        this.setDashboardParam(defaultId);
+      } else {
+        this.widgets = this.defaultWidgets();
+        this.colorScheme = 'rainbow';
+        this.setDashboardExpression('');
+        this.setDashboardParam('');
+      }
       this.reloadSummaryView();
       this.saveDashboardConfig();
     },
