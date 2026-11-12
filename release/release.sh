@@ -48,6 +48,11 @@ changelog_section() {
   ' CHANGELOG
 }
 
+# Escaped for markdown, so <code> and friends in the CHANGELOG aren't treated as HTML
+notes_section() {
+  changelog_section | perl -pe 's/([<*~])/\\$1/g'
+}
+
 ######################################################################
 preflight() {
   local t url
@@ -338,7 +343,7 @@ update_release_notes() {
   trap "rm -rf '$tmp'" EXIT
 
   gh release view "$TAG" -R "$REPO" --json body --jq .body > "$tmp/body.md" || die "Release $TAG not found on GitHub, did the workflow finish?"
-  changelog_section > "$tmp/section.md"
+  notes_section > "$tmp/section.md"
   [ -s "$tmp/section.md" ] || die "No CHANGELOG entries found for $VERSION"
 
   if grep -qF -- "$(grep -m1 '^  - ' "$tmp/section.md")" "$tmp/body.md"; then

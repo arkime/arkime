@@ -36,6 +36,8 @@ NOTICE: Restart wiseService before capture when upgrading
 NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at once after upgrading
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
+7.0.0-rc2 2026/12/xx
+
 7.0.0-rc1 2026/11/12
 ## Breaking
   - Session columns, info field config and spiview layouts moved from the user record to the shareables index so they can be
@@ -361,6 +363,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           the OpenSearch/Elasticsearch connections do unless the section sets insecure=false. The client certificate
           and caTrustFile are only used for the configured url's origin, a redirect elsewhere gets the system CAs
 
+6.9.3 2026/12/xx
 
 6.9.2 2026/11/12
 ## Breaking
