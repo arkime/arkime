@@ -12,6 +12,7 @@ import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 import { defaultLength, fieldCountLimits, slotMetrics, isPercentileAgg, PERCENTILE_VIEW_MODES, allowsSplit, allowsOther, allowsBucketInterval } from './viewModes';
 import { spigraphQueryFromGraph } from '../dashboardConfig';
+import { DEFAULT_CIRCLE_COLOR_FIELD } from './connectionCircle';
 import { controlFilters, substituteExpression, withoutPicks } from './dashboardVariables';
 
 /**
@@ -442,6 +443,19 @@ export async function fetchHierarchy (route, store, widget, { signal } = {}) {
   return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal });
 }
 
+/** True when a circle can color its arcs by the field: /api/connections lists
+ *  its values per link (it sums a count field, so those are left out). */
+export function circleColorFieldUsable (field) {
+  return fieldIsAggregatable(field) && !!field.dbField && field.exp !== 'ip' && field.exp !== 'ip.dst:port' &&
+    !(field.type === 'integer' && field.category !== 'port');
+}
+
+/** The database field a circle colors its arcs by, from its exp or dbField (protocols unless usable). */
+export function circleColorDbField (colorField) {
+  const field = typeof colorField === 'string' && colorField ? FieldService.getField(colorField, true) : null;
+  return circleColorFieldUsable(field) ? field.dbField : DEFAULT_CIRCLE_COLOR_FIELD;
+}
+
 /**
  * Fetch connections data for a src → dst field pair (the Connections widget).
  * The endpoint samples `length` sessions and returns { nodes, links } — nodes
@@ -483,7 +497,9 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
   const data = buildWidgetParams(route, store, widget, {
     srcField,
     dstField,
-    length: widget.length || defaultLength(widget.viewMode)
+    length: widget.length || defaultLength(widget.viewMode),
+    // the field the circle colors its arcs by comes with the sample
+    ...(widget.viewMode === 'circle' ? { fields: circleColorDbField(widget.colorField) } : {})
   });
   return await fetchWrapper({ url: 'api/connections', method: 'POST', data, signal });
 }

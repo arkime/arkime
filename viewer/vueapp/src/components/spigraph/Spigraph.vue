@@ -500,7 +500,7 @@ SPDX-License-Identifier: Apache-2.0
     <arkime-connections-graph
       v-else
       ref="connectionsGraph"
-      :layout="spiGraphType === 'tree' ? 'tree' : 'force'" /> <!-- /connections graph type -->
+      :layout="connectionsLayout" /> <!-- /connections graph type -->
 
     <!-- the graph's settings: the dashboard's widget editor, so the page can
          set whatever a widget can -->
@@ -600,10 +600,13 @@ let respondedAt; // the time that the last data load successfully responded
 let pendingPromise; // save a pending promise to be able to cancel it
 let d3; // lazy loaded for the stacked timeline's colors
 
+// the types ConnectionsGraph draws, each a layout of the same sample
+const CONNECTIONS_TYPES = ['connections', 'tree', 'circle'];
+
 // the url params a graph sets: showing another graph clears the ones it leaves out
 const GRAPH_PARAMS = ['subFields', 'timelineMode', 'seriesType', 'barMode', 'barOrientation', 'splitLength', 'pieMode', 'pieCount', 'other', 'tableMode',
   'lineMetric', 'yMetric', 'sizeMetric', 'yScale', 'srcField', 'dstField', 'graphType', 'metricAgg', 'metrics', 'sortMetric', 'order', 'orderBy',
-  'bucketInterval', 'warn', 'crit', 'connectionsLength', 'treeRoot', 'treeDepth', 'view'];
+  'bucketInterval', 'warn', 'crit', 'connectionsLength', 'treeRoot', 'treeDepth', 'colorField', 'maxNodes', 'view'];
 
 export default {
   name: 'Spigraph',
@@ -652,7 +655,7 @@ export default {
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
       snackbar: { show: false, text: '', color: 'success', link: '' },
-      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'pie', 'tagcloud', 'waffle', 'table', 'treemap', 'sankey', 'matrix', 'mosaic', 'connections', 'tree'],
+      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'pie', 'tagcloud', 'waffle', 'table', 'treemap', 'sankey', 'matrix', 'mosaic', 'connections', 'tree', 'circle'],
       timelineModes: ['separate', 'stacked', 'percent', 'overlaid'],
       showSettings: false,
       settingsDraft: { sortBy: 'graph', refresh: 0 }, // the dialog's page settings, until applied
@@ -923,7 +926,10 @@ export default {
     },
     // the connections graph draws both the force layout and the tree
     isConnectionsType: function () {
-      return this.spiGraphType === 'connections' || this.spiGraphType === 'tree';
+      return CONNECTIONS_TYPES.includes(this.spiGraphType);
+    },
+    connectionsLayout: function () {
+      return this.spiGraphType === 'connections' ? 'force' : this.spiGraphType;
     },
     // what the page shows as saved-graph data.
     // The field, size and type come from the page state, since the url only
@@ -943,9 +949,10 @@ export default {
         ...(this.spiGraphType === 'scatter' ? { yMetric: this.slotKeys[1], sizeMetric: this.slotKeys[2] || undefined } : {}),
         // a timeline draws the store's bars or lines unless the url names one
         seriesType: this.timelineSeriesType,
-        // connections falls back to the user's own default fields
-        srcField: this.$route.query.srcField || settings.connSrcField,
-        dstField: this.$route.query.dstField || settings.connDstField
+        // connections falls back to the user's own default fields, resolved
+        // as the connections graph resolves them
+        srcField: this.$route.query.srcField || FieldService.getFieldProperty(settings.connSrcField, 'dbField'),
+        dstField: this.$route.query.dstField || FieldService.getFieldProperty(settings.connDstField, 'dbField')
       }, {
         expression: this.$store.state.expression,
         fieldsArr: this.$store.state.fieldsArr
@@ -976,7 +983,7 @@ export default {
     // data, and when going to or from time of day, whose grid asks for hour
     // buckets folded into a week (interval=hourOfWeek) rather than the timeline
     spiGraphType: function (newVal, oldVal) {
-      const isConnections = t => t === 'connections' || t === 'tree';
+      const isConnections = t => CONNECTIONS_TYPES.includes(t);
       if (isConnections(newVal) || this.restoringGraph) { return; }
       if (isConnections(oldVal) || (newVal === 'timeofday') !== (oldVal === 'timeofday')) {
         this.cancelAndLoad(true);
@@ -1130,7 +1137,7 @@ export default {
       }
       // only the timeline types refresh, and only they have its control
       if (!this.isHistoType && this.refresh) { this.changeRefreshInterval(0); }
-      if (q.spiGraphType !== 'connections' && q.spiGraphType !== 'tree') {
+      if (!CONNECTIONS_TYPES.includes(q.spiGraphType)) {
         this.cancelAndLoad(true);
       }
       return true;
@@ -1310,7 +1317,9 @@ export default {
           spiGraphType: this.spiGraphType,
           // the tree's own params go with it
           treeRoot: this.spiGraphType === 'tree' ? this.$route.query.treeRoot : undefined,
-          treeDepth: this.spiGraphType === 'tree' ? this.$route.query.treeDepth : undefined
+          treeDepth: this.spiGraphType === 'tree' ? this.$route.query.treeDepth : undefined,
+          colorField: this.spiGraphType === 'circle' ? this.$route.query.colorField : undefined,
+          maxNodes: this.spiGraphType === 'circle' ? this.$route.query.maxNodes : undefined
         }
       });
     },

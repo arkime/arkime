@@ -1,6 +1,6 @@
 {
   "name": "Connections",
-  "description": "Sessions by endpoint, port, protocol and size, with the connection graph and tree",
+  "description": "Sessions by endpoint, port, protocol and size, with the connection graph, circle and tree",
   "data": {
     "version": 1,
     "colorScheme": "rainbow",
@@ -319,13 +319,27 @@
           "ip.dst"
         ],
         "viewMode": "connections",
-        "width": 4,
+        "width": 2,
         "height": 3,
         "length": 500,
         "title": "Connection graph"
       },
       {
         "id": "w30",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "circle",
+        "width": 2,
+        "height": 3,
+        "length": 500,
+        "maxNodes": 50,
+        "title": "Busiest hosts: who talks to whom, by protocol"
+      },
+      {
+        "id": "w31",
         "field": "ip.src",
         "fields": [
           "ip.src",

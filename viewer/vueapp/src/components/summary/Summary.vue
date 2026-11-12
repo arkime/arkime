@@ -122,6 +122,18 @@ SPDX-License-Identifier: Apache-2.0
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- a src → dst field pair on a ring, each pair an arc -->
+          <CircleWidget
+            v-else-if="w.viewMode === 'circle'"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
+            @show-tooltip="showTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <!-- table: 1-7 fields side by side, each with its metric column(s) -->
           <MultiFieldTableWidget
             v-else-if="w.viewMode === 'table'"
@@ -367,6 +379,7 @@ import IntersectionWidget from './widgets/IntersectionWidget.vue';
 import SessionsWidget from './widgets/SessionsWidget.vue';
 import ConnectionsWidget from './widgets/ConnectionsWidget.vue';
 import TreeWidget from './widgets/TreeWidget.vue';
+import CircleWidget from './widgets/CircleWidget.vue';
 import HierarchyWidget from './widgets/HierarchyWidget.vue';
 import MultiFieldTableWidget from './widgets/MultiFieldTableWidget.vue';
 import TimelineWidget from './widgets/TimelineWidget.vue';
@@ -381,7 +394,8 @@ import ControlWidget from './widgets/ControlWidget.vue';
 import { controlVariable, substituteExpression, withoutVariableParams } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare } from './widgets/viewModes';
-import { summaryRequestWidget, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle, dashboardPageQuery } from './widgets/widgetData';
+import { summaryRequestWidget, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle, dashboardPageQuery, circleColorDbField } from './widgets/widgetData';
+import { DEFAULT_CIRCLE_MAX_NODES } from './widgets/connectionCircle';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -671,6 +685,12 @@ const widgetInfo = (w) => {
   if (isTreeMode(w.viewMode)) {
     rows.push({ label: t('sessions.summary.widget.treeRoot'), value: w.treeRoot || t('sessions.summary.widget.treeRootAuto') });
     rows.push({ label: t('sessions.summary.widget.treeDepth'), value: `${w.treeDepth || 3}` });
+  }
+
+  if (w.viewMode === 'circle') {
+    const db = circleColorDbField(w.colorField);
+    rows.push({ label: t('sessions.summary.widget.colorField'), value: FieldService.getField(db, true)?.friendlyName || db });
+    rows.push({ label: t('sessions.summary.widget.maxNodes'), value: `${w.maxNodes || DEFAULT_CIRCLE_MAX_NODES}` });
   }
 
   if (isGaugeMode(w.viewMode)) {

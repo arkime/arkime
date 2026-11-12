@@ -123,6 +123,20 @@
           "ip.src",
           "ip.dst"
         ],
+        "viewMode": "circle",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "maxNodes": 50,
+        "title": "ICS hosts: who talks to whom, by protocol"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
         "viewMode": "tree",
         "width": 4,
         "height": 3,
@@ -131,7 +145,7 @@
         "title": "ICS tree: who reached what (click a host to re-root)"
       },
       {
-        "id": "w12",
+        "id": "w13",
         "field": "ip.src",
         "fields": [
           "ip.src",

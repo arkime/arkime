@@ -495,6 +495,39 @@ SPDX-License-Identifier: Apache-2.0
             </v-tooltip>
           </span>
 
+          <!-- connection circle: the field its arcs are colored by -->
+          <div
+            v-if="circleMode"
+            class="arkime-input-group arkime-input-group--fluid flex-grow-1"
+            style="min-width: 220px">
+            <span class="arkime-input-label">
+              {{ $t('sessions.summary.widget.colorField') }}
+            </span>
+            <ArkimeFieldTypeahead
+              :fields="colorFields"
+              :initial-value="colorFieldFriendlyName"
+              @field-selected="onColorFieldSelected" />
+            <v-btn
+              v-if="form.colorField"
+              variant="text"
+              size="small"
+              icon
+              :title="$t('common.clear')"
+              @click="form.colorField = ''">
+              <v-icon icon="mdi-close" />
+            </v-btn>
+          </div>
+
+          <v-select
+            v-if="circleMode"
+            v-model="form.maxNodes"
+            :items="circleMaxItems"
+            :label="$t('sessions.summary.widget.maxNodes')"
+            density="compact"
+            variant="outlined"
+            hide-details
+            style="min-width: 120px" />
+
           <!-- connection tree: the value it starts from and how many hops it draws -->
           <span
             v-if="treeMode"
@@ -674,9 +707,10 @@ import { ref, computed, watch } from 'vue';
 import { useStore } from 'vuex';
 import { useI18n } from 'vue-i18n';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
+import { CIRCLE_MAX_NODES, DEFAULT_CIRCLE_MAX_NODES } from './widgets/connectionCircle';
 import FieldService from '../search/FieldService';
 import { createShareableService } from '../users/ShareableService';
-import { metricIsAdditive, fieldIsAggregatable } from './widgets/widgetData';
+import { metricIsAdditive, fieldIsAggregatable, circleColorFieldUsable, circleColorDbField } from './widgets/widgetData';
 import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH, isTimelineMode, metricSlots, slotMetrics, metricAggsFor, isControlMode, allowsCompare, hasLevels, COMPARES } from './widgets/viewModes';
 import { defaultVariableName, VARIABLE_NAME_RE, CONTROL_TYPES } from './widgets/dashboardVariables';
 import { GRAPH_VIEW_MODES, graphFromWidget, nonNeg } from './dashboardConfig';
@@ -743,6 +777,8 @@ const blankForm = () => ({
   other: false,
   text: '',
   treeRoot: '',
+  colorField: '',
+  maxNodes: DEFAULT_CIRCLE_MAX_NODES,
   treeDepth: DEFAULT_TREE_DEPTH,
   length: 20,
   order: 'desc',
@@ -844,6 +880,15 @@ watch(() => form.value.viewMode, (vm) => {
 });
 // connection tree: a root value and a depth on top of the connections pair
 const treeMode = computed(() => isTreeMode(form.value.viewMode));
+// connection circle: the field its arcs are colored by ('' = protocols)
+const circleMode = computed(() => form.value.viewMode === 'circle');
+const circleMaxItems = CIRCLE_MAX_NODES.map(n => ({ title: String(n), value: n }));
+const colorFields = computed(() => fields.value.filter(circleColorFieldUsable));
+const colorFieldFriendlyName = computed(() => {
+  const db = circleColorDbField(form.value.colorField);
+  return FieldService.getField(db, true)?.friendlyName || db;
+});
+const onColorFieldSelected = (field) => { form.value.colorField = field?.exp || ''; };
 const treeDepthItems = TREE_DEPTHS.map(n => ({ title: String(n), value: n }));
 // a split or nested pie and a split waffle are drawn from the hierarchy
 // endpoint, which only counts sessions and has no order or bucket interval
@@ -1066,6 +1111,8 @@ const fillForm = (w) => {
     sortMetric: w.sortMetric || w.metricType || 'sessions',
     metricAgg: METRIC_AGGS.includes(w.metricAgg) ? w.metricAgg : 'sum',
     splitField: w.splitField || '',
+    colorField: w.colorField || '',
+    maxNodes: CIRCLE_MAX_NODES.includes(w.maxNodes) ? w.maxNodes : DEFAULT_CIRCLE_MAX_NODES,
     splitLength: SPLIT_LENGTHS.includes(w.splitLength) ? w.splitLength : 5,
     barMode: BAR_MODES.includes(w.barMode) ? w.barMode : 'stacked',
     orientation: BAR_ORIENTATIONS.includes(w.orientation) ? w.orientation : 'vertical',
@@ -1148,9 +1195,10 @@ watch([() => form.value.fields, maxFields, () => form.value.viewMode], ([v, max,
 
 // the top-N and session-sample scales don't overlap, so switching between them
 // snaps the limit to the new scale's default rather than keeping a value that
-// means something entirely different (a 20-session connections sample, say)
-watch(() => form.value.viewMode, (mode, prev) => {
-  if (!prev || mode === prev) { return; }
+// means something entirely different (a 20-session connections sample, say).
+// A new form is a widget being loaded, not the user switching its type
+watch([() => form.value, () => form.value.viewMode], ([f, mode], [prevForm, prev]) => {
+  if (f !== prevForm || !prev || mode === prev) { return; }
   if (isSampleSize(mode) !== isSampleSize(prev)) {
     form.value.length = defaultLength(mode);
   }
@@ -1265,6 +1313,8 @@ const save = () => {
     compare: compareEnabled.value && COMPARES.includes(form.value.compare) ? form.value.compare : '',
     text: staticMode.value ? (form.value.text || '') : '',
     treeRoot: treeMode.value ? (form.value.treeRoot?.trim() || '') : '',
+    colorField: circleMode.value ? (form.value.colorField || '') : '',
+    maxNodes: circleMode.value && CIRCLE_MAX_NODES.includes(form.value.maxNodes) ? form.value.maxNodes : DEFAULT_CIRCLE_MAX_NODES,
     treeDepth: treeMode.value && TREE_DEPTHS.includes(form.value.treeDepth) ? form.value.treeDepth : DEFAULT_TREE_DEPTH,
     length: form.value.length,
     order: form.value.order,

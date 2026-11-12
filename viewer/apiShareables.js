@@ -23,7 +23,7 @@ const MAX_WIDGETS = 100;
 const INVISIBLE_RE = /[\p{Cc}\p{Cf}\p{Zl}\p{Zp}]/u;
 
 // the view modes a saved graph can have (GRAPH_VIEW_MODES in dashboardConfig.js)
-const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
+const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'circle', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
 
 class ShareableAPIs {
   // --------------------------------------------------------------------------
@@ -187,10 +187,10 @@ class ShareableAPIs {
       if (!graphField) { return missingGraph; }
       // a scatter with no bubble size leaves its third metric ''
       if (data.metrics !== undefined && !ArkimeUtil.isStringArray(data.metrics, 0)) { return invalidGraph; }
-      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'orientation', 'seriesType', 'yScale', 'order', 'orderBy', 'treeRoot', 'compare', 'expression', 'view']) {
+      for (const key of ['metricType', 'metricAgg', 'sortMetric', 'splitField', 'barMode', 'orientation', 'seriesType', 'yScale', 'order', 'orderBy', 'treeRoot', 'colorField', 'compare', 'expression', 'view']) {
         if (!optString(data[key])) { return invalidGraph; }
       }
-      for (const key of ['length', 'splitLength', 'treeDepth', 'gaugeWarn', 'gaugeCrit']) {
+      for (const key of ['length', 'splitLength', 'treeDepth', 'maxNodes', 'gaugeWarn', 'gaugeCrit']) {
         if (data[key] !== undefined && !Number.isInteger(data[key])) { return invalidGraph; }
       }
       break;

@@ -18,7 +18,7 @@ import { fetchSpigraph } from './widgetData';
 // keeps beside a definition. A change of any other setting fetches again, so
 // one missing from here costs a fetch, never stale data
 const DRAWN_KEYS = new Set(['id', 'title', 'width', 'height', 'text', 'barMode', 'orientation', 'seriesType', 'yScale', 'gaugeMax', 'gaugeWarn', 'gaugeCrit',
-  'sparkline', 'treeRoot', 'treeDepth', 'data', 'otherData', 'loading', 'error']);
+  'sparkline', 'treeRoot', 'treeDepth', 'maxNodes', 'data', 'otherData', 'loading', 'error']);
 
 /**
  * @param {() => object} getWidget       returns the current widget definition

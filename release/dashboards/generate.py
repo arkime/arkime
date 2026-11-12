@@ -131,6 +131,11 @@ def connections(src='ip.src', dst='ip.dst', length=500, w=4, h=3, title=None, ex
     if title: d['title'] = title
     if expression: d['expression'] = expression
     return d
+def circle(title, src='ip.src', dst='ip.dst', length=500, maxNodes=50, colorField=None, w=4, h=3, expression=None):
+    d = {'field': src, 'fields': [src, dst], 'viewMode': 'circle', 'width': w, 'height': h, 'length': length, 'maxNodes': maxNodes, 'title': title}
+    if colorField: d['colorField'] = colorField
+    if expression: d['expression'] = expression
+    return d
 def sankey(fields, length=10, w=4, h=3, title=None, expression=None):
     d = {'field': fields[0], 'fields': fields, 'viewMode': 'sankey', 'width': w, 'height': h, 'length': length}
     if title: d['title'] = title
@@ -225,7 +230,7 @@ D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, to
     treemap('ip.src', metricType='bytes'),
 ])
 
-D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol and size, with the connection graph and tree', [
+D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol and size, with the connection graph, circle and tree', [
     nav(),
     control('ip.protocol', title='IP protocol'), control('protocols', title='Service'),
     control('port.dst', title='Destination port', kind='range'), control('node', title='Capture node'),
@@ -252,7 +257,8 @@ D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol an
     geomap('country.dst', h=2, metricType='bytes', title='Destination countries by bytes'),
     scatter('ip.src', size='packets', w=4, title='Sources by sessions and bytes (point size: packets)'),
     sankey(['ip.src', 'port.dst', 'ip.dst'], title='Top paths: source, destination port, destination'),
-    connections(title='Connection graph'),
+    connections(title='Connection graph', w=2),
+    circle('Busiest hosts: who talks to whom, by protocol', w=2),
     tree('Connection tree from the busiest source (click a host to re-root)'),
 ])
 
@@ -533,6 +539,7 @@ D['ot'] = plain('OT', 'Operational technology (ICS) sessions: Modbus, DNP3, BACn
     table('ip.dst:port', title='ICS servers', metrics=['sessions', 'bytes'], sortMetric='sessions'),
     pie('ptp.msgType', h=3, title='PTP message types', expression='protocols == ptp'),
     table('ptp.clockId', w=4, h=2, title='PTP clocks', expression='protocols == ptp'),
+    circle('ICS hosts: who talks to whom, by protocol'),
     tree('ICS tree: who reached what (click a host to re-root)'),
     sessions(['ip.src', 'ip.dst', 'port.dst', 'protocols', 'bytes', 'packets']),
 ], folder=A, expression=ICS)

@@ -23,10 +23,23 @@ my ($url) = @_;
 }
 
 # History is written after the response is sent, so poll for it instead of sleeping
+# Waits well past the usual 10s, so a row that is only late still passes. When
+# it never shows, says what history has instead and what the viewer logged, to
+# tell a late row from one that was never written
 sub waitForHistory {
 my ($url, $check) = @_;
 
-    waitUntil(sub { $check->(viewerGet($url)) });
+    my $start = Time::HiRes::time();
+    return if (waitUntil(sub { $check->(viewerGet($url)) }, 30));
+
+    diag sprintf("history row not found after %.1fs, now %d, %s", Time::HiRes::time() - $start, time(), $url);
+    my $json = viewerGet($url);
+    my @rows = @{$json->{data} // []};
+    diag "  history has " . scalar(@rows) . " rows, the newest:";
+    foreach my $row (@rows[0 .. ($#rows < 2 ? $#rows : 2)]) {
+        diag sprintf("  ts %s api %s range %s uiPage %s expression %s query %s", map { substr($row->{$_} // '-', 0, 120) } qw(timestamp api range uiPage expression query));
+    }
+    diag "  viewer log:\n" . `grep -n 'log history' /tmp/arkime.test 2>/dev/null | tail -5; tail -15 /tmp/arkime.test 2>/dev/null | cut -c1-300`;
 }
 
 # History timestamps are in seconds and the tests check the newest item, so the
