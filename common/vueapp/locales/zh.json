@@ -691,6 +691,7 @@
         "folderTip": "可选：同一文件夹中的仪表板会在仪表板菜单中一起列出",
         "folderPlaceholder": "无文件夹",
         "savedDashboards": "已保存的仪表板",
+        "newDashboard": "新建仪表板",
         "saveCurrent": "保存当前仪表板",
         "saveTo": "保存“{name}”",
         "saveConfig": "保存仪表板",

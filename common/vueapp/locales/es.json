@@ -691,6 +691,7 @@
         "folderTip": "Opcional: los paneles con la misma carpeta se muestran juntos en el menú de paneles",
         "folderPlaceholder": "Sin carpeta",
         "savedDashboards": "Paneles guardados",
+        "newDashboard": "Nuevo panel",
         "saveCurrent": "Guardar panel actual",
         "saveTo": "Guardar \"{name}\"",
         "saveConfig": "Guardar panel",

@@ -691,6 +691,7 @@
         "folderTip": "任意: 同じフォルダーのダッシュボードはダッシュボードメニューにまとめて表示されます",
         "folderPlaceholder": "フォルダーなし",
         "savedDashboards": "保存済みダッシュボード",
+        "newDashboard": "新しいダッシュボード",
         "saveCurrent": "現在のダッシュボードを保存",
         "saveTo": "「{name}」を保存",
         "saveConfig": "ダッシュボードを保存",

@@ -691,6 +691,7 @@
         "folderTip": "Optional: Dashboards mit demselben Ordner werden im Dashboard-Menü zusammen aufgeführt",
         "folderPlaceholder": "Kein Ordner",
         "savedDashboards": "Gespeicherte Dashboards",
+        "newDashboard": "Neues Dashboard",
         "saveCurrent": "Aktuelles Dashboard speichern",
         "saveTo": "\"{name}\" speichern",
         "saveConfig": "Dashboard speichern",

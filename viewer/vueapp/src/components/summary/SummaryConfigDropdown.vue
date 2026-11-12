@@ -37,6 +37,14 @@ SPDX-License-Identifier: Apache-2.0
 
       <v-divider />
 
+      <!-- Start a new saved dashboard: name it, then add to it -->
+      <v-list-item @click="openNewModal">
+        <v-icon
+          icon="mdi-view-dashboard-edit-outline"
+          class="me-1" />
+        {{ $t('sessions.summary.config.newDashboard') }}
+      </v-list-item>
+
       <!-- Save back into the shown saved dashboard (only when editable) -->
       <v-list-item
         v-if="currentSaved"
@@ -312,8 +320,9 @@ SPDX-License-Identifier: Apache-2.0
        its own layout; the shown layout is written by "save to current" -->
   <SummaryConfigSaveModal
     :show="showSaveModal"
-    :config="editingConfig ? editingConfig.data : currentConfig"
+    :config="editingConfig ? editingConfig.data : (newConfig || currentConfig)"
     :editing="editingConfig"
+    :title="newConfig ? $t('sessions.summary.config.newDashboard') : ''"
     @close="closeSaveModal"
     @saved="onConfigSaved" />
 </template>
@@ -327,6 +336,7 @@ import { createShareableService } from '../users/ShareableService';
 import UserService from '../users/UserService';
 import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
 import { loadSystemDashboards, defaultDashboardId, pickedDefaultId, FALLBACK_DEFAULT_ID } from './systemDashboards';
+import { blankDashboard } from './dashboardConfig';
 import { dashboardRows, folderOf, loadOpenFolders, saveOpenFolders } from './dashboardFolders';
 
 const SummaryConfigService = createShareableService('summaryConfig');
@@ -353,6 +363,7 @@ const systemDashboards = ref([]); // the viewer's *.dashboard.json files, read o
 const search = ref('');
 const showSaveModal = ref(false);
 const editingConfig = ref(null);
+const newConfig = ref(null); // the blank layout of a dashboard being created
 const importInput = ref(null);
 const savingCurrent = ref(false);
 
@@ -455,6 +466,15 @@ const saveToCurrent = async () => {
 // Open save modal for new config
 const openSaveModal = () => {
   editingConfig.value = null;
+  newConfig.value = null;
+  showSaveModal.value = true;
+};
+
+// A new dashboard is saved empty under its name and folder, then shown, so
+// what is added to it is saved back into it
+const openNewModal = () => {
+  editingConfig.value = null;
+  newConfig.value = blankDashboard();
   showSaveModal.value = true;
 };
 
@@ -477,6 +497,7 @@ const openEditModal = async (config) => {
 const closeSaveModal = () => {
   showSaveModal.value = false;
   editingConfig.value = null;
+  newConfig.value = null;
 };
 
 // Handle config saved
@@ -485,7 +506,13 @@ const onConfigSaved = (savedConfig) => {
   loadConfigs();
   // the shown dashboard was saved as a new one (not another one edited in
   // place): the page now shows that saved dashboard
-  if (!editingConfig.value && savedConfig?.id) { emit('saved', savedConfig); }
+  if (newConfig.value && savedConfig?.id) {
+    // a new dashboard replaces what the page shows
+    emit('load', { ...savedConfig, data: savedConfig.data || newConfig.value });
+    menuOpen.value = false;
+  } else if (!editingConfig.value && savedConfig?.id) {
+    emit('saved', savedConfig);
+  }
   // the lists elsewhere on the page (the navigation widget) follow
   emit('changed');
   emit('message', {
