@@ -458,7 +458,7 @@ function simpleGather (req, res, bodies, doneCb, preFetched) {
           asyncCb(null, result);
         })
         .catch((err) => {
-          console.log(`ERROR - multies cluster db ${req.method} ${ArkimeUtil.sanitizeStr(req.path)} for cluster '${node2Name(node)}':`, ArkimeUtil.sanitizeLine(err.message));
+          console.log("ERROR - multies cluster db %s %s for cluster '%s':", req.method, ArkimeUtil.sanitizeStr(req.path), node2Name(node), ArkimeUtil.sanitizeLine(err.message));
           asyncCb(null, { cluster: clusters[node], arkime_failed: true, error: err.message });
         });
     }

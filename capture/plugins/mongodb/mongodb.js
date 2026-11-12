@@ -53,7 +53,11 @@ function regexPattern (c) {
 // Always 16 bytes, an ipv4 as ::ffff:a.b.c.d, so ipv4 and ipv6 compare in the order ES uses
 function ipBytes (ip) {
   if (typeof ip !== 'string') { return null; }
-  ip = ip.replace(/%.*$/, '');
+  const zone = ip.indexOf('%');
+  if (zone !== -1) {
+    if (/[\n\r\u2028\u2029]/.test(ip)) { return null; }
+    ip = ip.slice(0, zone);
+  }
   const family = net.isIP(ip);
   if (family === 4) { return Buffer.from([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 255, 255, ...ip.split('.').map(Number)]); }
   if (family !== 6) { return null; }
