@@ -65,15 +65,27 @@ preflight() {
 
   gh auth status > /dev/null 2>&1 || die "gh is not logged in, run: gh auth login"
 
+  local cur
+  cur=$(git branch --show-current)
+  if [ -n "${RELEASE_BASE:-}" ]; then
+    BASE=$RELEASE_BASE
+  elif [[ $cur =~ ^(main|dev[0-9]+)$ ]]; then
+    BASE=$cur
+  else
+    BASE=$(gh pr list -R "$REPO" --head "$BRANCH" --state all --limit 1 --json baseRefName --jq '.[0].baseRefName // ""') || die "gh pr list failed"
+    [ -n "$BASE" ] || die "On branch '$cur', run from main or devN, or set RELEASE_BASE"
+  fi
+  info "Releasing $TAG from $BASE"
+
   info "Fetching origin"
   git fetch origin || die "git fetch failed"
-  git rev-parse --verify --quiet origin/main > /dev/null || die "origin/main not found"
+  git rev-parse --verify --quiet "origin/$BASE" > /dev/null || die "origin/$BASE not found"
 }
 
 ######################################################################
 detect_stage() {
   local mainVersion prState
-  mainVersion=$(git show origin/main:configure.ac | ac_version)
+  mainVersion=$(git show "origin/$BASE:configure.ac" | ac_version)
 
   if [ -n "$(git ls-remote --tags origin "refs/tags/$TAG")" ]; then
     STAGE=4
@@ -83,7 +95,7 @@ detect_stage() {
 
   if [ "$mainVersion" = "$VERSION" ]; then
     STAGE=3
-    info "origin/main is already at $VERSION, resuming at tagging"
+    info "origin/$BASE is already at $VERSION, resuming at tagging"
     return
   fi
 
@@ -94,7 +106,7 @@ detect_stage() {
     info "PR for $BRANCH is already open, resuming at waiting for the merge"
     ;;
   MERGED)
-    die "PR for $BRANCH is merged but origin/main configure.ac has '$mainVersion' not '$VERSION'"
+    die "PR for $BRANCH is merged but origin/$BASE configure.ac has '$mainVersion' not '$VERSION'"
     ;;
   CLOSED)
     die "PR for $BRANCH was closed without merging, reopen it or delete the branch and re-run"
@@ -115,7 +127,7 @@ update_changelog() {
   line=$(grep -E "^${VERSION_RE} [0-9]{4}/" CHANGELOG)
   first=$(grep -m1 -E '^[0-9]+\.[0-9]+\.[0-9]+[^ ]* [0-9]{4}/' CHANGELOG)
   [ "$first" = "$line" ] || die "CHANGELOG's newest entry is '$first', not $VERSION"
-  changelog_section | grep -q '^  - ' || die "CHANGELOG has no entries under $VERSION"
+  [ "$(changelog_section | grep -c '^  - ' || true)" -gt 0 ] || die "CHANGELOG has no entries under $VERSION"
 
   if [ "$line" = "$VERSION $today" ]; then
     info "CHANGELOG already says '$line'"
@@ -136,8 +148,8 @@ update_configure() {
     info "configure.ac already at $VERSION"
     return
   fi
-  if [ "$cur" != "$VERSION-GIT" ]; then
-    confirm "configure.ac has '$cur', expected '$VERSION-GIT'. Set it to $VERSION anyway?"
+  if [ "$cur" != "$VERSION-GIT" ] && [ "$cur" != "${VERSION%%-*}-GIT" ]; then
+    confirm "configure.ac has '$cur', expected '${VERSION%%-*}-GIT'. Set it to $VERSION anyway?"
   fi
   V="$VERSION" perl -pi -e 's/^AC_INIT\(\[arkime\],\s*\[[^\]]+\]\)/AC_INIT([arkime],[$ENV{V}])/' configure.ac
   [ "$(ac_version < configure.ac)" = "$VERSION" ] || die "Failed to set AC_INIT in configure.ac"
@@ -148,7 +160,7 @@ check_api_version() {
   local prev cur old
   cur=$(perl -ne 'print $1 if /^#define ARKIME_API_VERSION\s+(\d+)/' capture/arkime.h)
   [ -n "$cur" ] || die "Couldn't find ARKIME_API_VERSION in capture/arkime.h"
-  prev=$(git describe --tags --abbrev=0 --match 'v[0-9]*' origin/main 2> /dev/null || true)
+  prev=$(git describe --tags --abbrev=0 --match 'v[0-9]*' "origin/$BASE" 2> /dev/null || true)
 
   echo
   echo "ARKIME_API_VERSION is $cur"
@@ -175,17 +187,17 @@ prepare_branch() {
   [ -z "$dirty" ] || die "Working tree has other modified files, stash them or 'git add' them to include them in the release commit:
 $dirty"
 
-  if [ "$cur" = main ]; then
+  if [ "$cur" = "$BASE" ]; then
     git rev-parse --verify --quiet "refs/heads/$BRANCH" > /dev/null && die "Local branch $BRANCH already exists, 'git checkout $BRANCH' and re-run to resume or delete it"
     [ -z "$(git ls-remote --heads origin "refs/heads/$BRANCH")" ] || die "Branch $BRANCH already exists on origin without a PR, check it out and re-run or delete it"
-    [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ] || die "Local main is not at origin/main, git pull (or push) first"
+    [ "$(git rev-parse HEAD)" = "$(git rev-parse "origin/$BASE")" ] || die "Local $BASE is not at origin/$BASE, git pull (or push) first"
     info "Creating branch $BRANCH"
     git checkout -b "$BRANCH"
   elif [ "$cur" = "$BRANCH" ]; then
     info "Already on $BRANCH, resuming"
-    git merge-base --is-ancestor origin/main HEAD || die "$BRANCH is not based on the current origin/main"
+    git merge-base --is-ancestor "origin/$BASE" HEAD || die "$BRANCH is not based on the current origin/$BASE"
   else
-    die "On branch '$cur', expected main (or $BRANCH to resume)"
+    die "On branch '$cur', expected $BASE (or $BRANCH to resume)"
   fi
 
   update_changelog
@@ -216,8 +228,8 @@ $dirty"
     git push -u origin "$BRANCH" || die "git push failed"
   fi
 
-  confirm "Open a PR for $BRANCH against main?"
-  gh pr create -R "$REPO" --base main --head "$BRANCH" --title "$msg" --body "" || die "gh pr create failed"
+  confirm "Open a PR for $BRANCH against $BASE?"
+  gh pr create -R "$REPO" --base "$BASE" --head "$BRANCH" --title "$msg" --body "" || die "gh pr create failed"
 }
 
 ######################################################################
@@ -244,20 +256,20 @@ wait_for_merge() {
 tag_main() {
   local dirty v head
   dirty=$(tracked_dirty)
-  [ -z "$dirty" ] || die "Working tree has modified files, can't switch to main:
+  [ -z "$dirty" ] || die "Working tree has modified files, can't switch to $BASE:
 $dirty"
 
-  info "git checkout main && git pull"
-  git checkout main || die "git checkout main failed"
-  git pull --ff-only origin main || die "git pull failed"
+  info "git checkout $BASE && git pull"
+  git checkout "$BASE" || die "git checkout $BASE failed"
+  git pull --ff-only origin "$BASE" || die "git pull failed"
 
   v=$(ac_version < configure.ac)
-  [ "$v" = "$VERSION" ] || die "configure.ac on main has '$v', expected '$VERSION'. Was the PR merged?"
-  grep -qE "^${VERSION_RE} [0-9]{4}/[0-9]{2}/[0-9]{2}\$" CHANGELOG || die "CHANGELOG on main has no dated $VERSION entry"
+  [ "$v" = "$VERSION" ] || die "configure.ac on $BASE has '$v', expected '$VERSION'. Was the PR merged?"
+  grep -qE "^${VERSION_RE} [0-9]{4}/[0-9]{2}/[0-9]{2}\$" CHANGELOG || die "CHANGELOG on $BASE has no dated $VERSION entry"
 
   head=$(git rev-parse HEAD)
   if git rev-parse --verify --quiet "refs/tags/$TAG" > /dev/null; then
-    [ "$(git rev-parse "refs/tags/$TAG^{commit}")" = "$head" ] || die "Local tag $TAG exists but isn't main's HEAD, fix with: git tag -d $TAG"
+    [ "$(git rev-parse "refs/tags/$TAG^{commit}")" = "$head" ] || die "Local tag $TAG exists but isn't $BASE's HEAD, fix with: git tag -d $TAG"
     info "Local tag $TAG already exists at HEAD"
   else
     echo
@@ -300,7 +312,7 @@ run_workflow() {
 
   confirm "Run $WORKFLOW with release_tag=$VERSION iteration=$ITERATION?"
   start=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  out=$(gh workflow run "$WORKFLOW" -R "$REPO" --ref main -f "release_tag=$VERSION" -f "iteration=$ITERATION" 2>&1) || die "gh workflow run failed: $out"
+  out=$(gh workflow run "$WORKFLOW" -R "$REPO" --ref "$BASE" -f "release_tag=$VERSION" -f "iteration=$ITERATION" 2>&1) || die "gh workflow run failed: $out"
   echo "$out"
 
   id=""
@@ -359,7 +371,9 @@ update_release_notes() {
   fi
 
   pre=$(gh release view "$TAG" -R "$REPO" --json isPrerelease --jq .isPrerelease) || die "gh release view failed"
-  if [ "$pre" = true ] && ask "$TAG is marked prerelease, clear that flag?"; then
+  if [ -n "$PRERELEASE" ]; then
+    [ "$pre" = true ] || echo "WARNING - $TAG is a prerelease version but isn't marked prerelease on GitHub"
+  elif [ "$pre" = true ] && ask "$TAG is marked prerelease, clear that flag?"; then
     if ask "Also mark $TAG as the Latest release?"; then
       gh release edit "$TAG" -R "$REPO" --prerelease=false --latest || die "gh release edit failed"
     else
@@ -424,7 +438,9 @@ main() {
 
   VERSION=$1
   ITERATION=${2:-1}
-  [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || die "Invalid version '$VERSION', expected e.g. 6.9.2 without a leading v"
+  [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$ ]] || die "Invalid version '$VERSION', expected e.g. 6.9.2 or 7.0.0-rc1 without a leading v"
+  PRERELEASE=""
+  if [[ $VERSION == *-* ]]; then PRERELEASE=1; fi
   [[ $ITERATION =~ ^[0-9]+$ ]] || die "Invalid iteration '$ITERATION', expected a number"
   VERSION_RE=${VERSION//./\\.}
   TAG="v$VERSION"
@@ -439,7 +455,11 @@ main() {
   if [ "$STAGE" -le 3 ]; then tag_main; fi
   run_workflow
   update_release_notes
-  update_homebrew
+  if [ -n "$PRERELEASE" ]; then
+    info "Prerelease, leaving homebrew-arkime alone"
+  else
+    update_homebrew
+  fi
 
   echo
   info "Release $TAG done"
