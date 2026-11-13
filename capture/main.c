@@ -964,6 +964,7 @@ LOCAL void arkime_drop_privileges()
 LOCAL  ArkimeCanQuitFunc  canQuitFuncs[20];
 LOCAL  const char        *canQuitNames[20];
 LOCAL  int                canQuitFuncsNum;
+LOCAL  time_t             quitStart;
 
 void arkime_add_can_quit(ArkimeCanQuitFunc func, const char *name)
 {
@@ -1000,6 +1001,12 @@ LOCAL gboolean arkime_quit_gfunc(gpointer UNUSED(user_data))
         if (val != 0) {
             if (config.debug && canQuitNames[i]) {
                 LOG("Can't quit, %s is %d", canQuitNames[i], val);
+            } else if (canQuitNames[i]) {
+                // Say what a slow exit is waiting on, even without --debug
+                struct timespec now;
+                clock_gettime(CLOCK_MONOTONIC, &now);
+                if (now.tv_sec - quitStart >= 30)
+                    LOG_RATE(30, "Still waiting to quit after %lds, %s is %d", (long)(now.tv_sec - quitStart), canQuitNames[i], val);
             }
             return G_SOURCE_CONTINUE;
         }
@@ -1034,6 +1041,9 @@ void arkime_quit()
         LOG("Quitting");
 
     config.quitting = TRUE;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    quitStart = now.tv_sec;
     // --tests runs capture over and over, don't sit idle at each exit
     g_timeout_add(config.tests ? 10 : 100, arkime_quit_gfunc, 0);
 }

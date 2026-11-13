@@ -38,32 +38,33 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 7.0.0-rc2 2026/12/xx
 ## Breaking
-  - Offline directory reading (-R, --monitor, add-dir) no longer follows symlinks to files or directories, use --followlinks to allow them
-  - WISE views written as pug can only use simple tags, text, if tests on session fields and +arrayList, others are skipped with a warning in the viewer log, require:/title:/fields: views always work
-  - Removed the wiseproxy WISE source, it hasn't returned results in years, point wiseURL at the WISE directly
+  - #4459 Offline directory reading (-R, --monitor, add-dir) no longer follows symlinks to files or directories, use --followlinks to allow them
+  - #4459 WISE views written as pug can only use simple tags, text, if tests on session fields and +arrayList, others are skipped with a warning in the viewer log, require:/title:/fields: views always work
+  - #4459 Removed the wiseproxy WISE source, it hasn't returned results in years, point wiseURL at the WISE directly
 ## Capture
-  - Add --followlinks and add-file/add-dir --followlinks to follow symlinks when reading offline directories
-  - Fix one pcap-over-ip server connection being able to change another connection's link type
-  - Fix an unsupported link type, or one the bpf filter doesn't compile for, from a pcap-over-ip peer stopping capture, now only that connection is closed
-  - Fix the pcap-over-ip bpf filter being compiled only for the first peer's link type
-  - Fix pcapng files with many sections attributing packets to the wrong file
-  - Fix the file size saved for pcapng files, and the add-file --notify byte count, counting the start of the file twice
-  - Fix a duplicate IPv4 fragment, or an overlapping one with the same bytes, causing the whole datagram to be dropped
-  - IPv6 fragments are now reassembled, they used to be dropped, set disableIp6Defrag=true to turn it off. Like hosts, datagrams with overlapping IPv6 fragments are dropped
-  - Fix a crash when _flipSrcDst ran on a corrupt TCP packet session
-  - Datagrams of up to 128 fragments are now reassembled (was 50), and fragments held are limited to 5 times maxFrags
-  - Fix crafted IP fragments being able to slow down fragment reassembly
-  - Certificates keep at most 256 of each alt name type and 16 of each subject/issuer name, tagged cert-too-many-names
-  - DNS HTTPS/SVCB answers keep at most 16 params and 16 alpn/ipv4hint/ipv6hint values, tagged dns:svcb-truncated
-  - An https://localhost entry in a server list no longer disables certificate checks for the other servers, like the viewer
-  - TCP sessions where no SYN was seen now have their data processed, it used to be at most a single packet. They wait up to maxTcpOutOfOrderPackets/8 packets for a SYN, then start from the lowest sequence numbers seen
+  - #4459 Add --followlinks and add-file/add-dir --followlinks to follow symlinks when reading offline directories
+  - #4459 Fix one pcap-over-ip server connection being able to change another connection's link type
+  - #4459 Fix an unsupported link type, or one the bpf filter doesn't compile for, from a pcap-over-ip peer stopping capture, now only that connection is closed
+  - #4459 Fix the pcap-over-ip bpf filter being compiled only for the first peer's link type
+  - #4459 Fix pcapng files with many sections attributing packets to the wrong file
+  - #4459 Fix the file size saved for pcapng files, and the add-file --notify byte count, counting the start of the file twice
+  - #4459 Fix a duplicate IPv4 fragment, or an overlapping one with the same bytes, causing the whole datagram to be dropped
+  - #4459 IPv6 fragments are now reassembled, they used to be dropped, set disableIp6Defrag=true to turn it off. Like hosts, datagrams with overlapping IPv6 fragments are dropped
+  - #4459 Fix a crash when _flipSrcDst ran on a corrupt TCP packet session
+  - #4459 Datagrams of up to 128 fragments are now reassembled (was 50), and fragments held are limited to 5 times maxFrags
+  - #4459 Fix crafted IP fragments being able to slow down fragment reassembly
+  - #4459 Certificates keep at most 256 of each alt name type and 16 of each subject/issuer name, tagged cert-too-many-names
+  - #4459 DNS HTTPS/SVCB answers keep at most 16 params and 16 alpn/ipv4hint/ipv6hint values, tagged dns:svcb-truncated
+  - #4459 An https://localhost entry in a server list no longer disables certificate checks for the other servers, like the viewer
+  - #4459 When exiting takes more than 30s capture logs what it is still waiting on, without needing --debug
+  - #4459 TCP sessions where no SYN was seen now have their data processed, it used to be at most a single packet. They wait up to maxTcpOutOfOrderPackets/8 packets for a SYN, then start from the lowest sequence numbers seen
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type: hosts on a ring, each talking pair an arc across it, colored by protocol or a field you pick
   - #4456 Fix the widget and graph settings editor resetting a connections sample size to 100 when opened
   - #4457 Add a New dashboard option to the dashboards menu: name it and pick its folder, then add widgets and save
-  - Custom views are now rendered from data and WISE views are checked before use, so a view definition can't run code in the viewer
+  - #4459 Custom views are now rendered from data and WISE views are checked before use, so a view definition can't run code in the viewer
 ## WISE
-  - The built in source views use field names for labels, OpenDNS Security Cat/Content Cat are now Security/Content and VirusTotal Links is now Link
+  - #4459 The built in source views use field names for labels, OpenDNS Security Cat/Content Cat are now Security/Content and VirusTotal Links is now Link
 
 7.0.0-rc1 2026/11/12
 ## Breaking

@@ -832,19 +832,85 @@ my ($pgid, $cmd) = @_;
     diag "--- last of $log\n" . `tail -40 $log 2>&1` if ($log && -s $log);
     $ArkimeTest::hungExtra->($pgid, $cmd) if ($ArkimeTest::hungExtra);
 
-    foreach my $line (`ps -eo pid=,pgid=,etime=,args=`) {
-        my ($pid, $pg, $etime, $args) = $line =~ /^\s*(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/ or next;
-        next if ($pg != $pgid);
+    foreach my $proc (hungProcs($pgid)) {
+        my ($pid, $etime, $args) = @$proc;
         diag "--- pid $pid running $etime: " . substr($args, 0, 200);
-        # thread name, state and the syscall it sits in (202 futex: waiting on a lock, 7/271 poll)
+        # thread name, state, the syscall it sits in (202 futex: waiting on a lock, 7/271 poll) and kernel wait
         foreach my $task (glob("/proc/$pid/task/*")) {
-            my $comm = `cat $task/comm 2>/dev/null`; chomp $comm;
-            my ($state) = `cat $task/stat 2>/dev/null` =~ /\) (\S)/;
-            my $syscall = `cat $task/syscall 2>/dev/null`; chomp $syscall;
-            diag sprintf("    %-16s %s syscall %s", $comm, $state // '?', $syscall);
+            my $comm = hungRead("$task/comm"); chomp $comm;
+            my ($state) = hungRead("$task/stat") =~ /.*\) (\S)/s;
+            my $syscall = hungRead("$task/syscall"); chomp $syscall;
+            my $wchan = hungRead("$task/wchan");
+            diag sprintf("    %-16s %s syscall %s%s", $comm, $state // '?', $syscall, ($wchan && $wchan ne '0') ? " wchan $wchan" : '');
         }
-        if ($args =~ m{capture/capture} && system("which gdb > /dev/null 2>&1") == 0) {
+        hungSockets($pid);
+        next if ($args !~ m{^\S*capture/capture\b});
+        if (system("command -v gdb > /dev/null 2>&1") == 0) {
             diag `gdb -p $pid -batch -ex 'thread apply all bt' 2>&1 | grep -v '^\\[New LWP' | tail -150`;
+        } elsif (system("command -v eu-stack > /dev/null 2>&1") == 0) {
+            diag `eu-stack -p $pid 2>&1 | tail -200`;
+        }
+    }
+}
+
+sub hungRead {
+    open(my $fh, '<', $_[0]) or return '';
+    local $/;
+    return <$fh> // '';
+}
+
+# The processes in a process group. /proc where there is one, ps isn't in every CI image
+sub hungProcs {
+my ($pgid) = @_;
+    my @procs;
+    if (!-d "/proc/self/task") {
+        foreach my $line (`ps -eo pid=,pgid=,etime=,args=`) {
+            my ($pid, $pg, $etime, $args) = $line =~ /^\s*(\d+)\s+(\d+)\s+(\S+)\s+(.*)$/ or next;
+            push @procs, [$pid, $etime, $args] if ($pg == $pgid);
+        }
+        return @procs;
+    }
+
+    my $tck = POSIX::sysconf(POSIX::_SC_CLK_TCK()) || 100;
+    my ($uptime) = hungRead("/proc/uptime") =~ /^(\S+)/;
+    foreach my $dir (glob("/proc/[0-9]*")) {
+        my ($rest) = hungRead("$dir/stat") =~ /.*\) (.*)$/s or next;
+        # after the comm: state ppid pgrp ... starttime is the 20th
+        my @f = split(' ', $rest);
+        next if ($f[2] != $pgid);
+        (my $args = hungRead("$dir/cmdline")) =~ s/\0/ /g;
+        my ($pid) = $dir =~ m{(\d+)$};
+        push @procs, [$pid, int($uptime - $f[19] / $tck) . "s", $args];
+    }
+    return @procs;
+}
+
+my %hungTcpStates = ('01' => 'ESTABLISHED', '02' => 'SYN_SENT', '03' => 'SYN_RECV', '04' => 'FIN_WAIT1', '05' => 'FIN_WAIT2',
+                     '06' => 'TIME_WAIT', '07' => 'CLOSE', '08' => 'CLOSE_WAIT', '09' => 'LAST_ACK', '0A' => 'LISTEN', '0B' => 'CLOSING');
+
+# /proc/net/tcp addresses are hex, each 32 bit word in little endian order
+sub hungAddr {
+my ($hex) = @_;
+    my ($ip, $port) = split(':', $hex);
+    my $bytes = join('', map { scalar reverse(pack('H8', $_)) } $ip =~ /(.{8})/g);
+    my $str = length($bytes) == 4 ? join('.', unpack('C4', $bytes)) : '[' . join(':', unpack('(H4)8', $bytes)) . ']';
+    return "$str:" . hex($port);
+}
+
+# A process's tcp connections. /proc, ss isn't in every CI image
+sub hungSockets {
+my ($pid) = @_;
+    my %inodes;
+    foreach my $fd (glob("/proc/$pid/fd/*")) {
+        my $link = readlink($fd) // next;
+        $inodes{$1} = 1 if ($link =~ /^socket:\[(\d+)\]$/);
+    }
+    return if (!%inodes);
+    foreach my $file ("/proc/$pid/net/tcp", "/proc/$pid/net/tcp6") {
+        foreach my $line (split(/\n/, hungRead($file))) {
+            my @f = split(' ', $line);
+            next if (@f < 10 || !$inodes{$f[9]});
+            diag sprintf("    tcp %s -> %s %s", hungAddr($f[1]), hungAddr($f[2]), $hungTcpStates{$f[3]} // $f[3]);
         }
     }
 }
