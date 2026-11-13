@@ -144,7 +144,7 @@
     "sortablejs": "^1.15.7",
     "topojson-client": "^3.1.0",
     "uplot": "^1.6.32",
-    "vite": "^8.3.7",
+    "vite": "^8.3.5",
     "vite-plugin-vuetify": "^2.1.3",
     "vue": "^3.5.45",
     "vue-debounce": "^6.0.0",
