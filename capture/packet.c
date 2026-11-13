@@ -47,7 +47,9 @@ LOCAL int                    dscpField[2];
 LOCAL int                    ttlField[2];
 
 LOCAL uint64_t               droppedFrags;
+LOCAL uint32_t               fragsPackets;  // packets held across all frags, under the frags lock
 LOCAL gboolean               disableIp4Defrag;
+LOCAL gboolean               disableIp6Defrag;
 LOCAL gboolean               trimEthernetPadding;
 
 LOCAL patricia_tree_t       *ipTree4 = 0;
@@ -103,13 +105,18 @@ LOCAL ArkimePacketRC arkime_packet_frame_relay(ArkimePacketBatch_t *batch, Arkim
 LOCAL ArkimePacketRC arkime_packet_ether(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, const uint8_t *data, int len);
 LOCAL int arkime_packet_dlt(const ArkimePacket_t *const packet);
 
+// ip version, src, dst, id (ip4 uses 4/4/2 bytes, ip6 16/16/4)
+#define ARKIME_FRAG_KEY_LEN 37
+// Same as the BSD stacks, a smaller cap would let fragments hide from us but not the host
+#define ARKIME_FRAG_MAX_PER_DATAGRAM 128
+
 typedef struct arkimefrags_t {
     ArkimePacketHead_t     packets;
     struct arkimefrags_t  *fragh_next, *fragh_prev;
     struct arkimefrags_t  *fragl_next, *fragl_prev;
     uint32_t               fragh_bucket;
     uint32_t               fragh_hash;
-    char                   key[10];
+    uint8_t                key[ARKIME_FRAG_KEY_LEN];
     uint32_t               secs;
     char                   haveNoFlags;
 } ArkimeFrags_t;
@@ -587,7 +594,7 @@ LOCAL void *arkime_packet_thread(void *threadp)
             if (oi->finishWaiting == 0) {
                 arkime_db_update_file(oi->outputId, oi->lastBytes, oi->lastBytes, oi->lastPackets, &oi->lastPacketTime, oi->sessionsStarted, oi->sessionsPresent);
                 if (oi->notifyClientRef) {
-                    arkime_command_notify_file_done(oi->notifyClientRef, oi->notifyFilename, oi->lastBytes, oi->lastPackets);
+                    arkime_command_notify_file_done(oi->notifyClientRef, oi->notifyFilename, oi->notifyBytes, oi->notifyPackets);
                     arkime_command_client_decref(oi->notifyClientRef);
                     g_free(oi->notifyFilename);
                     oi->notifyClientRef = NULL;
@@ -613,6 +620,7 @@ LOCAL void arkime_packet_frags_free(ArkimeFrags_t *const frags)
 {
     ArkimePacket_t *packet;
 
+    fragsPackets -= DLL_COUNT(packet_, &frags->packets);
     while (DLL_POP_HEAD(packet_, &frags->packets, packet)) {
         arkime_packet_free(packet);
     }
@@ -621,36 +629,66 @@ LOCAL void arkime_packet_frags_free(ArkimeFrags_t *const frags)
     ARKIME_TYPE_FREE(ArkimeFrags_t, frags);
 }
 /******************************************************************************/
+// Fragment offset in 8 byte units and the more fragments flag, from the ip4 header or
+// from the ip6 fragment header, which is the 8 bytes right before the payload
 SUPPRESS_ALIGNMENT
-LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
+LOCAL void arkime_packet_frag_info(const ArkimePacket_t *const packet, int v6, uint16_t *off, int *more)
+{
+    if (v6) {
+        const uint8_t *fh = packet->pkt + packet->payloadOffset - 8;
+        const uint16_t offFlags = (fh[2] << 8) | fh[3];
+        *off = offFlags >> 3;
+        *more = offFlags & 1;
+    } else {
+        const struct ip *ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+        const uint16_t ipOff = ntohs(ip4->ip_off);
+        *off = ipOff & IP_OFFMASK;
+        *more = (ipOff & IP_MF) != 0;
+    }
+}
+/******************************************************************************/
+// nxtPos is the offset in pkt of the ip6 next header byte that points at the fragment header
+SUPPRESS_ALIGNMENT
+LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6, int nxtPos)
 {
     ArkimePacket_t  *fpacket;
     ArkimeFrags_t   *frags;
-    char             key[10];
+    uint8_t          key[ARKIME_FRAG_KEY_LEN];
 
+    memset(key, 0, sizeof(key));
     struct ip *const ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
-    memcpy(key, &ip4->ip_src.s_addr, 4);
-    memcpy(key + 4, &ip4->ip_dst.s_addr, 4);
-    memcpy(key + 8, &ip4->ip_id, 2);
+    if (v6) {
+        const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
+        key[0] = 6;
+        memcpy(key + 1, &ip6->ip6_src, 16);
+        memcpy(key + 17, &ip6->ip6_dst, 16);
+        memcpy(key + 33, packet->pkt + packet->payloadOffset - 4, 4); // identification
+    } else {
+        key[0] = 4;
+        memcpy(key + 1, &ip4->ip_src.s_addr, 4);
+        memcpy(key + 5, &ip4->ip_dst.s_addr, 4);
+        memcpy(key + 9, &ip4->ip_id, 2);
+    }
 
-    uint16_t          ip_off = ntohs(ip4->ip_off);
-    uint16_t          ip_flags = ip_off & ~IP_OFFMASK;
-    ip_off &= IP_OFFMASK;
+    uint16_t ip_off;
+    int      more;
+    arkime_packet_frag_info(packet, v6, &ip_off, &more);
 
     HASH_FIND(fragh_, fragsHash, key, frags);
 
     if (!frags) {
         frags = ARKIME_TYPE_ALLOC0_ALIGNED(ArkimeFrags_t);
-        memcpy(frags->key, key, 10);
+        memcpy(frags->key, key, ARKIME_FRAG_KEY_LEN);
         frags->secs = packet->ts.tv_sec;
         // The last fragment (MF clear) may be the first one seen
-        if ((ip_flags & IP_MF) == 0) {
+        if (!more) {
             frags->haveNoFlags = 1;
         }
         HASH_ADD(fragh_, fragsHash, key, frags);
         DLL_PUSH_TAIL(fragl_, &fragsList, frags);
         DLL_INIT(packet_, &frags->packets);
         DLL_PUSH_TAIL(packet_, &frags->packets, packet);
+        fragsPackets++;
 
         if (DLL_COUNT(fragl_, &fragsList) > config.maxFrags) {
             droppedFrags++;
@@ -661,15 +699,45 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
         DLL_MOVE_TAIL(fragl_, &fragsList, frags);
     }
 
+    uint16_t fip_off;
+    int      fmore;
+
+    const int start = ip_off * 8;
+    const int end = start + packet->payloadLen;
+    DLL_FOREACH(packet_, &frags->packets, fpacket) {
+        arkime_packet_frag_info(fpacket, v6, &fip_off, &fmore);
+        const int fstart = fip_off * 8;
+        if (start >= fstart + fpacket->payloadLen || fstart >= end)
+            continue;
+
+        // An exact duplicate is a retransmit, don't let it count against the datagram
+        if (start == fstart && packet->payloadLen == fpacket->payloadLen &&
+            memcmp(packet->pkt + packet->payloadOffset, fpacket->pkt + fpacket->payloadOffset, packet->payloadLen) == 0) {
+            arkime_packet_free(packet);
+            return FALSE;
+        }
+
+        // Like hosts drop ip6 datagrams with overlapping fragments (RFC 5722), and ip4 ones
+        // whose overlapping bytes differ, so there is never a choice of which bytes to show
+        const int ostart = MAX(start, fstart);
+        const int olen = MIN(end, fstart + fpacket->payloadLen) - ostart;
+        if (v6 || memcmp(packet->pkt + packet->payloadOffset + (ostart - start),
+                         fpacket->pkt + fpacket->payloadOffset + (ostart - fstart), olen) != 0) {
+            droppedFrags++;
+            arkime_packet_free(packet);
+            arkime_packet_frags_free(frags);
+            return FALSE;
+        }
+    }
+
     // Last fragment = MF clear; ignore DF/reserved bits
-    if ((ip_flags & IP_MF) == 0) {
+    if (!more) {
         frags->haveNoFlags = 1;
     }
 
     // Insert this packet in correct location sorted by offset
     DLL_FOREACH_REVERSE(packet_, &frags->packets, fpacket) {
-        struct ip *fip4 = (struct ip *)(fpacket->pkt + fpacket->ipOffset);
-        uint16_t fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
+        arkime_packet_frag_info(fpacket, v6, &fip_off, &fmore);
         if (ip_off >= fip_off) {
             DLL_ADD_AFTER(packet_, &frags->packets, fpacket, packet);
             break;
@@ -678,8 +746,9 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     if ((void *)fpacket == (void *)&frags->packets) {
         DLL_PUSH_HEAD(packet_, &frags->packets, packet);
     }
+    fragsPackets++;
 
-    if (DLL_COUNT(packet_, &frags->packets) > 50) {
+    if (DLL_COUNT(packet_, &frags->packets) > ARKIME_FRAG_MAX_PER_DATAGRAM) {
         droppedFrags++;
         arkime_packet_frags_free(frags);
         return FALSE;
@@ -691,15 +760,13 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     }
 
     int off = 0;
-    struct ip *fip4;
-
     int payloadLen = 0;
     DLL_FOREACH(packet_, &frags->packets, fpacket) {
-        fip4 = (struct ip *)(fpacket->pkt + fpacket->ipOffset);
-        uint16_t fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
-        if (fip_off != off)
+        arkime_packet_frag_info(fpacket, v6, &fip_off, &fmore);
+        // Any overlaps left have the same bytes, only a gap is a hole
+        if (fip_off > off)
             break;
-        off += fpacket->payloadLen / 8;
+        off = MAX(off, fip_off + fpacket->payloadLen / 8);
         payloadLen = MAX(payloadLen, fip_off * 8 + fpacket->payloadLen);
     }
     // We have a hole
@@ -707,34 +774,44 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
         return FALSE;
     }
 
+    // The ip6 fragment header isn't part of the reassembled packet
+    const int hdrLen = v6 ? packet->payloadOffset - 8 : packet->payloadOffset;
+
     // Packet is too large, hacker
-    if (payloadLen + packet->payloadOffset > ARKIME_PACKET_MAX_LEN) {
+    if (payloadLen + hdrLen > ARKIME_PACKET_MAX_LEN) {
         droppedFrags++;
         arkime_packet_frags_free(frags);
         return FALSE;
     }
 
     // Now alloc the full packet
-    packet->pktlen = packet->payloadOffset + payloadLen;
+    packet->pktlen = hdrLen + payloadLen;
     uint8_t *pkt = malloc(packet->pktlen);
 
     // Copy packet header
-    memcpy(pkt, packet->pkt, packet->payloadOffset);
+    memcpy(pkt, packet->pkt, hdrLen);
 
     // Fix header of new packet
-    fip4 = (struct ip *)(pkt + packet->ipOffset);
-    fip4->ip_len = htons(payloadLen + 4 * ip4->ip_hl);
-    fip4->ip_off = 0;
+    if (v6) {
+        struct ip6_hdr *fip6 = (struct ip6_hdr *)(pkt + packet->ipOffset);
+        fip6->ip6_plen = htons(hdrLen - packet->ipOffset - sizeof(struct ip6_hdr) + payloadLen);
+        // The upper layer protocol comes from the first fragment's fragment header (RFC 8200)
+        const ArkimePacket_t *first = DLL_PEEK_HEAD(packet_, &frags->packets);
+        pkt[nxtPos] = first->pkt[first->payloadOffset - 8];
+    } else {
+        struct ip *fip4 = (struct ip *)(pkt + packet->ipOffset);
+        fip4->ip_len = htons(payloadLen + 4 * ip4->ip_hl);
+        fip4->ip_off = 0;
+    }
 
     // Copy payload
     DLL_FOREACH(packet_, &frags->packets, fpacket) {
-        fip4 = (struct ip *)(fpacket->pkt + fpacket->ipOffset);
-        uint16_t fip_off = ntohs(fip4->ip_off) & IP_OFFMASK;
+        arkime_packet_frag_info(fpacket, v6, &fip_off, &fmore);
 
-        if (packet->payloadOffset + (fip_off * 8) + fpacket->payloadLen <= packet->pktlen)
-            memcpy(pkt + packet->payloadOffset + (fip_off * 8), fpacket->pkt + fpacket->payloadOffset, fpacket->payloadLen);
+        if (hdrLen + (fip_off * 8) + fpacket->payloadLen <= packet->pktlen)
+            memcpy(pkt + hdrLen + (fip_off * 8), fpacket->pkt + fpacket->payloadOffset, fpacket->payloadLen);
         else
-            LOG("WARNING - Not enough room for frag %d > %d", packet->payloadOffset + (fip_off * 8) + fpacket->payloadLen, packet->pktlen);
+            LOG("WARNING - Not enough room for frag %d > %d", hdrLen + (fip_off * 8) + fpacket->payloadLen, packet->pktlen);
     }
 
     // Set all the vars in the current packet to new defragged packet
@@ -743,13 +820,15 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet)
     packet->pkt = pkt;
     packet->copied = 1;
     packet->wasfrag = 1;
+    packet->payloadOffset = hdrLen;
     packet->payloadLen = payloadLen;
     DLL_REMOVE(packet_, &frags->packets, packet); // Remove from list so we don't get freed in frags_free
+    fragsPackets--;
     arkime_packet_frags_free(frags);
     return TRUE;
 }
 /******************************************************************************/
-LOCAL void arkime_packet_frags4(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet)
+LOCAL void arkime_packet_frags(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, int v6, int nxtPos)
 {
     ArkimeFrags_t *frags;
 
@@ -768,7 +847,13 @@ LOCAL void arkime_packet_frags4(ArkimePacketBatch_t *batch, ArkimePacket_t *cons
         arkime_packet_frags_free(frags);
     }
 
-    gboolean process = arkime_packet_frags_process(packet);
+    // Bound the memory many tiny fragments can hold, oldest datagrams go first
+    while (fragsPackets >= config.maxFrags * 5 && (frags = DLL_PEEK_HEAD(fragl_, &fragsList))) {
+        droppedFrags++;
+        arkime_packet_frags_free(frags);
+    }
+
+    gboolean process = arkime_packet_frags_process(packet, v6, nxtPos);
     ARKIME_UNLOCK(frags);
 
     if (process)
@@ -1005,7 +1090,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
 
     if (!disableIp4Defrag && ((ip_flags & IP_MF) || ip_off > 0)) {
-        arkime_packet_frags4(batch, packet);
+        arkime_packet_frags(batch, packet, 0, -1);
         return ARKIME_PACKET_DONT_PROCESS_OR_FREE;
     }
 
@@ -1190,6 +1275,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
     packet->mProtocol = 0;
     int nxt = ip6->ip6_nxt;
+    int nxtPos = offsetof(struct ip6_hdr, ip6_nxt); // where nxt came from, relative to data
     int done = 0;
     int extHdrCount = 0;
 
@@ -1230,6 +1316,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             }
 
             nxt = data[ip_hdr_len];
+            nxtPos = ip_hdr_len;
             ip_hdr_len = newHdrLen;
 
             packet->payloadOffset = packet->ipOffset + ip_hdr_len;
@@ -1243,11 +1330,38 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             }
 
             break;
-        case IPPROTO_FRAGMENT:
-#ifdef DEBUG_PACKET
-            LOG("ERROR - Don't support ip6 fragments yet!");
-#endif
-            return ARKIME_PACKET_UNKNOWN_IP;
+        case IPPROTO_FRAGMENT: {
+            if (++extHdrCount > 16 || len < ip_hdr_len + 8 ||
+                ip_hdr_len + 8 > ip_len + (int)sizeof(struct ip6_hdr)) {
+                return ARKIME_PACKET_CORRUPT;
+            }
+
+            const uint8_t *fh = data + ip_hdr_len;
+            const uint16_t offFlags = (fh[2] << 8) | fh[3];
+            const int fragNxtPos = packet->ipOffset + nxtPos;
+
+            nxt = fh[0];
+            nxtPos = ip_hdr_len;
+            ip_hdr_len += 8;
+            packet->payloadOffset = packet->ipOffset + ip_hdr_len;
+            packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
+
+            if (packet->pktlen < packet->payloadOffset + packet->payloadLen) {
+                return ARKIME_PACKET_CORRUPT;
+            }
+
+            // Atomic fragment (offset 0, no more fragments, RFC 6946) is just the inner packet
+            if ((offFlags & 0xfff9) == 0) {
+                break;
+            }
+
+            if (disableIp6Defrag) {
+                return ARKIME_PACKET_UNKNOWN_IP;
+            }
+
+            arkime_packet_frags(batch, packet, 1, fragNxtPos);
+            return ARKIME_PACKET_DONT_PROCESS_OR_FREE;
+        }
 
         case IPPROTO_TCP:
             if (len < ip_hdr_len + (int)sizeof(struct tcphdr)) {
@@ -1839,19 +1953,15 @@ int arkime_packet_outstanding()
     return count;
 }
 /******************************************************************************/
-SUPPRESS_UNSIGNED_INTEGER_OVERFLOW
+// Keyed, since the fragment keys come straight off the wire
 LOCAL uint32_t arkime_packet_frag_hash(const void *key)
 {
-    uint32_t n = 0;
-    for (int i = 0; i < 10; i++) {
-        n = (n << 5) - n + ((uint8_t *)key)[i];
-    }
-    return n;
+    return arkime_string_hash_keyed_len(key, ARKIME_FRAG_KEY_LEN);
 }
 /******************************************************************************/
 LOCAL int arkime_packet_frag_cmp(const void *keyv, const ArkimeFrags_t *element)
 {
-    return memcmp(keyv, element->key, 10) == 0;
+    return memcmp(keyv, element->key, ARKIME_FRAG_KEY_LEN) == 0;
 }
 /******************************************************************************/
 LOCAL gboolean arkime_packet_save_drophash(gpointer UNUSED(user_data))
@@ -2020,6 +2130,7 @@ void arkime_packet_init()
     arkimeCounters.nextLogPackets = config.logEveryXPackets;
 
     disableIp4Defrag = arkime_config_boolean(NULL, "disableIp4Defrag", FALSE);
+    disableIp6Defrag = arkime_config_boolean(NULL, "disableIp6Defrag", FALSE);
     trimEthernetPadding = arkime_config_boolean(NULL, "trimEthernetPadding", FALSE);
 
     arkime_packet_thread_init_func = arkime_get_named_func("arkime_packet_thread_init");
@@ -2511,7 +2622,7 @@ LOCAL const int arkimeSupportedDLTs[] = {
 };
 
 /******************************************************************************/
-LOCAL int arkime_packet_dlt_to_index(int dlt)
+int arkime_packet_dlt_to_index(int dlt)
 {
     // LINKTYPE_RAW (101) is stored in classic pcap headers for DLT_RAW
     if (dlt == 101)

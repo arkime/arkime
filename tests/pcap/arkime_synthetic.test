@@ -9543,7 +9543,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 120
     },
     "destination" : {
      "bytes" : 0,
@@ -9596,6 +9596,7 @@
      "packets" : 1,
      "port" : 54346
     },
+    "srcPayload8" : "f9beb4d976657273",
     "srcTTL" : [
      64
     ],
@@ -9614,7 +9615,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 120
    },
    "header" : {
     "index" : {

@@ -496,8 +496,7 @@ LOCAL void arkime_db_pg_typed_init(int n)
 /******************************************************************************/
 LOCAL gboolean arkime_db_pg_loopback(const char *host)
 {
-    return host[0] == '/' || host[0] == '@' || strcmp(host, "localhost") == 0 || strcmp(host, "::1") == 0 ||
-           (strncmp(host, "127.", 4) == 0 && g_hostname_is_ip_address(host));
+    return host[0] == '/' || host[0] == '@' || arkime_is_loopback_host(host);
 }
 /******************************************************************************/
 // hosts is a libpq host or hostaddr value, a comma separated list

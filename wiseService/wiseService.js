@@ -445,27 +445,28 @@ class WISESourceAPI {
    */
   addView (viewName, view) {
     if (view.includes('require:')) {
+      // #view: lines end in a newline, so trim what is matched
       let match = view.match(/require:([^;]+)/);
-      const req = match[1];
+      const req = match[1].trim();
 
       match = view.match(/title:([^;]+)/);
       if (!match) {
         console.log(`ERROR - ${viewName} view is missing 'title:' ${view}`);
         return;
       }
-      const title = match[1];
+      const title = match[1].trim();
 
       match = view.match(/fields:([^;]+)/);
       if (!match) {
         console.log(`ERROR - ${viewName} view is missing 'fields:' ${view}`);
         return;
       }
-      const fields = match[1];
+      const fields = match[1].split(',').map(f => f.trim()).filter(f => f);
 
       // Can override the name in the view
       match = view.match(/section:([^;]+)/);
       if (match) {
-        viewName = match[1];
+        viewName = match[1].trim();
       }
 
       const parts = req.split('.');
@@ -482,7 +483,7 @@ class WISESourceAPI {
       output += ')\n';
       output += `  div.sessionDetailMeta.bold ${title}\n  dl.sessionDetailMeta\n`;
 
-      for (const field of fields.split(',')) {
+      for (const field of fields) {
         const info = WISESource.field2Info.get(field);
         if (!info) {
           continue;

@@ -32,12 +32,7 @@ class EmergingThreatsSource extends WISESource {
     this.categoryField = this.api.addField('field:emergingthreats.category;db:et.category;kind:termfield;friendly:Category;help:Emerging Threats Category;count:true');
 
     this.api.addView('emergingthreats',
-      'if (session.et)\n' +
-      '  div.sessionDetailMeta.bold Emerging Threats\n' +
-      '  dl.sessionDetailMeta\n' +
-      "    +arrayList(session.et, 'category', 'Category', 'emergingthreats.category')\n" +
-      "    +arrayList(session.et, 'score', 'Score', 'emergingthreats.score')\n"
-    );
+      'require:et;title:Emerging Threats;fields:emergingthreats.category,emergingthreats.score');
 
     setImmediate(this.loadFiles.bind(this));
     setInterval(this.loadFiles.bind(this), 60 * 60 * 1000); // Reload files every hour

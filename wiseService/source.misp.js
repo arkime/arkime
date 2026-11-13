@@ -84,17 +84,7 @@ class MISPSource extends WISESource {
     this.tagField = this.api.addField('field:misp.tag;db:misp.tag;kind:termfield;friendly:Tag;help:MISP Event and Attribute Tags;count:true');
 
     this.api.addView('misp',
-      'if (session.misp)\n' +
-      '  div.sessionDetailMeta.bold MISP\n' +
-      '  dl.sessionDetailMeta\n' +
-      "    +arrayList(session.misp, 'server', 'Server', 'misp.server')\n" +
-      "    +arrayList(session.misp, 'eventId', 'Event Id', 'misp.event-id')\n" +
-      "    +arrayList(session.misp, 'event', 'Event', 'misp.event')\n" +
-      "    +arrayList(session.misp, 'threatLevel', 'Threat Level', 'misp.threat-level')\n" +
-      "    +arrayList(session.misp, 'category', 'Category', 'misp.category')\n" +
-      "    +arrayList(session.misp, 'org', 'Org', 'misp.org')\n" +
-      "    +arrayList(session.misp, 'tag', 'Tag', 'misp.tag')\n"
-    );
+      'require:misp;title:MISP;fields:misp.server,misp.event-id,misp.event,misp.threat-level,misp.category,misp.org,misp.tag');
 
     this.api.addValueAction(`misp-${this.serverName}`, { name: `MISP ${this.serverName} Event`, url: `${this.url}/events/view/%TEXT%`, fields: 'misp.event-id' });
 

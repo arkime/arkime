@@ -8,6 +8,10 @@
 
 #include "arkime.h"
 #include "pcap.h"
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/param.h>
+#include <sys/stat.h>
 
 extern ArkimeConfig_t        config;
 
@@ -167,6 +171,87 @@ void arkime_readers_compile_bpf(const char *name, int dlt, int snaplen, const ch
         CONFIGEXIT("%s: Couldn't compile bpf filter '%s': %s", name, filter, pcap_geterr(dead));
     }
     pcap_close(dead);
+}
+/******************************************************************************/
+// Offline directory walks don't follow links unless asked, a dropped link could point anywhere
+gboolean arkime_readers_is_dir(const char *path, gboolean followLinks)
+{
+    if (followLinks)
+        return g_file_test(path, G_FILE_TEST_IS_DIR);
+
+    struct stat st;
+    return lstat(path, &st) == 0 && S_ISDIR(st.st_mode);
+}
+/******************************************************************************/
+// The kernel's path for an open fd, so a link anywhere in the opened path shows up
+LOCAL gboolean arkime_readers_fd_path(int fd, char *buf, int buflen)
+{
+#if defined(__linux__)
+    char proc[64];
+    snprintf(proc, sizeof(proc), "/proc/self/fd/%d", fd);
+    const ssize_t len = readlink(proc, buf, buflen - 1);
+    if (len <= 0 || len >= buflen - 1)
+        return FALSE;
+    buf[len] = 0;
+    return TRUE;
+#elif defined(F_GETPATH)
+    if (buflen < MAXPATHLEN)
+        return FALSE;
+    return fcntl(fd, F_GETPATH, buf) != -1;
+#else
+    return FALSE;
+#endif
+}
+/******************************************************************************/
+// Open a file found by a directory walk. It must be a regular file and no part of path can be
+// a link, so path must be built from a realpath'd directory. Returns the fd or -1, fills in st.
+int arkime_readers_open_nofollow(const char *path, struct stat *st)
+{
+    const int fd = open(path, O_RDONLY | O_NOFOLLOW | O_NONBLOCK | O_CLOEXEC);
+    if (fd < 0) {
+        LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d)%s", path, strerror(errno), errno,
+            errno == ELOOP ? ", use --followlinks to allow links" : "");
+        return -1;
+    }
+
+    if (fstat(fd, st) != 0 || !S_ISREG(st->st_mode)) {
+        LOG("ERROR - pcap open failed - '%s' is not a regular file", path);
+        close(fd);
+        return -1;
+    }
+
+    // O_NOFOLLOW only covers the last part, a directory above it could have been swapped for a link
+    char real[MAX(PATH_MAX, MAXPATHLEN) + 1];
+    if (!arkime_readers_fd_path(fd, real, sizeof(real)) && !realpath(path, real)) {
+        LOG("ERROR - pcap open failed - Couldn't find the real path of '%s' with %s (%d)", path, strerror(errno), errno);
+        close(fd);
+        return -1;
+    }
+
+    if (strcmp(real, path) != 0) {
+        LOG("ERROR - pcap open failed - '%s' is reached through a link to '%s', use --followlinks to allow links", path, real);
+        close(fd);
+        return -1;
+    }
+
+    return fd;
+}
+/******************************************************************************/
+// When opened is set, only delete path if it is still the file that was opened
+void arkime_readers_delete(const char *path, const struct stat *opened)
+{
+    if (config.debug)
+        LOG("Deleting %s", path);
+
+    struct stat st;
+    if (opened && opened->st_ino &&
+        (lstat(path, &st) != 0 || st.st_dev != opened->st_dev || st.st_ino != opened->st_ino)) {
+        LOG("ERROR - Not deleting %s, it is no longer the file that was read", path);
+        return;
+    }
+
+    if (unlink(path) != 0)
+        LOG("Failed to delete file %s %s (%d)", path, strerror(errno), errno);
 }
 /******************************************************************************/
 void arkime_readers_exit()

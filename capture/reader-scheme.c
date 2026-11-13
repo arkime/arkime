@@ -89,6 +89,8 @@ LOCAL struct {
     uint64_t               tsresol[ARKIME_MAX_INTERFACES_PER_FILE];
     int                    gotHeader; // current load claimed readerPos
     int                    quitStopped; // process stopped the current load because of quitting
+    int                    sections;  // slots the current load claimed, pcapng has one per section
+    int                    endedPos;  // last earlier section slot that batched and was ended, or -1
 } readerState;
 
 LOCAL void reader_scheme_pause();
@@ -177,27 +179,36 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
     readerState.haveInterface = -1;
     readerState.gotHeader = 0;
     readerState.quitStopped = 0;
+    readerState.sections = 0;
+    readerState.endedPos = -1;
     if (readerState.packet) {
         arkime_packet_free(readerState.packet);
         readerState.packet = 0;
     }
 
     int rcl = readerScheme->load(uri, flags, actions);
-    lastLoadBatched = readerState.gotHeader && fileInfo[readerState.readerPos].didBatch;
+    const gboolean lastDidBatch = readerState.gotHeader && fileInfo[readerState.readerPos].didBatch;
+    lastLoadBatched = lastDidBatch || readerState.endedPos >= 0;
+
+    // Totals over every section's slot, for --notify
+    uint64_t loadBytes = 0, loadPackets = 0;
+    for (int i = 0; readerState.gotHeader && i < MIN(readerState.sections, 256); i++) {
+        loadBytes += fileInfo[(uint8_t)(readerState.readerPos - i)].lastBytes;
+        loadPackets += fileInfo[(uint8_t)(readerState.readerPos - i)].lastPackets;
+    }
 
     // Stopped mid file because of quitting. Like libpcap-file the packets read so far are kept,
     // the loaders don't delete the file, and a --notify client gets an error. Cleared here so a
     // nested load (directory, sqs) doesn't make its parent look stopped too.
     if (readerState.quitStopped) {
         readerState.quitStopped = 0;
-        gboolean didBatch = readerState.gotHeader && fileInfo[readerState.readerPos].didBatch;
-        if (didBatch && !config.dryRun && !config.copyPcap) {
+        if (lastLoadBatched && !config.dryRun && !config.copyPcap) {
             // The files record already exists so --skip would skip this file next time
             LOG("Quitting, skipping rest of %s - it is recorded as processed, use --reprocess to read it again", uri);
         } else {
             LOG("Quitting, skipping rest of %s", uri);
         }
-        if (didBatch) {
+        if (lastDidBatch) {
             arkime_packet_batch_end_of_file(readerState.readerPos);
         }
         rcl = 1;
@@ -205,7 +216,7 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
 
     gboolean notifyHandedOff = FALSE;
     // An empty or header-less file never claims a slot, readerPos is still the previous file's
-    if (rcl == 0 && readerState.gotHeader && fileInfo[readerState.readerPos].didBatch) {
+    if (rcl == 0 && lastDidBatch) {
         // Stash an async file-done notification on the fileInfo slot. The
         // packet thread will fire file-done + decref when the last packet of
         // this file has been processed.
@@ -213,6 +224,8 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
             arkime_command_client_incref(actions->notifyClientRef);
             fileInfo[readerState.readerPos].notifyClientRef = actions->notifyClientRef;
             fileInfo[readerState.readerPos].notifyFilename = g_strdup(uri);
+            fileInfo[readerState.readerPos].notifyBytes = loadBytes;
+            fileInfo[readerState.readerPos].notifyPackets = loadPackets;
             notifyHandedOff = TRUE;
         }
         arkime_packet_batch_end_of_file(readerState.readerPos);
@@ -238,9 +251,15 @@ LOCAL void arkime_reader_scheme_load_thread(const char *uri, ArkimeSchemeFlags f
         if (rcl != 0) {
             arkime_command_notify_file_error(actions->notifyClientRef, uri);
         } else {
-            arkime_command_notify_file_done(actions->notifyClientRef, uri,
-                                            readerState.gotHeader ? fileInfo[readerState.readerPos].lastBytes : 0,
-                                            readerState.gotHeader ? fileInfo[readerState.readerPos].lastPackets : 0);
+            // Only earlier pcapng sections had packets, wait until they are processed
+            ARKIME_LOCK(fileInfoLock);
+            while (readerState.endedPos >= 0 && fileInfo[readerState.endedPos].finishWaiting > 0 && !config.quitting) {
+                ARKIME_UNLOCK(fileInfoLock);
+                usleep(5000);
+                ARKIME_LOCK(fileInfoLock);
+            }
+            ARKIME_UNLOCK(fileInfoLock);
+            arkime_command_notify_file_done(actions->notifyClientRef, uri, loadBytes, loadPackets);
         }
     }
 
@@ -345,6 +364,7 @@ LOCAL int reader_scheme_header_common(const char *uri, int dlt, int snaplen, con
 
     readerState.readerPos = nextPos;
     readerState.gotHeader = 1;
+    readerState.sections++;
     // We've wrapped around all 256 reader items, clear the previous file information
     if (fileInfo[readerState.readerPos].filename) {
         g_free(fileInfo[readerState.readerPos].filename);
@@ -465,6 +485,9 @@ LOCAL void *reader_scheme_thread(void *UNUSED(arg))
     }
     if (config.pcapSorted) {
         flags |= ARKIME_SCHEME_FLAG_SORTED;
+    }
+    if (config.pcapFollowLinks) {
+        flags |= ARKIME_SCHEME_FLAG_FOLLOWLINKS;
     }
 
     // Load files
@@ -669,13 +692,6 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
 
     reader_scheme_pause();
 
-    // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
-    if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
-        fileInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
-    } else {
-        fileInfo[readerState.readerPos].lastBytes += len;
-    }
-
     while (len > 0) {
         switch (readerState.state) {
         case ARKIME_SCHEME_FILEHEADER: {
@@ -867,6 +883,8 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                     uri, ARKIME_MAX_INTERFACES_PER_FILE, ifaceIndex);
             } else if (ifaceIndex == 0) {
                 // First interface of the section sets up the fileInfo slot
+                const int newSection = readerState.gotHeader;
+                const uint8_t prevPos = readerState.readerPos;
                 if (reader_scheme_header_common(uri, arkime_packet_linktype_to_dlt(linkType), snaplen, extraInfo, actions)) {
                     // Keep the packets batched from an earlier section, and record that this slot got them
                     if (batch.count > 0) {
@@ -874,6 +892,17 @@ LOCAL int arkime_reader_scheme_processNG(const char *uri, uint8_t *data, int len
                         arkime_packet_batch_flush(&batch);
                     }
                     return 1;
+                }
+                // End the previous section's slot so it must drain before it can be reused
+                if (newSection) {
+                    if (batch.count > 0) {
+                        fileInfo[prevPos].didBatch = 1;
+                        arkime_packet_batch_flush(&batch);
+                    }
+                    if (fileInfo[prevPos].didBatch) {
+                        arkime_packet_batch_end_of_file(prevPos);
+                        readerState.endedPos = prevPos;
+                    }
                 }
                 readerState.tsresol[0] = tsresol;
                 fileInfo[readerState.readerPos].isPcapNG = 1;
@@ -1086,6 +1115,14 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
         return 1;
     }
 
+    // Counted here once, processNG is also called after a pcapng header is found below
+    // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
+    if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
+        fileInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
+    } else {
+        fileInfo[readerState.readerPos].lastBytes += len;
+    }
+
     if (readerState.isPcapNG) {
         return arkime_reader_scheme_processNG(uri, data, len, extraInfo, actions);
     }
@@ -1094,13 +1131,6 @@ int arkime_reader_scheme_process(const char *uri, uint8_t *data, int len, const 
     arkime_packet_batch_init(&batch);
 
     reader_scheme_pause();
-
-    // HACK: If state is ARKIME_SCHEME_FILEHEADER we haven't actually incremented readerPos yet, so do here
-    if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
-        fileInfo[(readerState.readerPos + 1) & 0xff].lastBytes += len;
-    } else {
-        fileInfo[readerState.readerPos].lastBytes += len;
-    }
 
     while (len > 0) {
         if (readerState.state == ARKIME_SCHEME_FILEHEADER) {
@@ -1306,6 +1336,9 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
     if (config.pcapSorted) {
         flags |= ARKIME_SCHEME_FLAG_SORTED;
     }
+    if (config.pcapFollowLinks) {
+        flags |= ARKIME_SCHEME_FLAG_FOLLOWLINKS;
+    }
 
     for (int i = 1; i < argc - 1; i++) {
         const char *cmp = argv[i];
@@ -1333,6 +1366,10 @@ LOCAL int arkime_scheme_cmd_add(int argc, char **argv, gpointer cc, ArkimeScheme
             flags |= ARKIME_SCHEME_FLAG_SORTED;
         } else if (strcmp(cmp, "-nosorted") == 0) {
             flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_SORTED);
+        } else if (strcmp(cmp, "-followlinks") == 0) {
+            flags |= ARKIME_SCHEME_FLAG_FOLLOWLINKS;
+        } else if (strcmp(cmp, "-nofollowlinks") == 0) {
+            flags &= (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_FOLLOWLINKS);
         } else if (strcmp(cmp, "-notify") == 0) {
             notify = TRUE;
         } else if (strcmp(cmp, "-nonotify") == 0) {
@@ -1469,6 +1506,7 @@ void arkime_reader_scheme_init()
 
     arkime_command_register_opts("add-file", arkime_scheme_cmd_add_file, "Add a file to process",
                                  "[--delete|--nodelete]", "Override command line delete files after processing",
+                                 "[--followlinks|--nofollowlinks]", "Override command line follow symlinks when the file is a directory",
                                  "[--notify|--nonotify]", "Send async completion notification (file-done/file-error) on this connection",
                                  "[--op <field>=<value>]", "Can be multiple, override command line op option",
                                  "[--skip|--noskip]", "Override command line skip files already processed",
@@ -1476,6 +1514,7 @@ void arkime_reader_scheme_init()
                                  NULL);
     arkime_command_register_opts("add-dir", arkime_scheme_cmd_add_dir, "Add a directory to process",
                                  "[--delete|--nodelete]", "Override command line delete files after processing",
+                                 "[--followlinks|--nofollowlinks]", "Override command line follow symlinks found in the directory",
                                  "[--notify|--nonotify]", "Send async completion notification (file-done/file-error) for each file",
                                  "[--op <field>=<value>]", "Can be multiple, override command line op option",
                                  "[--skip|--noskip]", "Override command line skip files already processed",

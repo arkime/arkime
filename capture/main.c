@@ -28,6 +28,7 @@
 #include "nghttp2/nghttp2.h"
 #include <errno.h>
 #include <sys/stat.h>
+#include <arpa/inet.h>
 #include <openssl/rand.h>
 
 /******************************************************************************/
@@ -121,6 +122,7 @@ LOCAL  GOptionEntry entries[] = {
     { "reprocess",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapReprocess, "In offline mode reprocess files, use the same files table entry", NULL },
     { "recursive",   0,                    0, G_OPTION_ARG_NONE,           &config.pcapRecursive, "When in offline pcap directory mode, recurse sub directories", NULL },
     { "sorted",      0,                    0, G_OPTION_ARG_NONE,           &config.pcapSorted,    "When in offline pcap directory mode, sort files alphabetically before processing", NULL },
+    { "followlinks", 0,                    0, G_OPTION_ARG_NONE,           &config.pcapFollowLinks, "When in offline pcap directory mode, follow symlinks, only use if untrusted users can't write the directories", NULL },
     { "node",      'n',                    0, G_OPTION_ARG_STRING,         &config.nodeName,      "Our node name, defaults to hostname.  Multiple nodes can run on same host", NULL },
     { "host",        0,                    0, G_OPTION_ARG_STRING,         &config.hostName,      "Override hostname, this is what remote viewers will use to connect", NULL },
     { "tag",       't',                    0, G_OPTION_ARG_STRING_ARRAY,   &config.extraTags,     "Extra tag to add to all packets, can be used multiple times", NULL },
@@ -807,6 +809,31 @@ uint32_t arkime_string_hash_keyed(const void *key)
 uint32_t arkime_string_hash_keyed_len(const void *key, int len)
 {
     return (uint32_t)arkime_siphash(hashKey, key, len);
+}
+/******************************************************************************/
+// Like ArkimeConfig.isLoopbackHost, host is localhost, 127.x.x.x or ::1, with or without []
+gboolean arkime_is_loopback_host(const char *host)
+{
+    struct in_addr  addr4;
+    struct in6_addr addr6;
+    char            buf[INET6_ADDRSTRLEN + 2];
+
+    if (!host || !host[0])
+        return FALSE;
+
+    if (g_ascii_strcasecmp(host, "localhost") == 0)
+        return TRUE;
+
+    if (inet_pton(AF_INET, host, &addr4) == 1)
+        return (ntohl(addr4.s_addr) >> 24) == 127;
+
+    const int len = strlen(host);
+    if (len > 2 && host[0] == '[' && host[len - 1] == ']' && len - 2 < (int)sizeof(buf)) {
+        memcpy(buf, host + 1, len - 2);
+        buf[len - 2] = 0;
+        host = buf;
+    }
+    return inet_pton(AF_INET6, host, &addr6) == 1 && IN6_IS_ADDR_LOOPBACK(&addr6);
 }
 
 /******************************************************************************/

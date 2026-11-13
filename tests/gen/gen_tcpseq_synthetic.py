@@ -6,6 +6,7 @@ Layout:
     sessions as section functions below)
   - out_of_window_rst_syn (12 packets)
   - rst_loss_direction (4 sessions, 58 packets)
+  - no_syn (4 sessions, 49 packets)
 
 Run from the tests directory:  python3 gen/gen_tcpseq_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -196,6 +197,82 @@ def sec_rst_loss_direction():
     return out
 
 
+def sec_no_syn():
+    # Sessions that never show a clean handshake, all GET / with a unique Host:
+    #   10.9.51.1:49965 request arrives before the SYN, then the handshake: request parsed
+    #   10.9.52.1:49966 no handshake, request then response: both parsed
+    #   10.9.53.1:49967 no handshake, 40 client segments, past the no syn queue limit: parsed
+    #   10.9.54.1:49968 no handshake, a gap after the request: only the request parsed
+    TS_START = 1748736300.0
+    CMAC = bytes.fromhex('02aa00002501')
+    SMAC = bytes.fromhex('02aa00002502')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq & 0xffffffff, ack & 0xffffffff, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def req(host):
+        return b'GET / HTTP/1.1\r\nHost: ' + host + b'.nosyn.test\r\nUser-Agent: nosyn-test\r\n\r\n'
+
+    resp = b'HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok'
+
+    def session(n, port, kind):
+        cli, srv = '10.9.%d.1' % n, '10.9.%d.2' % n
+        pkts = []
+        c = lambda flags, seq, ack, p=b'': pkts.append(eth_ip_tcp(cli, srv, CMAC, SMAC, port, 80, seq, ack, flags, p))
+        s = lambda flags, seq, ack, p=b'': pkts.append(eth_ip_tcp(srv, cli, SMAC, CMAC, 80, port, seq, ack, flags, p))
+        cseq, sseq = 0x30000 + n, 0x40000 + n
+        r = req(kind.encode())
+
+        if kind == 'late-syn':
+            c(0x18, cseq + 1, sseq + 1, r)
+            c(0x02, cseq, 0)
+            s(0x12, sseq, cseq + 1)
+            c(0x10, cseq + 1, sseq + 1)
+            s(0x18, sseq + 1, cseq + 1 + len(r), resp)
+        elif kind == 'midstream':
+            c(0x18, cseq, sseq, r)
+            s(0x18, sseq, cseq + len(r), resp)
+        elif kind == 'limit':
+            c(0x18, cseq, sseq, r)
+            cseq += len(r)
+            for _ in range(39):
+                c(0x10, cseq, sseq, b'x' * 100)
+                cseq += 100
+        elif kind == 'gap':
+            c(0x18, cseq, sseq, r)
+            c(0x18, cseq + len(r) + 500, sseq, b'y' * 100)
+        return pkts
+
+    pkts = session(51, 49965, 'late-syn')
+    pkts += session(52, 49966, 'midstream')
+    pkts += session(53, 49967, 'limit')
+    pkts += session(54, 49968, 'gap')
+
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
 def _max_ts(blob):
     # Latest timestamp among the pcap records in blob (header already stripped for sections)
     pos = 24 if blob[:4] in (b'\xd4\xc3\xb2\xa1', b'\xa1\xb2\xc3\xd4') else 0
@@ -236,6 +313,7 @@ def main():
     for blob in [
         sec_out_of_window_rst_syn(),
         sec_rst_loss_direction(),
+        sec_no_syn(),
     ]:
         blob, tmax = _after(blob, tmax)
         out += blob

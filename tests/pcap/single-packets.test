@@ -4,7 +4,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 574
     },
     "destination" : {
      "as" : {
@@ -145,6 +145,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f616374",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -164,7 +165,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 574
    },
    "header" : {
     "index" : {
@@ -176,7 +177,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 1324
     },
     "destination" : {
      "as" : {
@@ -354,6 +355,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f486f74",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -373,7 +375,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 1324
    },
    "header" : {
     "index" : {
@@ -385,7 +387,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 400
     },
     "destination" : {
      "as" : {
@@ -527,6 +529,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f757365",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -546,7 +549,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 400
    },
    "header" : {
     "index" : {
@@ -558,7 +561,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 616
     },
     "destination" : {
      "as" : {
@@ -721,6 +724,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "504f5354202f5254",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -740,7 +744,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 616
    },
    "header" : {
     "index" : {
@@ -752,7 +756,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 578
     },
     "destination" : {
      "as" : {
@@ -922,6 +926,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f3f6369",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -941,7 +946,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 578
    },
    "header" : {
     "index" : {
@@ -953,7 +958,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 762
     },
     "destination" : {
      "as" : {
@@ -1130,6 +1135,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f722f63",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -1149,7 +1155,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 762
    },
    "header" : {
     "index" : {
@@ -1161,7 +1167,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 504
     },
     "destination" : {
      "as" : {
@@ -1304,6 +1310,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f6d6170",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -1323,7 +1330,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 504
    },
    "header" : {
     "index" : {
@@ -1335,7 +1342,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 871
     },
     "destination" : {
      "as" : {
@@ -1504,6 +1511,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f616e61",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -1523,7 +1531,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 871
    },
    "header" : {
     "index" : {
@@ -1563,6 +1571,7 @@
      "VMware, Inc."
     ],
     "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e30",
     "dstRIR" : "ARIN",
     "dstTTL" : [
      128
@@ -1643,7 +1652,7 @@
     "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 0
+     "bytes" : 189
     },
     "source" : {
      "bytes" : 0,
@@ -1678,7 +1687,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 189
    },
    "header" : {
     "index" : {

@@ -341,8 +341,24 @@ LOCAL void certinfo_basic_constraints(ArkimeCertsInfo_t *certs, BSB *bsb)
     }
 }
 /******************************************************************************/
-LOCAL void certinfo_alt_add(ArkimeStringHead_t *head, const char *str, int len)
+// Big CA certs have a few hundred alt names, subjects a handful of names
+#define CERT_MAX_ALT_NAMES 256
+#define CERT_MAX_NAMES     16
+/******************************************************************************/
+// Returns FALSE and tags the session once a list is full
+LOCAL gboolean certinfo_room(ArkimeSession_t *session, const ArkimeStringHead_t *head, int max)
 {
+    if (head->s_count < max)
+        return TRUE;
+    if (session)
+        arkime_session_add_tag(session, "cert-too-many-names");
+    return FALSE;
+}
+/******************************************************************************/
+LOCAL void certinfo_alt_add(ArkimeSession_t *session, ArkimeStringHead_t *head, const char *str, int len)
+{
+    if (!certinfo_room(session, head, CERT_MAX_ALT_NAMES))
+        return;
     ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
     element->str = g_strndup(str, len);
     element->len = len;
@@ -386,30 +402,30 @@ LOCAL void certinfo_alt_names(ArkimeSession_t *session, ArkimeCertsInfo_t *certs
             certinfo_alt_names(session, certs, &tbsb, lastOid, depth + 1, 1);
             return;
         } else if (inSan && cls == 0x80 && atag == 2) {
-            if (g_utf8_validate((char *)value, alen, NULL)) {
+            if (!g_utf8_validate((char *)value, alen, NULL)) {
+                arkime_session_add_tag(session, "bad-altname");
+            } else if (certinfo_room(session, &certs->alt, CERT_MAX_ALT_NAMES)) {
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->str = g_ascii_strdown((char *)value, alen);
                 element->len = alen;
                 element->utf8 = 1;
                 DLL_PUSH_TAIL(s_, &certs->alt, element);
-            } else {
-                arkime_session_add_tag(session, "bad-altname");
             }
         } else if (inSan && cls == 0x80 && (atag == 1 || atag == 6)) {
             // rfc822Name and uniformResourceIdentifier
             if (g_utf8_validate((char *)value, alen, NULL))
-                certinfo_alt_add(atag == 1 ? &certs->altEmail : &certs->altUri, (char *)value, alen);
+                certinfo_alt_add(session, atag == 1 ? &certs->altEmail : &certs->altUri, (char *)value, alen);
         } else if (inSan && cls == 0x80 && atag == 7 && (alen == 4 || alen == 16)) {
             char ipstr[INET6_ADDRSTRLEN];
             if (inet_ntop(alen == 4 ? AF_INET : AF_INET6, value, ipstr, sizeof(ipstr)))
-                certinfo_alt_add(&certs->altIp, ipstr, strlen(ipstr));
+                certinfo_alt_add(session, &certs->altIp, ipstr, strlen(ipstr));
         }
     }
     lastOid[0] = 0;
     return;
 }
 /******************************************************************************/
-LOCAL void certinfo_process_depth(ArkimeCertInfo_t *ci, BSB *bsb, int depth)
+LOCAL void certinfo_process_depth(ArkimeSession_t *session, ArkimeCertInfo_t *ci, BSB *bsb, int depth)
 {
     uint32_t apc, atag, alen;
     char lastOid[1000];
@@ -426,7 +442,7 @@ LOCAL void certinfo_process_depth(ArkimeCertInfo_t *ci, BSB *bsb, int depth)
         if (apc) {
             BSB tbsb;
             BSB_INIT(tbsb, value, alen);
-            certinfo_process_depth(ci, &tbsb, depth + 1);
+            certinfo_process_depth(session, ci, &tbsb, depth + 1);
         } else if (atag  == 6) {
             arkime_parsers_asn_decode_oid(lastOid, sizeof(lastOid), value, alen);
         } else if (lastOid[0] && (atag == 20 || atag == 19 || atag == 12)) {
@@ -435,6 +451,8 @@ LOCAL void certinfo_process_depth(ArkimeCertInfo_t *ci, BSB *bsb, int depth)
              * 12 == BER_UNI_TAG_UTF8String
              */
             if (strcmp(lastOid, "2.5.4.3") == 0) {
+                if (!certinfo_room(session, &ci->commonName, CERT_MAX_NAMES))
+                    continue;
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 // g_utf8_strdown can read past the end of invalid utf8
                 element->utf8 = atag == 12 && g_utf8_validate((char *)value, alen, NULL);
@@ -444,11 +462,15 @@ LOCAL void certinfo_process_depth(ArkimeCertInfo_t *ci, BSB *bsb, int depth)
                     element->str = g_ascii_strdown((char *)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->commonName, element);
             } else if (strcmp(lastOid, "2.5.4.10") == 0) {
+                if (!certinfo_room(session, &ci->orgName, CERT_MAX_NAMES))
+                    continue;
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 element->str = g_strndup((char *)value, alen);
                 DLL_PUSH_TAIL(s_, &ci->orgName, element);
             } else if (strcmp(lastOid, "2.5.4.11") == 0) {
+                if (!certinfo_room(session, &ci->orgUnit, CERT_MAX_NAMES))
+                    continue;
                 ArkimeString_t *element = ARKIME_TYPE_ALLOC0(ArkimeString_t);
                 element->utf8 = atag == 12;
                 element->str = g_strndup((char *)value, alen);
@@ -665,7 +687,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
     }
     BSB tbsb;
     BSB_INIT(tbsb, value, alen);
-    certinfo_process_depth(&certs->issuer, &tbsb, 0);
+    certinfo_process_depth(session, &certs->issuer, &tbsb, 0);
 
     /* validity */
     if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {
@@ -692,7 +714,7 @@ LOCAL int certinfo_process_single_cert(ArkimeSession_t *session, const uint8_t *
         goto bad_cert;
     }
     BSB_INIT(tbsb, value, alen);
-    certinfo_process_depth(&certs->subject, &tbsb, 0);
+    certinfo_process_depth(session, &certs->subject, &tbsb, 0);
 
     /* subjectPublicKeyInfo */
     if (!(value = arkime_parsers_asn_get_tlv(&bsb, &apc, &atag, &alen))) {

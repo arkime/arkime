@@ -27,6 +27,7 @@ extern ArkimeConfig_t        config;
 
 
 LOCAL int                    maxTcpOutOfOrderPackets;
+LOCAL int                    maxTcpNoSynPackets;
 extern uint32_t              pluginsCbs;
 LOCAL int                    tcp_raw_packet_func;
 
@@ -58,26 +59,6 @@ LOCAL void tcp_mid_save(ArkimeSession_t *session)
     session->closeValidated = 0;
     memset(session->tcpData.tcpFlagCnt, 0, sizeof(session->tcpData.tcpFlagCnt));
 }
-/******************************************************************************/
-LOCAL void tcp_session_free(ArkimeSession_t *session)
-{
-    if (session->tcpData.td_count == 1 && session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH] == 1) {
-        ArkimeTcpData_t *ftd = DLL_PEEK_HEAD(td_, &session->tcpData);
-        const int which = ftd->packet->direction;
-        const uint8_t *data = ftd->packet->pkt + ftd->dataOffset;
-        const int len = ftd->len;
-
-        arkime_parsers_classify_tcp(session, data, len, which);
-        arkime_packet_process_data(session, data, len, which);
-    }
-
-    ArkimeTcpData_t *td;
-    while (DLL_POP_HEAD(td_, &session->tcpData, td)) {
-        arkime_packet_free(td->packet);
-        ARKIME_TYPE_FREE(ArkimeTcpData_t, td);
-    }
-}
-
 /******************************************************************************/
 // Idea from gopacket tcpassembly/assembly.go
 LOCAL int64_t tcp_sequence_diff(int64_t a, int64_t b)
@@ -176,6 +157,43 @@ LOCAL void tcp_packet_finish(ArkimeSession_t *session)
         } else {
             return;
         }
+    }
+}
+/******************************************************************************/
+// Never saw the handshake, start each direction at its lowest queued seq, tcp_packet_finish processes what is contiguous
+LOCAL void tcp_sync_no_syn(ArkimeSession_t *session)
+{
+    int have = 0;
+    ArkimeTcpData_t *ftd;
+    DLL_FOREACH(td_, &session->tcpData, ftd) {
+        const int which = ftd->packet->direction;
+        if (!(have & (1 << which)) || tcp_sequence_diff(session->tcpData.tcpSeq[which], ftd->seq) < 0) {
+            session->tcpData.tcpSeq[which] = ftd->seq;
+            have |= 1 << which;
+        }
+    }
+    session->haveTcpSession = 1;
+}
+/******************************************************************************/
+LOCAL void tcp_session_free(ArkimeSession_t *session)
+{
+    if (!session->haveTcpSession && session->tcpData.td_count > 0) {
+        tcp_sync_no_syn(session);
+        tcp_packet_finish(session);
+    } else if (session->tcpData.td_count == 1 && session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_PSH] == 1) {
+        ArkimeTcpData_t *ftd = DLL_PEEK_HEAD(td_, &session->tcpData);
+        const int which = ftd->packet->direction;
+        const uint8_t *data = ftd->packet->pkt + ftd->dataOffset;
+        const int len = ftd->len;
+
+        arkime_parsers_classify_tcp(session, data, len, which);
+        arkime_packet_process_data(session, data, len, which);
+    }
+
+    ArkimeTcpData_t *td;
+    while (DLL_POP_HEAD(td_, &session->tcpData, td)) {
+        arkime_packet_free(td->packet);
+        ARKIME_TYPE_FREE(ArkimeTcpData_t, td);
     }
 }
 /******************************************************************************/
@@ -371,7 +389,9 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
 
     // If we've seen SYN but no SYN_ACK and no tcpSeq set, then just assume we've missed the syn-ack
     if (session->haveTcpSession && session->tcpData.tcpFlagCnt[ARKIME_TCPFLAG_SYN_ACK] == 0 && session->tcpData.tcpSeq[packet->direction] == 0) {
-        arkime_session_add_tag(session, "no-syn-ack");
+        // A session started by tcp_sync_no_syn didn't see a syn either
+        if (session->synSet)
+            arkime_session_add_tag(session, "no-syn-ack");
         session->tcpData.tcpSeq[packet->direction] = seq;
     }
 
@@ -481,6 +501,11 @@ LOCAL int tcp_packet_process(ArkimeSession_t *const session, ArkimePacket_t *con
         }
     }
 
+    // Without a syn or syn-ack nothing drains, so only hold enough to catch a reordered handshake
+    if (!session->haveTcpSession && DLL_COUNT(td_, tcpData) > maxTcpNoSynPackets) {
+        tcp_sync_no_syn(session);
+    }
+
     return 0;
 }
 
@@ -581,6 +606,7 @@ LOCAL int tcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 void arkime_parser_init()
 {
     maxTcpOutOfOrderPackets = arkime_config_int(NULL, "maxTcpOutOfOrderPackets", 256, 64, 10000);
+    maxTcpNoSynPackets = maxTcpOutOfOrderPackets / 8;
     tcp_raw_packet_func = arkime_parsers_get_named_func("tcp_raw_packet");
 
     mProtocolTcp = arkime_mprotocol_register("tcp",

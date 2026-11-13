@@ -3152,7 +3152,7 @@ class SessionAPIs {
       SessionAPIs.#sortFields(session);
 
       const hidePackets = (session.packetPos === undefined || session.packetPos.length === 0) ? 'true' : 'false';
-      pug.render(internals.sessionDetailNew, {
+      const locals = {
         filename: 'sessionDetail',
         cache: internals.isProduction,
         compileDebug: !internals.isProduction,
@@ -3163,11 +3163,27 @@ class SessionAPIs {
         query: req.query,
         basedir: '/',
         hidePackets,
-        customViewFields: internals.customViewFields,
+        customViews: internals.customViews,
         reqFields: Config.headers('headers-http-request'),
         resFields: Config.headers('headers-http-response'),
         emailFields: Config.headers('headers-email')
-      }, (err, data) => {
+      };
+
+      // Plugin (WISE) views render by themselves, so one that throws only loses its own card.
+      // They get their own copy of session since arrayList changes it.
+      const pluginLocals = internals.pluginViews.length ? { ...locals, session: structuredClone(session) } : undefined;
+      locals.pluginViewsHtml = internals.pluginViews.map((render) => {
+        try {
+          return render(pluginLocals);
+        } catch (err) {
+          if (Config.debug) {
+            console.log('WARNING - plugin view failed to render for session %s', ArkimeUtil.sanitizeStr(req.params.id), err.message);
+          }
+          return '';
+        }
+      });
+
+      pug.render(internals.sessionDetailNew, locals, (err, data) => {
         if (err) {
           console.trace(`ERROR - ${req.method} /api/session/%s/%s/detail`, ArkimeUtil.sanitizeStr(req.params.nodeName), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
           return req.next(err);

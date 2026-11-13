@@ -224,6 +224,36 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
     return name;
 }
 /******************************************************************************/
+// Real HTTPS records have a few params and alpn/hint values
+#define DNS_SVCB_MAX 16
+/******************************************************************************/
+// Upper bound of what an https answer writes into the session JSON, strings can escape to 6x
+LOCAL int dns_svcb_json_len(DNSSVCBRData_t *svcb)
+{
+    int len = 32 + strlen(svcb->dname) * 6;
+    DNSSVCBRDataFieldValue_t *fieldValue;
+    DLL_FOREACH(t_, &(svcb->fieldValues), fieldValue) {
+        switch (fieldValue->key) {
+        case SVCB_PARAM_KEY_ALPN: {
+            GPtrArray *alpnValues = (GPtrArray *)fieldValue->value;
+            len += 8;
+            for (guint i = 0; i < alpnValues->len; i++)
+                len += strlen(g_ptr_array_index(alpnValues, i)) * 6 + 1;
+            break;
+        }
+        case SVCB_PARAM_KEY_IPV4_HINT:
+            len += 12 + ((GArray *)fieldValue->value)->len * 16;
+            break;
+        case SVCB_PARAM_KEY_IPV6_HINT:
+            len += 12 + ((GPtrArray *)fieldValue->value)->len * 46;
+            break;
+        default:
+            len += 16;
+        }
+    }
+    return len;
+}
+/******************************************************************************/
 LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t *data, int length)
 {
     if (length < 3)
@@ -262,6 +292,10 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
     DLL_INIT(t_, &(svcbData->fieldValues));
 
     while (BSB_REMAINING(bsb) >= 4 && !BSB_IS_ERROR(bsb)) {
+        if (DLL_COUNT(t_, &(svcbData->fieldValues)) >= DNS_SVCB_MAX) {
+            arkime_session_add_tag(session, "dns:svcb-truncated");
+            break;
+        }
         uint16_t key = 0;
         BSB_IMPORT_u16(bsb, key);
         uint16_t len = 0;
@@ -287,6 +321,10 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
             BSB absb;
             BSB_INIT(absb, ptr, len);
             while (BSB_REMAINING(absb) > 1 && !BSB_IS_ERROR(absb)) {
+                if (((GPtrArray *)fieldValue->value)->len >= DNS_SVCB_MAX) {
+                    arkime_session_add_tag(session, "dns:svcb-truncated");
+                    break;
+                }
                 uint8_t alen = 0;
                 BSB_IMPORT_u08(absb, alen);
 
@@ -322,6 +360,10 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
             BSB absb;
             BSB_INIT(absb, ptr, len);
             while (BSB_REMAINING(absb) > 3 && !BSB_IS_ERROR(absb)) {
+                if (((GArray *)fieldValue->value)->len >= DNS_SVCB_MAX) {
+                    arkime_session_add_tag(session, "dns:svcb-truncated");
+                    break;
+                }
                 const uint8_t *aptr = NULL;
                 BSB_IMPORT_ptr(absb, aptr, 4);
 
@@ -342,6 +384,10 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
             BSB absb;
             BSB_INIT(absb, ptr, len);
             while (BSB_REMAINING(absb) > 15 && !BSB_IS_ERROR(absb)) {
+                if (((GPtrArray *)fieldValue->value)->len >= DNS_SVCB_MAX) {
+                    arkime_session_add_tag(session, "dns:svcb-truncated");
+                    break;
+                }
                 uint8_t *aptr = NULL;
                 BSB_IMPORT_ptr(absb, aptr, 16);
 
@@ -1112,7 +1158,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 if (svcbData) {
                     answer->svcb = svcbData;
                     jsonLen += HOST_IP_JSON_LEN;
-                    jsonLen += DLL_COUNT(t_, &(answer->svcb->fieldValues)) * 50;
+                    jsonLen += dns_svcb_json_len(svcbData);
                 } else {
                     goto continueerr;
                 }
