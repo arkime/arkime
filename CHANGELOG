@@ -57,6 +57,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4459 DNS HTTPS/SVCB answers keep at most 16 params and 16 alpn/ipv4hint/ipv6hint values, tagged dns:svcb-truncated
   - #4459 An https://localhost entry in a server list no longer disables certificate checks for the other servers, like the viewer
   - #4459 When exiting takes more than 30s capture logs what it is still waiting on, without needing --debug
+  - #4459 S3 and SQS requests that get no data for 60s are logged and retried, they used to wait forever
   - #4459 TCP sessions where no SYN was seen now have their data processed, it used to be at most a single packet. They wait up to maxTcpOutOfOrderPackets/8 packets for a SYN, then start from the lowest sequence numbers seen
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type: hosts on a ring, each talking pair an arc across it, colored by protocol or a field you pick

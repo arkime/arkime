@@ -829,7 +829,7 @@ sub hungReport {
 my ($pgid, $cmd) = @_;
     diag "HUNG [>${ArkimeTest::hungSecs}s] $cmd";
     my ($log) = $cmd =~ m{> (/tmp/\S+) 2>&1};
-    diag "--- last of $log\n" . `tail -40 $log 2>&1` if ($log && -s $log);
+    diag "--- last of $log\n" . `tail -80 $log 2>&1` if ($log && -s $log);
     $ArkimeTest::hungExtra->($pgid, $cmd) if ($ArkimeTest::hungExtra);
 
     foreach my $proc (hungProcs($pgid)) {

@@ -99,6 +99,7 @@ struct arkimehttpserver_t {
     char                    *aws_sigv4;
     char                    *caTrustFile;
     uint64_t                 timeout;
+    uint32_t                 stallTimeout;
     int                      snamesCnt;
     int                      snamesPos;
     char                     compress;
@@ -437,6 +438,11 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
 #endif
 
             if (responseCode == 0 && request->retries >= 0) {
+                if (msg->data.result == CURLE_OPERATION_TIMEDOUT) {
+                    double totalTime;
+                    curl_easy_getinfo(easy, CURLINFO_TOTAL_TIME, &totalTime);
+                    LOG("WARNING - %s timed out after %.0fs, retrying", request->url, totalTime);
+                }
                 curl_multi_remove_handle(server->multi, easy);
 
                 request->retries--;
@@ -985,6 +991,10 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
 
     curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
     curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, server->timeout);
+    if (server->stallTimeout) {
+        curl_easy_setopt(request->easy, CURLOPT_LOW_SPEED_LIMIT, 1L);
+        curl_easy_setopt(request->easy, CURLOPT_LOW_SPEED_TIME, (long)server->stallTimeout);
+    }
 
     memcpy(request->key, key, key_len);
     request->key[key_len] = 0;
@@ -1149,6 +1159,14 @@ void arkime_http_set_retries(void *serverV, uint16_t retries)
     ArkimeHttpServer_t        *server = serverV;
 
     server->maxRetries = retries;
+}
+/******************************************************************************/
+// Fail a request that moves no bytes for this many seconds, unlike the timeout a long transfer is fine
+void arkime_http_set_stall_timeout(void *serverV, uint32_t secs)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->stallTimeout = secs;
 }
 /******************************************************************************/
 void arkime_http_set_timeout(void *serverV, uint64_t timeout)

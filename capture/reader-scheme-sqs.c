@@ -256,6 +256,7 @@ LOCAL int scheme_sqs_load(const char *uri, ArkimeSchemeFlags flags, ArkimeScheme
 
     if (isNew) {
         arkime_http_set_timeout(server, 0);
+        arkime_http_set_stall_timeout(server, 60);
 
         char userpwd[256];
         snprintf(userpwd, sizeof(userpwd), "%s:%s", creds->id, creds->key);
