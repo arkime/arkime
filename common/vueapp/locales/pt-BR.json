@@ -691,6 +691,7 @@
         "folderTip": "Opcional: painéis com a mesma pasta são listados juntos no menu de painéis",
         "folderPlaceholder": "Sem pasta",
         "savedDashboards": "Painéis salvos",
+        "newDashboard": "Novo painel",
         "saveCurrent": "Salvar painel atual",
         "saveTo": "Salvar \"{name}\"",
         "saveConfig": "Salvar painel",

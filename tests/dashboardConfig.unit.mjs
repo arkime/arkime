@@ -51,7 +51,7 @@ globalThis.testFields = [
 const fieldsArr = globalThis.testFields;
 
 const {
-  GRAPH_KEYS, widgetsFromConfig, defaultWidgets, graphFromWidget, widgetFromGraph, normalizeWidget, widgetIsGraph,
+  GRAPH_KEYS, widgetsFromConfig, defaultWidgets, blankDashboard, graphFromWidget, widgetFromGraph, normalizeWidget, widgetIsGraph,
   graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph, graphDrawnAsWidget, graphIsHierarchyFed, sameSpigraphGraph,
   migrateDashboard, DASHBOARD_VERSION
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
@@ -703,6 +703,17 @@ describe('viewModeLabelKey', () => {
     assert.equal(viewModeLabelKey('bar'), 'sessions.summary.barChart');
     assert.equal(viewModeLabelKey('constructor'), undefined);
     assert.equal(viewModeLabelKey('__proto__'), undefined);
+  });
+});
+
+describe('a new dashboard', () => {
+  test('starts with only the navigation widget and loads back as it was saved', () => {
+    const blank = blankDashboard();
+    assert.equal(blank.version, 1);
+    assert.deepEqual(blank.widgets.map(w => w.viewMode), ['navigation']);
+    assert.deepEqual(blank.fields, []);
+    assert.deepEqual(widgetsFromConfig(blank).map(w => [w.viewMode, w.width]), [['navigation', 4]]);
+    assert.notEqual(blankDashboard().widgets[0].id, blank.widgets[0].id);
   });
 });
 

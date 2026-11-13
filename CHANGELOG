@@ -40,6 +40,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type: hosts on a ring, each talking pair an arc across it, colored by protocol or a field you pick
   - #4456 Fix the widget and graph settings editor resetting a connections sample size to 100 when opened
+  - #4457 Add a New dashboard option to the dashboards menu: name it and pick its folder, then add widgets and save
 
 7.0.0-rc1 2026/11/12
 ## Breaking

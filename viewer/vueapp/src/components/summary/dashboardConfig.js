@@ -623,6 +623,12 @@ const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 't
  * @param {object[]} widgets - the dashboard's widgets, in display order
  * @returns {object} { fields, resultsLimit, order }
  */
+/** A new dashboard before anything is added to it: just the links to the others. */
+export const blankDashboard = () => {
+  const widgets = [makeWidgetDef('', { viewMode: 'navigation', width: 4, height: 1 })];
+  return { version: DASHBOARD_VERSION, colorScheme: 'rainbow', widgets, ...toV6Shape(widgets) };
+};
+
 export const toV6Shape = (widgets) => {
   // a control picks values rather than charting them, v6 has nothing like it
   const fieldWidgets = (widgets || []).filter(w => w.field && isFieldMode(w.viewMode) && w.viewMode !== 'control');

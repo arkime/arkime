@@ -691,6 +691,7 @@
         "folderTip": "Facultatif : les tableaux de bord ayant le même dossier sont regroupés dans le menu des tableaux de bord",
         "folderPlaceholder": "Aucun dossier",
         "savedDashboards": "Tableaux de bord enregistrés",
+        "newDashboard": "Nouveau tableau de bord",
         "saveCurrent": "Enregistrer le tableau de bord actuel",
         "saveTo": "Enregistrer « {name} »",
         "saveConfig": "Enregistrer le tableau de bord",

@@ -691,6 +691,7 @@
         "folderTip": "선택 사항: 같은 폴더의 대시보드는 대시보드 메뉴에 함께 표시됩니다",
         "folderPlaceholder": "폴더 없음",
         "savedDashboards": "저장된 대시보드",
+        "newDashboard": "새 대시보드",
         "saveCurrent": "현재 대시보드 저장",
         "saveTo": "\"{name}\" 저장",
         "saveConfig": "대시보드 저장",

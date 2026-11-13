@@ -691,6 +691,7 @@
         "folderTip": "Valikuline: sama kaustaga töölauad kuvatakse töölaudade menüüs koos",
         "folderPlaceholder": "Kaust puudub",
         "savedDashboards": "Salvestatud töölauad",
+        "newDashboard": "Uus töölaud",
         "saveCurrent": "Salvesta praegune töölaud",
         "saveTo": "Salvesta \"{name}\"",
         "saveConfig": "Salvesta töölaud",

@@ -691,6 +691,7 @@
         "folderTip": "Optional: dashboards with the same folder are listed together in the dashboards menu",
         "folderPlaceholder": "No folder",
         "savedDashboards": "Saved dashboards",
+        "newDashboard": "New dashboard",
         "saveCurrent": "Save current dashboard",
         "saveTo": "Save \"{name}\"",
         "saveConfig": "Save dashboard",

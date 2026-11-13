@@ -208,6 +208,11 @@ const props = defineProps({
     type: Object,
     default: null // The shareable object being edited, null for new
   },
+  // a title of the caller's own (a new dashboard isn't the current one being saved)
+  title: {
+    type: String,
+    default: ''
+  },
   // what is being saved: a 'dashboard' (summaryConfig) or a 'graph' (spigraphConfig)
   kind: {
     type: String,
@@ -218,6 +223,7 @@ const props = defineProps({
 const service = computed(() => createShareableService(props.kind === 'graph' ? 'spigraphConfig' : 'summaryConfig'));
 
 const modalTitle = computed(() => {
+  if (props.title) { return props.title; }
   if (props.kind === 'graph') { return props.editing ? t('spigraph.graphs.editGraph') : t('spigraph.graphs.saveGraph'); }
   return props.editing ? t('sessions.summary.config.editConfig') : t('sessions.summary.config.saveConfig');
 });
