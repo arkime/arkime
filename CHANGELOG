@@ -41,26 +41,26 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4459 Offline directory reading (-R, --monitor, add-dir) no longer follows symlinks to files or directories, use --followlinks to allow them
   - #4459 WISE views written as pug can only use simple tags, text, if tests on session fields and +arrayList, others are skipped with a warning in the viewer log, require:/title:/fields: views always work
   - #4459 Removed the wiseproxy WISE source, it hasn't returned results in years, point wiseURL at the WISE directly
-  - authMode=header-jwt now refuses JWTs that are malformed, unsigned (alg none), expired or not yet valid
-  - mcpAllowedIps now only lists the hosts trusted to send the MCP username header, JWT requests are no longer checked against it, and when unset it defaults to userAuthIps on header authMode sites
-  - With mcpAuthMode=jwt,header a request with a Bearer token that fails to verify no longer falls back to the username header
-  - superAdmins are no longer granted or restricted by their roles, only by their own user record, anything it leaves unset uses the defaults: packet search on, email search and remove data off, nothing hidden
+  - #4460 authMode=header-jwt now refuses JWTs that are malformed, unsigned (alg none), expired or not yet valid
+  - #4460 mcpAllowedIps now only lists the hosts trusted to send the MCP username header, JWT requests are no longer checked against it, and when unset it defaults to userAuthIps on header authMode sites
+  - #4460 With mcpAuthMode=jwt,header a request with a Bearer token that fails to verify no longer falls back to the username header
+  - #4460 superAdmins are no longer granted or restricted by their roles, only by their own user record, anything it leaves unset uses the defaults: packet search on, email search and remove data off, nothing hidden
 ## All
-  - A role assigner can no longer change the roles of a user with an admin role the assigner doesn't have
-  - Add authHeaderJwtVerify=true to have authMode=header-jwt also check the JWT signature using authJwtJwksUrl, authJwtIssuer and authJwtAudience
-  - Fix two-factor authentication being replaceable without the current code, turn it off first to enroll a new authenticator
-  - requiredAuthHeaderVal and credential headers (Authorization, X-API-Key, Cookie) in WISE source headers are now hidden on the view config and WISE config pages
-  - Fix a usersAdmin being able to delete, and so recreate, a user with an admin role the usersAdmin doesn't have
-  - JSON request bodies in a charset other than UTF-8 are now refused
-  - Notifier fields can no longer contain control characters, a bad syslog tag is sent as arkime
-  - Fix a login request being able to stall the viewer
-  - Changing your own password now always needs the current password, including for usersAdmin and superAdmin
-  - With several authRedirectURIs, OIDC login uses the entry for the request's host instead of building one from the Host header
-  - authMode=form refuses a login posted from another web site
-  - User settings values are now checked and size limited, and db.pl upgrade stops indexing new user settings so one user can't break the users index for everyone
-  - User auto-create now refuses userIds containing / ? # % or control characters, or that are . or ..
-  - Fix the Users page acting on the wrong user for userIds with characters like + or /
-  - S2S tokens are now signed so forged ones are rejected cheaply, set v6Compatible=false to refuse tokens from older versions once every node, including other clusters, runs this version or later
+  - #4460 A role assigner can no longer change the roles of a user with an admin role the assigner doesn't have
+  - #4460 Add authHeaderJwtVerify=true to have authMode=header-jwt also check the JWT signature using authJwtJwksUrl, authJwtIssuer and authJwtAudience
+  - #4460 Fix two-factor authentication being replaceable without the current code, turn it off first to enroll a new authenticator
+  - #4460 requiredAuthHeaderVal and credential headers (Authorization, X-API-Key, Cookie) in WISE source headers are now hidden on the view config and WISE config pages
+  - #4460 Fix a usersAdmin being able to delete, and so recreate, a user with an admin role the usersAdmin doesn't have
+  - #4460 JSON request bodies in a charset other than UTF-8 are now refused
+  - #4460 Notifier fields can no longer contain control characters, a bad syslog tag is sent as arkime
+  - #4460 Fix a login request being able to stall the viewer
+  - #4460 Changing your own password now always needs the current password, including for usersAdmin and superAdmin
+  - #4460 With several authRedirectURIs, OIDC login uses the entry for the request's host instead of building one from the Host header
+  - #4460 authMode=form refuses a login posted from another web site
+  - #4460 User settings values are now checked and size limited, and db.pl upgrade stops indexing new user settings so one user can't break the users index for everyone
+  - #4460 User auto-create now refuses userIds containing / ? # % or control characters, or that are . or ..
+  - #4460 Fix the Users page acting on the wrong user for userIds with characters like + or /
+  - #4460 S2S tokens are now signed so forged ones are rejected cheaply, set v6Compatible=false to refuse tokens from older versions once every node, including other clusters, runs this version or later
 ## Capture
   - #4459 Add --followlinks and add-file/add-dir --followlinks to follow symlinks when reading offline directories
   - #4459 Fix one pcap-over-ip server connection being able to change another connection's link type

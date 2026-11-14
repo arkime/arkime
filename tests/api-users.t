@@ -210,6 +210,8 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     ok(length($json->{hideTags} // '') < 70000, "and nothing was stored");
 
 # update user settings - values stored before these checks don't block a save
+SKIP: {
+    skip "writing old settings needs users in Elasticsearch", 5 unless $ArkimeTest::usersElasticsearch =~ m{^https?://};
     esPost("/tests_users/_update/sac-test1?refresh=true", '{"doc": {"settings": {"timelineDataFilters": [{"bad":"object"}], "hideTags": "' . ("x" x 70000) . '"}}}');
     viewerPost("/regressionTests/flushCache");
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", to_json({timelineDataFilters => [{bad => "object"}], hideTags => "x" x 69000, logo => "legacy.png"}), $test1Token);
@@ -222,6 +224,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     is($json->{text}, "User settings too large", "an over the cap record can't grow");
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"timelineDataFilters":null, "hideTags":null}', $test1Token);
     is($json->{success}, 1, "clear the old values");
+}
 
 # restore logo to string value
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
