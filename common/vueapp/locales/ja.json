@@ -1398,6 +1398,7 @@
     "hideFilesPage": "Arkime ファイルページを隠す",
     "hidePcap": "Arkime PCAP を隠す",
     "disablePcapDownload": "Arkime PCAP ダウンロードを無効化",
+    "superAdminNoInherit": "superAdmin はロールから何も継承しません。「継承」のままの項目は既定値になります: ハントは許可、メール検索とデータ削除は無効、非表示なし。",
     "forcedExpression": "強制式",
     "forcedExpressionTip": "すべてのクエリに密かに追加される Arkime 検索式。アクセス可能なデータを制限する（特定のノードや IP のみなど）のに役立ちます",
     "forcedExpressionPlaceholder": "node == test",

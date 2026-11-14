@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 313;
+use Test::More tests => 342;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -64,6 +64,10 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     eq_or_diff($json, from_json('{"text": "Missing/Empty required fields", "success": false}'));
 
     $json = viewerPostToken("/api/user", '{"userId": "<script>", "userName": "UserName", "enabled":true, "password":"password"}', $token);
+    eq_or_diff($json, from_json('{"text": "User ID must be word characters", "success": false}'));
+
+    # a dot segment in the admin pages' api urls
+    $json = viewerPostToken("/api/user", '{"userId": "..", "userName": "UserName", "enabled":true, "password":"password"}', $token);
     eq_or_diff($json, from_json('{"text": "User ID must be word characters", "success": false}'));
 
     $json = viewerPostToken("/api/user", '{"userId": "sac-test1", "enabled":true, "password":"password"}', $token);
@@ -186,11 +190,38 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     ok(!exists $json->{__proto__}, "no prototype pollution");
     eq_or_diff($json->{logo}, "testlogo.png");
 
-# update user settings - object values should be silently skipped
+# update user settings - object values are refused
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":{"bad":"object"}}', $test1Token);
-    is($json->{success}, 1, "update user settings with object value succeeds");
+    is($json->{text}, "Bad value for user setting logo", "update user settings with object value is refused");
     $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
     ok(!defined $json->{logo} || ref($json->{logo}) eq '', "logo object was not stored");
+
+# update user settings - lists are only strings, theme records only one level deep, and the whole thing is capped
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"timelineDataFilters":[{"bad":"object"}]}', $test1Token);
+    is($json->{text}, "Bad value for user setting timelineDataFilters", "update user settings with a list of objects is refused");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!ref($json->{timelineDataFilters}->[0]), "list of objects was not stored");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"vuetifyCustomTheme":{"dark":true,"colors":{"primary":{"too":"deep"}}}}', $test1Token);
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(!defined $json->{vuetifyCustomTheme}, "theme record nested too deep was not stored");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", to_json({hideTags => "x" x 70000}), $test1Token);
+    is($json->{text}, "User settings too large", "settings over the size cap are refused");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok(length($json->{hideTags} // '') < 70000, "and nothing was stored");
+
+# update user settings - values stored before these checks don't block a save
+    esPost("/tests_users/_update/sac-test1?refresh=true", '{"doc": {"settings": {"timelineDataFilters": [{"bad":"object"}], "hideTags": "' . ("x" x 70000) . '"}}}');
+    viewerPost("/regressionTests/flushCache");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", to_json({timelineDataFilters => [{bad => "object"}], hideTags => "x" x 69000, logo => "legacy.png"}), $test1Token);
+    is($json->{success}, 1, "an unchanged old value is let through and an over the cap record can shrink");
+    $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
+    ok($json->{logo} eq "legacy.png" && length($json->{hideTags}) == 69000, "and the rest was saved");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"timelineDataFilters":[{"other":"object"}]}', $test1Token);
+    is($json->{text}, "Bad value for user setting timelineDataFilters", "a changed bad value is still refused");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", to_json({hideTags => "x" x 69001}), $test1Token);
+    is($json->{text}, "User settings too large", "an over the cap record can't grow");
+    $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"timelineDataFilters":null, "hideTags":null}', $test1Token);
+    is($json->{success}, 1, "clear the old values");
 
 # restore logo to string value
     $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", '{"logo":"testlogo.png"}', $test1Token);
@@ -269,7 +300,7 @@ anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, u
     my $prevTheme = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token)->{theme};
     foreach my $theme ('5', '["custom-theme:#000000"]', 'true') {
         $json = viewerPostToken("/api/user/settings?arkimeRegressionUser=sac-test1", "{\"theme\":$theme}", $test1Token);
-        is($json->{success}, 1, "update user settings with theme $theme");
+        ok(!$json->{success}, "update user settings with theme $theme is refused");
         $json = viewerGetToken("/api/user/settings?arkimeRegressionUser=sac-test1", $test1Token);
         is($json->{theme}, $prevTheme, "theme $theme not stored");
     }
@@ -789,8 +820,49 @@ my $uaToken = getTokenCookie('testusersadmin');
     $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testusersadmin&userId=testarkimeadmin', '{"newPassword": "sac-test2"}', $uaToken);
     eq_or_diff($json, from_json('{"text": "Not allowed to change arkimeAdmin password", "success": false}'));
 
+    # nor delete them, the userId could then be recreated with a password of our choosing
+    $json = viewerDeleteToken('/api/user/testarkimeadmin?arkimeRegressionUser=testusersadmin', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Not allowed to delete arkimeAdmin", "success": false}'));
+
     $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testusersadmin&userId=testcont3xtadmin', '{"newPassword": "test3"}', $uaToken);
     eq_or_diff($json, from_json('{"text": "Changed password successfully", "success": true}'));
+
+# Password changing - your own always needs the current one, even as an admin
+    $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testusersadmin', '{"newPassword": "testusersadmin"}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Password mismatch", "success": false}'));
+
+    $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testusersadmin&userId=testusersadmin', '{"newPassword": "testusersadmin"}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Password mismatch", "success": false}'));
+
+    $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testusersadmin', '{"currentPassword": "testusersadmin", "newPassword": "testusersadmin"}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Changed password successfully", "success": true}'));
+
+    $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testsuperadmin', '{"newPassword": "testsuperadmin"}', $saToken);
+    eq_or_diff($json, from_json('{"text": "Password mismatch", "success": false}'));
+
+# superAdmins are only granted or restricted by their own record, a role just makes them a member
+    $json = viewerPostToken('/api/user?arkimeRegressionUser=testsuperadmin', '{"userId": "role:sac-restrict", "userName": "Restrict", "enabled":true, "emailSearch":true, "removeEnabled":true, "hidePcap":true, "timeLimit":24, "roleAssigners":["testusersadmin"]}', $saToken);
+    eq_or_diff($json, from_json('{"text": "Role created successfully", "success": true}'));
+    $json = viewerPostToken('/api/user?arkimeRegressionUser=testsuperadmin', '{"userId": "sac-sa2", "userName": "sa2", "enabled":true, "webEnabled":true, "password":"sac-sa2", "roles":["superAdmin", "role:sac-restrict"]}', $saToken);
+    eq_or_diff($json, from_json('{"text": "User created successfully", "success": true}'));
+    $json = viewerPostToken('/api/user?arkimeRegressionUser=testsuperadmin', '{"userId": "sac-ru", "userName": "ru", "enabled":true, "webEnabled":true, "password":"sac-ru", "roles":["arkimeUser"]}', $saToken);
+    eq_or_diff($json, from_json('{"text": "User created successfully", "success": true}'));
+
+    $json = viewerPostToken('/api/user/sac-sa2/assignment?arkimeRegressionUser=testusersadmin', '{"roleId": "role:sac-restrict", "newRoleState": false}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "Not allowed to change roles for superAdmin", "success": false}'));
+    $json = viewerPostToken('/api/user/sac-ru/assignment?arkimeRegressionUser=testusersadmin', '{"roleId": "role:sac-restrict", "newRoleState": true}', $uaToken);
+    eq_or_diff($json, from_json('{"text": "User sac-ru\'s role role:sac-restrict updated successfully", "success": true}'));
+
+    my $sa2 = viewerGetToken('/api/user?arkimeRegressionUser=sac-sa2', getTokenCookie('sac-sa2'));
+    ok((grep { $_ eq 'role:sac-restrict' } @{$sa2->{roles}}), "a superAdmin is still a member of its roles");
+    ok(!$sa2->{emailSearch} && !$sa2->{removeEnabled} && $sa2->{packetSearch}, "a superAdmin's unset permissions are the defaults, not the role's");
+    ok(!$sa2->{hidePcap} && !defined $sa2->{timeLimit}, "a superAdmin isn't restricted by its roles");
+    my $ru = viewerGetToken('/api/user?arkimeRegressionUser=sac-ru', getTokenCookie('sac-ru'));
+    ok($ru->{emailSearch} && $ru->{removeEnabled} && $ru->{hidePcap} && ($ru->{timeLimit} // 0) == 24, "a regular user still gets the role's permissions and restrictions");
+
+    viewerDeleteToken('/api/user/sac-sa2?arkimeRegressionUser=testsuperadmin', $saToken);
+    viewerDeleteToken('/api/user/sac-ru?arkimeRegressionUser=testsuperadmin', $saToken);
+    viewerDeleteToken('/api/user/role:sac-restrict?arkimeRegressionUser=testsuperadmin', $saToken);
 
 # Password changing - by superAdmin
     $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testsuperadmin&userId=testuser', '{"newPassword": "test4"}', $saToken);
@@ -954,6 +1026,14 @@ my $uaToken = getTokenCookie('testusersadmin');
     $json = viewerGetToken("/api/user/totp/status?arkimeRegressionUser=sac-totpuser", $totpToken);
     ok($json->{success}, "TOTP status returns success after enrollment");
     is($json->{enabled}, 1, "TOTP enabled after confirm");
+
+    # Can't replace an active factor without the current code, it must be disabled first
+    $json = viewerPostToken("/api/user/totp/setup?arkimeRegressionUser=sac-totpuser", '{}', $totpToken);
+    is($json->{success}, 0, "TOTP setup fails when already enabled");
+    ok(!defined $json->{secret}, "TOTP setup when enabled returns no secret");
+    like($json->{text}, qr/already enabled/i, "TOTP setup when enabled says why");
+    $json = viewerPostToken("/api/user/totp/confirm?arkimeRegressionUser=sac-totpuser", '{"code": "' . generate_totp($totpSecret) . '"}', $totpToken);
+    is($json->{success}, 0, "TOTP confirm fails when already enabled");
 
     # Disable TOTP with invalid code
     $json = viewerPostToken("/api/user/totp/disable?arkimeRegressionUser=sac-totpuser", '{"code": "000000"}', $totpToken);

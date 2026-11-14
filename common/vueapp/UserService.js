@@ -62,7 +62,7 @@ export default {
     const { userId, roleId, newRoleState } = query;
 
     return new Promise((resolve, reject) => {
-      fetch(`api/user/${userId}/assignment`, {
+      fetch(`api/user/${encodeURIComponent(userId)}/assignment`, {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ roleId, newRoleState })
@@ -85,7 +85,7 @@ export default {
    */
   updateUser (user) {
     return new Promise((resolve, reject) => {
-      fetch(`api/user/${user.id}`, {
+      fetch(`api/user/${encodeURIComponent(user.id)}`, {
         method: 'POST',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(user)
@@ -108,7 +108,7 @@ export default {
    */
   deleteUser (user) {
     return new Promise((resolve, reject) => {
-      fetch(`api/user/${user.id}`, {
+      fetch(`api/user/${encodeURIComponent(user.id)}`, {
         method: 'DELETE',
         headers: setReqHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify(user)
@@ -186,7 +186,7 @@ export default {
   changePassword (data, userId) {
     return new Promise((resolve, reject) => {
       let url = 'api/user/password';
-      if (userId) { url += `?userId=${userId}`; }
+      if (userId) { url += `?${new URLSearchParams({ userId })}`; }
 
       fetch(url, {
         method: 'POST',

@@ -67,7 +67,8 @@ exports.buildSyslogMessage = function (config, message) {
   const facility = FACILITIES.get(config.facility) ?? FACILITIES.get('local0');
   const severity = SEVERITIES.get(config.severity) ?? SEVERITIES.get('warning');
   const pri = (facility * 8) + severity;
-  const tag = config.tag || 'arkime';
+  // RFC 5424 APP-NAME, also keeps a stored CRLF out of the stream
+  const tag = /^[\x21-\x7e]{1,48}$/.test(config.tag ?? '') ? config.tag : 'arkime';
   const timestamp = new Date().toISOString();
   const hostname = require('os').hostname();
 

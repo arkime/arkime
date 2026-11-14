@@ -1398,6 +1398,7 @@
     "hideFilesPage": "Peida Arkime failide leht",
     "hidePcap": "Peida Arkime PCAP",
     "disablePcapDownload": "Keela Arkime PCAP allalaadimine",
+    "superAdminNoInherit": "superAdminid ei päri oma rollidelt midagi. Kõik, mis on jäetud valikule Päri, kasutab vaikeväärtust: jaht lubatud, e-posti otsing ja andmete eemaldamine keelatud, midagi pole peidetud.",
     "forcedExpression": "Sunnitud avaldis",
     "forcedExpressionTip": "Arkime otsingu avaldis, mis lisatakse vaikimisi kõikidele päringutele. Kasulik juurdepääsetavate andmete piiramiseks (nt millised sõlmed või IP-d)",
     "forcedExpressionPlaceholder": "node == test",

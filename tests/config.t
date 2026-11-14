@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 109;
+use Test::More tests => 111;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -401,11 +401,13 @@ is($vc->{sections}->{keks}->{test}, "[redacted]", "every value in the keks secti
 is($vc->{sections}->{'viewconfig-test'}->{key}, "[redacted]", "a bare key setting redacted");
 is($vc->{sections}->{'viewconfig-test'}->{keyColumn}, "Prefix", "a key named setting that isn't a credential is left alone");
 is($vc->{sections}->{'viewconfig-test'}->{esClientKeyPass}, "[redacted]", "a name ending in Pass redacted");
+is($vc->{sections}->{'viewconfig-test'}->{requiredAuthHeaderVal}, "[redacted]", "requiredAuthHeaderVal redacted");
 is($vc->{sections}->{'viewconfig-test'}->{bypassCount}, "5", "pass inside a longer word is left alone");
 is($vc->{sections}->{testuser}->{disableUserPasswordUI}, "false", "a switch that reads like a credential is left alone");
 ok((grep { $_ eq "viewconfig-test.esClientKeyPass" } @{$vc->{redacted}}), "redacted list has the key passphrase");
 is($vc->{sections}->{'viewconfig-test'}->{comboUrl}, "http://user:[redacted]\@example.com/x", "url password with a comma in it redacted");
 is($vc->{sections}->{'viewconfig-test'}->{queryUrl}, "http://example.com?to=a\@b.com", "an \@ in a query string is not treated as a url password");
+is($vc->{sections}->{'viewconfig-test'}->{headers}, "Authorization:[redacted];X-API-Key:[redacted];Accept:application/json", "credential headers in a headers list redacted, others kept");
 unlike(to_json($vc), qr/test2:test2\@/, "no url password anywhere in the response");
 unlike(to_json($vc->{sections}->{default}), qr/"passwordSecret":"password"/, "no secret value anywhere in the response");
 

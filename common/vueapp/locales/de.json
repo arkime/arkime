@@ -1398,6 +1398,7 @@
     "hideFilesPage": "Arkime Dateiseite ausblenden",
     "hidePcap": "Arkime PCAP ausblenden",
     "disablePcapDownload": "Arkime PCAP-Download deaktivieren",
+    "superAdminNoInherit": "superAdmins erben nichts von ihren Rollen. Alles, was auf Erben steht, verwendet den Standard: Jagd erlaubt, E-Mail-Suche und Datenentfernung deaktiviert, nichts ausgeblendet.",
     "forcedExpression": "Erzwungener Ausdruck",
     "forcedExpressionTip": "Ein Arkime-Suchausdruck, der stillschweigend zu allen Abfragen hinzugefügt wird. Nützlich, um einzuschränken, auf welche Daten zugegriffen werden kann (z. B. welche Knoten oder IPs)",
     "forcedExpressionPlaceholder": "node == test",
