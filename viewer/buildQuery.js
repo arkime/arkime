@@ -10,6 +10,7 @@
 const Config = require('./config.js');
 const Db = require('./db.js');
 const ArkimeUtil = require('../common/arkimeUtil');
+const ViewerUtils = require('./viewerUtils');
 const arkimeparser = require('./arkimeparser.js');
 const util = require('util');
 const internals = require('./internals');
@@ -458,7 +459,8 @@ class BuildQuery {
       if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
         query.aggregations.dbHisto = { aggregations: {} };
 
-        const filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+        const baseFilters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+        const filters = ViewerUtils.withMetricField([...baseFilters], reqQuery);
         for (let i = 0; i < filters.length; i++) {
           const filter = filters[i];
 
@@ -483,20 +485,37 @@ class BuildQuery {
           }
         }
 
+        // a SPI Graph percentile of its metric, one per time bucket
+        if (req.metricPercentile) {
+          const pct = req.metricPercentile;
+          query.aggregations.dbHisto.aggregations[pct.key] = ViewerUtils.percentileAgg(pct.field, pct.percent);
+        }
+
+        let histoField;
         switch (reqQuery.bounding) {
         case 'first':
-          query.aggregations.dbHisto.histogram = { field: 'firstPacket', interval: interval * 1000, min_doc_count: 1 };
+          histoField = 'firstPacket';
           break;
         case 'database':
-          query.aggregations.dbHisto.histogram = { field: '@timestamp', interval: interval * 1000, min_doc_count: 1 };
+          histoField = '@timestamp';
           break;
         default:
-          query.aggregations.dbHisto.histogram = { field: 'lastPacket', interval: interval * 1000, min_doc_count: 1 };
+          histoField = 'lastPacket';
           break;
         }
 
         if (reqQuery.spanning === 'true' || reqQuery.spanning === true) {
-          query.aggregations.dbHisto.histogram = { field: 'packetRange', interval: interval * 1000, min_doc_count: 1 };
+          histoField = 'packetRange';
+        }
+
+        query.aggregations.dbHisto.histogram = { field: histoField, interval: interval * 1000, min_doc_count: 1 };
+
+        // the hour of week fold places each bucket by its start, so start the
+        // buckets on the timezone's hours (Asia/Kolkata's are on the half hour)
+        if (reqQuery.interval === 'hourOfWeek') {
+          const tz = ViewerUtils.hourOfWeekTimezone(reqQuery.timezone);
+          const offset = ViewerUtils.hourOfWeekOffsetMs(tz, (reqQuery.startTime || Date.now() / 1000) * 1000);
+          if (offset) { query.aggregations.dbHisto.histogram.offset = offset; }
         }
       }
     }
@@ -536,7 +555,7 @@ class BuildQuery {
       }
     }
 
-    if (!err && reqQuery.view) {
+    if (!err && reqQuery.view !== undefined && reqQuery.view !== '') {
       try {
         await BuildQuery.#addViewToQuery(req, query, queryOverride);
       } catch (e) {
@@ -665,6 +684,10 @@ class BuildQuery {
       break;
     case 'week':
       interval = 60 * 60 * 24 * 7;
+      break;
+    case 'hourOfWeek':
+      // hour buckets, folded by weekday and hour into a week by graphMerge
+      interval = 60 * 60;
       break;
     }
 

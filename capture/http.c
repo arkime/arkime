@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <curl/curl.h>
+#include <inttypes.h>
 #include "arkime.h"
 #include "zlib.h"
 #include <errno.h>
@@ -96,7 +97,9 @@ struct arkimehttpserver_t {
     char                   **defaultHeaders;
     char                    *userpwd;
     char                    *aws_sigv4;
+    char                    *caTrustFile;
     uint64_t                 timeout;
+    uint32_t                 stallTimeout;
     int                      snamesCnt;
     int                      snamesPos;
     char                     compress;
@@ -106,7 +109,7 @@ struct arkimehttpserver_t {
     uint16_t                 maxConns;
     uint16_t                 maxOutstandingRequests;
     uint16_t                 outstanding;
-    uint16_t                 outstandingPri[ARKIME_HTTP_PRIORITY_DROPABLE + 1];
+    uint16_t                 outstandingPri[ARKIME_HTTP_PRIORITY_DROPPABLE + 1];
     uint16_t                 connections;
     uint16_t                 maxRetries;
 
@@ -129,6 +132,10 @@ LOCAL void arkime_http_add_request(ArkimeHttpServer_t *server, ArkimeHttpRequest
 LOCAL uint32_t httpVLanVNI;
 
 LOCAL GHashTable *servers;
+
+// Every server, including ones not in servers, for perf-stats
+LOCAL GPtrArray  *allServers;
+LOCAL ARKIME_LOCK_DEFINE(allServers);
 
 /******************************************************************************/
 LOCAL int arkime_http_conn_cmp(const void *keyv, const ArkimeHttpConn_t *conn)
@@ -220,8 +227,8 @@ uint8_t *arkime_http_send_sync(void *serverV, const char *method, const char *ke
         curl_easy_setopt(easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
-    if (config.caTrustFile) {
-        curl_easy_setopt(easy, CURLOPT_CAINFO, config.caTrustFile);
+    if (server->caTrustFile || config.caTrustFile) {
+        curl_easy_setopt(easy, CURLOPT_CAINFO, server->caTrustFile ? server->caTrustFile : config.caTrustFile);
     }
 
     // Send client certs if so configured
@@ -431,6 +438,11 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
 #endif
 
             if (responseCode == 0 && request->retries >= 0) {
+                if (msg->data.result == CURLE_OPERATION_TIMEDOUT) {
+                    double totalTime;
+                    curl_easy_getinfo(easy, CURLINFO_TOTAL_TIME, &totalTime);
+                    LOG("WARNING - %s timed out after %.0fs, retrying", request->url, totalTime);
+                }
                 curl_multi_remove_handle(server->multi, easy);
 
                 request->retries--;
@@ -461,7 +473,15 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
                 if (request->func) {
                     if (request->dataIn)
                         request->dataIn[request->used] = 0;
-                    request->func(responseCode, request->dataIn, request->used, request->uw);
+                    // A streamed transfer that died mid body still carries its http status. Report
+                    // it as failed (code 0) so the stream owner doesn't treat a partial body as the
+                    // whole thing. CURLE_WRITE_ERROR is the read callback stopping on purpose.
+                    long cbCode = responseCode;
+                    if (request->rfunc && msg->data.result != CURLE_OK && msg->data.result != CURLE_WRITE_ERROR) {
+                        LOG("ERROR - Transfer of %s failed: %s", request->url, curl_easy_strerror(msg->data.result));
+                        cbCode = 0;
+                    }
+                    request->func(cbCode, request->dataIn, request->used, request->uw);
                 }
                 if (request->dataIn) {
                     if (!server->dontFreeResponse)
@@ -812,7 +832,7 @@ LOCAL gboolean arkime_http_send_timer_callback(gpointer UNUSED(unused))
 /******************************************************************************/
 gboolean arkime_http_send(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, gboolean droppable, ArkimeHttpResponse_cb func, gpointer uw)
 {
-    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, droppable ? ARKIME_HTTP_PRIORITY_DROPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
+    return arkime_http_schedule(serverV, method, key, key_len, data, data_len, headers, droppable ? ARKIME_HTTP_PRIORITY_DROPPABLE : ARKIME_HTTP_PRIORITY_NORMAL, func, uw);
 }
 /******************************************************************************/
 gboolean arkime_http_schedule2(void *serverV, const char *method, const char *key, int32_t key_len, char *data, uint32_t data_len, char **headers, int priority, ArkimeHttpResponse_cb func, ArkimeHttpRead_cb rfunc, gpointer uw)
@@ -834,7 +854,7 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
     // Are we overloaded
     if (!config.quitting && server->outstanding > server->maxOutstandingRequests) {
         int drop = FALSE;
-        if (priority == ARKIME_HTTP_PRIORITY_DROPABLE) {
+        if (priority == ARKIME_HTTP_PRIORITY_DROPPABLE) {
             LOG("WARNING - Dropping request to overwhelmed server, please see https://arkime.com/faq#error-dropping-request for help! size: %u queue: %u path: %.*s", data_len, server->outstanding, key_len, key);
             drop = TRUE;
         } else if (priority == ARKIME_HTTP_PRIORITY_NORMAL && server->outstanding > server->maxOutstandingRequests * 2) {
@@ -860,9 +880,9 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         }
     }
 
-    request->priority = MIN(priority, ARKIME_HTTP_PRIORITY_DROPABLE);
+    request->priority = MIN(priority, ARKIME_HTTP_PRIORITY_DROPPABLE);
 
-    if (priority == ARKIME_HTTP_PRIORITY_DROPABLE)
+    if (priority == ARKIME_HTTP_PRIORITY_DROPPABLE)
         request->retries = 0;
     else
         request->retries = server->maxRetries;
@@ -919,8 +939,8 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
         curl_easy_setopt(request->easy, CURLOPT_SSL_VERIFYHOST, 0L);
     }
 
-    if (config.caTrustFile) {
-        curl_easy_setopt(request->easy, CURLOPT_CAINFO, config.caTrustFile);
+    if (server->caTrustFile || config.caTrustFile) {
+        curl_easy_setopt(request->easy, CURLOPT_CAINFO, server->caTrustFile ? server->caTrustFile : config.caTrustFile);
     }
 
     // Send client certs if so configured
@@ -971,6 +991,10 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
 
     curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
     curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, server->timeout);
+    if (server->stallTimeout) {
+        curl_easy_setopt(request->easy, CURLOPT_LOW_SPEED_LIMIT, 1L);
+        curl_easy_setopt(request->easy, CURLOPT_LOW_SPEED_TIME, (long)server->stallTimeout);
+    }
 
     memcpy(request->key, key, key_len);
     request->key[key_len] = 0;
@@ -1012,6 +1036,45 @@ uint64_t arkime_http_dropped_count(const void *serverV)
     return server ? server->dropped : 0;
 }
 /******************************************************************************/
+void arkime_http_perf_stats(GString *out)
+{
+    g_string_append(out, "\n== http ==\n");
+    // Locked so a server can't be created or freed by another thread while we walk the list
+    ARKIME_LOCK(allServers);
+    if (!allServers || allServers->len == 0) {
+        ARKIME_UNLOCK(allServers);
+        g_string_append(out, "none\n");
+        return;
+    }
+
+    g_string_append_printf(out, "%-24s %11s %14s %6s %6s %9s %5s %8s %10s %5s %8s\n",
+                           "server", "outstanding", "maxOutstanding", "best", "normal", "droppable", "conns", "maxConns", "dropped", "hosts", "compress");
+    for (guint i = 0; i < allServers->len; i++) {
+        const ArkimeHttpServer_t *server = g_ptr_array_index(allServers, i);
+
+        // Label by the first host, without the scheme or any user:pass@ so creds don't end up in pasted output
+        const char *host = server->snamesCnt ? server->snames[0].name : "-";
+        const char *scheme = strstr(host, "://");
+        if (scheme)
+            host = scheme + 3;
+        const char *at = strchr(host, '@');
+        const char *slash = strchr(host, '/');
+        if (at && (!slash || at < slash))
+            host = at + 1;
+
+        g_string_append_printf(out, "%-24s %11u %14u %6u %6u %9u %5u %8u %10" PRIu64 " %5d %8s\n",
+                               host,
+                               server->outstanding, server->maxOutstandingRequests,
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_BEST],
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_NORMAL],
+                               server->outstandingPri[ARKIME_HTTP_PRIORITY_DROPPABLE],
+                               server->connections, server->maxConns,
+                               server->dropped, server->snamesCnt,
+                               server->compress ? "yes" : "no");
+    }
+    ARKIME_UNLOCK(allServers);
+}
+/******************************************************************************/
 void arkime_http_set_header_cb(void *serverV, ArkimeHttpHeader_cb cb)
 {
     ArkimeHttpServer_t        *server = serverV;
@@ -1021,6 +1084,10 @@ void arkime_http_set_header_cb(void *serverV, ArkimeHttpHeader_cb cb)
 void arkime_http_free_server(void *serverV)
 {
     ArkimeHttpServer_t        *server = serverV;
+
+    ARKIME_LOCK(allServers);
+    g_ptr_array_remove_fast(allServers, server);
+    ARKIME_UNLOCK(allServers);
 
     if (server->multiTimer) {
         g_source_remove(server->multiTimer);
@@ -1044,6 +1111,8 @@ void arkime_http_free_server(void *serverV)
     if (server->clientAuth) {
         ARKIME_TYPE_FREE(ArkimeClientAuth_t, server->clientAuth);
     }
+    if (server->caTrustFile)
+        free(server->caTrustFile);
 
     free(server->userpwd);
     free(server->aws_sigv4);
@@ -1069,11 +1138,35 @@ void arkime_http_set_headers(void *serverV, char **headers)
     server->defaultHeaders = headers;
 }
 /******************************************************************************/
+void arkime_http_set_insecure(void *serverV, gboolean insecure)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->insecure = insecure;
+}
+/******************************************************************************/
+void arkime_http_set_ca_trust_file(void *serverV, const char *caTrustFile)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    if (server->caTrustFile)
+        free(server->caTrustFile);
+    server->caTrustFile = caTrustFile ? strdup(caTrustFile) : NULL;
+}
+/******************************************************************************/
 void arkime_http_set_retries(void *serverV, uint16_t retries)
 {
     ArkimeHttpServer_t        *server = serverV;
 
     server->maxRetries = retries;
+}
+/******************************************************************************/
+// Fail a request that moves no bytes for this many seconds, unlike the timeout a long transfer is fine
+void arkime_http_set_stall_timeout(void *serverV, uint32_t secs)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->stallTimeout = secs;
 }
 /******************************************************************************/
 void arkime_http_set_timeout(void *serverV, uint64_t timeout)
@@ -1145,6 +1238,32 @@ gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId)
     return (conn ? 1 : 0);
 }
 /******************************************************************************/
+// Like ArkimeConfig.isLoopbackHost, parsed by curl so it is the host curl connects to.
+// Returns -1 if url isn't https, otherwise if its host is localhost, 127.x.x.x or ::1
+LOCAL int arkime_http_loopback_url(const char *url)
+{
+    CURLU *h = curl_url();
+    char  *scheme = NULL;
+    char  *host = NULL;
+    int    result;
+
+    if (curl_url_set(h, CURLUPART_URL, url, 0) != CURLUE_OK ||
+        curl_url_get(h, CURLUPART_SCHEME, &scheme, 0) != CURLUE_OK) {
+        result = g_ascii_strncasecmp(url, "https:", 6) == 0 ? 0 : -1;
+    } else if (g_ascii_strcasecmp(scheme, "https") != 0) {
+        result = -1;
+    } else if (curl_url_get(h, CURLUPART_HOST, &host, 0) != CURLUE_OK) {
+        result = 0;
+    } else {
+        result = arkime_is_loopback_host(host);
+    }
+
+    curl_free(scheme);
+    curl_free(host);
+    curl_url_cleanup(h);
+    return result;
+}
+/******************************************************************************/
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress)
 {
     ArkimeHttpServer_t *server = ARKIME_TYPE_ALLOC0(ArkimeHttpServer_t);
@@ -1179,12 +1298,21 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
 
     server->insecure = config.insecure; // Default to global setting
 
-    // If https to localhost or 127.0.0.1 we don't check the cert
-    for (i = 0; !server->insecure && i < server->snamesCnt; i++) {
-        const char *name = server->snames[i].name;
-        if ((strncmp("https://localhost", name, 17) == 0 || strncmp("https://127.0.0.1", name, 17) == 0) &&
-            (name[17] == 0 || name[17] == ':' || name[17] == '/')) {
-            LOG("WARNING - Using insecure mode for %s", name);
+    // Same rule as ArkimeConfig.isInsecure, only skip the cert check when every https server is loopback
+    if (!server->insecure) {
+        gboolean loopback = FALSE;
+        for (i = 0; i < server->snamesCnt; i++) {
+            const int rc = arkime_http_loopback_url(server->snames[i].name);
+            if (rc == -1)
+                continue;
+            if (rc == 0) {
+                loopback = FALSE;
+                break;
+            }
+            loopback = TRUE;
+        }
+        if (loopback) {
+            LOG("WARNING - Using insecure mode for %s", hostnames);
             server->insecure = 1;
         }
     }
@@ -1200,6 +1328,10 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
     server->multiTimer = g_timeout_add(50, arkime_http_timer_callback, server);
 
     server->fd2ev = g_hash_table_new(NULL, NULL);
+
+    ARKIME_LOCK(allServers);
+    g_ptr_array_add(allServers, server);
+    ARKIME_UNLOCK(allServers);
 
     ARKIME_LOCK_INIT(server->syncRequest);
 
@@ -1234,6 +1366,7 @@ void arkime_http_init()
     }
 
     servers = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, arkime_http_free_server);
+    allServers = g_ptr_array_new();
     z_strms = g_ptr_array_new();
 
     // Can NOT have config_ calls here since need to fetch config

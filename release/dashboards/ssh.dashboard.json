@@ -1,0 +1,184 @@
+{
+  "name": "SSH",
+  "description": "SSH sessions: protocols == ssh",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == ssh",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "ssh.ver",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "SSH sessions by ssh.ver"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SSH sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SSH bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "ssh.hassh",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20
+      },
+      {
+        "id": "w5",
+        "field": "ssh.cipher",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true
+      },
+      {
+        "id": "w6",
+        "field": "ssh.ver.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Client versions"
+      },
+      {
+        "id": "w7",
+        "field": "ssh.ver.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Server versions"
+      },
+      {
+        "id": "w8",
+        "field": "ssh.key",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Host keys"
+      },
+      {
+        "id": "w9",
+        "field": "ssh.kex",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20
+      },
+      {
+        "id": "w10",
+        "field": "ssh.hasshServer",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Server HASSH"
+      },
+      {
+        "id": "w11",
+        "field": "ssh.hostKeyAlg",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Host key algorithms"
+      },
+      {
+        "id": "w12",
+        "field": "ssh.mac",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "MAC algorithms"
+      },
+      {
+        "id": "w13",
+        "field": "ssh.compression",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Compression"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w15",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w16",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "SSH tree: who reached what (click a host to re-root)"
+      },
+      {
+        "id": "w17",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "ssh.ver",
+          "ssh.hassh",
+          "ssh.key"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

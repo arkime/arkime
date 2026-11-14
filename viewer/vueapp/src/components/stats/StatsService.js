@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 'use strict';
 
 import store from '../../store';
@@ -295,12 +299,56 @@ export default {
   },
 
   /**
+   * Gets the queries running on a non OpenSearch/Elasticsearch db
+   * @param {string} db The db, like sessions
+   * @param {Object} params The parameters for the request
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  async getDbQueries (db, params) {
+    return fetchWrapper({ url: `api/db/${encodeURIComponent(db)}/queries`, params });
+  },
+
+  /**
+   * Kills a query running on a non OpenSearch/Elasticsearch db
+   * @param {string} db The db, like sessions
+   * @param {string} id The query id
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  async killDbQuery (db, id) {
+    return fetchWrapper({ url: `api/db/${encodeURIComponent(db)}/queries/${encodeURIComponent(id)}/kill`, method: 'POST' });
+  },
+
+  /**
+   * Gets the tables, or partitions, of a non OpenSearch/Elasticsearch db
+   * @param {string} db The db, like sessions
+   * @param {Object} params The parameters for the request
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  async getDbTables (db, params) {
+    return fetchWrapper({ url: `api/db/${encodeURIComponent(db)}/tables`, params });
+  },
+
+  /**
+   * Runs an action on a table of a non OpenSearch/Elasticsearch db, drop deletes it
+   * @param {string} db The db, like sessions
+   * @param {string} id The table id
+   * @param {string} action optimize, vacuum or drop
+   * @returns {Promise<Object>} The response data parsed as JSON.
+   */
+  async dbTableAction (db, id, action) {
+    const url = `api/db/${encodeURIComponent(db)}/tables/${encodeURIComponent(id)}`;
+    return action === 'drop'
+      ? fetchWrapper({ url, method: 'DELETE' })
+      : fetchWrapper({ url: `${url}/${encodeURIComponent(action)}`, method: 'POST' });
+  },
+
+  /**
    * Cancels all cancellable database tasks
    * @param {Object} params The parameters for the request
    * @returns {Promise<Object>} The response data parsed as JSON.
    */
   async cancelAllTasks (params) {
-    return fetchWrapper({ url: 'api/estasks/cancel', method: 'POST', params });
+    return fetchWrapper({ url: 'api/estasks/cancelall', method: 'POST', params });
   },
 
   /**

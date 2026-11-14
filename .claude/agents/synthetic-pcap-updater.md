@@ -46,6 +46,8 @@ Run all `python3`/`./tests.pl` commands from the `tests/` directory.
 2. **Register it in `main()`.** **Append the call LAST**, after the current final section. This keeps
    every existing packet at the same byte offset, so the golden `.test` diff is just your new session
    instead of a reshuffle of every `filePos`/`packetPos`.
+   Pick any `TS_START` you like: `main()` shifts each section so timestamps stay monotonic across
+   the file (relative timing inside a section is preserved).
 
 3. **Update the header docstring** section list with a one-line entry for your section.
 

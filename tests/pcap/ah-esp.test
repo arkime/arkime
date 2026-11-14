@@ -54,9 +54,10 @@
      "lte" : 1214051927082
     },
     "protocol" : [
+     "ah",
      "esp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 760

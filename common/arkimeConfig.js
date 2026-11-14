@@ -6,7 +6,6 @@
  */
 'use strict';
 
-const ArkimeUtil = require('./arkimeUtil');
 const fs = require('fs');
 const axios = require('axios');
 const yaml = require('js-yaml');
@@ -23,6 +22,7 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
 
   static #override = new Map();
+  static #envKeys = new Set();
   static #debugged = new Map();
   static #config;
   static #configImpl;
@@ -66,12 +66,14 @@ class ArkimeConfig {
 
     ArkimeConfig.#uri = ArkimeConfig.#configFile;
 
-    // If ARKIME__usersElasticsearch is set then create a temp config
-    if (process.env.ARKIME__usersElasticsearch) {
+    // If ARKIME__usersDbUrl or ARKIME__usersElasticsearch is set then create a temp config
+    if (process.env.ARKIME__usersDbUrl || process.env.ARKIME__usersElasticsearch) {
       ArkimeConfig.#config = {
         [ArkimeConfig.#defaultSections[ArkimeConfig.#defaultSections.length - 1]]: {
+          usersDbUrl: process.env.ARKIME__usersDbUrl,
           usersElasticsearch: process.env.ARKIME__usersElasticsearch,
           usersElasticsearchBasicAuth: process.env.ARKIME__usersElasticsearchBasicAuth,
+          usersDbPrefix: process.env.ARKIME__usersDbPrefix,
           usersPrefix: process.env.ARKIME__usersPrefix
         }
       };
@@ -146,6 +148,13 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * Should certificate verification be skipped for these urls: --insecure, or
+   * every url that uses TLS is to a loopback host, see ArkimeDb.tlsHost. The urls share one TLS
+   * setting, so pass only the urls of the one connection it is for.
+   * @param {Array<string|string[]>} [urls] - urls or arrays of urls, falsy entries are skipped
+   * @returns {boolean}
+   */
   static isInsecure (urls) {
     if (ArkimeConfig.insecure) {
       return true;
@@ -155,21 +164,30 @@ class ArkimeConfig {
       return false;
     }
 
-    for (let url of urls) {
+    let loopback = false;
+    for (const url of urls.flat()) {
       if (!url) {
         continue;
       }
-      if (Array.isArray(url)) {
-        url = url[0];
+      const host = require('./arkimeDb').tlsHost(url);
+      if (host === undefined) { continue; }
+      if (!ArkimeConfig.isLoopbackHost(host)) {
+        return false;
       }
-      const u = ArkimeUtil.parseUrl(url);
-      if (u === undefined) { continue; } // reported by the config validation
-      if (u.origin?.startsWith('https://localhost') || u.origin?.startsWith('https://127.0.0.1') || u.origin?.startsWith('https://[::1]')) {
-        return true;
-      }
+      loopback = true;
     }
 
-    return false;
+    return loopback;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Is the host a url names this machine: localhost, 127.x, ::1 or a postgres unix socket directory
+   * @param {string} host - a url's hostname, or a postgres host parameter
+   * @returns {boolean}
+   */
+  static isLoopbackHost (host) {
+    return !!host && (host.startsWith('/') || ['localhost', '[::1]', '::1'].includes(host) || /^127\.\d+\.\d+\.\d+$/.test(host));
   }
 
   // ----------------------------------------------------------------------------
@@ -189,6 +207,7 @@ class ArkimeConfig {
      * ARKIME_section__var - convert to section var=value
      * Replace DASH, COLON, DOT, SLASH with -, :, ., /
      */
+    ArkimeConfig.#envKeys.clear();
     for (const e of Object.keys(process.env).filter(e2 => e2.startsWith('ARKIME_'))) {
       let section, key;
       if (e.startsWith('ARKIME__')) {
@@ -211,6 +230,7 @@ class ArkimeConfig {
         ArkimeConfig.#config[section] = {};
       }
       ArkimeConfig.#config[section][key] = process.env[e];
+      ArkimeConfig.#envKeys.add(`${section}.${key}`);
     }
 
     if (ArkimeConfig.#dumpConfig) {
@@ -306,6 +326,111 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  // Where each group of indices lives, every setting falls back to the older or broader ones
+  // ----------------------------------------------------------------------------
+  /**
+   * The db urls for everything without its own setting: dbUrl or else elasticsearch. Exits when neither is set
+   * but sessionsDbUrl is, since only the sessions db follows sessionsDbUrl.
+   */
+  // The elasticsearch urls, undefined when it isn't set or is empty
+  static #elasticsearchUrls () {
+    const urls = ArkimeConfig.getArray('elasticsearch');
+    return urls?.length ? urls : undefined;
+  }
+
+  static dbUrls () {
+    const urls = ArkimeConfig.getArray('dbUrl', undefined, ',') ?? ArkimeConfig.#elasticsearchUrls();
+    if (!urls && ArkimeConfig.get('sessionsDbUrl')) {
+      console.log('ERROR - set dbUrl, only the sessions db uses sessionsDbUrl');
+      process.exit(1);
+    }
+    return (urls ?? ['http://localhost:9200']).map(u => ArkimeConfig.esUrl(u));
+  }
+
+  /**
+   * The sessions db urls, sessionsDbUrl or else dbUrls
+   */
+  static sessionsDbUrls () {
+    return ArkimeConfig.getArray('sessionsDbUrl', undefined, ',')?.map(u => ArkimeConfig.esUrl(u)) ?? ArkimeConfig.dbUrls();
+  }
+
+  /**
+   * The OpenSearch/Elasticsearch for the sessions and everything else ES only: the sessions db when it is one,
+   * else dbUrl when it is one, else elasticsearch
+   */
+  static sessionsEsUrls () {
+    const sessions = ArkimeConfig.sessionsDbUrls();
+    if (ArkimeConfig.isEsUrl(sessions[0])) { return sessions; }
+    const db = ArkimeConfig.dbUrls();
+    if (ArkimeConfig.isEsUrl(db[0])) { return db; }
+    return ArkimeConfig.#elasticsearchUrls() ?? ['http://localhost:9200'];
+  }
+
+  /**
+   * True when the sessions or cluster db is OpenSearch/Elasticsearch, or elasticsearch is set for the ES only
+   * parts, the ones sessionsEsUrls() reaches. An ES users db alone doesn't count, nothing ES only would talk
+   * to it. An empty elasticsearch is the same as none.
+   */
+  static hasEs () {
+    return ArkimeConfig.isEsUrl(ArkimeConfig.sessionsDbUrls()[0]) || ArkimeConfig.isEsUrl(ArkimeConfig.dbUrls()[0]) ||
+      ArkimeConfig.#elasticsearchUrls() !== undefined;
+  }
+
+  /**
+   * No scheme, http(s) or the elasticsearch:// and opensearch:// style ones
+   */
+  static isEsUrl (url) {
+    return require('./arkimeDb').isES(url);
+  }
+
+  /**
+   * An elasticsearch:// or opensearch:// style url as the http(s) one to the server
+   */
+  static esUrl (url) {
+    return url.replace(/^(elasticsearch|opensearch)/i, 'http');
+  }
+
+  // Prefixes: a db with its own url uses its own prefix then prefix, a db that lives in dbUrl uses its own prefix
+  // then dbPrefix then prefix. usersPrefix is the older name for usersDbPrefix.
+
+  /**
+   * The prefix for what lives in dbUrl, dbPrefix or prefix
+   */
+  static dbPrefix () {
+    return ArkimeConfig.get('dbPrefix') ?? ArkimeConfig.get('prefix', 'arkime_');
+  }
+
+  /**
+   * The sessions prefix, sessionsDbPrefix, then prefix with a sessionsDbUrl or dbPrefix without one
+   */
+  static sessionsDbPrefix () {
+    return ArkimeConfig.get('sessionsDbPrefix') ?? (ArkimeConfig.get('sessionsDbUrl') ? ArkimeConfig.get('prefix', 'arkime_') : ArkimeConfig.dbPrefix());
+  }
+
+  /**
+   * The users db urls, usersDbUrl, usersUrl or usersElasticsearch, undefined when none is set
+   */
+  static usersDbUrls () {
+    const urls = ArkimeConfig.getArray('usersDbUrl', undefined, ',') ?? ArkimeConfig.getArray('usersUrl', undefined, ',') ?? ArkimeConfig.getArray('usersElasticsearch');
+    return urls?.map(u => ArkimeConfig.esUrl(u));
+  }
+
+  /**
+   * The users prefix setting, usersDbPrefix or usersPrefix, else d
+   */
+  static usersDbPrefix (d) {
+    return ArkimeConfig.get('usersDbPrefix') ?? ArkimeConfig.get('usersPrefix') ?? d;
+  }
+
+  /**
+   * The users prefix, the users prefix setting, then prefix with a users url or dbPrefix without one.
+   * d replaces prefix with a users url, the multi viewer's is ''.
+   */
+  static usersPrefix (d) {
+    return ArkimeConfig.usersDbPrefix(ArkimeConfig.usersDbUrls() ? (d ?? ArkimeConfig.get('prefix', 'arkime_')) : ArkimeConfig.dbPrefix());
+  }
+
+  // ----------------------------------------------------------------------------
   /**
    * The url users open this app at, from the arkimeWebURL setting - used to
    * build links back to the web ui (eg MCP tool result uiUrls).
@@ -376,40 +501,78 @@ class ArkimeConfig {
    * an if() would be truthy, so 'multiES=no' must not turn multiES on.
    */
   static getBool (sectionKey, d) {
-    const raw = ArkimeConfig.get(sectionKey);
+    return ArkimeConfig.getFullBool(ArkimeConfig.#defaultSections, sectionKey, d);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * A boolean setting from the given sections, like getBool.
+   */
+  static getFullBool (sections, sectionKey, d) {
+    const raw = ArkimeConfig.getFull(sections, sectionKey);
     if (raw === undefined || raw === '') { return d; }
     if (raw === true || raw === false) { return raw; }
-    console.log(`WARNING - ${sectionKey} is '${ArkimeUtil.sanitizeStr(raw)}', not true or false, using ${d}`);
+    const label = ArkimeUtil.isString(sections) ? `[${sections}] ${sectionKey}` : sectionKey;
+    console.log(`WARNING - ${label} is '${ArkimeUtil.sanitizeStr(raw)}', not true or false, using ${d}`);
     return d;
   }
 
   // ----------------------------------------------------------------------------
-  static #VALIDATED = {};
+  static #SETTINGS = {};
+  static #SECRETS = new Set();
 
   /**
-   * Register settings to validate at config load, so a broken access control
-   * or resource bound stops the process instead of being ignored. Owners
-   * register their own. Call before initialize().
+   * Register what is known about settings, so a broken access control or
+   * resource bound stops the process instead of being ignored, and anything
+   * showing the config hides credentials. Owners register their own, a spec
+   * may say both. Call before initialize().
    *
-   *   int/float  - must parse and satisfy min. `unlimited` names the one value
-   *                allowed below min, eg -1 for no limit.
+   *   secret     - holds a credential, guessing from the name is a backstop
+   *   int/float  - must parse and satisfy min and max. `unlimited` names the
+   *                one value allowed outside them, eg -1 for no limit.
+   *   bool       - must be true or false, the only spellings getFull coerces
+   *   enum       - must be one of `values`
+   *   re         - must match `re`, with `help` naming the shape for the error
    *   cidrs      - every entry must be a usable CIDR
    *   urls       - every entry must be a url, the scheme may be left off
+   *   sections   - also validate the setting's value in these named sections,
+   *                eg 'tee', which can hold their own override and are never
+   *                part of the default section chain `get`/`getArray` walk
+   *
+   * @param {object} specs - setting name, without a section, to its spec
    */
-  static registerValidated (specs) {
-    Object.assign(ArkimeConfig.#VALIDATED, specs);
+  static registerSettings (specs) {
+    for (const [key, spec] of Object.entries(specs ?? {})) {
+      if (key === '' || spec === undefined) { continue; }
+      ArkimeConfig.#SETTINGS[key] = { ...ArkimeConfig.#SETTINGS[key], ...spec };
+      if (spec.secret) { ArkimeConfig.#SECRETS.add(key.toLowerCase()); }
+    }
   }
 
   // ----------------------------------------------------------------------------
-  static #validateSetting (key, spec) {
+  /**
+   * The settings registered as holding a credential, lowercased
+   *
+   * @returns {string[]}
+   */
+  static getSecrets () {
+    return [...ArkimeConfig.#SECRETS];
+  }
+
+  // ----------------------------------------------------------------------------
+  // section is the extra named section to validate instead of the default
+  // section chain, eg 'tee' - undefined means the normal get()/getArray() walk
+  static #validateSetting (key, spec, section) {
+    const label = section === undefined ? key : `[${section}] ${key}`;
+
     if (spec.type === 'cidrs') {
-      const list = ArkimeConfig.getArray(key);
+      const list = section === undefined ? ArkimeConfig.getArray(key) : ArkimeConfig.getFullArray(section, key);
       // An empty list is how 'not set' looks, leave that to the caller
       if (list === undefined || list.length === 0) { return undefined; }
 
       const { bad } = ArkimeUtil.buildIpTrie(list);
       if (bad.length) {
-        return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
+        return `${label} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
           bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
           ". Each entry must be a full address with an optional in range prefix length, eg '10.0.0.1/32' or '10.0.0.0/8'.";
       }
@@ -417,28 +580,51 @@ class ArkimeConfig {
     }
 
     if (spec.type === 'urls') {
-      const list = ArkimeConfig.getArray(key);
+      const list = section === undefined ? ArkimeConfig.getArray(key) : ArkimeConfig.getFullArray(section, key);
       if (list === undefined || list.length === 0) { return undefined; }
 
       const bad = list.filter(url => ArkimeUtil.parseUrl(url) === undefined);
       if (bad.length) {
-        return `${key} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
+        return `${label} has ${bad.length} unusable entr${bad.length === 1 ? 'y' : 'ies'}: ` +
           bad.map(b => `'${ArkimeUtil.sanitizeStr(b)}'`).join(', ') +
           ". Each entry must be a url, eg 'http://localhost:9200' or 'localhost:9200'.";
       }
       return undefined;
     }
 
-    const raw = ArkimeConfig.get(key);
+    const raw = section === undefined ? ArkimeConfig.get(key) : ArkimeConfig.getFull(section, key);
     if (raw === undefined || raw === '') { return undefined; } // empty is unset
+
+    if (spec.type === 'bool') {
+      // exactly what getFull coerces - anything else stays a truthy string, so
+      // an operator turning a switch off with 0 or False would turn it on
+      if (typeof raw === 'boolean' || raw === 'true' || raw === 'false') { return undefined; }
+      return `${label} is '${ArkimeUtil.sanitizeStr(raw)}', which is not a boolean. Use true or false.`;
+    }
+
+    if (spec.type === 'enum') {
+      if (spec.values.includes(raw)) { return undefined; }
+      return `${label} is '${ArkimeUtil.sanitizeStr(raw)}', which must be one of ${spec.values.join(', ')}.`;
+    }
+
+    if (spec.type === 're') {
+      // match and not test, so a global regex can't carry lastIndex between settings
+      if (String(raw).match(spec.re)) { return undefined; }
+      return `${label} is '${ArkimeUtil.sanitizeStr(raw)}', which must be ${spec.help}.`;
+    }
 
     const value = ArkimeConfig.#parseNumeric(raw, spec.type === 'int');
     if (value === undefined) {
-      return `${key} is '${ArkimeUtil.sanitizeStr(raw)}', which is not ${spec.type === 'int' ? 'an integer' : 'a number'}.`;
+      return `${label} is '${ArkimeUtil.sanitizeStr(raw)}', which is not ${spec.type === 'int' ? 'an integer' : 'a number'}.`;
     }
-    if (value < spec.min && value !== spec.unlimited) {
-      return `${key} is ${value}, which is below the minimum of ${spec.min}` +
-        (spec.unlimited !== undefined ? `. Use ${spec.unlimited} for no limit.` : '.');
+    if (value !== spec.unlimited) {
+      const unlimited = spec.unlimited !== undefined ? `. Use ${spec.unlimited} for no limit.` : '.';
+      if (spec.min !== undefined && value < spec.min) {
+        return `${label} is ${value}, which is below the minimum of ${spec.min}${unlimited}`;
+      }
+      if (spec.max !== undefined && value > spec.max) {
+        return `${label} is ${value}, which is above the maximum of ${spec.max}${unlimited}`;
+      }
     }
     return undefined;
   }
@@ -452,9 +638,16 @@ class ArkimeConfig {
   static #validateSettings () {
     const errors = [];
 
-    for (const [key, spec] of Object.entries(ArkimeConfig.#VALIDATED)) {
-      const error = ArkimeConfig.#validateSetting(key, spec);
+    for (const [key, spec] of Object.entries(ArkimeConfig.#SETTINGS)) {
+      if (spec.type === undefined) { continue; } // secret only, nothing to check
+      let error = ArkimeConfig.#validateSetting(key, spec);
       if (error) { errors.push(error); }
+      // sections aren't part of the default section chain, so a broken
+      // override there would otherwise silently start
+      for (const section of spec.sections ?? []) {
+        error = ArkimeConfig.#validateSetting(key, spec, section);
+        if (error) { errors.push(error); }
+      }
     }
 
     if (errors.length === 0) { return; }
@@ -553,7 +746,45 @@ class ArkimeConfig {
   }
 
   // ----------------------------------------------------------------------------
+  /**
+   * The sections this app reads a bare key from, most specific first
+   *
+   * @returns {string[]} - The default sections
+   */
+  static getDefaultSections () {
+    return (ArkimeConfig.#defaultSections ?? []).filter(s => s !== undefined);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The command line -o overrides, as a section.key => value object
+   *
+   * @returns {object} - The overrides currently in effect
+   */
+  static getOverrides () {
+    return Object.fromEntries(ArkimeConfig.#override);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The section.keys that came from ARKIME_ environment variables instead of
+   * the config file, they are indistinguishable once merged
+   *
+   * @returns {string[]} - The section.key names set from the environment
+   */
+  static getEnvKeys () {
+    return [...ArkimeConfig.#envKeys];
+  }
+
+  // ----------------------------------------------------------------------------
   static #loadedCbs = [];
+  /**
+   * Has the config finished loading
+   */
+  static isLoaded () {
+    return ArkimeConfig.#loadedCbs === undefined;
+  }
+
   static loaded (cb, front) {
     if (ArkimeConfig.#loadedCbs === undefined) {
       cb(); // Loaded already, call right away
@@ -830,4 +1061,25 @@ class ConfigHttp {
 ArkimeConfig.registerScheme('http', ConfigHttp);
 ArkimeConfig.registerScheme('https', ConfigHttp);
 
+// The elasticsearch connection is spread over arkimeUtil, every app's db layer
+// and the cli tools, with no one module owning it, so it is registered here
+// instead of by each of the four apps
+ArkimeConfig.registerSettings({
+  elasticsearchAPIKey: { secret: true },
+  elasticsearchBasicAuth: { secret: true },
+  esClientKeyPass: { secret: true },
+  clientKeyPass: { secret: true },
+  usersElasticsearchAPIKey: { secret: true },
+  usersElasticsearchBasicAuth: { secret: true },
+  elasticsearch: { type: 'urls' },
+  usersElasticsearch: { type: 'urls' },
+  usersDbUrl: { type: 'urls' },
+  sessionsDbUrl: { type: 'urls' },
+  dbUrl: { type: 'urls' },
+  postgresPatternTimeout: { type: 'int', min: 0 }
+});
+
 module.exports = ArkimeConfig;
+
+// After the export, arkimeUtil leads to arkimeDb which needs a whole ArkimeConfig
+const ArkimeUtil = require('./arkimeUtil');

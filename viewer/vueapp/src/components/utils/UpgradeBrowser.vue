@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
     <div class="center-area">
       <img :src="watching">
 
-      <div class="well well-lg">
+      <div class="well">
         <h1>Incompatible Browser</h1>
         <h4>Please upgrade!</h4>
       </div>

@@ -12,6 +12,7 @@
 #include "patricia.h"
 
 extern ArkimeConfig_t        config;
+extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 
 LOCAL HASH_VAR(d_, fieldsByDb, ArkimeFieldInfo_t, 307);
 LOCAL HASH_VAR(e_, fieldsByExp, ArkimeFieldInfo_t, 307);
@@ -90,6 +91,36 @@ LOCAL int arkime_field_exp_cmp(const char *key, const ArkimeFieldInfo_t *element
     return strcmp(key, element->expression) == 0;
 }
 /******************************************************************************/
+// Same JSON array text, ignoring whitespace outside strings since Postgres jsonb adds a space after commas
+LOCAL gboolean arkime_field_json_same(const char *a, const char *b)
+{
+    gboolean inString = FALSE;
+    while (1) {
+        if (!inString) {
+            while (*a == ' ')
+                a++;
+            while (*b == ' ')
+                b++;
+        }
+        if (*a != *b)
+            return FALSE;
+        if (!*a)
+            return TRUE;
+        if (*a == '\\' && inString) {
+            a++;
+            b++;
+            if (*a != *b)
+                return FALSE;
+            if (!*a)
+                return TRUE;
+        } else if (*a == '"') {
+            inString = !inString;
+        }
+        a++;
+        b++;
+    }
+}
+/******************************************************************************/
 LOCAL void arkime_field_free_info(ArkimeFieldInfo_t *info)
 {
     g_free(info->dbFieldFull);
@@ -108,6 +139,7 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
     ArkimeFieldInfo_t *info = ARKIME_TYPE_ALLOC0(ArkimeFieldInfo_t);
     uint32_t           out[4 * 100]; // Can have up to 100 elements at any level
     int                disabled = 0;
+    int                fieldECS = -1;
 
     if (js0n(data, data_len, out, sizeof(out)) != 0) {
         LOGEXIT("ERROR - Parse error for >%.*s<\n", data_len, data);
@@ -123,9 +155,8 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
             info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
             info->dbFieldLen  = out[i + 3];
         } else if (strncmp("fieldECS", (char *)data + out[i], 7) == 0) {
-            g_free(info->dbFieldFull);
-            info->dbFieldFull = info->dbField = g_strndup((char *)data + out[i + 2], out[i + 3]);
-            info->dbFieldLen  = out[i + 3];
+            // The viewer uses fieldECS over dbField2, applied after the loop so key order can't matter
+            fieldECS = i;
         } else if (strncmp("type", (char *)data + out[i], 4) == 0) {
             g_free(info->kind);
             info->kind = g_strndup((char *)data + out[i + 2], out[i + 3]);
@@ -147,6 +178,12 @@ void arkime_field_define_json(const uint8_t *expression, int expression_len, con
                 disabled = 1;
             }
         }
+    }
+
+    if (fieldECS >= 0) {
+        g_free(info->dbFieldFull);
+        info->dbFieldFull = info->dbField = g_strndup((char *)data + out[fieldECS + 2], out[fieldECS + 3]);
+        info->dbFieldLen  = out[fieldECS + 3];
     }
 
     if (!info->dbField) {
@@ -453,7 +490,7 @@ int arkime_field_define(const char *group, const char *kind, const char *express
         if (strcmp(kind, minfo->kind) != 0) {
             LOG("WARNING - Field kind in db '%s' doesn't match field kind '%s' in capture for field '%s'", minfo->kind, kind, expression);
         }
-        if (category && (!minfo->category || strcmp(category, minfo->category) != 0)) {
+        if (category && (!minfo->category || !arkime_field_json_same(category, minfo->category))) {
             LOG("UPDATING - Field category to '%s' from '%s' for field '%s'", category, minfo->category, expression);
             arkime_db_update_field(expression, "category", category);
         }
@@ -461,7 +498,7 @@ int arkime_field_define(const char *group, const char *kind, const char *express
             LOG("UPDATING - Field transform to '%s' from '%s' for field '%s'", transform, minfo->transform, expression);
             arkime_db_update_field(expression, "transform", transform);
         }
-        if (aliases && (!minfo->aliases || strcmp(aliases, minfo->aliases) != 0)) {
+        if (aliases && (!minfo->aliases || !arkime_field_json_same(aliases, minfo->aliases))) {
             LOG("UPDATING - Field aliases to '%s' from '%s' for field '%s'", aliases, minfo->aliases, expression);
             arkime_db_update_field(expression, "aliases", aliases);
         }
@@ -532,6 +569,23 @@ int arkime_field_define(const char *group, const char *kind, const char *express
     }
 
     if (flags & ARKIME_FIELD_FLAG_FAKE) {
+        // A fake *Tokens field is the analyzed copy of its source field (ES
+        // fills it via copy_to); record the pairing so db.c can emit the
+        // tokens itself for sessions stores without that machinery. The
+        // source field must be defined before its Tokens field.
+        if (g_str_has_suffix(dbField, "Tokens")) {
+            const int srcLen = (int)strlen(dbField) - 6;
+            for (int p = 0; p < config.maxDbField; p++) {
+                if (config.fields[p] &&
+                    strncmp(config.fields[p]->dbFieldFull, dbField, srcLen) == 0 &&
+                    config.fields[p]->dbFieldFull[srcLen] == 0) {
+
+                    const char *lastDot = strrchr(dbField, '.');
+                    arkime_db_set_tokens_field(p, lastDot ? lastDot + 1 : dbField);
+                    break;
+                }
+            }
+        }
         HASH_REMOVE(d_, fieldsByDb, minfo);
         HASH_REMOVE(e_, fieldsByExp, minfo);
         arkime_field_free_info(minfo);
@@ -599,6 +653,26 @@ int arkime_field_define(const char *group, const char *kind, const char *express
         }
     }
     return minfo->pos;
+}
+/******************************************************************************/
+/* Mark an internal field whose parser calls ARKIME_RULES_RUN_FIELD_SET when it
+ * gets a value, so fieldSet expression rules can trigger on it. */
+void arkime_field_internal_sets_rules(int pos)
+{
+    // The types rules can read from an internal field's getCb
+    switch (config.fields[pos]->type) {
+    case ARKIME_FIELD_TYPE_INT:
+    case ARKIME_FIELD_TYPE_INT_ARRAY:
+    case ARKIME_FIELD_TYPE_INT_ARRAY_UNIQUE:
+    case ARKIME_FIELD_TYPE_STR:
+    case ARKIME_FIELD_TYPE_STR_ARRAY:
+    case ARKIME_FIELD_TYPE_STR_GHASH:
+    case ARKIME_FIELD_TYPE_IP:
+        break;
+    default:
+        LOGEXIT("ERROR - rules can't read internal field %s, its type %d isn't supported", config.fields[pos]->expression, config.fields[pos]->type);
+    }
+    config.fields[pos]->runsFieldSet = 1;
 }
 /******************************************************************************/
 int arkime_field_by_db(const char *dbField)
@@ -1617,6 +1691,23 @@ int arkime_field_count(int pos, ArkimeSession_t *session)
     }
 }
 /******************************************************************************/
+void arkime_field_swap(int pos1, int pos2, ArkimeSession_t *session)
+{
+    if (pos1 < 0 || pos2 < 0 || pos1 >= session->maxFields || pos2 >= session->maxFields)
+        return;
+
+    ArkimeField_t *field = session->fields[pos1];
+    session->fields[pos1] = session->fields[pos2];
+    session->fields[pos2] = field;
+
+    // jsonSize includes the db field name, which can differ in length across the pair
+    const int diff = (int)config.fields[pos1]->dbFieldLen - (int)config.fields[pos2]->dbFieldLen;
+    if (session->fields[pos1])
+        session->fields[pos1]->jsonSize += diff;
+    if (session->fields[pos2])
+        session->fields[pos2]->jsonSize -= diff;
+}
+/******************************************************************************/
 LOCAL int arkime_field_ops_should_run_int_op(const ArkimeFieldOp_t *op, int value)
 {
     switch (op->set) {
@@ -2117,14 +2208,14 @@ LOCAL void *arkime_field_getcb_databytes_dst(const ArkimeSession_t *session, int
 LOCAL void *arkime_field_getcb_community_id(const ArkimeSession_t *session, int UNUSED(pos))
 {
 
-    if (session->ses == SESSION_OTHER) {
-        return NULL;
-    }
+    const uint32_t mflags = mProtocols[session->mProtocol].flags;
     char *communityId;
-    if (session->ses == SESSION_ICMP) {
+    if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID_ICMP) {
         communityId = arkime_db_community_id_icmp(session);
-    } else {
+    } else if (mflags & ARKIME_MPROTOCOL_FLAG_COMMUNITYID) {
         communityId = arkime_db_community_id(session);
+    } else {
+        return NULL;
     }
     arkime_free_later(communityId, g_free);
 

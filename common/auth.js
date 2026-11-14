@@ -34,7 +34,6 @@ class Auth {
   static #requiredAuthHeader;
   static #requiredAuthHeaderVal;
   static #requiredAuthHeaderHmacs;
-  static #userAutoCreateTmpl;
   static #userAutoCreateFuncs;
   static #userAuthIps;
   static #strategies;
@@ -45,6 +44,7 @@ class Auth {
   static #caTrustCerts;
   static #passwordSecretSection;
   static #app;
+  static #sessionAuth = false;
   static #keyCache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 5 });
   static #logoutUrl;
   static #logoutUrlMethod;
@@ -58,6 +58,9 @@ class Auth {
     Auth.#app = app;
     app.use(Auth.#ppChecker);
     app.use(Auth.#authRouter);
+    if (Auth.#sessionAuth) {
+      DbStore.start();
+    }
 
     app.post('/api/login', bodyParser.urlencoded({ extended: true }));
     app.use(Auth.doAuth);
@@ -77,7 +80,6 @@ class Auth {
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
-   * @param {string} options.userAutoCreateTmpl A JavaScript string function that is used to create users that don't exist
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
@@ -94,7 +96,6 @@ class Auth {
     options.serverSecret ??= ArkimeConfig.get('serverSecret');
     options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
     options.requiredAuthHeaderVal ??= ArkimeConfig.get('requiredAuthHeaderVal');
-    options.userAutoCreateTmpl ??= ArkimeConfig.get('userAutoCreateTmpl');
     options.userAuthIps = ArkimeConfig.getArray('userAuthIps');
     options.caTrustFile ??= ArkimeConfig.get('caTrustFile');
 
@@ -125,20 +126,19 @@ class Auth {
       console.log('Auth.initialize', options);
     }
 
+    // userNameHeader used to also select the auth mode, now it is only ever the header name
+    if (options.userNameHeader?.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form|s2s)$/)) {
+      console.log(`WARNING - Ignoring userNameHeader=${options.userNameHeader}, it no longer selects the auth mode, use authMode instead.`);
+      delete options.userNameHeader;
+    }
+
     if (options.mode === undefined) {
       if (options.userNameHeader) {
-        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form)$/)) {
-          console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
-          options.mode = options.userNameHeader;
-          delete options.userNameHeader;
-        } else {
-          console.log('WARNING - Using authMode=header since not set, add to config file to silence this warning.');
-          options.mode = 'header';
-        }
+        console.log('WARNING - Using authMode=digest since not set, userNameHeader alone no longer enables header auth, set authMode=header to use it.');
       } else {
         console.log('WARNING - Using authMode=digest since not set, add to config file to silence this warning.');
-        options.mode = 'digest';
       }
+      options.mode = 'digest';
     }
 
     Auth.mode = options.mode;
@@ -168,17 +168,13 @@ class Auth {
       console.log('ERROR - requiredAuthHeaderVal is set but requiredAuthHeader is missing or empty');
       process.exit(1);
     }
-    Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
-    if (Auth.#userAutoCreateTmpl) {
-      console.log('WARNING - userAutoCreateTmpl is deprecated and INSECURE, use [user-auto-create] section instead. This functionality will be removed in Arkime 7.');
+    if (options.userAutoCreateTmpl ?? ArkimeConfig.get('userAutoCreateTmpl')) {
+      console.log('ERROR - userAutoCreateTmpl has been removed, use the [user-auto-create] section instead');
+      process.exit(1);
     }
 
     const userAutoCreate = ArkimeConfig.getSection('user-auto-create');
     if (userAutoCreate) {
-      if (Auth.#userAutoCreateTmpl) {
-        console.log('ERROR - Cannot use both userAutoCreateTmpl and [user-auto-create] section');
-        process.exit(1);
-      }
       const allowedUserFields = new Set([
         'userId', 'userName', 'passStore', 'enabled', 'webEnabled', 'headerAuthEnabled',
         'emailSearch', 'createEnabled', 'removeEnabled', 'packetSearch',
@@ -340,13 +336,18 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
+      Auth.#sessionAuth = true;
+      // Scripts like addUser.js never mount an app, so they never open the sids store
+      if (Auth.#app) {
+        DbStore.start();
+      }
       Auth.#authRouter.use(expressSession({
         name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
         saveUninitialized: false,
         cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000, httpOnly: true },
-        store: new ESStore({ })
+        store: new DbStore({ })
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -512,7 +513,7 @@ class Auth {
 
     User.getUserCache(userId, (err, user) => {
       // No claims means identity only, so no auto create either
-      if (claims === undefined || (Auth.#userAutoCreateTmpl === undefined && Auth.#userAutoCreateFuncs === undefined)) {
+      if (claims === undefined || Auth.#userAutoCreateFuncs === undefined) {
         return authCheck(err, user);
       } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
         Auth.#dynamicCreate(userId, claims, authCheck);
@@ -726,9 +727,13 @@ class Auth {
       return done('Cannot authenticate with role');
     }
 
-    User.getUserCache(userId, (err, user) => {
+    User.getUserCache(userId, async (err, user) => {
+      // Await lastUsed so it can't race a setUser later in the same
+      // request. On stores that bump lastUsed via a full-document
+      // read-modify-write (redis), a fire-and-forget write here can land
+      // after a settings save and clobber it.
       if (user) {
-        user.setLastUsed();
+        await user.setLastUsed();
       }
       return done(null, user);
     });
@@ -874,7 +879,7 @@ class Auth {
           user.tableStates = dbUser.tableStates;
           user.cont3xt = dbUser.cont3xt;
         } else {
-          user.save();
+          User.setUser(user.userId, user).catch(err => console.log('ERROR - saving anonymous user', ArkimeUtil.sanitizeLine(err?.message ?? String(err))));
         }
         return done(null, user);
       });
@@ -1077,7 +1082,7 @@ class Auth {
           packetSearch: true,
           settings: {},
           welcomeMsgNum: 1,
-          roles: ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
+          roles: ['arkimeAdmin', 'cont3xtUser', 'dbAdmin', 'parliamentUser', 'usersAdmin', 'wiseUser']
         });
         await user.expandFromRoles();
         return done(null, user);
@@ -1151,30 +1156,25 @@ class Auth {
       console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
     }
 
-    let nuser;
-    if (Auth.#userAutoCreateTmpl) {
-      nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
-    } else {
-      nuser = {};
-      // No user record exists yet, so `this` is undefined in these expressions,
-      // unlike [user-role-mappings] which binds the existing user
-      for (const [field, func] of Auth.#userAutoCreateFuncs) {
-        try {
-          nuser[field] = func(vars);
-        } catch (e) {
-          console.log(`ERROR - user-auto-create function for '${field}' failed:`, e.message);
-          return cb('User auto-create failed');
-        }
+    const nuser = {};
+    // No user record exists yet, so `this` is undefined in these expressions,
+    // unlike [user-role-mappings] which binds the existing user
+    for (const [field, func] of Auth.#userAutoCreateFuncs) {
+      try {
+        nuser[field] = func(vars);
+      } catch (e) {
+        console.log(`ERROR - user-auto-create function for '${field}' failed:`, e.message);
+        return cb('User auto-create failed');
       }
     }
 
     if (nuser.userId !== userId) {
       if (nuser.userId === undefined) {
         if (ArkimeConfig.debug > 0) {
-          console.log(`WARNING - the userAutoCreateTmpl didn't set a userId field, instead using header/oidc set '${userId}'`);
+          console.log(`WARNING - user-auto-create didn't set a userId field, instead using header/oidc set '${userId}'`);
         }
       } else {
-        console.log(`WARNING - the userAutoCreateTmpl set userId to a different value than header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', resetting to use '${userId}'`);
+        console.log(`WARNING - user-auto-create set userId to '${nuser.userId}' but header/oidc set '${userId}', resetting to use '${userId}'`);
       }
       nuser.userId = userId;
     }
@@ -1184,7 +1184,7 @@ class Auth {
     }
 
     if (nuser.userName === undefined || nuser.userName === 'undefined') {
-      console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId ${nuser.userId} for userName`);
+      console.log(`WARNING - user-auto-create didn't set a userName, using userId ${nuser.userId} for userName`);
       nuser.userName = nuser.userId;
     }
 
@@ -1676,150 +1676,99 @@ class Auth {
 }
 
 // ----------------------------------------------------------------------------
-class ESStore extends expressSession.Store {
-  static #client;
-  static #index;
+class DbStore extends expressSession.Store {
+  static #sids;
+  static #started = false;
   static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
-  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no Elasticsearch client
+  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no users db
 
-  constructor (options) {
-    super();
-    setTimeout(async () => {
-      ESStore.#client = User.getClient();
-      if (!ESStore.#client) {
-        console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
-        // MemoryStore only drops an expired session when it is read again, all() checks every one
-        setInterval(() => ESStore.#memoryStore.all(), 60 * 1000).unref();
-        return;
-      }
-      ESStore.start();
-      setInterval(() => ESStore.#prune(), 10 * 60 * 1000).unref();
-    }, 100);
-    const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
-    ESStore.#index = `${prefix}sids_v50`;
+  static start () {
+    if (DbStore.#started) { return; }
+    DbStore.#started = true;
+    DbStore.#start(0);
   }
 
-  // ----------------------------------------------------------------------------
-  static async start () {
-    // Create Index if needed
-    try {
-      await ESStore.#client.indices.create({
-        index: ESStore.#index,
-        body: {
-          settings: {
-            number_of_shards: 1,
-            number_of_replicas: 0,
-            auto_expand_replicas: '0-1'
+  // The app sets up its users db after auth, wait up to 30s for it
+  static #start (tries) {
+    setTimeout(async () => {
+      if (User.getDbUrl() === undefined && tries < 300) {
+        return DbStore.#start(tries + 1);
+      }
+      // The same prefix as the users index, whichever way the app picked it
+      const prefix = User.getDbPrefix() ?? '';
+      const conn = User.dbConnect();
+      if (!conn) {
+        console.log('WARNING - no users db, using in-memory sessions (lost on restart, not shared across nodes)');
+        // MemoryStore only drops an expired session when it is read again, all() checks every one
+        setInterval(() => DbStore.#memoryStore.all(), 60 * 1000).unref();
+        return;
+      }
+      const sids = conn.collection('sids', {
+        fields: {
+          _timestamp: { type: 'date', indexed: true },
+          _expires: { type: 'date', indexed: true }
+        },
+        es: {
+          index: `${prefix}sids_v50`,
+          create: {
+            settings: { number_of_shards: 1, number_of_replicas: 0, auto_expand_replicas: '0-1' },
+            mappings: { dynamic_templates: [{ string_template: { match_mapping_type: 'string', mapping: { type: 'keyword' } } }] }
           }
         }
       });
-    } catch (err) {
-      // If already exists ignore error
-      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log(err);
+      try {
+        await sids.init();
+      } catch (err) {
+        console.log('ERROR - creating the sids store', err);
         process.exit(1);
       }
-    }
-
-    // Update mapping if needed
-    await ESStore.#client.indices.putMapping({
-      index: ESStore.#index,
-      body: {
-        dynamic_templates: [
-          {
-            string_template: {
-              match_mapping_type: 'string',
-              mapping: {
-                type: 'keyword'
-              }
-            }
-          }
-        ],
-        properties: {
-          _timestamp: { type: 'date' },
-          _expires: { type: 'date' }
-        }
-      }
-    });
-
-    await ESStore.#prune();
+      DbStore.#sids = sids;
+      await DbStore.#prune();
+      setInterval(() => DbStore.#prune(), 10 * 60 * 1000).unref();
+    }, 100);
   }
 
   // ----------------------------------------------------------------------------
   // Delete expired sids, ignore errors. Older docs only have _timestamp.
   static async #prune () {
-    const now = new Date().getTime();
+    const now = Date.now();
     try {
-      await ESStore.#client.deleteByQuery({
-        index: ESStore.#index,
-        body: {
-          query: {
-            bool: {
-              should: [
-                { range: { _expires: { lte: now } } },
-                { range: { _timestamp: { lte: now - ESStore.#ttl } } }
-              ]
-            }
-          }
-        },
-        timeout: '5m'
-      });
+      await DbStore.#sids.deleteWhere({ $or: [{ _expires: { $lte: now } }, { _timestamp: { $lte: now - DbStore.#ttl } }] });
     } catch (err) { }
   }
 
   // ----------------------------------------------------------------------------
   destroy (sid, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.destroy(sid, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.destroy(sid, callback);
     }
-    ESStore.#client.delete({
-      index: ESStore.#index,
-      id: sid
-    }, (err, response) => {
-      callback();
-    });
+    DbStore.#sids.delete(sid, { refresh: false }).then(() => callback(), () => callback());
   }
 
   // ----------------------------------------------------------------------------
   get (sid, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.get(sid, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.get(sid, callback);
     }
-    ESStore.#client.get({
-      index: ESStore.#index,
-      id: sid
-    }, (err, response) => {
-      if (err) {
-        if (response?.statusCode === 404) {
-          return callback();
-        }
-        return callback(err);
-      }
-
-      const _source = response.body._source;
-      const now = new Date().getTime();
-      if (now - _source._timestamp > ESStore.#ttl || now > (_source._expires ?? Infinity)) {
+    DbStore.#sids.get(sid).then((session) => {
+      if (!session) { return callback(); }
+      const now = Date.now();
+      if (now - session._timestamp > DbStore.#ttl || now > (session._expires ?? Infinity)) {
         this.destroy(sid, () => {});
         return callback();
       }
-      return callback(err, _source);
-    });
+      return callback(null, session);
+    }, err => callback(err));
   }
 
   // ----------------------------------------------------------------------------
   set (sid, session, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.set(sid, session, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.set(sid, session, callback);
     }
-    session._timestamp = new Date().getTime();
-    session._expires = session.cookie?.expires ? new Date(session.cookie.expires).getTime() : session._timestamp + ESStore.#ttl;
-    ESStore.#client.index({
-      index: ESStore.#index,
-      id: sid,
-      body: session
-    }, (err, response) => {
-      callback(err);
-    });
+    session._timestamp = Date.now();
+    session._expires = session.cookie?.expires ? new Date(session.cookie.expires).getTime() : session._timestamp + DbStore.#ttl;
+    DbStore.#sids.put(sid, session, { refresh: false }).then(() => callback(), err => callback(err));
   }
 }
 // ----------------------------------------------------------------------------
@@ -1829,7 +1778,10 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 
-ArkimeConfig.registerValidated({
+ArkimeConfig.registerSettings({
+  passwordSecret: { secret: true },
+  serverSecret: { secret: true },
+  authClientSecret: { secret: true },
   userAuthIps: { type: 'cidrs' },
   // A non numeric skew becomes NaN, and jose compares exp against NaN, which is
   // always false - so an expired token would verify forever

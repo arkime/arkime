@@ -1191,6 +1191,14 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "clientVersion" : [
+      "ssh-1.5-1.2.26"
+     ],
+     "clientVersionCnt" : 1,
+     "serverVersion" : [
+      "ssh-1.5-1.2.26"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-1.5-1.2.26"
      ],

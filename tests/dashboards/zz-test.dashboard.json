@@ -1,0 +1,13 @@
+{
+  "name": "Test extra",
+  "description": "An extra dashboard a directory in dashboardsDir adds (api-dashboards.t)",
+  "data": {
+    "version": 1,
+    "folder": "Test",
+    "colorScheme": "rainbow",
+    "widgets": [
+      { "id": "w0", "viewMode": "navigation", "width": 4, "height": 1 },
+      { "id": "w1", "field": "protocols", "viewMode": "bar", "width": 4, "height": 3, "length": 10 }
+    ]
+  }
+}

@@ -33,6 +33,7 @@ class HuntAPIs {
 
   // --------------------------------------------------------------------------
   static #runningHuntJob;
+  static #publicSortFields = new Set(['created', 'name', 'status', 'size', 'started', 'lastUpdated', 'lastPacketTime', 'totalSessions', 'searchedSessions', 'matchedSessions']);
   static isHuntJobRunning () {
     return HuntAPIs.#runningHuntJob !== undefined;
   }
@@ -221,15 +222,15 @@ ${Config.arkimeWebURL()}hunt
 
     if ((now - hunt.lastUpdated) >= 2) { // only update every 2 seconds
       try {
-        const { body: huntHit } = await Db.get('hunts', huntId);
+        const huntDoc = await Db.getHunt(huntId);
 
-        if (!huntHit) { return 'undefined'; }
+        if (!huntDoc) { return 'undefined'; }
 
-        hunt.status = huntHit._source.status;
+        hunt.status = huntDoc.status;
         hunt.lastUpdated = now;
         hunt.searchedSessions = searchedSessions || hunt.searchedSessions;
         hunt.lastPacketTime = lastPacketTime;
-        hunt.errors = huntHit._source.errors;
+        hunt.errors = huntDoc.errors;
 
         await HuntAPIs.#updateHuntInfo(huntId, hunt);
 
@@ -308,7 +309,7 @@ ${Config.arkimeWebURL()}hunt
   // --------------------------------------------------------------------------
   static async #updateHuntStatus (req, res, huntStatus, successText, errorText, successI18n, errorI18n) {
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id, req.query.cluster);
+      const hunt = await Db.getHunt(req.params.id, req.query.cluster);
       // don't let a user play a hunt job if one is already running
       if (huntStatus === 'running' && HuntAPIs.#runningHuntJob) {
         return res.serverError(403, 'You cannot start a new hunt until the running job completes or is paused.', 'api.hunts.cannotStartWhileRunning');
@@ -628,7 +629,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
         from: 0,
         size: 100, // only fetch 100 items at a time
         _source: ['_id', 'node'],
-        sort: 'lastPacket:asc'
+        order: 'lastPacket:asc'
       }
     };
 
@@ -731,17 +732,15 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       console.log('HUNT - processing hunt jobs');
     }
 
-    const query = {
-      size: 10000,
-      sort: { created: { order: 'asc' } },
-      query: { terms: { status: ['queued', 'paused', 'running'] } }
-    };
-
     try {
-      const { body: { hits: hunts } } = await Db.searchHunt(query);
-      for (const hit of hunts.hits) {
-        const hunt = hit._source;
-        hunt.id = hit._id;
+      const { data: hunts } = await Db.searchHunts({
+        where: { status: { $in: ['queued', 'paused', 'running'] } },
+        sort: { created: 'asc' },
+        size: 10000
+      });
+      for (const hit of hunts) {
+        const hunt = hit.doc;
+        hunt.id = hit.id;
 
         // there is a job already running
         if (hunt.status === 'running') {
@@ -849,6 +848,10 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       return res.serverError(403, 'The hunt must search source or destination packets (or both)', 'api.hunts.missingSrcOrDst');
     }
     if (!req.body.query) { return res.serverError(403, 'Missing query', 'api.hunts.missingQuery'); }
+    // replayed into Db.getViewByIdOrName, which only looks up a string
+    if (req.body.query.view !== undefined && !ArkimeUtil.isString(req.body.query.view, 0)) {
+      return res.serverError(403, 'View must be a string', 'api.hunts.viewMustBeString');
+    }
     // Number() alone would accept "", null, false and [] as 0
     const toSeconds = (v) => (typeof v === 'number' || (typeof v === 'string' && /^-?\d+$/.test(v))) ? Number(v) : NaN;
     const startTime = toSeconds(req.body.query.startTime);
@@ -971,8 +974,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
 
     try {
-      const { body: result } = await Db.createHunt(hunt, req.query.cluster);
-      hunt.id = result._id;
+      hunt.id = await Db.createHunt(hunt, req.query.cluster);
       await HuntAPIs.processHuntJobs();
       return res.json(response);
     } catch (err) {
@@ -999,52 +1001,48 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    * @returns {number} recordsFiltered - The number of hunts returned in this result.
    */
   static getHunts (req, res) {
-    const query = {
-      sort: {},
+    // Non-admins get some hunts with search and userId blanked, so they can't sort or search on those
+    const isAdmin = req.user.hasRole('arkimeAdmin');
+    const sortOk = isAdmin ? /^[A-Za-z_][A-Za-z0-9_.]*$/.test(req.query.sortField ?? '') : HuntAPIs.#publicSortFields.has(req.query.sortField);
+    const sortField = sortOk ? req.query.sortField : 'created';
+    const params = {
+      sort: { [sortField]: req.query.desc === 'true' ? 'desc' : 'asc' },
       from: parseInt(req.query.start) || 0,
-      size: parseInt(req.query.length) || 10000,
-      query: { bool: { filter: [] } }
+      size: Math.min(Math.max(parseInt(req.query.length) || 10000, 0), 10000)
     };
 
-    query.sort[req.query.sortField || 'created'] = { order: req.query.desc === 'true' ? 'desc' : 'asc' };
-
+    const and = [];
     if (req.query.history) { // only get finished jobs
-      query.query.bool.filter.push({ term: { status: 'finished' } });
-      if (req.query.searchTerm) { // apply search term across whitelisted fields only
-        query.query.bool.filter.push({
-          bool: {
-            should: ['name', 'userId'].map(field => ({
-              wildcard: { [field]: `*${req.query.searchTerm}*` }
-            })),
-            minimum_should_match: 1
-          }
-        });
+      and.push({ status: 'finished' });
+      if (ArkimeUtil.isString(req.query.searchTerm)) { // apply search term across whitelisted fields only
+        and.push({ $or: (isAdmin ? ['name', 'userId'] : ['name']).map(field => ({ [field]: { $contains: req.query.searchTerm } })) });
       }
     } else { // get queued, paused, running jobs
-      query.from = 0;
-      query.size = 1000;
+      params.from = 0;
+      params.size = 1000;
       if (req.query.all === undefined) {
-        query.query.bool.filter.push({ terms: { status: ['queued', 'paused', 'running'] } });
+        and.push({ status: { $in: ['queued', 'paused', 'running'] } });
       }
     }
+    params.where = { $and: and };
 
     if (Config.debug) {
-      console.log('Hunt query:', JSON.stringify(query, null, 2));
+      console.log('Hunt query:', JSON.stringify(params, null, 2));
     }
 
     Promise.all([
-      Db.searchHunt(query, req.query.cluster),
-      Db.countHunts(req.query.cluster),
+      Db.searchHunts(params, req.query.cluster),
+      Db.countHunts(null, req.query.cluster),
       Db.getQueriesNode()
-    ]).then(([{ body: { hits: hunts } }, { body: { count: total } }, nodeInfo]) => {
+    ]).then(([hunts, total, nodeInfo]) => {
       let runningJob;
 
       const results = { total: hunts.total, results: [] };
-      for (let i = 0, ilen = hunts.hits.length; i < ilen; i++) {
-        const hit = hunts.hits[i];
-        const hunt = hit._source;
-        hunt.id = hit._id;
-        hunt.index = hit._index;
+      for (let i = 0, ilen = hunts.data.length; i < ilen; i++) {
+        const hit = hunts.data[i];
+        const hunt = hit.doc;
+        hunt.id = hit.id;
+        hunt.index = hit.index;
         hunt.users = hunt.users || [];
 
         // Convert comma-separated notifier string to array for client
@@ -1054,7 +1052,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
         // clear out secret fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
-        if (!req.user.hasRole('arkimeAdmin') && req.user.userId !== hunt.userId && !hunt.users.includes(req.user.userId)) {
+        if (!isAdmin && req.user.userId !== hunt.userId && !hunt.users.includes(req.user.userId)) {
           if (!hunt.roles || !hunt.roles.length || !req.user.hasRole(hunt.roles)) {
             // since hunt isn't cached we can just modify
             hunt.id = '';
@@ -1128,7 +1126,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static async cancelHunt (req, res) {
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id, req.query.cluster);
+      const hunt = await Db.getHunt(req.params.id, req.query.cluster);
 
       const error = { // save that the user canceled the hunt
         time: Math.floor(Date.now() / 1000),
@@ -1192,7 +1190,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static async removeFromSessions (req, res) {
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+      const hunt = await Db.getHunt(req.params.id);
 
       if (!hunt.matchedSessions) {
         return res.serverError(202, 'Nothing to do: this hunt has not matched any sessions.', 'api.hunts.nothingToRemove');
@@ -1256,7 +1254,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static async updateHunt (req, res) {
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id, req.query.cluster);
+      const hunt = await Db.getHunt(req.params.id, req.query.cluster);
 
       // update properties
       if (ArkimeUtil.isString(req.body.description)) {
@@ -1301,7 +1299,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
     }
 
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id, req.query.cluster);
+      const hunt = await Db.getHunt(req.params.id, req.query.cluster);
 
       const reqUsers = ArkimeUtil.commaOrNewlineStringToArray(req.body.users);
 
@@ -1353,7 +1351,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
    */
   static async removeUsers (req, res) {
     try {
-      const { body: { _source: hunt } } = await Db.getHunt(req.params.id);
+      const hunt = await Db.getHunt(req.params.id);
 
       if (!hunt.users || !hunt.users.length) {
         return res.serverError(404, 'There are no users that have access to view this hunt', 'api.hunts.noUsersWithAccess');
@@ -1398,16 +1396,15 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
 
     // fetch hunt and session
     Promise.all([
-      Db.get('hunts', huntId),
+      Db.getHunt(huntId),
       Db.getSession(sessionId, { _source: false, fields: ['node'] })
-    ]).then(([{ body: hunt }, session]) => {
-      if (hunt.error || session.error) {
-        console.log('HUNT - remoteHunt error', hunt.error || session.error);
+    ]).then(([hunt, session]) => {
+      if (!hunt || session.error) {
+        console.log('HUNT - remoteHunt error', hunt ? session.error : 'hunt not found');
         if (!res.headersSent) { res.send({ matched: false }); }
         return;
       }
 
-      hunt = hunt._source;
       session = session.fields;
 
       const options = HuntAPIs.#buildHuntOptions(huntId, hunt);

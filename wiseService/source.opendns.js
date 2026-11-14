@@ -35,13 +35,7 @@ class OpenDNSSource extends WISESource {
     this.ccField = this.api.addField('field:opendns.domain.content;db:opendns.contentCategory;kind:termfield;friendly:Content;help:OpenDNS domain content category;count:true');
 
     this.api.addView('opendns',
-      'if (session.opendns)\n' +
-      '  div.sessionDetailMeta.bold OpenDNS\n' +
-      '  dl.sessionDetailMeta\n' +
-      "    +arrayList(session.opendns, 'status', 'Status', 'opendns.domain.status')\n" +
-      "    +arrayList(session.opendns, 'securityCategory', 'Security Cat', 'opendns.domain.security')\n" +
-      "    +arrayList(session.opendns, 'contentCategory', 'Content Cat', 'opendns.domain.content')\n"
-    );
+      'require:opendns;title:OpenDNS;fields:opendns.domain.status,opendns.domain.security,opendns.domain.content');
 
     this.api.addValueAction('opendnsip', { name: 'OpenDNS', url: 'https://sgraph.opendns.com/ip-view/%TEXT%', category: 'ip' });
     this.api.addValueAction('opendnsasn', { name: 'OpenDNS', url: 'https://sgraph.opendns.com/as-view/%REGEX%', category: 'asn', regex: '^[Aa][Ss](\\d+)' });

@@ -5,21 +5,26 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "df:59:fa:ee:21:8a:ee:0b:99:b4:25:40:4a:78:e1:f9:16:20:9e:5c",
       "issuerON" : [
        "Internet Widgits Pty Ltd"
       ],
+      "keyLength" : 1024,
       "notAfter" : 1720007767000,
       "notBefore" : 1404647767000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3649,
       "remainingSeconds" : 315359665,
       "serial" : "00f1965d11e3ff07ee",
+      "sha256" : "d7d439c9781fd4f0455d5f702d193517e3b512ffe6aef6b57c58a50111657d5b",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectON" : [
        "Internet Widgits Pty Ltd"
       ],
       "validDays" : 3650,
-      "validSeconds" : 315360000
+      "validSeconds" : 315360000,
+      "version" : 1
      }
     ],
     "certCnt" : 1,

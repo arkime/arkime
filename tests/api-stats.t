@@ -1,4 +1,4 @@
-use Test::More tests => 134;
+use Test::More tests => 172;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -25,7 +25,7 @@ my $test1Token = getTokenCookie("test1");
         is ($stats->{data}->[0]->{$i}, 0, "stats.json $i == 0");
     }
 
-    foreach my $i ("deltaMS", "totalPackets", "memory", "cpu", "currentTime", "totalK", "totalSessions", "freeSpaceM") {
+    foreach my $i ("deltaMS", "memory", "cpu", "currentTime", "freeSpaceM", "freeSpaceTargetP") {
         cmp_ok ($stats->{data}->[0]->{$i}, '>=', 0, "stats.json $i >= 0");
     }
 
@@ -55,9 +55,39 @@ my $test1Token = getTokenCookie("test1");
     my $dstats = viewerGet("/api/dstats?nodeName=test&start=1399680425&stop=1399680460&step=5&interval=5&name=deltaPackets");
     is (@{$dstats}, 7, "dstats.json array size");
 
+    # Capture wrote these in the hour before its last stats, Elasticsearch 8+ reads a bare number bound as millis
+    my $lastStats = $stats->{data}->[0]->{currentTime};
+    $dstats = viewerGet("/api/dstats?nodeName=test&start=" . ($lastStats - 3600) . "&stop=$lastStats&step=5&interval=5&name=deltaPackets");
+    is (@{$dstats}, 720, "dstats.json last hour array size");
+    cmp_ok ((grep { $_ > 0 } @{$dstats}), '>', 0, "dstats.json last hour has packets");
+
+    # hide=old drops nodes with no stats in the last 5 minutes
+    SKIP: {
+        my $age = time() - $lastStats;
+        skip "stats are right at the 5 minute hide=old cutoff", 1 if (abs($age - 300) < 10);
+        my $hidden = viewerGet("/api/stats?hide=old");
+        is (scalar @{$hidden->{data}}, ($age < 300 ? 1 : 0), "stats.json hide=old with stats $age seconds old");
+    }
+
+# eshealth.json reports the other dbs when there is no OpenSearch/Elasticsearch
+SKIP: {
+    skip "eshealth reports OpenSearch/Elasticsearch", 5 if !$ArkimeTest::noEs;
+    my $health = viewerGet("/eshealth.json");
+    is ($health->{status}, "green", "db health status");
+    like ($health->{version}, qr/^ClickHouse \d/, "db health has the ClickHouse version");
+    like ($health->{db}, qr/^ClickHouse/, "db health names the dbs");
+    is ($health->{number_of_data_nodes}, 1, "db health data nodes");
+    is (viewerGet("/api/esstats")->{success}, 0, "esstats still needs OpenSearch/Elasticsearch");
+}
+
+SKIP: {
+    skip "the OpenSearch/Elasticsearch admin apis need one", 96 if $ArkimeTest::noEs;
+
 # esstats.json
     my $esstats = viewerGet("/api/esstats");
     is ($esstats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
+    ok (defined $esstats->{data}->[0]->{heapMax}, "esstats has heapMax");
+    ok (defined $esstats->{data}->[0]->{diskTotal}, "esstats has diskTotal");
 
     my $messtats = multiGet("/esstats.json");
     is ($messtats->{data}->[0]->{writesRejectedDelta}, 0, "Writes reject");
@@ -172,7 +202,7 @@ my $test1Token = getTokenCookie("test1");
     is($result->{i18n}, "api.stats.unknownExcludeType", "esshard: exclude foobar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/exclude?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: exclude not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: exclude not admin");
 
     $shards = viewerGet("/api/esshards");
     eq_or_diff($shards->{nodeExcludes}, ["thenode"], "esshard: nodeExcludes thenode");
@@ -195,7 +225,7 @@ my $test1Token = getTokenCookie("test1");
     is($result->{i18n}, "api.stats.unknownIncludeType", "esshard: include foodbar i18n");
 
     $result = viewerPostToken("/api/esshards/foobar/1.2.3.4/include?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: include not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: include not admin");
 
     $shards = viewerGet("/api/esshards");
     eq_or_diff($shards->{nodeExcludes}, [], "esshard: nodeExcludes empty");
@@ -221,7 +251,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'), "esshard: delete failed");
 
     $result = viewerPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: delete not admin");
 
     $result = multiPostToken("/api/esshards/theindex/0/delete", "", $token);
     is($result->{success}, 0, "esshard: delete missing cluster");
@@ -231,7 +261,7 @@ my $test1Token = getTokenCookie("test1");
     eq_or_diff($result, from_json('{"success": false, "text": "Deleting shard theindex:0 failed"}'));
 
     $result = multiPostToken("/api/esshards/theindex/theshard/delete?arkimeRegressionUser=test1&cluster=unknown", "", $test1Token);
-    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource"}'), "esshard: delete not admin");
+    eq_or_diff($result, from_json('{"success": false, "text": "You do not have permission to access this resource", "i18n": "api.viewer.noPermission"}'), "esshard: delete not admin");
 
 # esshards delete - additional comprehensive tests
     # Test invalid shard number (non-numeric)
@@ -310,7 +340,10 @@ my $test1Token = getTokenCookie("test1");
 
 # esrecovery
     my $recovery = viewerGet("/api/esrecovery?show=all");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+    # With sessions in ClickHouse there are no daily session indices in ES,
+    # so far fewer shards show up in recovery
+    my $minRecovery = ($ArkimeTest::sessionsDbUrl =~ m{^(?:clickhouses?|chttps?)://}) ? 20 : 100;
+    cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = viewerGet("/api/esrecovery");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
@@ -319,19 +352,81 @@ my $test1Token = getTokenCookie("test1");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+    cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all&cluster=test");
-    cmp_ok (@{$recovery->{data}}, ">=", 100, "recovery array size");
+    cmp_ok (@{$recovery->{data}}, ">=", $minRecovery, "recovery array size");
 
     $recovery = multiGet("/api/esrecovery?show=all&cluster=unknown");
     cmp_ok (@{$recovery->{data}}, "==", 0, "recovery array size");
 
+}
+# db queries, the running queries of a sessions db that isn't OpenSearch/Elasticsearch
+SKIP: {
+    skip "the db queries apis need ClickHouse sessions", 15 if !$ArkimeTest::sessionsDbCH;
+    my $dbq = viewerGet("/api/db/sessions/queries");
+    is (ref $dbq->{data}, "ARRAY", "db queries data");
+    cmp_ok ($dbq->{recordsTotal}, ">=", $dbq->{recordsFiltered}, "db queries recordsTotal");
+
+    $dbq = viewerGet("/api/db/sessions/queries?filter=" . uri_escape("("));
+    is ($dbq->{success}, 0, "db queries bad filter regex");
+
+    my $kill = viewerPostToken("/api/db/sessions/queries/nosuchquery/kill", "", $token);
+    is ($kill->{success}, 0, "db queries kill unknown query");
+
+    $kill = viewerPostToken("/api/db/sessions/queries/nosuchquery/kill?arkimeRegressionUser=test1", "", $test1Token);
+    is ($kill->{i18n}, "api.viewer.noPermission", "db queries kill needs dbAdmin");
+
+    my $cancel = viewerPostToken("/api/estasks/nosuchcancel/cancelwith", "", $token);
+    is ($cancel->{success}, 0, "cancel an unknown search on ClickHouse");
+    unlike ($cancel->{text} // "", qr/No OpenSearch/, "cancel reaches the ClickHouse sessions db");
+
+    my $parts = viewerGet("/api/db/sessions/tables");
+    ok ((grep { $_->{table} =~ /\.tests_sessions3$/ && $_->{rows} > 0 } @{$parts->{data}}), "ch partitions has the sessions table");
+    $parts = viewerGet("/api/db/sessions/tables?filter=" . uri_escape("tests_sessions3\$"));
+    ok (!grep({ $_->{table} !~ /tests_sessions3$/ } @{$parts->{data}}), "ch partitions filter");
+
+    my $badId = uri_escape('["arkime","nosuchtable","1"]');
+    is (viewerPostToken("/api/db/sessions/tables/$badId/optimize", "", $token)->{success}, 0, "ch partitions optimize unknown partition");
+    is (viewerDeleteToken("/api/db/sessions/tables/$badId", $token)->{success}, 0, "ch partitions drop unknown partition");
+    is (viewerPostToken("/api/db/sessions/tables/$badId/vacuum", "", $token)->{success}, 0, "ch partitions has no vacuum");
+    is (viewerPostToken("/api/db/sessions/tables/$badId/drop", "", $token)->{text}, "Unknown db or action", "ch partitions only drop with DELETE");
+
+    # each db tab saves its own table state
+    is (ref viewerGetToken("/api/user/config/chPartitions", $token)->{tableState}, "HASH", "ch partitions table state");
+    is (viewerGetToken("/api/user/config/dbTables", $token)->{i18n}, "api.users.unsupportedPage", "no table state shared by the db tabs");
+}
+    is (viewerGet("/api/db/nosuchdb/queries")->{success}, 0, "db queries unknown db");
+
+SKIP: {
+    skip "the cluster db queries apis need Postgres", 9 if ($ArkimeTest::dbUrl // "") !~ /^postgres/;
+    my $dbq = viewerGet("/api/db/cluster/queries");
+    is (ref $dbq->{data}, "ARRAY", "pg db queries data");
+    ok (!grep({ ($_->{elapsed} // "") !~ /^[\d.]+$/ } @{$dbq->{data}}), "pg db queries elapsed is seconds");
+
+    my $kill = viewerPostToken("/api/db/cluster/queries/notapid/kill", "", $token);
+    is ($kill->{success}, 0, "pg db queries kill bad pid");
+
+    $kill = viewerPostToken("/api/db/cluster/queries/1/kill", "", $token);
+    is ($kill->{success}, 0, "pg db queries kill another db's pid");
+
+    my $pgTables = viewerGet("/api/db/cluster/tables");
+    my ($stats) = grep { $_->{table} =~ /stats$/ } @{$pgTables->{data}};
+    ok ($stats, "pg tables has the stats table");
+    is (viewerPostToken("/api/db/cluster/tables/" . uri_escape($stats->{id} // '[]') . "/vacuum", "", $token)->{success}, 1, "pg tables vacuum");
+    is (viewerPostToken("/api/db/cluster/tables/" . uri_escape($stats->{id} // '[]') . "/vacuum?arkimeRegressionUser=test1", "", $test1Token)->{i18n}, "api.viewer.noPermission", "pg tables vacuum needs dbAdmin");
+    is (viewerDeleteToken("/api/db/cluster/tables/" . uri_escape($stats->{id} // '[]'), $token)->{success}, 0, "pg tables can't be dropped");
+    is (viewerPostToken("/api/db/cluster/tables/" . uri_escape('["public","nosuchtable"]') . "/vacuum", "", $token)->{success}, 0, "pg tables vacuum unknown table");
+}
+
 # parliament.json
     my $stats = viewerGet("/api/parliament");
     is (@{$stats->{data}}, 1, "parliament.json data set ");
+    SKIP: {
+        skip "no OpenSearch/Elasticsearch nodes", 2 if $ArkimeTest::noEs;
     is (@{$stats->{esNodes}}, 1, "parliament.json esNodes set ");
     ok (defined $stats->{esNodes}->[0]->{nodeName}, "parliament.json esNodes has no junk timestamp entry");
+    }
     is ($stats->{recordsTotal}, 1, "parliament.json recordsTotal");
     is ($stats->{data}->[0]->{id}, "test", "parliament.json name");
 
@@ -340,3 +435,30 @@ my $test1Token = getTokenCookie("test1");
     }
 
     is (exists $stats->{data}->[0]->{"totalPackets"}, "", "parliament.json doesn't have unnecessary fields");
+
+# multi viewer bucket merge — a min sub-aggregation must not be summed
+# (/api/stats' retention is `now - min(files.first)` per node, so summing two
+#  clusters' epochs put the retention date decades into the future)
+    my $mtestFile = '{"num": 9001, "name": "/tmp/mtest-9001.pcap", "first": 1000000000, "node": "mtest", "filesize": 100, "locked": 0}';
+    my $mtest2File = '{"num": 9002, "name": "/tmp/mtest-9002.pcap", "first": 2000000000, "node": "mtest", "filesize": 100, "locked": 0}';
+    # a stats row is what carries retention in the response, keyed by node name
+    my $mtestStats = '{"nodeName": "mtest", "currentTime": 1788190323, "interval": 1, "monitoring": 0, "deltaMS": 1000}';
+    clusterPut(8123, "stats", "mtest", $mtestStats);
+    clusterPut(8123, "files", "mtest-9001", $mtestFile);
+    clusterPut(8124, "files", "mtest-9002", $mtest2File);
+
+    my $now = time();
+    my $sstats = viewerGet("/api/stats");
+    my ($srow) = grep {$_->{id} eq "mtest"} @{$sstats->{data}};
+    ok (defined $srow, "single viewer has the mtest stats row");
+    cmp_ok (abs($srow->{retention} - ($now - 1000000000)), "<", 60, "single viewer retention is now - first");
+
+    my $mmstats = multiGet("/stats.json");
+    my ($mrow) = grep {$_->{id} eq "mtest"} @{$mmstats->{data}};
+    ok (defined $mrow, "multi viewer has the mtest stats row");
+    cmp_ok ($mrow->{retention}, ">", 0, "multi viewer retention is not in the future");
+    cmp_ok (abs($mrow->{retention} - $srow->{retention}), "<", 60, "multi viewer retention takes the min first across clusters");
+
+    clusterDelete(8123, "stats", "mtest");
+    clusterDelete(8123, "files", "mtest-9001");
+    clusterDelete(8124, "files", "mtest-9002");

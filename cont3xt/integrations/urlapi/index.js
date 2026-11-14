@@ -6,7 +6,6 @@
 const Integration = require('../../integration.js');
 const ArkimeConfig = require('../../../common/arkimeConfig');
 const axios = require('axios');
-const https = require('https');
 
 class URLApiIntegration extends Integration {
   // Integration Items
@@ -75,16 +74,18 @@ class URLApiIntegration extends Integration {
 
     this.#resultField = ArkimeConfig.getFull(section, 'resultField');
 
+    // A bad number is NaN, which axios treats as no limit (follow every
+    // redirect, no timeout, any size), so fall back to the defaults
+    const maxRedirects = parseInt(ArkimeConfig.getFull(section, 'maxRedirects', 0));
+    const timeout = parseInt(ArkimeConfig.getFull(section, 'timeout', 30));
+    const maxSize = parseInt(ArkimeConfig.getFull(section, 'maxSize', 10 * 1024 * 1024));
     this.#axiosOptions = {
-      timeout: parseInt(ArkimeConfig.getFull(section, 'timeout', 30)) * 1000,
-      maxContentLength: parseInt(ArkimeConfig.getFull(section, 'maxSize', 10 * 1024 * 1024)),
-      maxRedirects: parseInt(ArkimeConfig.getFull(section, 'maxRedirects', 0))
+      timeout: (Number.isNaN(timeout) ? 30 : timeout) * 1000,
+      maxContentLength: Number.isNaN(maxSize) ? 10 * 1024 * 1024 : maxSize,
+      maxRedirects: maxRedirects >= 0 ? maxRedirects : 0,
+      // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
+      ...this.axiosTls(this.#url)
     };
-
-    const insecure = ArkimeConfig.getFull(section, 'insecure', false);
-    if (ArkimeConfig.insecure || insecure === true || insecure === 'true') {
-      this.#axiosOptions.httpsAgent = new https.Agent({ rejectUnauthorized: false });
-    }
 
     Integration.register(this);
   }

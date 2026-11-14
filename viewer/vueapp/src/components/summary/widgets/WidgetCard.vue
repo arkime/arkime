@@ -1,0 +1,411 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+
+Shared chrome for dashboard widgets: title (a link to the widget's full
+page), menu (Edit / Open / Save as graph / Export / Remove), and loading /
+error / empty states.
+The widget content is provided via the default slot.
+-->
+<template>
+  <!-- Loading state -->
+  <div
+    v-if="loading"
+    class="widget-card loading-widget"
+    :class="{ 'widget-card--bare': bare }"
+    aria-hidden="true">
+    <h4
+      v-if="!bare"
+      class="loading-title">
+      {{ shownTitle }}
+    </h4>
+    <div class="bouncing-dots">
+      <span class="dot" />
+      <span class="dot" />
+      <span class="dot" />
+    </div>
+  </div>
+
+  <div
+    v-else
+    class="widget-card widget-loaded"
+    :class="{ 'widget-error': error, 'widget-card--bare': bare }">
+    <!-- SPI Graph draws the widget as its page: no title or menu, just the export -->
+    <div
+      v-if="bare"
+      class="d-flex justify-end">
+      <v-btn
+        v-if="!error && hasData && (showExport || png)"
+        variant="outlined"
+        size="small"
+        density="comfortable"
+        prepend-icon="mdi-download"
+        @click="runExport">
+        {{ exportLabel || $t('sessions.summary.downloadPNG') }}
+      </v-btn>
+    </div>
+    <div
+      v-else
+      class="widget-header d-flex align-center mb-1">
+      <div class="widget-heading d-flex align-baseline">
+        <v-icon
+          icon="mdi-drag-vertical"
+          size="large"
+          class="widget-drag"
+          :title="$t('sessions.summary.dragToReorder')" />
+        <h4
+          class="widget-title"
+          :title="link ? `${shownTitle} (${openLabel})` : shownTitle">
+          <router-link
+            v-if="link"
+            :to="link"
+            class="widget-title-link">
+            {{ shownTitle }}
+          </router-link>
+          <template v-else>
+            {{ shownTitle }}
+          </template>
+        </h4>
+        <span
+          v-if="infoItems.length"
+          class="widget-info-icon ps-1"
+          tabindex="0">
+          <v-icon
+            icon="mdi-information-outline"
+            class="text-medium-emphasis" />
+          <v-tooltip
+            activator="parent"
+            location="bottom end"
+            open-delay="100"
+            max-width="340">
+            <div
+              v-for="row in infoItems"
+              :key="row.label"
+              class="widget-info-row">
+              <span class="widget-info-label">{{ row.label }}:</span>
+              <span class="widget-info-value">{{ row.value }}</span>
+            </div>
+          </v-tooltip>
+        </span>
+      </div>
+      <v-menu location="bottom end">
+        <template #activator="{ props: menuProps }">
+          <v-btn
+            v-bind="menuProps"
+            variant="text"
+            size="small"
+            density="comfortable"
+            icon
+            class="widget-menu-btn"
+            :title="$t('sessions.summary.widgetMenu')"
+            :aria-label="$t('sessions.summary.widgetMenu')">
+            <v-icon icon="mdi-dots-vertical" />
+          </v-btn>
+        </template>
+        <v-list
+          density="compact"
+          class="widget-menu">
+          <template
+            v-for="a in actions"
+            :key="a.key">
+            <v-divider v-if="a.danger" />
+            <v-list-item
+              :to="a.to"
+              :class="{ 'text-error': a.danger }"
+              @click="a.run && a.run()">
+              <v-icon
+                :icon="a.icon"
+                class="me-2" />
+              {{ a.title }}
+            </v-list-item>
+          </template>
+        </v-list>
+      </v-menu>
+    </div>
+
+    <!-- an erroring widget keeps its menu, so it can still be fixed or removed -->
+    <div
+      v-if="error"
+      class="error-content">
+      <v-icon
+        icon="mdi-alert-circle"
+        size="large"
+        class="text-danger mb-2" />
+      <p class="text-danger mb-0">
+        {{ error }}
+      </p>
+      <v-btn
+        color="success"
+        variant="flat"
+        size="x-small"
+        density="comfortable"
+        class="mt-2"
+        @click="$emit('retry')">
+        <v-icon
+          icon="mdi-refresh"
+          class="me-1" />
+        {{ $t('sessions.summary.retryField') }}
+      </v-btn>
+    </div>
+    <div
+      v-else-if="hasData"
+      ref="body"
+      class="widget-body"
+      :class="{ 'widget-body--scroll': scroll }">
+      <slot />
+    </div>
+    <div
+      v-else
+      class="empty-state">
+      <v-icon
+        icon="mdi-folder-open"
+        size="x-large"
+        class="mb-3 text-medium-emphasis" />
+      <p class="empty-state-text text-medium-emphasis">
+        {{ emptyText || $t(noDataMessage) }}
+      </p>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { inject, computed, ref } from 'vue';
+import { useStore } from 'vuex';
+import { useI18n } from 'vue-i18n';
+import { substituteTitle } from './dashboardVariables';
+import { downloadWidgetPng } from './widgetPng';
+import { themedColor } from '@common/themes/themedColor.js';
+
+// the dashboard provides this; it opens the save-graph dialog for a widget
+const saveWidgetGraph = inject('saveWidgetGraph', null);
+// SPI Graph provides this: the widget is the page's graph, not a dashboard card
+const bare = inject('widgetBare', false);
+const store = useStore();
+const { t } = useI18n();
+
+const props = defineProps({
+  title: { type: String, required: true },
+  loading: { type: Boolean, default: false },
+  error: { type: String, default: '' },
+  hasData: { type: Boolean, default: true },
+  // the widget's own export (a CSV, a chart's PNG) instead of the card's PNG
+  showExport: { type: Boolean, default: false },
+  // the card saves what the widget draws as a PNG (false: nothing to save)
+  png: { type: Boolean, default: true },
+  exportLabel: { type: String, default: '' },
+  noDataMessage: { type: String, default: 'sessions.summary.noDataAvailable' },
+  emptyText: { type: String, default: '' },
+  // allow the body to scroll vertically for dense content (e.g. heatmap rows)
+  scroll: { type: Boolean, default: false },
+  // [{ label, value }] rows shown in the header info tooltip (config not
+  // otherwise visible: metric / limit / local filter / view)
+  infoItems: { type: Array, default: () => [] },
+  // vue-router location of the widget's full page view (null: no link)
+  link: { type: Object, default: null },
+  // the widget as saved-graph data, when it can be saved as one (null: can't)
+  graph: { type: Object, default: null }
+});
+
+const emit = defineEmits(['edit', 'remove', 'export', 'retry']);
+
+// the full page a widget opens on: SPI Graph, or Sessions for the session-wide ones
+const openLabel = computed(() => t(props.link?.path === '/sessions' ? 'sessions.summary.openInSessions' : 'sessions.summary.openInSpigraph'));
+
+const body = ref(null);
+const runExport = async () => {
+  if (props.showExport) { emit('export'); return; }
+  if (!body.value) { return; }
+  try {
+    await downloadWidgetPng(body.value, shownTitle.value, themedColor('background', '#ffffff'));
+  } catch (err) {
+    console.error('Failed to export widget as PNG', err);
+  }
+};
+
+// the menu's items; an erroring widget has no export
+const actions = computed(() => [
+  { key: 'edit', icon: 'mdi-pencil', title: t('sessions.summary.editWidget'), run: () => emit('edit') },
+  props.link && { key: 'open', icon: 'mdi-open-in-new', title: openLabel.value, to: props.link },
+  props.graph && saveWidgetGraph && { key: 'save', icon: 'mdi-bookmark-plus-outline', title: t('sessions.summary.widget.saveAsGraph'), run: () => saveWidgetGraph(props.graph) },
+  !props.error && props.hasData && (props.showExport || props.png) && { key: 'export', icon: 'mdi-download', title: (props.showExport && props.exportLabel) || t('sessions.summary.downloadPNG'), run: runExport },
+  { key: 'remove', icon: 'mdi-close', title: t('sessions.summary.removeWidget'), run: () => emit('remove'), danger: true }
+].filter(Boolean));
+
+// ${name} in a title shows the dashboard variable's picked values
+const shownTitle = computed(() => substituteTitle(props.title, store.state.dashboardVariables, t('sessions.summary.controlAll')));
+</script>
+
+<style scoped>
+/* title + info icon share the left; actions sit on the right */
+.widget-heading {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* dim until hovered, like the reorder grip */
+.widget-menu-btn {
+  align-self: flex-start;
+  flex-shrink: 0;
+  margin-right: -6px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+.widget-menu-btn:hover,
+.widget-menu-btn:focus-visible,
+.widget-menu-btn[aria-expanded="true"] {
+  opacity: 1;
+}
+
+/* the title opens the widget's full page; it reads as a title until hovered */
+.widget-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+.widget-title-link:hover,
+.widget-title-link:focus-visible {
+  color: rgb(var(--v-theme-foreground-accent));
+  text-decoration: underline;
+}
+
+/* reorder grip: a dots handle in the header, left of the title. Always present
+   (discoverable, doesn't blend into the widget above like a floating tab did);
+   brightens on hover. */
+.widget-drag {
+  cursor: move;
+  color: rgb(var(--v-theme-neutral));
+  align-self: center;
+  flex-shrink: 0;
+  /* pull toward the card's left edge and tighten the gap to the title */
+  margin-left: -15px;
+  margin-right: -2px;
+  margin-bottom: 6px;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+.widget-drag:hover {
+  opacity: 1;
+  color: rgb(var(--v-theme-foreground-accent));
+}
+
+.widget-title {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* info icon sits just to the right of the (possibly truncated) title */
+.widget-info-icon {
+  display: inline-flex;
+  align-items: center;
+  cursor: help;
+  flex-shrink: 0;
+}
+
+.widget-info-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.widget-info-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.widget-info-value {
+  text-align: right;
+  word-break: break-word;
+}
+
+.widget-card {
+  background: rgb(var(--v-theme-quaternary-lightest));
+  padding: 0.5rem 0.6rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0; /* height comes from the grid row span (160px units) */
+}
+
+.widget-card--bare {
+  background: none;
+  box-shadow: none;
+  padding: 0;
+}
+
+.widget-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;     /* charts fit their container */
+  overflow: hidden;
+}
+
+/* dense content (heatmap rows, wide multi-metric tables) scrolls both ways;
+   auto shows a scrollbar only when the content actually overflows */
+.widget-body--scroll {
+  overflow: auto;
+}
+
+.loading-widget {
+  align-items: center;
+  justify-content: center;
+  opacity: 0.5;
+  filter: saturate(0.3);
+}
+
+.widget-loaded {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.loading-title {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+}
+
+.bouncing-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: rgb(var(--v-theme-tertiary));
+  animation: bounce 1.2s ease-in-out infinite;
+}
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes bounce {
+  0%, 50%, 100% { transform: translateY(0) scale(1); }
+  8% { transform: translateY(-20px) scale(1.15, 0.85); }
+  16% { transform: translateY(0) scale(0.85, 1.15); }
+  20% { transform: translateY(0) scale(1); }
+}
+
+.error-content,
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 1.25rem;
+}
+
+.empty-state-text {
+  font-size: 1.1rem;
+  margin: 0;
+}
+</style>

@@ -18,6 +18,9 @@ const Auth = require('../common/auth');
 const ArkimeCache = require('../common/arkimeCache');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
+const Locales = require('../common/locales');
+const Banner = require('../common/banner');
+const ViewConfig = require('../common/viewConfig');
 const LinkGroup = require('./linkGroup');
 const Integration = require('./integration');
 const Audit = require('./audit');
@@ -60,19 +63,36 @@ app.use((req, res, next) => {
   next();
 });
 
+// set once config is loaded; drives both the CSP connect-src and the
+// constants handed to the client
+let updateCheck = { mode: 'off', url: '', origin: undefined };
+
 // define csp headers - no-op in NODE_ENV=development, since csp will disable vite's HMR (hot module reloading)
+const cspDirectives = {
+  defaultSrc: ["'self'"],
+  styleSrc: ["'self'", "'unsafe-inline'"], // 'unsafe-inline' for vue inline styles
+  // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
+  scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
+  objectSrc: ["'none'"],
+  imgSrc: ["'self'", 'data:']
+  // connectSrc is only added when an update check origin is configured, see
+  // below. Without it connect-src falls back to default-src 'self', so 'off'
+  // means the browser can't reach the update host at all
+};
+let cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
-  : helmet.contentSecurityPolicy({
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"], // 'unsafe-inline' for vue inline styles
-      // need unsafe-eval for vue full build: https://vuejs.org/v2/guide/installation.html#CSP-environments
-      scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
-      objectSrc: ["'none'"],
-      imgSrc: ["'self'", 'data:']
-    }
-  });
+  : (req, res, next) => cspMiddleware(req, res, next);
+
+// resolve at config load, so a bad value warns at startup. helmet snapshots
+// the directives when it is constructed, so rebuild the header too.
+ArkimeConfig.loaded(() => {
+  updateCheck = ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  if (updateCheck.origin) {
+    cspDirectives.connectSrc = ["'self'", updateCheck.origin];
+    cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
+  }
+});
 
 // The url users open cont3xt at, arkimeWebURL, defaulting to this host
 function arkimeWebURL () {
@@ -152,7 +172,7 @@ app.use((req, res, next) => {
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
 app.use('/mdi-font', express.static(
-  path.join(__dirname, '/../cont3xt/node_modules/@mdi/font'),
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
@@ -231,16 +251,8 @@ app.use((req, res, next) => {
   next();
 });
 
-// Demo mode - disable some APIs
-app.all([
-  '/api/user/password*',
-  '/api/user/totp/*'
-], (req, res, next) => {
-  if (!req.user.isDemoMode()) {
-    return next();
-  }
-  return res.serverError(403, 'Disabled in demo mode.');
-});
+// locales endpoint -- backs vue-i18n in the SPA via common/vueapp/i18nSetup.js
+app.get('/api/locales', ArkimeUtil.noCacheJson, Locales.getLocales);
 
 app.get('/api/appversion', (req, res, next) => {
   return res.send({ app: 'cont3xt', version: version.version });
@@ -265,6 +277,24 @@ app.post('/api/user/totp/setup', [jsonParser, checkCookieToken, Auth.getSettingU
 app.post('/api/user/totp/confirm', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiConfirmTotp);
 app.post('/api/user/totp/disable', [jsonParser, checkCookieToken, Auth.getSettingUserDb, ArkimeUtil.noCacheJson, User.checkSettingUserAnyRole(['arkimeAdmin', 'cont3xtAdmin', 'wiseAdmin'])], User.apiDisableTotp);
 
+/**
+ * POST - /api/settings/update
+ *
+ * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+ * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+ * are the same keys every Arkime app reads/writes, so a theme picked
+ * in any app follows the user into all of them. Other keys posted
+ * here are silently dropped. Lives off `/api/user/` so a userId like
+ * `settings` isn't shadowed by the `/api/user/:id` routes.
+ * @name /settings/update
+ * @returns {boolean} success - Whether the update was successful
+ * @returns {string} text - The success/error message
+ */
+app.post('/api/settings/update',
+  [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiUpdateSettings
+);
+
 app.delete('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);
@@ -274,6 +304,12 @@ app.post('/api/integration/search', [jsonParser], Integration.apiSearch);
 app.post('/api/integration/:itype/:integration/search', [jsonParser], Integration.apiSingleSearch);
 app.get('/api/settings', apiGetSettings);
 app.put('/api/settings', [jsonParser, checkCookieToken], apiPutSettings);
+
+app.get('/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
+app.put('/api/banner', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('cont3xtAdmin')], Banner.apiUpdateBanner);
+app.post('/api/banner/sync', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, User.checkRole('cont3xtAdmin')], Banner.apiSyncBanner);
+app.post('/api/viewconfig/totp', [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, ViewConfig.checkAccess], ViewConfig.apiVerifyTotp);
+app.get('/api/viewconfig', [ArkimeUtil.noCacheJson, ViewConfig.checkAccess, ViewConfig.checkTotp, setCookie], ViewConfig.apiGetConfig);
 app.get('/api/integration/settings', [setCookie], Integration.apiGetSettings);
 app.put('/api/integration/settings', [jsonParser, checkCookieToken], Integration.apiPutSettings);
 app.get('/api/integration/stats', [setCookie], Integration.apiStats);
@@ -401,12 +437,11 @@ function apiPutSettings (req, res, next) {
       return res.send({ success: false, text: 'Nothing sent to change' });
     }
 
-    user.save((err) => {
-      if (err) {
-        console.log('ERROR - saving cont3xt settings', err);
-        return res.send({ success: false, text: 'Save failed' });
-      }
-      res.send({ success: true, text: 'Saved' });
+    User.saveFields(user, { cont3xt: user.cont3xt }).then((found) => {
+      res.send(found ? { success: true, text: 'Saved' } : { success: false, text: 'Save failed' });
+    }, (err) => {
+      console.log('ERROR - saving cont3xt settings', err);
+      res.send({ success: false, text: 'Save failed' });
     });
   });
 }
@@ -439,7 +474,8 @@ app.use(cspHeader, setCookie, (req, res, next) => {
     version: version.version,
     path: internals.webBasePath,
     disableUserPasswordUI: ArkimeConfig.getBool('disableUserPasswordUI', true),
-    demoMode: req.user.isDemoMode(),
+    checkForUpdates: updateCheck.mode,
+    updateCheckUrl: updateCheck.url,
     environment: process.env.NODE_ENV,
     manifest
   };
@@ -519,11 +555,8 @@ User.prototype.setCont3xtKeys = function (v) {
     this.cont3xt = {};
   }
   this.cont3xt.keys = Auth.obj2auth(v, Auth.passwordSecret256);
-  return new Promise((resolve, reject) => {
-    this.save((err) => {
-      if (err) { return reject(err); }
-      resolve();
-    });
+  return User.saveFields(this, { cont3xt: this.cont3xt }).then((found) => {
+    if (!found) { throw new Error('User not found'); }
   });
 };
 
@@ -531,16 +564,17 @@ User.prototype.setCont3xtKeys = function (v) {
 // Initialize stuff
 // ----------------------------------------------------------------------------
 async function setupAuth () {
-  const dbUrl = ArkimeConfig.get('dbUrl');
-  const es = ArkimeConfig.getArray('elasticsearch', 'http://localhost:9200');
-  const usersUrl = ArkimeConfig.get('usersUrl');
-  const usersEs = ArkimeConfig.getArray('usersElasticsearch') ?? es;
+  // dbUrl, or elasticsearch without one, holds everything, the users db too unless it has its own url
+  const dbUrls = ArkimeConfig.dbUrls();
+  const usersEs = ArkimeConfig.usersDbUrls() ?? dbUrls;
 
   await Db.initialize({
-    insecure: ArkimeConfig.isInsecure([dbUrl, es]),
-    url: dbUrl,
-    node: es,
+    insecure: ArkimeConfig.isInsecure([dbUrls]),
+    node: dbUrls,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
+    clientKey: ArkimeConfig.get('esClientKey'),
+    clientCert: ArkimeConfig.get('esClientCert'),
+    clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
     apiKey: ArkimeConfig.get('elasticsearchAPIKey'),
     basicAuth: ArkimeConfig.get('elasticsearchBasicAuth')
   });
@@ -553,18 +587,21 @@ async function setupAuth () {
   });
 
   User.initialize({
-    insecure: ArkimeConfig.isInsecure([usersUrl, usersEs]),
+    insecure: ArkimeConfig.isInsecure([usersEs]),
     requestTimeout: ArkimeConfig.get('elasticsearchTimeout', 300),
-    url: usersUrl,
     node: usersEs,
     caTrustFile: ArkimeConfig.get('caTrustFile'),
     clientKey: ArkimeConfig.get('esClientKey'),
     clientCert: ArkimeConfig.get('esClientCert'),
     clientKeyPass: ArkimeConfig.get('esClientKeyPass'),
-    prefix: ArkimeConfig.get('usersPrefix'),
+    prefix: ArkimeConfig.usersPrefix(),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth', ArkimeConfig.get('elasticsearchBasicAuth'))
+    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth', ArkimeConfig.get('elasticsearchBasicAuth')),
+    getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
   });
+
+  ViewConfig.initialize({ appAdminRole: 'cont3xtAdmin' });
+  Banner.initialize({ app: 'cont3xt', prefix: ArkimeConfig.usersPrefix() });
 
   Audit.initialize({
     expireHistoryDays: ArkimeConfig.get('expireHistoryDays', 180)
@@ -586,11 +623,6 @@ async function setupAuth () {
 }
 
 async function main () {
-  ArkimeConfig.registerValidated({
-    elasticsearch: { type: 'urls' },
-    usersElasticsearch: { type: 'urls' }
-  });
-
   try {
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/cont3xt.ini`,

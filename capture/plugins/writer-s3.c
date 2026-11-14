@@ -80,7 +80,6 @@ LOCAL  SavepcapS3File_t      fileQ;
 LOCAL  ARKIME_LOCK_DEFINE(uploadState);
 
 LOCAL  void                 *s3Server = 0;
-LOCAL  void                 *metadataServer = 0;
 LOCAL  char                  *s3Region;
 LOCAL  char                  *s3Host;
 LOCAL  char                  *s3Bucket;
@@ -90,10 +89,7 @@ LOCAL  char                  *s3StorageClass;
 LOCAL  uint32_t               s3MaxConns;
 LOCAL  uint32_t               s3MaxRequests;
 LOCAL  char                   s3UseHttp;
-LOCAL  char                   s3UseTokenForMetadata;
 LOCAL  int                    s3CompressionLevel;
-
-LOCAL  char                   credURL[1024];
 
 LOCAL  int                    inprogress;
 
@@ -105,15 +101,6 @@ typedef enum {
     ARKIME_COMPRESSION_GZIP,
     ARKIME_COMPRESSION_ZSTD
 } S3CompressionMode;
-
-typedef struct {
-    char                  *s3AccessKeyId;
-    char                  *s3SecretAccessKey;
-    char                  *s3Token;
-} S3Credentials;
-
-LOCAL S3Credentials *s3MetaCreds;   // Creds from meta service, use if non NULL
-LOCAL S3Credentials  s3ConfigCreds; // Creds from config file
 
 LOCAL S3CompressionMode compressionMode = ARKIME_COMPRESSION_NONE;
 LOCAL uint32_t s3CompressionBlockSize;
@@ -147,7 +134,7 @@ LOCAL uint32_t writer_s3_queue_length()
     return q;
 }
 /******************************************************************************/
-LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_complete_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     ARKIME_LOCK(fileQ);
 
@@ -197,7 +184,7 @@ LOCAL void writer_s3_complete_cb (int code, uint8_t *data, int len, gpointer uw)
 /******************************************************************************/
 // AbortMultipartUpload response - free the file without recording it in the
 // files index since the object doesn't exist in S3
-LOCAL void writer_s3_abort_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_abort_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     ARKIME_LOCK(fileQ);
 
@@ -224,7 +211,7 @@ LOCAL void writer_s3_abort_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_UNLOCK(fileQ);
 }
 /******************************************************************************/
-LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_part_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t  *file = uw;
 
@@ -285,77 +272,6 @@ LOCAL void writer_s3_part_cb (int code, uint8_t *data, int len, gpointer uw)
 
 }
 /******************************************************************************/
-LOCAL uint8_t *arkime_get_instance_metadata(void *serverV, const char *key, int key_len, size_t *mlen)
-{
-    char *requestHeaders[2];
-    char  tokenHeader[200];
-    requestHeaders[1] = NULL;
-    if (s3UseTokenForMetadata) {
-        char *tokenRequestHeaders[2] = {"X-aws-ec2-metadata-token-ttl-seconds: 30", NULL};
-        if (config.debug)
-            LOG("Requesting IMDSv2 metadata token");
-        const uint8_t *token = arkime_http_send_sync(serverV, "PUT", "/latest/api/token", -1, NULL, 0, tokenRequestHeaders, mlen, NULL);
-        if (config.debug)
-            LOG("IMDSv2 metadata token received");
-        if (token) {
-            snprintf(tokenHeader, sizeof(tokenHeader), "X-aws-ec2-metadata-token: %s", token);
-            requestHeaders[0] = tokenHeader;
-            free((void *)token);
-        } else {
-            LOG("WARNING - Failed to get IMDSv2 metadata token");
-            requestHeaders[0] = NULL;
-        }
-    } else {
-        if (config.debug)
-            LOG("Using IMDSv1");
-        requestHeaders[0] = NULL;
-    }
-    return arkime_http_send_sync(serverV, "GET", key, key_len, NULL, 0, requestHeaders, mlen, NULL);
-}
-/******************************************************************************/
-LOCAL void writer_s3_free_creds(S3Credentials *creds)
-{
-    g_free(creds->s3AccessKeyId);
-    g_free(creds->s3SecretAccessKey);
-    g_free(creds->s3Token);
-    ARKIME_TYPE_FREE(S3Credentials, creds);
-}
-/******************************************************************************/
-/* Timer callback to refresh our creds. We fetch them into new structure
- * and free the old structure later in case a thread is using them.
- */
-LOCAL gboolean writer_s3_refresh_creds_gfunc (gpointer UNUSED(user_data))
-{
-    size_t clen;
-
-    S3Credentials *newCreds = ARKIME_TYPE_ALLOC0(S3Credentials);
-
-    uint8_t *credentials = arkime_get_instance_metadata(metadataServer, credURL, -1, &clen);
-
-    if (credentials && clen) {
-        // Now need to extract access key, secret key and token
-        newCreds->s3AccessKeyId = arkime_js0n_get_str(credentials, clen, "AccessKeyId");
-        newCreds->s3SecretAccessKey = arkime_js0n_get_str(credentials, clen, "SecretAccessKey");
-        newCreds->s3Token = arkime_js0n_get_str(credentials, clen, "Token");
-        if (config.debug)
-            LOG("Found AccessKeyId %s", newCreds->s3AccessKeyId);
-    }
-
-    if (newCreds->s3AccessKeyId && newCreds->s3SecretAccessKey && newCreds->s3Token) {
-        arkime_free_later(s3MetaCreds, (GDestroyNotify)writer_s3_free_creds);
-        s3MetaCreds = newCreds;
-    } else {
-        // Transient metadata-service failure; keep the current credentials
-        // and let the next refresh try again
-        LOG("WARNING - Cannot retrieve credentials from metadata service at %s, keeping current credentials", credURL);
-        writer_s3_free_creds(newCreds);
-    }
-
-    free(credentials);
-
-    return G_SOURCE_CONTINUE;
-}
-/******************************************************************************/
 // Must hold uploadState lock
 LOCAL void writer_s3_init_failed_locked(SavepcapS3File_t *file)
 {
@@ -367,7 +283,7 @@ LOCAL void writer_s3_init_failed_locked(SavepcapS3File_t *file)
     }
 }
 /******************************************************************************/
-LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
+LOCAL void writer_s3_init_cb(int code, uint8_t *data, int len, gpointer uw)
 {
     SavepcapS3File_t   *file = uw;
 
@@ -429,7 +345,7 @@ LOCAL void writer_s3_init_cb (int code, uint8_t *data, int len, gpointer uw)
     ARKIME_UNLOCK(uploadState);
 }
 /******************************************************************************/
-LOCAL void writer_s3_header_cb (char *url, const char *field, const char *value, int valueLen, gpointer uw)
+LOCAL void writer_s3_header_cb(char *url, const char *field, const char *value, int valueLen, gpointer uw)
 {
 
     if (strcasecmp("etag", field) != 0)
@@ -491,11 +407,12 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
              gm.tm_min,
              gm.tm_sec);
 
-    S3Credentials *creds = s3MetaCreds ? s3MetaCreds : &s3ConfigCreds;
+    // Fetched at init, cloud.c swaps in refreshed credentials and frees the old ones later
+    const ArkimeCredentials_t *creds = arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
 
     snprintf(storageClassHeader, sizeof(storageClassHeader), "x-amz-storage-class:%s\n", s3StorageClass);
-    if (creds->s3Token) {
-        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", creds->s3Token);
+    if (creds->token) {
+        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token:%s\n", creds->token);
     }
 
     GChecksum *checksum = g_checksum_new(G_CHECKSUM_SHA256);
@@ -528,9 +445,9 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
              s3Host,
              bodyHash,
              datetime,
-             (creds->s3Token ? tokenHeader : ""),
+             (creds->token ? tokenHeader : ""),
              (specifyStorageClass ? storageClassHeader : ""),
-             (creds->s3Token ? ";x-amz-security-token" : ""),
+             (creds->token ? ";x-amz-security-token" : ""),
              (specifyStorageClass ? ";x-amz-storage-class" : ""),
              bodyHash);
     //LOG("canonicalRequest: %s", canonicalRequest);
@@ -552,7 +469,7 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
     //LOG("stringToSign: %s", stringToSign);
 
     char kSecret[1000];
-    snprintf(kSecret, sizeof(kSecret), "AWS4%s", creds->s3SecretAccessKey);
+    snprintf(kSecret, sizeof(kSecret), "AWS4%s", creds->key);
 
     char  kDate[65];
     gsize kDateLen = sizeof(kDate);
@@ -606,8 +523,8 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
     snprintf(strs[0], sizeof(strs[0]),
              "Authorization: AWS4-HMAC-SHA256 Credential=%s/%8.8s/%s/s3/aws4_request,SignedHeaders=host;x-amz-content-sha256;x-amz-date%s%s,Signature=%s"
              ,
-             creds->s3AccessKeyId, datetime, s3Region,
-             (creds->s3Token ? ";x-amz-security-token" : ""),
+             creds->id, datetime, s3Region,
+             (creds->token ? ";x-amz-security-token" : ""),
              (specifyStorageClass ? ";x-amz-storage-class" : ""),
              signature
             );
@@ -615,8 +532,8 @@ LOCAL void writer_s3_request(const char *method, const char *path, const char *q
     snprintf(strs[1], sizeof(strs[1]), "x-amz-content-sha256: %s", bodyHash);
     snprintf(strs[2], sizeof(strs[2]), "x-amz-date: %s", datetime);
 
-    if (creds->s3Token) {
-        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token: %s", creds->s3Token);
+    if (creds->token) {
+        snprintf(tokenHeader, sizeof(tokenHeader), "x-amz-security-token: %s", creds->token);
         headers[nextHeader++] = tokenHeader;
     }
 
@@ -925,7 +842,6 @@ LOCAL void writer_s3_exit()
     }
 }
 /******************************************************************************/
-extern ArkimePcapFileHdr_t pcapFileHeader;
 LOCAL SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 {
     char               filename[1000];
@@ -963,10 +879,18 @@ LOCAL SavepcapS3File_t *writer_s3_create(const ArkimePacket_t *packet)
 
     s3file->outputBuffer = arkime_http_get_buffer(config.pcapWriteSize + ARKIME_PACKET_MAX_LEN);
     s3file->outputPos = 0;
-    uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
+    const ArkimeInterfaceInfo_t *iface = &fileInfo[packet->readerPos].interfaces[packet->interfaceIndex];
+    uint32_t linktype = arkime_packet_dlt_to_linktype(iface->dlt);
     uint32_t snaplen = 0xffff;
 
-    append_to_output(s3file, &pcapFileHeader, 16, FALSE, 0);
+    ArkimePcapFileHdr_t pcapHeader;
+    pcapHeader.magic = 0xa1b2c3d4;
+    pcapHeader.version_major = 2;
+    pcapHeader.version_minor = 4;
+    pcapHeader.thiszone = 0;
+    pcapHeader.sigfigs = 0;
+
+    append_to_output(s3file, &pcapHeader, 16, FALSE, 0);
     append_to_output(s3file, &snaplen, 4, FALSE, 0);
     append_to_output(s3file, &linktype, 4, FALSE, 0);
     make_new_block(s3file);                   // So we can read the header in a small amount of data fetched
@@ -998,7 +922,7 @@ LOCAL void writer_s3_file_time_check(ArkimeSession_t *UNUSED(session), gpointer 
 /* This function is called every 30 second on the main thread. It
  * schedules writer_s3_check to be called on the packet thread
  */
-LOCAL gboolean writer_s3_file_time_gfunc (gpointer UNUSED(user_data))
+LOCAL gboolean writer_s3_file_time_gfunc(gpointer UNUSED(user_data))
 {
     for (int thread = 0; thread < config.packetThreads; thread++) {
         arkime_session_add_cmd_thread(thread, GINT_TO_POINTER(thread), NULL, writer_s3_file_time_check);
@@ -1079,11 +1003,6 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
     s3MaxConns            = arkime_config_int(NULL, "s3MaxConns", 20, 5, 1000);
     s3MaxRequests         = arkime_config_int(NULL, "s3MaxRequests", 500, 10, 5000);
     s3UseHttp             = arkime_config_boolean(NULL, "s3UseHttp", FALSE);
-    s3UseTokenForMetadata = arkime_config_boolean(NULL, "s3UseTokenForMetadata", TRUE);
-    int s3UseECSEnv       = arkime_config_boolean(NULL, "s3UseECSEnv", FALSE);
-
-    s3ConfigCreds.s3AccessKeyId     = arkime_config_str(NULL, "s3AccessKeyId", NULL);
-    s3ConfigCreds.s3SecretAccessKey = arkime_config_str(NULL, "s3SecretAccessKey", NULL);
 
     config.gapPacketPos = arkime_config_boolean(NULL, "s3GapPacketPos", TRUE);
 
@@ -1109,58 +1028,21 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         s3Compress = FALSE;
     }
 
-    if (s3UseECSEnv) {
-        char *uri = getenv("ECS_CONTAINER_METADATA_URI_V4");
-        if (!uri)
-            LOGEXIT("ECS_CONTAINER_METADATA_URI_V4 not set");
-        uri = g_strdup(uri);
+    if (arkime_config_boolean(NULL, "s3UseECSEnv", FALSE))
+        LOG("WARNING - s3UseECSEnv is no longer needed, ECS container credentials are found automatically");
 
-        // Find slash after https://
-        char *slash = strchr(uri + 8, '/');
-
-        if (slash) {
-            *slash = 0;
-        }
-
-
-        const char *relativeURI = getenv("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI");
-        if (!relativeURI)
-            LOGEXIT("AWS_CONTAINER_CREDENTIALS_RELATIVE_URI not set");
-
-        g_strlcpy(credURL, relativeURI, sizeof(credURL));
-
-        metadataServer = arkime_http_create_server(uri, 10, 10, 0);
-
-        if (config.debug) {
-            LOG("metadata base: %s cred uri: %s", uri, credURL);
-        }
-        g_free(uri);
-
-        g_timeout_add_seconds(280, writer_s3_refresh_creds_gfunc, 0);
-        writer_s3_refresh_creds_gfunc(NULL);
-    } else if (!s3ConfigCreds.s3AccessKeyId || !s3ConfigCreds.s3AccessKeyId[0]) {
-        // Fetch the data from the EC2 metadata service
-        size_t rlen;
-
-        metadataServer = arkime_http_create_server("http://169.254.169.254", 10, 10, 0);
-        arkime_http_set_print_errors(metadataServer);
-
-        s3ConfigCreds.s3AccessKeyId = NULL;
-
-        uint8_t *rolename = arkime_get_instance_metadata(metadataServer, "/latest/meta-data/iam/security-credentials/", -1, &rlen);
-
-        if (!rolename || !rlen || rolename[0] == '<') {
-            LOGEXIT("Cannot retrieve role name from metadata service\n");
-        }
-
-        snprintf(credURL, sizeof(credURL), "/latest/meta-data/iam/security-credentials/%.*s", (int)rlen, rolename);
-        free(rolename);
-
-        g_timeout_add_seconds(280, writer_s3_refresh_creds_gfunc, 0);
-        writer_s3_refresh_creds_gfunc(NULL);
-    } else if (!s3ConfigCreds.s3SecretAccessKey) {
+    // An access key without a secret is a mistake, don't quietly fall back to the aws credentials chain
+    char *s3AccessKeyId = arkime_config_str(NULL, "s3AccessKeyId", NULL);
+    char *s3SecretAccessKey = arkime_config_str(NULL, "s3SecretAccessKey", NULL);
+    if (s3AccessKeyId && s3AccessKeyId[0] && (!s3SecretAccessKey || !s3SecretAccessKey[0]))
         CONFIGEXIT("Must set s3SecretAccessKey to save to s3");
-    }
+    g_free(s3AccessKeyId);
+    g_free(s3SecretAccessKey);
+
+    // Same lookup as the s3 reader, s3AccessKeyId/s3SecretAccessKey or the aws credentials chain
+    // (env, ~/.aws, EKS, ECS, instance metadata), which keeps temporary credentials refreshed.
+    // Fetching now means packet threads only ever read the current ones.
+    arkime_credentials_get("s3", "s3AccessKeyId", "s3SecretAccessKey");
 
     if (config.pcapWriteSize < 5242880) {
         config.pcapWriteSize = 5242880;
@@ -1201,6 +1083,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         snprintf(host, sizeof(host), "https://%s", s3Host);
     }
     s3Server = arkime_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
+    arkime_http_set_stall_timeout(s3Server, 60);
     arkime_http_set_print_errors(s3Server);
     arkime_http_set_header_cb(s3Server, writer_s3_header_cb);
 

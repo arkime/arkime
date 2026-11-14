@@ -44,6 +44,10 @@
       "text/plain; charset=us-ascii"
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Wed, 11 Dec 2013 22:12:38 -0500"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "xxxxxxxxx@xxxxxxx.com"
      ],
@@ -62,14 +66,12 @@
      ],
      "headerCnt" : 10,
      "headerField" : [
-      "content-disposition",
-      "date"
+      "content-disposition"
      ],
      "headerValue" : [
-      "Wed, 11 Dec 2013 22:12:38 -0500",
       "inline"
      ],
-     "headerValueCnt" : 2,
+     "headerValueCnt" : 1,
      "host" : [
       "localhost",
       "xxxxxxxxxxxxx.xxx.com"
@@ -87,6 +89,10 @@
       "1.0"
      ],
      "mimeVersionCnt" : 1,
+     "reply" : [
+      "250 Ok: queued as 017D3159E017"
+     ],
+     "replyCnt" : 1,
      "smtpHello" : [
       "xxxxxxxxxxxxx.xxx.com"
      ],

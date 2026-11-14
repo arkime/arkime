@@ -1,0 +1,383 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+
+Single source of truth for dashboard widget visualization-type metadata, shared
+by Arkime.vue (page), Summary.vue (host) and SummaryWidgetEditModal.vue. Each
+view mode advertises its capabilities (field-bound? metric? top-N? how it's fed)
+so the edit modal can gray out inapplicable inputs and the host can dispatch.
+*/
+
+// Default chart view mode per field expression (mirrors the server's fieldMetadata)
+export const DEFAULT_VIEW_MODES = {
+  ip: 'bar',
+  'ip.src': 'bar',
+  'ip.dst': 'bar',
+  'port.src': 'bar',
+  'port.dst': 'bar',
+  protocols: 'pie',
+  tags: 'pie',
+  'ip.dst:port': 'table',
+  'host.http': 'table',
+  'dns.query.host': 'table'
+};
+
+// i18n label key per view mode, the widget editor sorts them by translated label
+export const VIEW_MODE_LABEL_KEYS = {
+  bar: 'sessions.summary.barChart',
+  pie: 'sessions.summary.pieChart',
+  table: 'sessions.summary.tableView',
+  intersection: 'sessions.summary.intersectionView',
+  heatmap: 'sessions.summary.heatmapView',
+  treemap: 'sessions.summary.treemapView',
+  sankey: 'sessions.summary.sankeyView',
+  connections: 'sessions.summary.connectionsView',
+  tree: 'sessions.summary.treeView',
+  circle: 'sessions.summary.circleView',
+  timeline: 'sessions.summary.timelineView',
+  area: 'sessions.summary.areaView',
+  combo: 'sessions.summary.comboView',
+  scatter: 'sessions.summary.scatterView',
+  timeofday: 'sessions.summary.timeofdayView',
+  matrix: 'sessions.summary.matrixView',
+  mosaic: 'sessions.summary.mosaicView',
+  waffle: 'sessions.summary.waffleView',
+  map: 'sessions.summary.mapView',
+  stats: 'sessions.summary.statsView',
+  time: 'sessions.summary.timeView',
+  metric: 'sessions.summary.metricView',
+  markdown: 'sessions.summary.markdownView',
+  sessions: 'sessions.summary.sessionsView',
+  gauge: 'sessions.summary.gaugeView',
+  tagcloud: 'sessions.summary.tagcloudView',
+  navigation: 'sessions.summary.navigationView',
+  control: 'sessions.summary.controlView'
+};
+// saved view modes come from shared data, so only own keys count
+export const viewModeLabelKey = (viewMode) => (Object.hasOwn(VIEW_MODE_LABEL_KEYS, viewMode) ? VIEW_MODE_LABEL_KEYS[viewMode] : undefined);
+
+// Field-bound types: aggregate one field's top-N values (require a field).
+export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'tagcloud', 'waffle', 'combo', 'scatter', 'control'];
+
+// Session-wide types: describe the whole result set (no field, fed by the host's
+// global stats chunk). (map is field-bound — it plots a chosen geo field.)
+export const SESSION_VIEW_MODES = ['timeline', 'area', 'timeofday', 'stats', 'time'];
+
+// The timelines: the search's histogram (or one series per top value of a
+// split field), drawn as bars or lines (timeline) or as filled areas (area).
+export const TIMELINE_VIEW_MODES = ['timeline', 'area'];
+
+// Field-bound to a geo field only (country/*.geo): the map choropleth.
+export const GEO_FIELD_VIEW_MODES = ['map'];
+
+// Field is optional: a big-number metric over the whole result set, or one
+// number per top-N value when a field is chosen.
+export const OPTIONAL_FIELD_VIEW_MODES = ['metric'];
+
+// Static content (no fetch, no field, no metric): a markdown notes panel.
+export const STATIC_VIEW_MODES = ['markdown'];
+
+// No field: one metric over the whole result set drawn as an arc against a
+// maximum, colored by its warning / critical thresholds.
+export const GAUGE_VIEW_MODES = ['gauge'];
+
+// No session data at all: links to the built-in and saved dashboards.
+export const NAV_VIEW_MODES = ['navigation'];
+
+// A filter control (prototype): a picker of one field's top values that names
+// the picks as a dashboard variable and can filter every other widget by them
+// (see dashboardVariables.js).
+export const CONTROL_VIEW_MODES = ['control'];
+
+// Lists of the sessions themselves (no aggregation): the fields are its
+// columns, the limit its rows and the order its sort direction.
+export const LIST_VIEW_MODES = ['sessions'];
+
+// Types that visualize a single selectable metric (Sessions or a numeric field).
+// timeline plots the metric's <dbField>Histo series over time; map shades each
+// country by it.
+export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline', 'area', 'timeofday', 'metric', 'gauge', 'tagcloud', 'waffle', 'map'];
+
+// Types that chart several metrics of each top value, one per named slot
+// (metrics[i]): a combo's bars and line (on its own right axis), a scatter's
+// x and y position and its optional bubble size. The first slot ranks the
+// Top/Bottom N. A slot marked optional may be left unset ('').
+export const METRIC_SLOTS = {
+  combo: [{ key: 'bars', default: 'sessions' }, { key: 'line', default: 'bytes' }],
+  scatter: [{ key: 'x', default: 'sessions' }, { key: 'y', default: 'bytes' }, { key: 'size', default: '', optional: true }]
+};
+
+// Types whose metric can use an aggregation other than sum (avg/min/max/unique
+// count). Only the /api/sessions/summary paths take one; the spigraph-backed
+// modes (heatmap/treemap/timeline) always sum into their histo series. A
+// waffle's squares are shares of a whole, so it only sums.
+export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'gauge', 'tagcloud', 'map', 'combo', 'scatter'];
+
+// The per-bucket aggregations a metric field can use (server: ViewerUtils.METRIC_AGGS):
+// p50 (the median), p90, p95 and p99 are percentiles of the field's values.
+export const PERCENTILE_AGGS = ['p50', 'p90', 'p95', 'p99'];
+export const METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality', ...PERCENTILE_AGGS];
+
+// The spigraph-backed types that can draw a percentile of their metric in
+// place of its sum (its own <dbField>:p<N>Histo series): a timeline draws a
+// percentile per time bucket, a heatmap colors by one. Not the area or the
+// treemap, whose parts add up, nor time of day, which folds buckets by adding.
+export const PERCENTILE_VIEW_MODES = ['timeline', 'heatmap'];
+
+// Types that can be drawn beside the same window a day or a week earlier: an
+// unsplit timeline or area (a dashed line), and a metric's single number (its
+// change). Not for an all time search, which has no earlier window.
+export const COMPARE_VIEW_MODES = ['timeline', 'area', 'metric'];
+export const COMPARES = ['day', 'week'];
+/** True when the widget (as configured) can compare to an earlier window. */
+export const allowsCompare = (w) => COMPARE_VIEW_MODES.includes(w?.viewMode) &&
+  (w.viewMode === 'metric' ? !w.field : !w.splitField);
+
+// Types with warning / critical levels (the gauge's thresholds): a gauge's arc
+// and a metric's number change color at them, a table's sort metric column
+// too, and a bar or timeline draws a reference line at each.
+export const LEVEL_VIEW_MODES = ['gauge', 'metric', 'table', 'bar', 'timeline', 'area'];
+/** True when the type has warning / critical levels. */
+export const hasLevels = (viewMode) => LEVEL_VIEW_MODES.includes(viewMode);
+
+/** True for a percentile aggregation (p50, p90, p95, p99). */
+export const isPercentileAgg = (agg) => PERCENTILE_AGGS.includes(agg);
+
+/**
+ * The aggregations a type's metric can use: all of them on the summary
+ * endpoint types, a sum or a percentile on the spigraph types that draw one,
+ * just a sum elsewhere. A multi viewer can't combine the clusters'
+ * percentiles, so it offers none.
+ */
+export const metricAggsFor = (viewMode, multiViewer = false) => {
+  let aggs = ['sum'];
+  if (METRIC_AGG_VIEW_MODES.includes(viewMode)) {
+    aggs = METRIC_AGGS;
+  } else if (PERCENTILE_VIEW_MODES.includes(viewMode)) {
+    aggs = ['sum', ...PERCENTILE_AGGS];
+  }
+  return multiViewer ? aggs.filter(a => !isPercentileAgg(a)) : aggs;
+};
+
+// Types that can split by a second field: a bar divides each value into
+// stacked/grouped segments, a pie or a waffle draws one small pie (waffle)
+// per split value, a timeline draws one series per split value (stacked bars
+// or lines), a time of day grid draws one small grid per split value.
+export const SPLIT_VIEW_MODES = ['bar', 'pie', 'waffle', 'timeline', 'area', 'timeofday'];
+export const BAR_MODES = ['stacked', 'grouped'];
+export const SPLIT_LENGTHS = [3, 5, 10];
+
+// bar: value bars standing up from the axis, or lying along it (room for long
+// labels like hostnames and user agents)
+export const BAR_ORIENTATIONS = ['vertical', 'horizontal'];
+
+// timeline: bars or lines, on a linear or log y axis, or (a stacked split)
+// each series as its share of the bucket, 0-100%. An overlaid split (barMode
+// grouped) is always lines, bars would hide each other. An area is always
+// filled lines, stacked or overlaid; a scatter's log scale is both axes'.
+export const SERIES_TYPES = ['bars', 'lines'];
+export const Y_SCALES = ['linear', 'log', 'percent'];
+
+// Types that honor a result limit. bar/pie/table/heatmap/treemap/sankey/
+// intersection cap their top-N values; connections uses it as a session sample
+// size (see SAMPLE_SIZE_VIEW_MODES).
+export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'control'];
+
+// Types that also honor an order (direction). Only the /api/sessions/summary
+// paths pass one through; /api/spigraph, /api/spigraphhierarchy and
+// /api/connections have no order parameter, so offering the control for those
+// modes would silently do nothing.
+export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter'];
+
+// Types that can show an "Other" share for what falls outside the top N (a
+// share only means something where the parts add up to a whole).
+export const OTHER_VIEW_MODES = ['pie', 'waffle'];
+
+// Types whose limit is a session sample size rather than a top-N cut, so they
+// get their own (much larger) scale.
+export const SAMPLE_SIZE_VIEW_MODES = ['connections', 'tree', 'circle'];
+
+// Types whose fetch resolves fields through the server's dbFieldsMap, which
+// Config.loadFields builds while skipping noFacet fields (All IP Fields, Arkime
+// ID, Payload Src/Dst UTF8, View Name) — so those can't be resolved however
+// they are spelled. Every other mode resolves through fieldsMap, which keeps
+// them: All IP Fields drives a working bar/pie/table widget, because
+// /api/sessions/summary aggregates it with a script instead of a db field.
+export const DB_FIELD_VIEW_MODES = ['connections', 'tree', 'circle'];
+
+// Types whose fields are an ordered source -> destination pair rather than an
+// unordered set, so the editor gives each end its own picker over its own list.
+// This is a different axis from FIELD_COUNT_LIMITS: that says how many fields a
+// mode takes, this says the positions mean different things.
+export const FIELD_PAIR_VIEW_MODES = ['connections', 'tree', 'circle'];
+
+// A rooted tree of the src -> dst pairs: one host's connections fanned out
+// hop by hop (prototype), fed by the same /api/connections sample.
+export const TREE_VIEW_MODES = ['tree'];
+export const TREE_DEPTHS = [1, 2, 3, 4, 5, 6];
+export const DEFAULT_TREE_DEPTH = 3;
+
+// Types rendered from the batched /api/sessions/summary stream (vs. self-fetch).
+export const STREAM_VIEW_MODES = ['bar', 'pie', 'tagcloud', 'waffle'];
+
+// Types whose single numeric field can be bucketed into ranges of a fixed
+// width (the summary endpoint's bucketInterval) instead of one bucket per
+// distinct value: certificate key lengths, byte counts, ports.
+export const BUCKET_INTERVAL_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'tagcloud', 'waffle'];
+
+// Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
+// table self-fetches (one summary sub-widget per field) so it can carry multiple
+// fields and multiple metric columns.
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'map', 'table', 'metric', 'combo', 'scatter', 'control'];
+
+// [min, max] fields each view mode accepts — nested combinations (pie/treemap/
+// sankey/intersection via spigraphhierarchy), side-by-side columns (table via
+// summary), or a source + destination pair (connections). bar is
+// single-dimension; heatmap has no combination-over-time data path. Modes not
+// listed take a single field (or none, for the session-wide ones).
+// The nested types go to 7, as deep as Kibana data tables nest (SPI Graph
+// itself takes any number, so a deeper saved graph is cut to 7 here). A
+// sessions list takes up to 20 columns.
+export const FIELD_COUNT_LIMITS = {
+  pie: [1, 7],
+  treemap: [1, 7],
+  sankey: [1, 7],
+  table: [1, 7],
+  intersection: [1, 7],
+  // a matrix is one field's values down the side, another's across the top,
+  // a mosaic one field's values as columns, each split by another's
+  matrix: [2, 2],
+  mosaic: [2, 2],
+  connections: [2, 2],
+  tree: [2, 2],
+  circle: [2, 2],
+  sessions: [1, 20]
+};
+
+// the most fields any saved widget keeps (the largest FIELD_COUNT_LIMITS max)
+export const MAX_FIELDS = Math.max(...Object.values(FIELD_COUNT_LIMITS).map(([, max]) => max));
+
+// Types that accept multiple metric columns (the table's [value | m0 | m1 …]).
+// Charts visualize a single metric, so they stay single-select.
+export const MULTI_METRIC_VIEW_MODES = ['table'];
+
+/** True for stream-mode (bar/pie/table) widgets fed by the summary stream. */
+export const isStreamMode = (viewMode) => STREAM_VIEW_MODES.includes(viewMode);
+
+/** True when the widget aggregates a chosen field (needs a field selection). */
+export const isFieldMode = (viewMode) => FIELD_VIEW_MODES.includes(viewMode);
+
+/** True for session-wide widgets (timeline/stats/time) — no field, host-fed. */
+export const isSessionMode = (viewMode) => SESSION_VIEW_MODES.includes(viewMode);
+
+/** True for the timelines (bars/lines, or filled areas). */
+export const isTimelineMode = (viewMode) => TIMELINE_VIEW_MODES.includes(viewMode);
+
+/** The named metric slots of a multi-metric chart (combo/scatter), or null. */
+export const metricSlots = (viewMode) => (Object.hasOwn(METRIC_SLOTS, viewMode) ? METRIC_SLOTS[viewMode] : null);
+
+/** A slotted chart's metrics, one per slot (a slot it left unset gets its
+ *  default, '' for an optional one). Falls back to metricType for the first. */
+export const slotMetrics = (widget) => {
+  const slots = metricSlots(widget?.viewMode);
+  if (!slots) { return []; }
+  const saved = Array.isArray(widget.metrics) ? widget.metrics : [];
+  return slots.map((s, i) => {
+    const m = typeof saved[i] === 'string' ? saved[i] : undefined;
+    if (m !== undefined && (m || s.optional)) { return m; }
+    if (i === 0 && widget.metricType) { return widget.metricType; }
+    return s.default;
+  });
+};
+
+/** True when the widget aggregates a chosen geo field (the map choropleth). */
+export const isGeoFieldMode = (viewMode) => GEO_FIELD_VIEW_MODES.includes(viewMode);
+
+/** True when the widget may take a field but works without one (metric). */
+export const isOptionalFieldMode = (viewMode) => OPTIONAL_FIELD_VIEW_MODES.includes(viewMode);
+
+/** True for widgets listing the sessions themselves (their fields are columns). */
+export const isListMode = (viewMode) => LIST_VIEW_MODES.includes(viewMode);
+
+/** True for static widgets with no data fetch at all (markdown). */
+export const isStaticMode = (viewMode) => STATIC_VIEW_MODES.includes(viewMode);
+
+/** True for the gauge: one metric over the result set, no field. */
+export const isGaugeMode = (viewMode) => GAUGE_VIEW_MODES.includes(viewMode);
+
+/** True for a filter control (a dashboard variable's value picker). */
+export const isControlMode = (viewMode) => CONTROL_VIEW_MODES.includes(viewMode);
+
+/** True for the connection tree (a rooted tree of the src -> dst sample). */
+export const isTreeMode = (viewMode) => TREE_VIEW_MODES.includes(viewMode);
+
+/** True for the dashboard navigation widget (no session data). */
+export const isNavMode = (viewMode) => NAV_VIEW_MODES.includes(viewMode);
+
+/** True when the widget's numeric field can be bucketed into ranges. */
+export const allowsBucketInterval = (viewMode) => BUCKET_INTERVAL_VIEW_MODES.includes(viewMode);
+
+/** True when the widget's metric can pick an aggregation (sum/avg/min/max/unique). */
+export const hasMetricAgg = (viewMode) => METRIC_AGG_VIEW_MODES.includes(viewMode) || PERCENTILE_VIEW_MODES.includes(viewMode);
+
+/** True when the widget can split each value by a second field. */
+export const allowsSplit = (viewMode) => SPLIT_VIEW_MODES.includes(viewMode);
+
+/** True when the widget can show an "Other" share beside its top N. */
+export const allowsOther = (viewMode) => OTHER_VIEW_MODES.includes(viewMode);
+
+/** True when the widget exposes a metric selector. */
+export const hasMetric = (viewMode) => METRIC_VIEW_MODES.includes(viewMode);
+
+/** True when the widget exposes a result limit. */
+export const hasLength = (viewMode) => LENGTH_VIEW_MODES.includes(viewMode);
+
+/** True when the widget exposes an order (direction) that its fetch honors. */
+export const hasOrder = (viewMode) => ORDER_VIEW_MODES.includes(viewMode);
+
+/** True when the widget's limit is a session sample size, not a top-N cut. */
+export const isSampleSize = (viewMode) => SAMPLE_SIZE_VIEW_MODES.includes(viewMode);
+
+/** The limit options a view mode offers (sample sizes mirror the SPI Graph
+ *  connections page, whose smallest sample is the top-N scale's largest). */
+export const lengthOptions = (viewMode) => isSampleSize(viewMode)
+  ? [100, 500, 1000, 5000, 10000, 50000, 100000]
+  : [10, 20, 50, 100];
+
+/** The default limit for a view mode (matches the SPI Graph page for samples). */
+export const defaultLength = (viewMode) => isSampleSize(viewMode) ? 100 : 20;
+
+/** [min, max] fields a view mode accepts (single field unless listed). */
+export const fieldCountLimits = (viewMode) => FIELD_COUNT_LIMITS[viewMode] ?? [1, 1];
+
+/** True when the widget accepts more than one field (chips multi-select). */
+export const allowsMultiField = (viewMode) => fieldCountLimits(viewMode)[1] > 1;
+
+/** True when the widget's fields are an ordered source -> destination pair. */
+export const isFieldPair = (viewMode) => FIELD_PAIR_VIEW_MODES.includes(viewMode);
+
+/** True when a field can back a widget of this view mode at this position
+ *  ('src' | 'dst'). Only the modes resolving through dbFieldsMap need narrowing.
+ *  /api/connections rewrites ip.dst:port to destination.ip before its lookup,
+ *  but only for dstField — as a source it resolves to nothing, so the pair's
+ *  two ends get different lists. */
+export const fieldUsableBy = (viewMode, field, position) => {
+  // a control's picks become field == values, so it takes a field the search
+  // can query and the summary can aggregate (not Dst IP:Dst Port)
+  if (isControlMode(viewMode)) {
+    return !!field && !field.noFacet && !field.regex && !/textfield/.test(field.type || '') && field.exp !== 'ip.dst:port' && field.exp !== 'destination.ip:port';
+  }
+  if (!DB_FIELD_VIEW_MODES.includes(viewMode)) { return true; }
+  if (field?.exp === 'ip.dst:port' || field?.exp === 'destination.ip:port') {
+    return position === 'dst';
+  }
+  return !field?.noFacet;
+};
+
+/** True when the widget accepts multiple metric columns (chips multi-select). */
+export const allowsMultiMetric = (viewMode) => MULTI_METRIC_VIEW_MODES.includes(viewMode);
+
+/** True when the widget fetches its own data and can take a per-widget local
+ *  filter (a saved View + expression). Only the global capture-stats widgets
+ *  (stats/time), which describe the whole result set, can't. */
+export const hasLocalFilter = (viewMode) => !['stats', 'time', ...STATIC_VIEW_MODES, ...NAV_VIEW_MODES].includes(viewMode);

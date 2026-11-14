@@ -165,6 +165,24 @@ while (1) {
                 } else {
                     send_null($fh);
                 }
+            } elsif ($name eq 'MGET') {
+                if ($#args < 1) {
+                    send_error($fh, "ERR wrong number of arguments for 'mget' command");
+                    next;
+                }
+                send_raw($fh, "*" . $#args . "\r\n");
+                for my $i (1..$#args) {
+                    my $entry = $db{$cdb}{$args[$i]};
+                    if ($entry && defined $entry->{expire} && time() >= $entry->{expire}) {
+                        delete $db{$cdb}{$args[$i]};
+                        $entry = undef;
+                    }
+                    if ($entry) {
+                        send_bulk($fh, $entry->{value});
+                    } else {
+                        send_null($fh);
+                    }
+                }
             } elsif ($name eq 'DEL') {
                 my $count = 0;
                 for my $i (1..$#args) {

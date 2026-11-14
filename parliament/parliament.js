@@ -8,7 +8,6 @@
  */
 'use strict';
 
-const MIN_PARLIAMENT_VERSION = 7;
 const MIN_DB_VERSION = 79;
 
 // Cap the size of responses we accept from monitored clusters so a malicious
@@ -26,7 +25,7 @@ const favicon = require('serve-favicon');
 const bp = require('body-parser');
 const helmet = require('helmet');
 const uuid = require('uuid').v4;
-const upgrade = require('./upgrade');
+const cryptoLib = require('crypto');
 const path = require('path');
 const axios = require('axios');
 const { LRUCache } = require('lru-cache');
@@ -35,6 +34,8 @@ const User = require('../common/user');
 const Auth = require('../common/auth');
 const version = require('../common/version');
 const Notifier = require('../common/notifier');
+const Banner = require('../common/banner');
+const ViewConfig = require('../common/viewConfig');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 const Locales = require('../common/locales');
@@ -54,13 +55,6 @@ const issueTypes = {
   lowDiskSpace: { on: true, name: 'Low Disk Space', text: 'has low disk space', severity: 'yellow', description: 'the capture node has low disk space' },
   lowDiskSpaceES: { on: true, name: 'ES Low Disk Space', text: 'ES node has low disk space', severity: 'yellow', description: 'the ES node has low disk space' }
 };
-
-const parliamentReadError = `
-You must fix this before you can run Parliament.
-Try using parliament.example.json as a starting point.
-Use the "file" setting in your Parliament config to point to your Parliament JSON file.
-See https://arkime.com/settings#parliament for more information.
-`;
 
 const internals = {
   stats: new Map(),
@@ -116,15 +110,24 @@ if (ArkimeConfig.regressionTests) {
       }
     }, 500);
   });
+  app.get('/regressionTests/savedIssues', async function (req, res) {
+    const { data } = await Parliament.issues.find({ where: { parliament: Parliament.name } });
+    res.json(data.map(h => h.doc));
+  });
+  app.get('/regressionTests/loadIssues', async function (req, res) {
+    await loadIssues();
+    res.send('{}');
+  });
   app.post('/regressionTests/shutdown', function (req, res) {
     process.exit(0);
   });
 }
 
-// parliament object!
-let parliamentFile;
-// issues object!
-let issues;
+// issues object! the working set, saved to the db once per poll and on every api change
+let issues = [];
+// id -> json of each issue as last saved to the db, so unchanged issues aren't rewritten
+// and issues that went away get deleted
+let savedIssues = new Map();
 
 // save noPackets issues so that the time of issue can be compared to the
 // noPacketsLength user setting (only issue alerts when the time the issue
@@ -143,24 +146,38 @@ app.use((req, res, next) => {
   res.locals.nonce = Buffer.from(uuid()).toString('base64');
   next();
 });
+
+// set once config is loaded; drives both the CSP connect-src and the
+// constants handed to the client
+let updateCheck = { mode: 'off', url: '', origin: undefined };
+
 // define csp headers
 const cspDirectives = {
   defaultSrc: ["'self'"],
-  styleSrc: ["'self'"],
+  // 'unsafe-inline' for vuetify/vue inline styles (also needed for hot module replacement in dev)
+  styleSrc: ["'self'", "'unsafe-inline'"],
   // need unsafe-eval for vue full build: https://vuejs.org/guide/best-practices/security.html#potential-dangers
   scriptSrc: ["'self'", "'unsafe-eval'", (req, res) => `'nonce-${res.locals.nonce}'`],
   objectSrc: ["'none'"],
   imgSrc: ["'self'", 'data:']
+  // connectSrc is only added when an update check origin is configured, see
+  // below. Without it connect-src falls back to default-src 'self', so 'off'
+  // means the browser can't reach the update host at all
 };
-if (process.env.NODE_ENV === 'development') {
-  // need unsafe inline styles for hot module replacement
-  cspDirectives.styleSrc.push("'unsafe-inline'");
-}
+let cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
 const cspHeader = (process.env.NODE_ENV === 'development')
   ? (_req, _res, next) => { next(); }
-  : helmet.contentSecurityPolicy({
-    directives: cspDirectives
-  });
+  : (req, res, next) => cspMiddleware(req, res, next);
+
+// resolve at config load, so a bad value warns at startup. helmet snapshots
+// the directives when it is constructed, so rebuild the header too.
+ArkimeConfig.loaded(() => {
+  updateCheck = ArkimeUtil.updateCheckConfig(ArkimeConfig.get);
+  if (updateCheck.origin) {
+    cspDirectives.connectSrc = ["'self'", updateCheck.origin];
+    cspMiddleware = helmet.contentSecurityPolicy({ directives: cspDirectives });
+  }
+});
 
 function setCookie (req, res, next) {
   const cookieOptions = {
@@ -202,8 +219,8 @@ function checkCookieToken (req, res, next) {
 
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/parliament/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/parliament/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 
@@ -214,8 +231,8 @@ ArkimeUtil.logger(app);
 app.use(favicon(path.join(__dirname, '/favicon.ico')));
 // using fallthrough: false because there is no 404 endpoint (client router
 // handles 404s) and sending index.html is confusing
-app.use('/font-awesome', express.static(
-  path.join(__dirname, '/../node_modules/font-awesome'),
+app.use('/mdi-font', express.static(
+  path.join(__dirname, '/../node_modules/@mdi/font'),
   { maxAge: dayMs, fallthrough: false }
 ), ArkimeUtil.missingResource);
 // PRODUCTION BUNDLE (created by vite) - includes bundled js, css, & assets!
@@ -239,18 +256,13 @@ app.use(cspHeader);
 app.use(ArkimeUtil.jsonParser);
 app.use(bp.urlencoded({ extended: true }));
 
-function newError (code, msg) {
-  const error = new Error(msg);
-  error.httpStatusCode = code;
-  return error;
-}
-
 // ----------------------------------------------------------------------------
 // PARLIAMENT CLASS
 // ----------------------------------------------------------------------------
 class Parliament {
   static name;
-  static #implementation;
+  static #parliaments;
+  static issues;
   static #cache = new LRUCache({ max: 1000, ttl: 1000 * 60 });
 
   static settingsDefault = {
@@ -280,24 +292,29 @@ class Parliament {
   static async initialize (options) {
     Parliament.name = options.name;
 
-    const url = options.url ?? User.getDbUrl();
+    const conn = User.dbConnect(options.prefix);
 
-    if (!url || url.startsWith('http')) {
-      Parliament.#implementation = new ParliamentESImplementation(options);
-    } else if (url.startsWith('lmdb')) {
-      Parliament.#implementation = new ParliamentLMDBImplementation({ ...options, url });
-    } else if (url.startsWith('redis')) {
-      Parliament.#implementation = new ParliamentRedisImplementation({ ...options, url });
-    } else if (url.startsWith('sqlite')) {
-      Parliament.#implementation = new ParliamentSQLiteImplementation({ ...options, url });
-    } else {
-      Parliament.#implementation = new ParliamentESImplementation(options);
-    }
+    // Names match the layouts each backend used before collections
+    Parliament.#parliaments = conn.collection('parliament', {
+      sqlite: { idColumn: 'name' }
+    });
+
+    const esSettings = { number_of_shards: 1, number_of_replicas: 0, auto_expand_replicas: '0-2' };
+    Parliament.issues = conn.collection('parliament_issues', {
+      fields: {
+        parliament: { type: 'keyword', indexed: true },
+        // a message for esDown and a number for the rest, keyword takes both
+        value: 'keyword'
+      },
+      // parliament_issues is the alias, so db.pl backs it up and restores it
+      es: { create: { version: 'v70', settings: esSettings, mappings: { dynamic: false } } }
+    });
+    await Parliament.issues.init();
   }
 
   // DB INTERACTIONS ---------------------------------------------------------
   static async getParliament () {
-    const parliament = await Parliament.#implementation.getParliament(Parliament.name);
+    const parliament = await Parliament.#parliaments.get(Parliament.name);
 
     if (parliament) {
       Parliament.#cache.set('parliament', parliament);
@@ -307,12 +324,12 @@ class Parliament {
   }
 
   static async createParliament (parliament) {
-    return Parliament.#implementation.createParliament(Parliament.name, parliament);
+    return Parliament.#parliaments.put(Parliament.name, parliament, { createOnly: true });
   }
 
   static async setParliament (parliament) {
     try {
-      await Parliament.#implementation.setParliament(Parliament.name, parliament);
+      await Parliament.#parliaments.put(Parliament.name, parliament);
       Parliament.#cache.set('parliament', parliament);
     } catch (err) {
       if (ArkimeConfig.debug) {
@@ -863,124 +880,6 @@ class Parliament {
   }
 }
 
-/******************************************************************************/
-// ES Implementation
-/******************************************************************************/
-class ParliamentESImplementation {
-  client;
-  parliamentIndex;
-
-  constructor (options) {
-    this.client = User.getClient();
-    const prefix = ArkimeUtil.formatPrefix(options.prefix);
-    this.parliamentIndex = `${prefix}parliament`;
-  }
-
-  async getParliament (pName) {
-    try {
-      const { body: { _source: doc } } = await this.client.get({
-        index: this.parliamentIndex, id: pName
-      });
-      return doc || null;
-    } catch (err) {
-      if (err.meta?.statusCode === 404) { return null; }
-      throw err;
-    }
-  }
-
-  async createParliament (pName, parliament) {
-    await this.client.create({
-      index: this.parliamentIndex, body: parliament, id: pName, timeout: '10m'
-    });
-  }
-
-  async setParliament (pName, parliament) {
-    await this.client.index({
-      index: this.parliamentIndex, body: parliament, id: pName, refresh: true, timeout: '10m'
-    });
-  }
-}
-
-/******************************************************************************/
-// LMDB Implementation
-/******************************************************************************/
-class ParliamentLMDBImplementation {
-  store;
-
-  constructor (options) {
-    this.store = ArkimeUtil.createLMDBStore(options.url, 'Parliament');
-  }
-
-  async getParliament (pName) {
-    const json = this.store.get(pName);
-    if (!json) { return null; }
-    return JSON.parse(json);
-  }
-
-  async createParliament (pName, parliament) {
-    await this.store.put(pName, JSON.stringify(parliament));
-  }
-
-  async setParliament (pName, parliament) {
-    await this.store.put(pName, JSON.stringify(parliament));
-  }
-}
-
-/******************************************************************************/
-// Redis Implementation
-/******************************************************************************/
-class ParliamentRedisImplementation {
-  client;
-  prefix = 'parliament:';
-
-  constructor (options) {
-    this.client = ArkimeUtil.createRedisClient(options.url, 'Parliament');
-  }
-
-  async getParliament (pName) {
-    const json = await this.client.get(this.prefix + pName);
-    if (!json) { return null; }
-    return JSON.parse(json);
-  }
-
-  async createParliament (pName, parliament) {
-    await this.client.set(this.prefix + pName, JSON.stringify(parliament));
-  }
-
-  async setParliament (pName, parliament) {
-    await this.client.set(this.prefix + pName, JSON.stringify(parliament));
-  }
-}
-
-/******************************************************************************/
-// SQLite Implementation
-/******************************************************************************/
-class ParliamentSQLiteImplementation {
-  db;
-
-  constructor (options) {
-    this.db = ArkimeUtil.createSQLiteDB(options.url);
-    this.db.exec(`CREATE TABLE IF NOT EXISTS parliament (
-      name TEXT PRIMARY KEY,
-      json TEXT NOT NULL
-    )`);
-  }
-
-  async getParliament (pName) {
-    const row = this.db.prepare('SELECT json FROM parliament WHERE name = ?').get(pName);
-    if (!row) { return null; }
-    return JSON.parse(row.json);
-  }
-
-  async createParliament (pName, parliament) {
-    this.db.prepare('INSERT INTO parliament (name, json) VALUES (?, ?)').run(pName, JSON.stringify(parliament));
-  }
-
-  async setParliament (pName, parliament) {
-    this.db.prepare('INSERT OR REPLACE INTO parliament (name, json) VALUES (?, ?)').run(pName, JSON.stringify(parliament));
-  }
-}
-
 // ----------------------------------------------------------------------------
 // MIDDLEWARE
 // ----------------------------------------------------------------------------
@@ -1061,7 +960,18 @@ function processAlerts () {
   }
 }
 
-function formatIssueMessage (cluster, issue) {
+// The display strings come from the type and values, so only those are saved and the strings can be localized
+const ISSUE_STRINGS = ['text', 'title', 'severity', 'message'];
+function addIssueStrings (issue) {
+  const issueType = issueTypes[issue.type];
+  issue.text = issueType.text;
+  issue.title = issueType.name;
+  issue.severity = issueType.severity;
+  issue.message = formatIssueMessage(issue);
+  return issue;
+}
+
+function formatIssueMessage (issue) {
   let message = '';
 
   if (issue.node) { message += `${issue.node} `; }
@@ -1153,95 +1063,55 @@ function findIssue (clusterId, issueType, node) {
   }
 }
 
-// Initializes the parliament with ids for each group and cluster
-// Upgrades the parliament if necessary
+// Initializes the parliament, creating it in the DB if it doesn't exist
 async function initializeParliament () {
-  if (User.getClient()) {
-    ArkimeUtil.checkArkimeSchemaVersion(User.getClient(), ArkimeConfig.get('usersPrefix'), MIN_DB_VERSION);
-  }
+  await User.checkSchemaVersion(MIN_DB_VERSION);
   Notifier.initialize({
     issueTypes,
-    prefix: ArkimeConfig.get('usersPrefix')
+    prefix: ArkimeConfig.usersPrefix()
   });
 
-  Parliament.initialize({
+  ViewConfig.initialize({ appAdminRole: 'parliamentAdmin' });
+  Banner.initialize({ app: 'parliament', prefix: ArkimeConfig.usersPrefix() });
+
+  await Parliament.initialize({
     name: internals.parliamentName,
-    prefix: ArkimeConfig.get('usersPrefix')
+    prefix: ArkimeConfig.usersPrefix()
   });
 
-  // fetch parliament file if it exists
-  const parliamentFileName = ArkimeConfig.get('file');
-  if (parliamentFileName) {
-    try {
-      parliamentFile = JSON.parse(fs.readFileSync(parliamentFileName, 'utf8'));
-    } catch (err) {
-      if (err.code !== 'ENOENT') {
-        console.log('Error reading parliament file:', err.message);
-        process.exit(1);
-      }
-    }
-  }
-
-  // if there's a parliament file, check that it is the correct version
-  if (parliamentFile && (parliamentFile.version === undefined || parliamentFile.version < MIN_PARLIAMENT_VERSION)) {
-    console.log( // notify of upgrade
-      `WARNING - Current parliament version (${parliamentFile.version ?? 1}) is less than required version (${MIN_PARLIAMENT_VERSION})
-        Upgrading your Parliament...\n`
-    );
-
-    // do the upgrade
-    const upgraded = await upgrade.upgrade(parliamentFile, issues, Parliament);
-    parliamentFile = upgraded.parliament;
-    issues = upgraded.issues;
-
-    try { // write the upgraded files
-      if (Buffer.from(JSON.stringify(parliamentFile, null, 2)).length > 100) {
-        fs.writeFileSync(ArkimeConfig.get('file'), JSON.stringify(parliamentFile, null, 2), 'utf8');
-      }
-      if (!validateIssues()) {
-        fs.writeFileSync(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8');
-      }
-    } catch (e) { // notify of error saving upgraded parliament and exit
-      console.log('Error upgrading Parliament:\n\n', ArkimeUtil.sanitizeStr(e.stack));
-      if (ArkimeConfig.debug) {
-        console.log(parliamentReadError);
-      }
-      throw new Error(e);
-    }
-
-    // notify of upgrade success
-    console.log(`SUCCESS - Parliament upgraded to version ${MIN_PARLIAMENT_VERSION}`);
-  }
-
-  // create parliament in db if it doesn't exist
-  // (there was no parliament file to upgrade from)
+  let existing;
   try {
-    const existing = await Parliament.getParliament();
-    if (!existing) {
-      console.log('Parliament does not exist in DB. creating!');
+    existing = await Parliament.getParliament();
+  } catch (err) {
+    console.error('ERROR - Error fetching Parliament', err);
+    return;
+  }
+
+  if (!existing) {
+    // pre Arkime 5 parliaments lived in the file, they must be upgraded with 6.x first
+    let oldFile;
+    try {
+      oldFile = JSON.parse(fs.readFileSync(ArkimeConfig.get('file'), 'utf8'));
+    } catch (err) {}
+
+    if (oldFile?.groups && !(oldFile.version >= 7)) {
+      console.log(`ERROR - ${ArkimeConfig.get('file')} is an old parliament file, upgrade with Arkime 6.x first so it is copied into the DB`);
+      process.exit(1);
+    }
+
+    console.log('Parliament does not exist in DB. creating!');
+    try {
       await Parliament.createParliament({
         groups: [],
         name: internals.parliamentName,
         settings: Parliament.settingsDefault
       });
-    }
-  } catch (err) {
-    console.error('ERROR - Error fetching Parliament', err);
-  }
-
-  if (parliamentFile && parliamentFile.version < 7) {
-    if (!parliamentFile.groups) { parliamentFile.groups = []; }
-
-    // set id for each group/cluster
-    for (const group of parliamentFile.groups) {
-      group.id = uuid();
-      if (group.clusters) {
-        for (const cluster of group.clusters) {
-          cluster.id = uuid();
-        }
-      }
+    } catch (err) {
+      console.error('ERROR - Error creating Parliament', err);
     }
   }
+
+  await loadIssues();
 
   if (ArkimeConfig.debug) {
     console.log('Parliament initialized!');
@@ -1284,15 +1154,27 @@ function cleanUpIssues () {
 }
 
 // Updates an existing issue or pushes a new issue onto the issue array
+// Polled clusters are remote, issues only keep a bounded name and finite numbers from them
+const MAX_REMOTE_NAME = 256;
+const MAX_IGNORE_MS = 10 * 365 * 24 * 60 * 60 * 1000;
+function remoteName (value) {
+  return String(value ?? '').slice(0, MAX_REMOTE_NAME);
+}
+function remoteNumber (value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : undefined;
+}
+
 function setIssue (cluster, newIssue) {
+  // last guard for any issue type, esDown's value is the locally built error message
+  if (newIssue.node !== undefined) { newIssue.node = remoteName(newIssue.node); }
+  if (newIssue.value !== undefined && newIssue.type !== 'esDown') { newIssue.value = remoteNumber(newIssue.value); }
+  if (newIssue.freeSpaceM !== undefined) { newIssue.freeSpaceM = remoteNumber(newIssue.freeSpaceM); }
+
   // build issue
-  const issueType = issueTypes[newIssue.type];
-  newIssue.text = issueType.text;
-  newIssue.title = issueType.name;
-  newIssue.severity = issueType.severity;
   newIssue.clusterId = cluster.id;
   newIssue.cluster = cluster.title;
-  newIssue.message = formatIssueMessage(cluster, newIssue);
+  addIssueStrings(newIssue);
   newIssue.provisional = true;
 
   let existingIssue = false;
@@ -1372,6 +1254,7 @@ function getHealth (cluster) {
         cluster.totalNodes = health.number_of_nodes;
         cluster.dataNodes = health.number_of_data_nodes;
         cluster.esVersion = health.version;
+        cluster.db = health.db;
 
         if (cluster.status === 'red') { // alert on red es status
           setIssue(cluster, { type: 'esRed' });
@@ -1434,8 +1317,12 @@ async function getStats (cluster) {
       cluster.monitoring = 0;
 
       for (const stat of stats.data) {
-        // remote data, a non string nodeName breaks issue search and the UI
-        const nodeName = String(stat.nodeName ?? '');
+        // remote data, checks and issues only see a bounded name and finite numbers
+        const nodeName = remoteName(stat.nodeName);
+        const statTime = remoteNumber(stat.currentTime);
+        const deltaPacketsPerSec = remoteNumber(stat.deltaPacketsPerSec);
+        const freeSpaceP = remoteNumber(stat.freeSpaceP);
+        const freeSpaceM = remoteNumber(stat.freeSpaceM);
 
         // sum delta bytes per second
         if (stat.deltaBytesPerSec) {
@@ -1451,21 +1338,21 @@ async function getStats (cluster) {
           cluster.monitoring += Number(stat.monitoring) || 0;
         }
 
-        if ((now - stat.currentTime) <= Parliament.getGeneralSetting('outOfDate') && stat.deltaPacketsPerSec > 0) {
+        if ((now - statTime) <= Parliament.getGeneralSetting('outOfDate') && deltaPacketsPerSec > 0) {
           cluster.arkimeNodes++;
         }
 
         // Look for issues
-        if ((now - stat.currentTime) > Parliament.getGeneralSetting('outOfDate')) {
+        if ((now - statTime) > Parliament.getGeneralSetting('outOfDate')) {
           setIssue(cluster, {
             type: 'outOfDate',
             node: nodeName,
-            value: stat.currentTime * 1000
+            value: statTime * 1000
           });
         }
 
         // look for no packets issue
-        if (stat.deltaPacketsPerSec <= Parliament.getGeneralSetting('noPackets')) {
+        if (deltaPacketsPerSec <= Parliament.getGeneralSetting('noPackets')) {
           const id = cluster.title + ':' + nodeName;
 
           // only set the noPackets issue if there is a record of this cluster/node
@@ -1475,7 +1362,7 @@ async function getStats (cluster) {
             setIssue(cluster, {
               type: 'noPackets',
               node: nodeName,
-              value: stat.deltaPacketsPerSec
+              value: deltaPacketsPerSec
             });
           } else if (!noPacketsMap.has(id)) {
             // if this issue has not been encountered yet, make a record of it
@@ -1502,9 +1389,9 @@ async function getStats (cluster) {
         let shouldCreateIssue = false;
 
         if (lowDiskSpaceType === 'percentage') {
-          shouldCreateIssue = stat.freeSpaceP !== undefined && stat.freeSpaceP <= lowDiskSpaceThreshold;
+          shouldCreateIssue = freeSpaceP !== undefined && freeSpaceP <= lowDiskSpaceThreshold;
         } else if (lowDiskSpaceType === 'gb') {
-          const freeSpaceGB = (stat.freeSpaceM || 0) / 1000;
+          const freeSpaceGB = (freeSpaceM || 0) / 1000;
           shouldCreateIssue = freeSpaceGB <= lowDiskSpaceThreshold;
         }
 
@@ -1512,8 +1399,8 @@ async function getStats (cluster) {
           setIssue(cluster, {
             type: 'lowDiskSpace',
             node: nodeName,
-            value: stat.freeSpaceP,
-            freeSpaceM: stat.freeSpaceM,
+            value: freeSpaceP,
+            freeSpaceM,
             thresholdType: lowDiskSpaceType
           });
         }
@@ -1526,23 +1413,25 @@ async function getStats (cluster) {
 
         for (const esNode of stats.esNodes) {
           // Skip non-data nodes
-          if (!esNode.roles || !esNode.roles.some(r => r.startsWith('data'))) continue;
+          if (!Array.isArray(esNode.roles) || !esNode.roles.some(r => typeof r === 'string' && r.startsWith('data'))) continue;
 
+          const esFreeSpaceP = remoteNumber(esNode.freeSpaceP);
+          const esFreeSpaceM = remoteNumber(esNode.freeSpaceM);
           let shouldCreateESIssue = false;
 
           if (lowDiskSpaceESType === 'percentage') {
-            shouldCreateESIssue = esNode.freeSpaceP !== undefined && esNode.freeSpaceP <= lowDiskSpaceESThreshold;
+            shouldCreateESIssue = esFreeSpaceP !== undefined && esFreeSpaceP <= lowDiskSpaceESThreshold;
           } else if (lowDiskSpaceESType === 'gb') {
-            const freeSpaceGB = (esNode.freeSpaceM || 0) / 1000;
+            const freeSpaceGB = (esFreeSpaceM || 0) / 1000;
             shouldCreateESIssue = freeSpaceGB <= lowDiskSpaceESThreshold;
           }
 
           if (shouldCreateESIssue) {
             setIssue(cluster, {
               type: 'lowDiskSpaceES',
-              node: String(esNode.nodeName ?? ''),
-              value: esNode.freeSpaceP,
-              freeSpaceM: esNode.freeSpaceM,
+              node: remoteName(esNode.nodeName),
+              value: esFreeSpaceP,
+              freeSpaceM: esFreeSpaceM,
               thresholdType: lowDiskSpaceESType
             });
           }
@@ -1566,24 +1455,123 @@ async function getStats (cluster) {
   });
 }
 
-// Writes the issues file. The dirty flag is cleared before the async write so
-// a setIssue that lands mid-write stays dirty, and set again if the write fails.
-function saveIssues () {
-  if (validateIssues()) { return; }
+// One db doc per parliament + cluster + type + node, so pollers can't duplicate an issue
+function issueId (issue) {
+  return cryptoLib.createHash('sha256')
+    .update(`${Parliament.name}\t${issue.clusterId}\t${issue.type}\t${issue.node ?? ''}`)
+    .digest('hex');
+}
 
-  internals.issuesDirty = false;
-  fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
-    (err) => {
-      if (err) {
-        console.log('Unable to write issues:', err.message ?? err);
-        internals.issuesDirty = true;
-      }
+// Loads this parliament's issues, importing the old issues file the first time
+async function loadIssues () {
+  const { data } = await Parliament.issues.find({ where: { parliament: Parliament.name } });
+  // an issue type this version doesn't know is left in the db untouched
+  const known = data.filter(({ doc }) => Object.hasOwn(issueTypes, doc.type));
+  // a doc saved with the display strings doesn't match, so the next save rewrites it without them
+  savedIssues = new Map(known.map(({ id, doc }) => [id, ISSUE_STRINGS.some(f => f in doc) ? null : JSON.stringify(issueDoc(doc))]));
+  issues = known.map(({ doc }) => { delete doc.parliament; return addIssueStrings(doc); });
+  if ([...savedIssues.values()].includes(null)) { internals.issuesDirty = true; }
+  if (issues.length > 0) { return; }
+
+  const configFile = ArkimeConfig.get('file');
+  const issuesFile = configFile?.endsWith('.json') ? `${configFile.slice(0, -5)}.issues.json` : undefined;
+  if (!issuesFile || !fs.existsSync(issuesFile)) { return; }
+
+  try {
+    const fileIssues = JSON.parse(fs.readFileSync(issuesFile, 'utf8'));
+    if (Array.isArray(fileIssues)) {
+      issues = fileIssues.filter(issue => Object.hasOwn(issueTypes, issue?.type ?? '')).map(addIssueStrings);
+      await saveIssues();
     }
-  );
+    fs.renameSync(issuesFile, `${issuesFile}.imported`);
+    console.log(`Imported ${issues.length} issues from ${issuesFile} into the db, renamed it to ${issuesFile}.imported`);
+  } catch (err) {
+    console.log(`ERROR - importing issues from ${issuesFile}`, err.message ?? err);
+  }
+}
+
+function issueDoc (issue) {
+  const doc = { ...issue, parliament: Parliament.name };
+  for (const field of ISSUE_STRINGS) { delete doc[field]; }
+  return doc;
+}
+
+// Saves the issues to the db. The dirty flag is cleared before the async writes so
+// a setIssue that lands mid-save stays dirty, and set again if the save fails.
+// One save runs at a time, the poll and the api can both ask for one. Asking while
+// one runs gets the next save, shared by everyone who asked, so requests can't queue up saves.
+let savingIssues = false;
+let nextSave;
+function saveIssues () {
+  if (!savingIssues) { return runSaveIssues(); }
+  nextSave ??= Promise.withResolvers();
+  return nextSave.promise;
+}
+
+// The next save starts before this one's finally returns, so two never overlap
+async function runSaveIssues () {
+  savingIssues = true;
+  try {
+    await doSaveIssues();
+  } finally {
+    const waiting = nextSave;
+    nextSave = undefined;
+    savingIssues = false;
+    if (waiting) { runSaveIssues().then(waiting.resolve, waiting.reject); }
+  }
+}
+
+// Each doc saves on its own, so one doc the db rejects can't block the rest.
+async function doSaveIssues () {
+  internals.issuesDirty = false;
+  let firstErr;
+  const failed = (err) => {
+    firstErr ??= err;
+    console.log('Unable to save issue:', err.message ?? err);
+  };
+
+  // The last of any issues with the same id is the one saved, as when each one was written
+  const latest = new Map(issues.map(issue => [issueId(issue), issue]));
+  let changed = false;
+  for (const [id, issue] of latest) {
+    const doc = issueDoc(issue);
+    const json = JSON.stringify(doc);
+    if (savedIssues.get(id) === json) { continue; }
+    try {
+      await Parliament.issues.put(id, doc, { refresh: false });
+      savedIssues.set(id, json);
+      changed = true;
+    } catch (err) {
+      // it may have landed anyway, so it's tracked for a delete if the issue goes away
+      if (!savedIssues.has(id)) { savedIssues.set(id, null); }
+      failed(err);
+    }
+  }
+  for (const id of [...savedIssues.keys()]) {
+    if (latest.has(id)) { continue; }
+    try {
+      await Parliament.issues.delete(id, { refresh: false });
+      savedIssues.delete(id);
+      changed = true;
+    } catch (err) {
+      failed(err); // tried again next save
+    }
+  }
+
+  try {
+    if (changed) { await Parliament.issues.refresh(); }
+  } catch (err) {
+    failed(err);
+  }
+
+  if (firstErr) {
+    internals.issuesDirty = true;
+    throw firstErr;
+  }
 }
 
 // Chains all promises for requests for health and stats for each cluster in the parliament
-// this also sets all the issues in the issues.json file
+// this also saves the issues to the db
 async function updateParliament () {
   internals.updateInProgress = true;
   let issuesRemoved = false;
@@ -1626,7 +1614,7 @@ async function updateParliament () {
   } finally {
     // save the issues once per poll, even a failed one, not on every setIssue
     if (issuesRemoved || internals.issuesDirty) {
-      saveIssues();
+      saveIssues().catch(() => {});
     }
     internals.updateInProgress = false;
   }
@@ -1653,48 +1641,20 @@ function removeIssue (issueType, clusterId, nodeId) {
   return foundIssue;
 }
 
-// Validates that issues exist
-// Use this before writing the issues file
-function validateIssues (next) {
-  const len = Buffer.from(JSON.stringify(issues, null, 2)).length;
-  if (len < 2) {
-    // if it's an empty file, don't save it, return an error
-    const errorMsg = 'Error writing issue data: empty issues';
-    console.log(errorMsg);
-    if (next) {
-      return newError(500, errorMsg);
-    }
-    return errorMsg;
-  }
-  return false;
-}
-
-// Writes the issues to the issues json file then sends success or error
-function writeIssues (req, res, next, successObj, errorText, sendIssues) {
-  const issuesError = validateIssues(next);
-  if (issuesError) {
-    return next(issuesError);
+// Saves the issues to the db then sends success or error
+async function writeIssues (req, res, next, successObj, errorText, sendIssues) {
+  try {
+    await saveIssues();
+  } catch (err) {
+    return res.serverError(500, 'Unable to write issue data');
   }
 
-  fs.writeFile(app.get('issuesfile'), JSON.stringify(issues, null, 2), 'utf8',
-    (err) => {
-      if (ArkimeConfig.debug) {
-        console.log('Wrote issues file', err ?? '');
-      }
+  // send the updated issues with the response
+  if (sendIssues && successObj.issues) {
+    successObj.issues = issues;
+  }
 
-      if (err) {
-        console.log(`Unable to write issue data: ${err.message ?? err}`);
-        return res.serverError(500, 'Unable to write issue data');
-      }
-
-      // send the updated issues with the response
-      if (sendIssues && successObj.issues) {
-        successObj.issues = issues;
-      }
-
-      return res.json(successObj);
-    }
-  );
+  return res.json(successObj);
 }
 
 // ----------------------------------------------------------------------------
@@ -1729,12 +1689,40 @@ app.put('/parliament/api/settings', [isAdmin, checkCookieToken], Parliament.apiU
 // Update the parliament general settings object to the defaults
 app.put('/parliament/api/settings/restoreDefaults', [isAdmin, checkCookieToken], Parliament.apiRestoreDefaultSettings);
 
+// Banner
+app.get('/parliament/api/banner', [ArkimeUtil.noCacheJson], Banner.apiGetBanner);
+app.put('/parliament/api/banner', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiUpdateBanner);
+app.post('/parliament/api/banner/sync', [ArkimeUtil.noCacheJson, isAdmin, checkCookieToken], Banner.apiSyncBanner);
+
+// View Config
+app.post('/parliament/api/viewconfig/totp', [ArkimeUtil.noCacheJson, jsonParser, ViewConfig.checkAccess, checkCookieToken], ViewConfig.apiVerifyTotp);
+app.get('/parliament/api/viewconfig', [ArkimeUtil.noCacheJson, ViewConfig.checkAccess, ViewConfig.checkTotp, setCookie], ViewConfig.apiGetConfig);
+
 // user endpoints
 app.get('/parliament/api/user', User.apiGetUser);
 app.post('/parliament/api/users', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsers);
 app.post('/parliament/api/users/csv', [jsonParser, User.checkRole('usersAdmin'), setCookie], User.apiGetUsersCSV);
+app.post('/parliament/api/users/min', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiGetUsersMin);
 app.post('/parliament/api/user', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiCreateUser);
 app.post('/parliament/api/user/password', [jsonParser, checkCookieToken, Auth.getSettingUserDb], User.apiUpdateUserPassword);
+/**
+ * POST - /parliament/api/settings/update
+ *
+ * Persists the shared Vuetify theme keys (`vuetifyTheme`,
+ * `vuetifyCustomTheme`) onto the logged-in user's `settings`. These
+ * are the same keys every Arkime app reads/writes, so a theme picked
+ * in any app follows the user into all of them. Other keys posted
+ * here are dropped. Lives off `/api/user/` so a userId like `settings`
+ * isn't shadowed by the `/api/user/:id` routes.
+ * @name /settings/update
+ * @returns {boolean} success - Whether the update was successful
+ * @returns {string} text - The success/error message
+ */
+app.post('/parliament/api/settings/update',
+  [jsonParser, ArkimeUtil.noCacheJson, checkCookieToken, Auth.getSettingUserDb],
+  User.apiUpdateSettings
+);
+
 app.delete('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiDeleteUser);
 app.post('/parliament/api/user/:id', [jsonParser, checkCookieToken, User.checkRole('usersAdmin')], User.apiUpdateUser);
 app.post('/parliament/api/user/:id/assignment', [jsonParser, checkCookieToken, User.checkAssignableRole], User.apiUpdateUserRole);
@@ -1954,8 +1942,8 @@ app.put('/parliament/api/ignoreIssues', [isUser, checkCookieToken], (req, res, n
   }
 
   const ms = req.body.ms ?? 3600000; // Default to 1 hour
-  if (typeof ms !== 'number' || !Number.isFinite(ms)) {
-    return res.serverError(422, 'ms must be a finite number.');
+  if (ms !== -1 && !(Number.isSafeInteger(ms) && ms > 0 && ms <= MAX_IGNORE_MS)) {
+    return res.serverError(422, 'ms must be -1 or a positive number of milliseconds up to 10 years.');
   }
 
   let ignoreUntil = Date.now() + ms;
@@ -2135,11 +2123,12 @@ async function setupAuth () {
   });
 
   User.initialize({
-    insecure: ArkimeConfig.isInsecure([ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200')]),
-    node: ArkimeConfig.getArray('usersElasticsearch', 'http://localhost:9200'),
-    prefix: ArkimeConfig.get('usersPrefix'),
+    insecure: ArkimeConfig.isInsecure([ArkimeConfig.usersDbUrls() ?? ArkimeConfig.dbUrls()]),
+    node: ArkimeConfig.usersDbUrls() ?? ArkimeConfig.dbUrls(),
+    prefix: ArkimeConfig.usersPrefix(),
     apiKey: ArkimeConfig.get('usersElasticsearchAPIKey'),
-    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth')
+    basicAuth: ArkimeConfig.get('usersElasticsearchBasicAuth'),
+    getCurrentUserCB: (user, clone) => { clone.canViewConfig = ViewConfig.allowed(user); }
   });
 }
 
@@ -2183,6 +2172,8 @@ app.use((req, res, next) => {
     version: version.version,
     path: ArkimeConfig.get('webBasePath', '/'),
     environment: process.env.NODE_ENV,
+    checkForUpdates: updateCheck.mode,
+    updateCheckUrl: updateCheck.url,
     manifest,
     footerConfig
   };
@@ -2206,11 +2197,6 @@ app.use((req, res, next) => {
 // MAIN
 // ----------------------------------------------------------------------------
 async function main () {
-  ArkimeConfig.registerValidated({
-    elasticsearch: { type: 'urls' },
-    usersElasticsearch: { type: 'urls' }
-  });
-
   try {
     await ArkimeConfig.initialize({
       defaultConfigFile: `${version.config_prefix}/etc/parliament.ini`,
@@ -2229,38 +2215,23 @@ async function main () {
     process.exit(1);
   }
 
-  // construct the issues file name
-  let issuesFilename = 'issues.json';
-  const configFile = ArkimeConfig.get('file');
-  if (configFile?.endsWith('.json')) {
-    issuesFilename = `${configFile.slice(0, -5)}.issues.json`;
-  }
-  app.set('issuesfile', issuesFilename);
-
-  // get the issues file or create it if it doesn't exist
-  try {
-    issues = JSON.parse(fs.readFileSync(issuesFilename, 'utf8'));
-  } catch (err) {
-    issues = [];
-  }
-
   await setupAuth();
+
+  if (ArkimeConfig.debug) {
+    console.log('Parliament file:', ArkimeConfig.get('file'));
+  }
+
+  // Before listening, a request that lands first would see no issues and its changes would be lost to loadIssues
+  try {
+    await initializeParliament();
+  } catch (err) {
+    console.log(`ERROR - never mind, couldn't initialize Parliament\n`, err);
+    process.exit(1);
+  }
 
   const parliamentHost = ArkimeConfig.get('parliamentHost');
 
-  ArkimeUtil.createHttpServer(app, parliamentHost, ArkimeConfig.get('port', 8008), async () => {
-    if (ArkimeConfig.debug) {
-      console.log('Parliament file:', ArkimeConfig.get('file'));
-      console.log('Issues file:', issuesFilename);
-    }
-
-    try {
-      await initializeParliament();
-    } catch (err) {
-      console.log(`ERROR - never mind, couldn't initialize Parliament\n`, err);
-      process.exit(1);
-    }
-
+  ArkimeUtil.createHttpServer(app, parliamentHost, ArkimeConfig.get('port', 8008), () => {
     setInterval(() => {
       // a slow cluster can make an update outlast the interval, don't stack them
       if (!internals.updateInProgress) {

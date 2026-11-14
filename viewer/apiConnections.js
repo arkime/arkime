@@ -16,17 +16,6 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const ViewerUtils = require('./viewerUtils');
 const BuildQuery = require('./buildQuery');
 
-let fieldsMap;
-
-ArkimeConfig.loaded(() => {
-  if (!fieldsMap) {
-    setTimeout(async () => { // make sure db.js loads before fetching fields
-      const result = await ViewerUtils.loadFields();
-      fieldsMap = result.fieldsMap;
-    });
-  }
-});
-
 class ConnectionAPIs {
   // --------------------------------------------------------------------------
   // HELPERS
@@ -219,10 +208,23 @@ class ConnectionAPIs {
       req.query.dstField = 'destination.ip';
     }
 
-    req.query.srcField = Config.getDBField(req.query.srcField ?? 'source.ip', 'dbField');
-    req.query.dstField = Config.getDBField(req.query.dstField ?? 'destination.ip', 'dbField');
+    // keep what was asked for so an unusable field can be named in the error
+    const srcRequested = req.query.srcField ?? 'source.ip';
+    const dstRequested = req.query.dstField ?? 'destination.ip';
+    if (!ArkimeUtil.isString(srcRequested)) { return cb('Bad srcField'); }
+    if (!ArkimeUtil.isString(dstRequested)) { return cb('Bad dstField'); }
+
+    req.query.srcField = Config.getDBField(srcRequested, 'dbField');
+    req.query.dstField = Config.getDBField(dstRequested, 'dbField');
     const fsrc = req.query.srcField;
     const fdst = req.query.dstField;
+    // getDBField returns undefined for a field that isn't in dbFieldsMap, which
+    // Config.loadFields builds while skipping noFacet fields. Left unchecked an
+    // undefined fsrc reaches Elasticsearch as an empty exists clause (a 400
+    // x_content_parse_exception) and an undefined fdst throws on .match below
+    if (!fsrc) { return cb(`Unknown srcField ${ArkimeUtil.safeStr(srcRequested)}`); }
+    if (!fdst) { return cb(`Unknown dstField ${ArkimeUtil.safeStr(dstRequested)}`); }
+
     const minConn = req.query.minConn || 1;
 
     // get the requested fields
@@ -439,6 +441,13 @@ class ConnectionAPIs {
               }
             }
 
+            if (ArkimeConfig.regressionTests) {
+              // Sort links deterministically so results are stable across
+              // backends (ES/CH may iterate hits in different orders, which
+              // affects the natural insertion order of `connects`).
+              links.sort((a, b) => (a.source - b.source) || (a.target - b.target));
+            }
+
             if (Config.debug) {
               console.log('buildConnections.nodesHash', nodesHash);
               console.log('buildConnections.connects', connects);
@@ -533,7 +542,7 @@ class ConnectionAPIs {
 
       res.write(`Source${separator} Destination${separator} Sessions`);
       const displayFields = {};
-      const map = JSON.parse(fieldsMap);
+      const map = Config.getFieldsMap();
       for (const field of fields) {
         for (const f in map) {
           if (map[f].dbField === field) {

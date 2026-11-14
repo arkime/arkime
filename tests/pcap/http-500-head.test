@@ -46,6 +46,10 @@
       "/UpdataConfig.dat"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "connection",
@@ -62,6 +66,10 @@
       "close"
      ],
      "requestHeaderValueCnt" : 2,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "connection",
       "content-type",

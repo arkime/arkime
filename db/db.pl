@@ -83,6 +83,9 @@
 # 84 - added shareables index
 # 85 - added packetRange field to sessions
 # 86 - added totpSecret field to users
+# 87 - added dismissedHelpNotes field to users
+# 88 - added interfaceOffsets to files
+# 89 - added featherprint, featherprint_history, featherprint_alerts indices
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -96,7 +99,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 86;
+my $VERSION = 89;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -143,6 +146,26 @@ my @SETPERM = ();
 my @UNSETPERM = ();
 my $USEREGEX = 0;
 my $DRYRUN = 0;
+
+# Per-user layouts that shareables-import copies into the shareables index.
+# Adding a new one is an entry here; nothing else needs to change.
+my %SHAREABLE_IMPORTS = (
+    "spiview" => {
+        field => "spiviewFieldConfigs",
+        type  => "spiviewLayout",
+        data  => sub { return { fields => $_[0]->{fields} }; }
+    },
+    "sessionstable" => {
+        field => "columnConfigs",
+        type  => "sessionsTableLayout",
+        data  => sub { return { columns => $_[0]->{columns}, order => $_[0]->{order} }; }
+    },
+    "sessionsinfofields" => {
+        field => "infoFieldConfigs",
+        type  => "sessionsInfoLayout",
+        data  => sub { return { fields => $_[0]->{fields} }; }
+    }
+);
 
 #use LWP::ConsoleLogger::Everywhere ();
 
@@ -244,6 +267,13 @@ sub showHelp($)
     print "User Commands:\n";
     print "  disable-users <days>         - Disable user accounts that have not been active\n";
     print "      days                     - Number of days of inactivity (integer)\n";
+    print "  shareables-import <type>     - Copy per-user layouts into shareables, safe to run repeatedly.\n";
+    print "                                 <type> is 'all' or one of: " . join(", ", sort keys %SHAREABLE_IMPORTS) . "\n";
+    print "                                 Originals are left alone so Arkime 6 keeps working\n";
+    print "                                 Only works when users are in Elasticsearch, not sqlite/lmdb/redis\n";
+    print "                                 'upgrade' runs this for you, this is for re-running it later\n";
+    print "    --dryrun                   - Print what would be copied without copying\n";
+    print "      eg: db.pl <host:port> shareables-import spiview --dryrun\n";
     print "  users-update <pattern> <opts>- Bulk add/remove roles and set/unset fields on all users whose userId matches <pattern>\n";
     print "      pattern                  - Glob matched against userId, '*' and '?' supported, use '*' for all users\n";
     print "                                 Roles themselves are skipped unless <pattern> starts with 'role:'\n";
@@ -795,6 +825,10 @@ sub filesUpdate
     },
     "sessionsPresent": {
       "type": "long"
+    },
+    "interfaceOffsets": {
+      "type": "long",
+      "index": false
     }
   }
 }';
@@ -936,10 +970,14 @@ sub fieldsCreate
     fieldsUpdate();
 }
 ################################################################################
-sub newField
+my $BASEFIELDS;
+sub loadBaseFields
 {
-    my ($field, $json) = @_;
-    esPost("/${PREFIX}fields_v30/_doc/$field?timeout=${ESTIMEOUT}s", $json);
+    # Next to db.pl, FindBin isn't installed everywhere
+    my ($dir) = __FILE__ =~ m{^(.*)/} ? $1 : '.';
+    open(my $fh, "<", "$dir/fields.json") or die "cannot open < $dir/fields.json: $!";
+    $BASEFIELDS = from_json(do { local $/; <$fh> });
+    close($fh);
 }
 ################################################################################
 sub fieldsUpdate
@@ -962,373 +1000,13 @@ sub fieldsUpdate
     logmsg "Setting fields_v30 mapping\n" if ($verbose > 0);
     esPut("/${PREFIX}fields_v30/_mapping?master_timeout=${ESTIMEOUT}s", $mapping);
 
-    esPost("/${PREFIX}fields_v30/_doc/ip?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "All IP fields",
-      "group": "general",
-      "help": "Search all ip fields",
-      "type": "ip",
-      "dbField2": "ipall",
-      "portField": "portall",
-      "noFacet": "true"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/port?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "All port fields",
-      "group": "general",
-      "help": "Search all port fields",
-      "type": "integer",
-      "dbField2": "portall",
-      "regex": "(^port\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.port$|Port$)"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/rir?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "All rir fields",
-      "group": "general",
-      "help": "Search all rir fields",
-      "type": "uptermfield",
-      "dbField2": "rirall",
-      "regex": "(^rir\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.rir$)"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/country?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "All country fields",
-      "group": "general",
-      "help": "Search all country fields",
-      "type": "uptermfield",
-      "dbField2": "geoall",
-      "regex": "(^country\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.country$)"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/asn?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "All ASN fields",
-      "group": "general",
-      "help": "Search all ASN fields",
-      "type": "termfield",
-      "dbField2": "asnall",
-      "regex": "(^asn\\\\.(?:(?!\\\\.cnt$).)*$|\\\\.asn$)"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/host?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "All Host fields",
-      "group": "general",
-      "help": "Search all Host fields",
-      "type": "lotermfield",
-      "dbField2": "hostall",
-      "regex": "(^host\\\\.(?:(?!\\\\.(cnt|tokens)$).)*$|\\\\.host$)"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/ip.src?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Src IP",
-      "group": "general",
-      "help": "Source IP",
-      "type": "ip",
-      "dbField2": "srcIp",
-      "portField": "p1",
-      "portField2": "srcPort",
-      "portFieldECS": "source.port",
-      "category": "ip"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/port.src?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Src Port",
-      "group": "general",
-      "help": "Source Port",
-      "type": "integer",
-      "dbField2": "srcPort",
-      "category": "port"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/asn.src?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Src ASN",
-      "group": "general",
-      "help": "GeoIP ASN string calculated from the source IP",
-      "type": "termfield",
-      "dbField2": "srcASN",
-      "category": "asn"
-    }');
-    newField("source.as.number", '{
-      "friendlyName": "Src ASN Number",
-      "group": "general",
-      "help": "GeoIP ASN Number calculated from the source IP",
-      "type": "integer",
-      "fieldECS": "source.as.number"
-    }');
-    newField("source.as.organization.name", '{
-      "friendlyName": "Src ASN Name",
-      "group": "general",
-      "help": "GeoIP ASN Name calculated from the source IP",
-      "type": "termfield",
-      "fieldECS": "source.as.organization.name"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/country.src?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Src Country",
-      "group": "general",
-      "help": "Source Country",
-      "type": "uptermfield",
-      "dbField2": "srcGEO",
-      "category": "country"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/rir.src?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Src RIR",
-      "group": "general",
-      "help": "Source RIR",
-      "type": "uptermfield",
-      "dbField2": "srcRIR",
-      "category": "rir"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/ip.dst?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Dst IP",
-      "group": "general",
-      "help": "Destination IP",
-      "type": "ip",
-      "dbField2": "dstIp",
-      "portField": "p2",
-      "portField2": "dstPort",
-      "portFieldECS": "destination.port",
-      "category": "ip",
-      "aliases": ["ip.dst:port"]
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/port.dst?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Dst Port",
-      "group": "general",
-      "help": "Destination Port",
-      "type": "integer",
-      "dbField2": "dstPort",
-      "category": "port"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/asn.dst?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Dst ASN",
-      "group": "general",
-      "help": "GeoIP ASN string calculated from the destination IP",
-      "type": "termfield",
-      "dbField2": "dstASN",
-      "category": "asn"
-    }');
-    newField("destination.as.number", '{
-      "friendlyName": "Dst ASN Number",
-      "group": "general",
-      "help": "GeoIP ASN Number calculated from the destination IP",
-      "type": "integer",
-      "fieldECS": "destination.as.number"
-    }');
-    newField("destination.as.organization.name", '{
-      "friendlyName": "Dst ASN Name",
-      "group": "general",
-      "help": "GeoIP ASN Name calculated from the destination IP",
-      "type": "termfield",
-      "fieldECS": "destination.as.organization.name"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/country.dst?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Dst Country",
-      "group": "general",
-      "help": "Destination Country",
-      "type": "uptermfield",
-      "dbField2": "dstGEO",
-      "category": "country"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/rir.dst?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Dst RIR",
-      "group": "general",
-      "help": "Destination RIR",
-      "type": "uptermfield",
-      "dbField2": "dstRIR",
-      "category": "rir"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/bytes?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Bytes",
-      "group": "general",
-      "help": "Total number of raw bytes sent AND received in a session",
-      "type": "integer",
-      "dbField2": "totBytes"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/bytes.src?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Src Bytes",
-      "group": "general",
-      "help": "Total number of raw bytes sent by source in a session",
-      "type": "integer",
-      "dbField2": "srcBytes"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/bytes.dst?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Dst Bytes",
-      "group": "general",
-      "help": "Total number of raw bytes sent by destination in a session",
-      "type": "integer",
-      "dbField2": "dstBytes"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/databytes?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Data bytes",
-      "group": "general",
-      "help": "Total number of data bytes sent AND received in a session",
-      "type": "integer",
-      "dbField2": "totDataBytes"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/databytes.src?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Src data bytes",
-      "group": "general",
-      "help": "Total number of data bytes sent by source in a session",
-      "type": "integer",
-      "dbField2": "srcDataBytes"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/databytes.dst?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Dst data bytes",
-      "group": "general",
-      "help": "Total number of data bytes sent by destination in a session",
-      "type": "integer",
-      "dbField2": "dstDataBytes"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/packets?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Packets",
-      "group": "general",
-      "help": "Total number of packets sent AND received in a session",
-      "type": "integer",
-      "dbField2": "totPackets"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/packets.src?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Src Packets",
-      "group": "general",
-      "help": "Total number of packets sent by source in a session",
-      "type": "integer",
-      "dbField2": "srcPackets"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/packets.dst?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Dst Packets",
-      "group": "general",
-      "help": "Total number of packets sent by destination in a session",
-      "type": "integer",
-      "dbField2": "dstPackets"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/ip.protocol?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "IP Protocol",
-      "group": "general",
-      "help": "IP protocol number or friendly name",
-      "type": "lotermfield",
-      "dbField2": "ipProtocol",
-      "transform": "ipProtocolLookup"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/id?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Arkime ID",
-      "group": "general",
-      "help": "Arkime ID for the session",
-      "type": "termfield",
-      "dbField2": "_id",
-      "noFacet": "true"
-
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/rootId?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Arkime Root ID",
-      "group": "general",
-      "help": "Arkime ID of the first session in a multi session stream",
-      "type": "termfield",
-      "dbField2": "rootId"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/node?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Arkime Node",
-      "group": "general",
-      "help": "Arkime node name the session was recorded on",
-      "type": "termfield",
-      "dbField2": "node"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/srcNode?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Arkime Source Node",
-      "group": "general",
-      "help": "Source Arkime node name the session was recorded on when using send to cluster",
-      "type": "termfield",
-      "dbField2": "srcNode"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/file?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Filename",
-      "group": "general",
-      "help": "Arkime offline pcap filename",
-      "type": "fileand",
-      "dbField2": "fileand"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/payload8.src.hex?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Payload Src Hex",
-      "group": "general",
-      "help": "First 8 bytes of source payload in hex",
-      "type": "lotermfield",
-      "dbField2": "srcPayload8",
-      "aliases": ["payload.src"]
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/payload8.src.utf8?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Payload Src UTF8",
-      "group": "general",
-      "help": "First 8 bytes of source payload in utf8",
-      "type": "termfield",
-      "dbField2": "srcPayload8",
-      "transform": "utf8ToHex",
-      "noFacet": "true"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/payload8.dst.hex?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Payload Dst Hex",
-      "group": "general",
-      "help": "First 8 bytes of destination payload in hex",
-      "type": "lotermfield",
-      "dbField2": "dstPayload8",
-      "aliases": ["payload.dst"]
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/payload8.dst.utf8?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Payload Dst UTF8",
-      "group": "general",
-      "help": "First 8 bytes of destination payload in utf8",
-      "type": "termfield",
-      "dbField2": "dstPayload8",
-      "transform": "utf8ToHex",
-      "noFacet": "true"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/payload8.hex?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Payload Hex",
-      "group": "general",
-      "help": "First 8 bytes of payload in hex",
-      "type": "lotermfield",
-      "dbField2": "fballhex",
-      "regex": "^payload8\\\\.(src|dst)\\\\.hex$"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/payload8.utf8?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Payload UTF8",
-      "group": "general",
-      "help": "First 8 bytes of payload in utf8",
-      "type": "lotermfield",
-      "dbField2": "fballutf8",
-      "regex": "^payload8\\\\.(src|dst)\\\\.utf8$"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/scrubbed.by?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Scrubbed By",
-      "group": "general",
-      "help": "SPI data was scrubbed by",
-      "type": "lotermfield",
-      "dbField2": "scrubby"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/view?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "View Name",
-      "group": "general",
-      "help": "Arkime view name",
-      "type": "viewand",
-      "dbField2": "viewand",
-      "noFacet": "true"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/starttime?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Start Time",
-      "group": "general",
-      "help": "Session Start Time",
-      "type": "seconds",
-      "type2": "date",
-      "dbField2": "firstPacket"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/stoptime?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Stop Time",
-      "group": "general",
-      "help": "Session Stop Time",
-      "type": "seconds",
-      "type2": "date",
-      "dbField2": "lastPacket"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/huntId?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Hunt ID",
-      "group": "general",
-      "help": "The ID of the packet search job that matched this session",
-      "type": "termfield",
-      "dbField2": "huntId"
-    }');
-    esPost("/${PREFIX}fields_v30/_doc/huntName?timeout=${ESTIMEOUT}s", '{
-      "friendlyName": "Hunt Name",
-      "group": "general",
-      "help": "The name of the packet search job that matched this session",
-      "type": "termfield",
-      "dbField2": "huntName"
-    }');
+    # recreate-fields and repair-old get here without the startup load
+    loadBaseFields() unless (defined $BASEFIELDS);
+    # Sorted keys so every run writes the same doc, capture compares them
+    my $json = JSON->new->canonical;
+    foreach my $field (sort keys %{$BASEFIELDS}) {
+        esPost("/${PREFIX}fields_v30/_doc/$field?timeout=${ESTIMEOUT}s", $json->encode($BASEFIELDS->{$field}));
+    }
     ecsFieldsUpdate();
 }
 ################################################################################
@@ -4627,8 +4305,20 @@ sub sessions3Update
         "altCnt" : {
           "type" : "long"
         },
+        "altEmail" : {
+          "type" : "keyword"
+        },
+        "altIp" : {
+          "type" : "ip"
+        },
+        "altUri" : {
+          "type" : "keyword"
+        },
         "curve" : {
           "type" : "keyword"
+        },
+        "exponent" : {
+          "type" : "long"
         },
         "hash" : {
           "type" : "keyword"
@@ -4648,11 +4338,17 @@ sub sessions3Update
         "ja4x_r" : {
           "type" : "keyword"
         },
+        "keyLength" : {
+          "type" : "long"
+        },
         "notAfter" : {
           "type" : "date"
         },
         "notBefore" : {
           "type" : "date"
+        },
+        "pathLen" : {
+          "type" : "long"
         },
         "publicAlgorithm" : {
           "type" : "keyword"
@@ -4664,6 +4360,12 @@ sub sessions3Update
           "type" : "long"
         },
         "serial" : {
+          "type" : "keyword"
+        },
+        "sha256" : {
+          "type" : "keyword"
+        },
+        "signatureAlgorithm" : {
           "type" : "keyword"
         },
         "subjectCN" : {
@@ -4679,6 +4381,9 @@ sub sessions3Update
           "type" : "long"
         },
         "validSeconds" : {
+          "type" : "long"
+        },
+        "version" : {
           "type" : "long"
         }
       }
@@ -4891,6 +4596,12 @@ sub sessions3Update
         "classIdCnt" : {
           "type" : "long"
         },
+        "domain" : {
+          "type" : "keyword"
+        },
+        "domainCnt" : {
+          "type" : "long"
+        },
         "host" : {
           "type" : "keyword",
           "copy_to" : [
@@ -4921,6 +4632,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "ja4d6Cnt" : {
+          "type" : "long"
+        },
+        "leaseTime" : {
+          "type" : "long"
+        },
+        "leaseTimeCnt" : {
           "type" : "long"
         },
         "mac" : {
@@ -4954,6 +4671,21 @@ sub sessions3Update
           "type" : "long"
         },
         "requestRIR" : {
+          "type" : "keyword"
+        },
+        "serverASN" : {
+          "type" : "keyword"
+        },
+        "serverGEO" : {
+          "type" : "keyword"
+        },
+        "serverIp" : {
+          "type" : "ip"
+        },
+        "serverIpCnt" : {
+          "type" : "long"
+        },
+        "serverRIR" : {
           "type" : "keyword"
         },
         "type" : {
@@ -5209,6 +4941,12 @@ sub sessions3Update
         "contentTypeCnt" : {
           "type" : "long"
         },
+        "date" : {
+          "type" : "keyword"
+        },
+        "dateCnt" : {
+          "type" : "long"
+        },
         "dst" : {
           "type" : "keyword"
         },
@@ -5271,6 +5009,12 @@ sub sessions3Update
         "idCnt" : {
           "type" : "long"
         },
+        "inReplyTo" : {
+          "type" : "keyword"
+        },
+        "inReplyToCnt" : {
+          "type" : "long"
+        },
         "ip" : {
           "type" : "ip"
         },
@@ -5287,6 +5031,18 @@ sub sessions3Update
           "type" : "keyword"
         },
         "mimeVersionCnt" : {
+          "type" : "long"
+        },
+        "reply" : {
+          "type" : "keyword"
+        },
+        "replyCnt" : {
+          "type" : "long"
+        },
+        "replyTo" : {
+          "type" : "keyword"
+        },
+        "replyToCnt" : {
           "type" : "long"
         },
         "sha256" : {
@@ -5422,6 +5178,12 @@ sub sessions3Update
           "type" : "integer"
         },
         "responseCodeCnt" : {
+          "type" : "long"
+        },
+        "responseMsg" : {
+          "type" : "keyword"
+        },
+        "responseMsgCnt" : {
           "type" : "long"
         }
       }
@@ -5559,6 +5321,12 @@ sub sessions3Update
         "requestBody" : {
           "type" : "keyword"
         },
+        "requestBodyLen" : {
+          "type" : "long"
+        },
+        "requestBodyLenCnt" : {
+          "type" : "long"
+        },
         "requestHeader" : {
           "type" : "keyword"
         },
@@ -5582,6 +5350,12 @@ sub sessions3Update
         },
         "response-server" : {
           "type" : "keyword"
+        },
+        "responseBodyLen" : {
+          "type" : "long"
+        },
+        "responseBodyLenCnt" : {
+          "type" : "long"
         },
         "responseHeader" : {
           "type" : "keyword"
@@ -5787,6 +5561,18 @@ sub sessions3Update
         "etypeCnt" : {
           "type" : "long"
         },
+        "msgType" : {
+          "type" : "keyword"
+        },
+        "msgTypeCnt" : {
+          "type" : "long"
+        },
+        "options" : {
+          "type" : "keyword"
+        },
+        "optionsCnt" : {
+          "type" : "long"
+        },
         "realm" : {
           "type" : "keyword"
         },
@@ -5797,6 +5583,12 @@ sub sessions3Update
           "type" : "keyword"
         },
         "snameCnt" : {
+          "type" : "long"
+        },
+        "ticketEtype" : {
+          "type" : "keyword"
+        },
+        "ticketEtypeCnt" : {
           "type" : "long"
         }
       }
@@ -5819,6 +5611,18 @@ sub sessions3Update
           "type" : "keyword"
         },
         "bindnameCnt" : {
+          "type" : "long"
+        },
+        "op" : {
+          "type" : "keyword"
+        },
+        "opCnt" : {
+          "type" : "long"
+        },
+        "result" : {
+          "type" : "keyword"
+        },
+        "resultCnt" : {
           "type" : "long"
         }
       }
@@ -5968,6 +5772,12 @@ sub sessions3Update
         "flagsCnt" : {
           "type" : "long"
         },
+        "payloadLen" : {
+          "type" : "long"
+        },
+        "payloadLenCnt" : {
+          "type" : "long"
+        },
         "qos" : {
           "type" : "long"
         },
@@ -6043,8 +5853,78 @@ sub sessions3Update
         }
       }
     },
+    "ntlm" : {
+      "properties" : {
+        "dnsComputerName" : {
+          "type" : "keyword"
+        },
+        "dnsComputerNameCnt" : {
+          "type" : "long"
+        },
+        "dnsDomainName" : {
+          "type" : "keyword"
+        },
+        "dnsDomainNameCnt" : {
+          "type" : "long"
+        },
+        "dnsTreeName" : {
+          "type" : "keyword"
+        },
+        "dnsTreeNameCnt" : {
+          "type" : "long"
+        },
+        "domain" : {
+          "type" : "keyword"
+        },
+        "domainCnt" : {
+          "type" : "long"
+        },
+        "host" : {
+          "type" : "keyword"
+        },
+        "hostCnt" : {
+          "type" : "long"
+        },
+        "nbComputerName" : {
+          "type" : "keyword"
+        },
+        "nbComputerNameCnt" : {
+          "type" : "long"
+        },
+        "nbDomainName" : {
+          "type" : "keyword"
+        },
+        "nbDomainNameCnt" : {
+          "type" : "long"
+        },
+        "targetName" : {
+          "type" : "keyword"
+        },
+        "targetNameCnt" : {
+          "type" : "long"
+        },
+        "type" : {
+          "type" : "long"
+        },
+        "typeCnt" : {
+          "type" : "long"
+        },
+        "version" : {
+          "type" : "keyword"
+        },
+        "versionCnt" : {
+          "type" : "long"
+        }
+      }
+    },
     "ntp" : {
       "properties" : {
+        "extensions" : {
+          "type" : "long"
+        },
+        "extensionsCnt" : {
+          "type" : "long"
+        },
         "ja4n" : {
           "type" : "keyword"
         },
@@ -6057,10 +5937,52 @@ sub sessions3Update
         "modeCnt" : {
           "type" : "long"
         },
+        "orgTime" : {
+          "type" : "keyword"
+        },
+        "orgTimeCnt" : {
+          "type" : "long"
+        },
+        "poll" : {
+          "type" : "long"
+        },
+        "pollCnt" : {
+          "type" : "long"
+        },
+        "precision" : {
+          "type" : "long"
+        },
+        "precisionCnt" : {
+          "type" : "long"
+        },
+        "recTime" : {
+          "type" : "keyword"
+        },
+        "recTimeCnt" : {
+          "type" : "long"
+        },
         "refId" : {
           "type" : "keyword"
         },
         "refIdCnt" : {
+          "type" : "long"
+        },
+        "refTime" : {
+          "type" : "keyword"
+        },
+        "refTimeCnt" : {
+          "type" : "long"
+        },
+        "rootDelay" : {
+          "type" : "long"
+        },
+        "rootDelayCnt" : {
+          "type" : "long"
+        },
+        "rootDispersion" : {
+          "type" : "long"
+        },
+        "rootDispersionCnt" : {
           "type" : "long"
         },
         "stratum" : {
@@ -6069,10 +5991,22 @@ sub sessions3Update
         "stratumCnt" : {
           "type" : "long"
         },
+        "stratumNum" : {
+          "type" : "long"
+        },
+        "stratumNumCnt" : {
+          "type" : "long"
+        },
         "version" : {
           "type" : "long"
         },
         "versionCnt" : {
+          "type" : "long"
+        },
+        "xmtTime" : {
+          "type" : "keyword"
+        },
+        "xmtTimeCnt" : {
           "type" : "long"
         }
       }
@@ -6633,6 +6567,27 @@ sub sessions3Update
         "RIR" : {
           "type" : "keyword"
         },
+        "boundASN" : {
+          "type" : "keyword"
+        },
+        "boundGEO" : {
+          "type" : "keyword"
+        },
+        "boundIp" : {
+          "type" : "ip"
+        },
+        "boundIpCnt" : {
+          "type" : "long"
+        },
+        "boundPort" : {
+          "type" : "long"
+        },
+        "boundPortCnt" : {
+          "type" : "long"
+        },
+        "boundRIR" : {
+          "type" : "keyword"
+        },
         "host" : {
           "type" : "keyword",
           "copy_to" : [
@@ -6653,8 +6608,20 @@ sub sessions3Update
         "port" : {
           "type" : "long"
         },
+        "status" : {
+          "type" : "keyword"
+        },
+        "statusCnt" : {
+          "type" : "long"
+        },
         "user" : {
           "type" : "keyword"
+        },
+        "version" : {
+          "type" : "long"
+        },
+        "versionCnt" : {
+          "type" : "long"
         }
       }
     },
@@ -6796,6 +6763,24 @@ sub sessions3Update
     },
     "ssh" : {
       "properties" : {
+        "cipher" : {
+          "type" : "keyword"
+        },
+        "cipherCnt" : {
+          "type" : "long"
+        },
+        "clientVersion" : {
+          "type" : "keyword"
+        },
+        "clientVersionCnt" : {
+          "type" : "long"
+        },
+        "compression" : {
+          "type" : "keyword"
+        },
+        "compressionCnt" : {
+          "type" : "long"
+        },
         "hassh" : {
           "type" : "keyword"
         },
@@ -6808,16 +6793,40 @@ sub sessions3Update
         "hasshServerCnt" : {
           "type" : "long"
         },
+        "hostKeyAlg" : {
+          "type" : "keyword"
+        },
+        "hostKeyAlgCnt" : {
+          "type" : "long"
+        },
         "ja4ssh" : {
           "type" : "keyword"
         },
         "ja4sshCnt" : {
           "type" : "long"
         },
+        "kex" : {
+          "type" : "keyword"
+        },
+        "kexCnt" : {
+          "type" : "long"
+        },
         "key" : {
           "type" : "keyword"
         },
         "keyCnt" : {
+          "type" : "long"
+        },
+        "mac" : {
+          "type" : "keyword"
+        },
+        "macCnt" : {
+          "type" : "long"
+        },
+        "serverVersion" : {
+          "type" : "keyword"
+        },
+        "serverVersionCnt" : {
           "type" : "long"
         },
         "version" : {
@@ -7025,14 +7034,38 @@ sub sessions3Update
     },
     "tls" : {
       "properties" : {
+        "alert" : {
+          "type" : "keyword"
+        },
+        "alertCnt" : {
+          "type" : "long"
+        },
+        "alpn" : {
+          "type" : "keyword"
+        },
+        "alpnCnt" : {
+          "type" : "long"
+        },
         "cipher" : {
           "type" : "keyword"
         },
         "cipherCnt" : {
           "type" : "long"
         },
+        "clientAlpn" : {
+          "type" : "keyword"
+        },
+        "clientAlpnCnt" : {
+          "type" : "long"
+        },
         "dstSessionId" : {
           "type" : "keyword"
+        },
+        "group" : {
+          "type" : "keyword"
+        },
+        "groupCnt" : {
+          "type" : "long"
         },
         "ja3" : {
           "type" : "keyword"
@@ -7903,6 +7936,295 @@ logmsg "Setting shareables_v60 mapping\n" if ($verbose > 0);
 esPut("/${PREFIX}shareables_v60/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
 }
 ################################################################################
+my $FEATHERPRINT_SETTINGS = '
+{
+  "settings": {
+    "index.priority": 30,
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "auto_expand_replicas": "0-3"
+  }
+}';
+
+sub featherprintCreate
+{
+    logmsg "Creating featherprint_v70 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_v70?master_timeout=${ESTIMEOUT}s", $FEATHERPRINT_SETTINGS);
+    esAlias("add", "featherprint_v70", "featherprint");
+    featherprintUpdate();
+}
+
+sub featherprintUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "false",
+  "properties": {
+    "kind": { "type": "keyword" },
+    "ip": { "type": "ip" },
+    "firstSeen": { "type": "date" },
+    "lastSeen": { "type": "date" },
+    "classification": { "type": "keyword" },
+    "currentIp": { "type": "ip" },
+    "ipHistory": {
+      "properties": {
+        "ip": { "type": "ip" },
+        "ts": { "type": "date" },
+        "source": { "type": "keyword" }
+      }
+    },
+    "mac": {
+      "properties": {
+        "value": { "type": "keyword" },
+        "source": { "type": "keyword" },
+        "firstSeen": { "type": "date" },
+        "lastSeen": { "type": "date" },
+        "history": {
+          "properties": {
+            "mac": { "type": "keyword" },
+            "ts": { "type": "date" },
+            "source": { "type": "keyword" }
+          }
+        }
+      }
+    },
+    "names": {
+      "properties": {
+        "name": { "type": "keyword" },
+        "source": { "type": "keyword" },
+        "firstSeen": { "type": "date" },
+        "lastSeen": { "type": "date" },
+        "ttl": { "type": "integer" }
+      }
+    },
+    "services": {
+      "properties": {
+        "type": { "type": "keyword" },
+        "port": { "type": "integer" },
+        "proto": { "type": "keyword" },
+        "firstSeen": { "type": "date" },
+        "lastSeen": { "type": "date" }
+      }
+    },
+    "dhcp": {
+      "properties": {
+        "vendorClass": { "type": "keyword" },
+        "paramReqList": { "type": "keyword" }
+      }
+    },
+    "ssdp": {
+      "properties": {
+        "server": { "type": "keyword" },
+        "usn": { "type": "keyword" },
+        "nt": { "type": "keyword" },
+        "st": { "type": "keyword" },
+        "location": { "type": "keyword" }
+      }
+    }
+  }
+}';
+
+    logmsg "Setting featherprint_v70 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+sub featherprintHistoryCreate
+{
+    logmsg "Creating featherprint_history_v70 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_history_v70?master_timeout=${ESTIMEOUT}s", $FEATHERPRINT_SETTINGS);
+    esAlias("add", "featherprint_history_v70", "featherprint_history");
+    featherprintHistoryUpdate();
+}
+
+sub featherprintHistoryUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "false",
+  "properties": {
+    "ts": { "type": "date" },
+    "ip": { "type": "ip" },
+    "kind": { "type": "keyword" },
+    "before": { "type": "object", "enabled": false },
+    "after": { "type": "object", "enabled": false }
+  }
+}';
+
+    logmsg "Setting featherprint_history_v70 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_history_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+sub featherprintAlertsCreate
+{
+    logmsg "Creating featherprint_alerts_v70 index\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_alerts_v70?master_timeout=${ESTIMEOUT}s", $FEATHERPRINT_SETTINGS);
+    esAlias("add", "featherprint_alerts_v70", "featherprint_alerts");
+    featherprintAlertsUpdate();
+}
+
+sub featherprintAlertsUpdate
+{
+    my $mapping = '
+{
+  "_source": {"enabled": "true"},
+  "dynamic": "false",
+  "properties": {
+    "ts": { "type": "date" },
+    "ip": { "type": "ip" },
+    "kind": { "type": "keyword" },
+    "message": { "type": "keyword" },
+    "acked": { "type": "boolean" },
+    "ackedBy": { "type": "keyword" },
+    "ackedAt": { "type": "date" },
+    "before": { "type": "object", "enabled": false },
+    "after": { "type": "object", "enabled": false }
+  }
+}';
+
+    logmsg "Setting featherprint_alerts_v70 mapping\n" if ($verbose > 0);
+    esPut("/${PREFIX}featherprint_alerts_v70/_mapping?master_timeout=${ESTIMEOUT}s&pretty", $mapping);
+}
+################################################################################
+sub featherprintCreateAll
+{
+    featherprintCreate();
+    featherprintHistoryCreate();
+    featherprintAlertsCreate();
+}
+################################################################################
+# Copy the per-user layouts named in %SHAREABLE_IMPORTS into the shareables
+# index. Safe to run repeatedly: anything already imported is left alone, and
+# the originals stay on the user record so Arkime 6 keeps working.
+# Returns (copied, skipped).
+sub shareablesImport
+{
+    my ($what, $dryrun, $quiet) = @_;
+
+    my @todo = ($what eq "all") ? (sort keys %SHAREABLE_IMPORTS) : ($what);
+
+    my $copied = 0;
+    my $skipped = 0;
+
+    # Everything already in shareables, so re-runs are safe. Keyed on
+    # type + creator + name, which is what made a layout unique on the user;
+    # names aren't unique anymore, so more than one existing shareable can
+    # share a key, and the value is the *set* of their data (not a single
+    # value - overwriting on a repeat key would just pick whichever hit the
+    # scroll happened to return last). That set is what tells an
+    # already-imported layout apart from an unrelated same-name collision
+    # created since. Scrolled, not a flat size=10000 search, so this stays
+    # accurate past 10000 shareables.
+    my %have;
+    my $existing = esScroll("${PREFIX}shareables", to_json({"_source" => ["type", "creator", "name", "data"]}));
+    foreach my $hit (@{$existing}) {
+        my $src = $hit->{_source};
+        next if (!defined $src->{type} || !defined $src->{creator} || !defined $src->{name});
+        my $existingKey = $src->{type} . "\0" . $src->{creator} . "\0" . $src->{name};
+        $have{$existingKey}->{JSON->new->canonical->encode($src->{data} // {})} = 1;
+    }
+
+    # db.pl only ever talks to Elasticsearch, so a users store kept in
+    # sqlite/lmdb/redis has nothing to read here and would silently look like
+    # there was simply nothing to import
+    my $userCount = esGet("/${PREFIX}users/_count", 1);
+    if (($userCount->{count} // 0) == 0) {
+        logmsg "WARNING - no users found in ${PREFIX}users, so there is nothing to import.\n";
+        logmsg "WARNING - shareables-import needs users stored in Elasticsearch; it cannot read a\n";
+        logmsg "WARNING - usersElasticsearch pointed at sqlite/lmdb/redis.\n";
+    }
+
+    # One scroll across all requested fields instead of one full user scan
+    # per kind
+    my @sourceFields = ("userId");
+    push(@sourceFields, $SHAREABLE_IMPORTS{$_}->{field}) foreach (@todo);
+    my $users = esScroll("${PREFIX}users", to_json({"_source" => \@sourceFields}));
+
+    my $body = "";
+    foreach my $kind (@todo) {
+        my $info = $SHAREABLE_IMPORTS{$kind};
+        my $field = $info->{field};
+        my $type = $info->{type};
+
+        foreach my $hit (@{$users}) {
+            my $userId = $hit->{_source}->{userId};
+            next if (!defined $userId);
+            my $configs = $hit->{_source}->{$field};
+            next if (!$configs || ref($configs) ne "ARRAY");
+
+            foreach my $config (@{$configs}) {
+                my $name = $config->{name};
+                next if (!defined $name);
+
+                my $data = $info->{data}->($config);
+                # canonical (sorted keys) so this compares equal to the same
+                # data round-tripped through ES, regardless of hash key order
+                my $dataJson = JSON->new->canonical->encode($data);
+                my $baseName = $name;
+                my $key = $type . "\0" . $userId . "\0" . $name;
+
+                # walk past any name already taken by something else (names
+                # aren't unique anymore) until we find either this exact
+                # layout (already imported - skip) or a free name to import
+                # the legacy data under. Bounded by how many existing
+                # shareables actually collide on this name, not an arbitrary
+                # cap - this is a migration tool, it must not drop data.
+                my $attempt = 0;
+                while ($have{$key} && !$have{$key}->{$dataJson}) {
+                    $attempt++;
+                    $name = $attempt == 1 ? "$baseName (legacy)" : "$baseName (legacy $attempt)";
+                    $key = $type . "\0" . $userId . "\0" . $name;
+                }
+
+                if ($have{$key} && $have{$key}->{$dataJson}) {
+                    $skipped++;
+                    next;
+                }
+
+                if ($attempt > 0) {
+                    logmsg "WARNING - '$baseName' for $userId collided with an existing shareable of the same name, imported as '$name'\n";
+                }
+
+                my $now = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime());
+                my $doc = {
+                    name => $name,
+                    type => $type,
+                    creator => $userId,
+                    created => $now,
+                    updated => $now,
+                    viewRoles => [],
+                    viewUsers => [],
+                    editRoles => [],
+                    editUsers => [],
+                    data => $data
+                };
+
+                if ($dryrun) {
+                    print "Would copy $kind '$name' for $userId\n";
+                } else {
+                    print "Copying $kind '$name' for $userId\n" if (!$quiet);
+                    my $meta = to_json({"index" => {"_index" => "${PREFIX}shareables"}});
+                    $body .= $meta . "\n" . to_json($doc) . "\n";
+                    if (length($body) > 10 * 1000 * 1000) {
+                        esBulk($body, "shareables-import");
+                        $body = "";
+                    }
+                }
+                # guard against the same user having it twice in one run
+                $have{$key}->{$dataJson} = 1;
+                $copied++;
+            }
+        }
+    }
+    esBulk($body, "shareables-import") if (length($body) > 0);
+
+    esPost("/${PREFIX}shareables/_refresh", "") if ($copied && !$dryrun);
+
+    return ($copied, $skipped);
+}
+
+################################################################################
 sub usersCreate
 {
     my $settings = '
@@ -8002,6 +8324,9 @@ sub usersUpdate
     },
     "welcomeMsgNum": {
       "type": "integer"
+    },
+    "dismissedHelpNotes": {
+      "type": "keyword"
     },
     "lastUsed": {
       "type": "date"
@@ -8330,7 +8655,7 @@ sub progress {
 ################################################################################
 sub optimizeOther {
     logmsg "Optimizing Admin Indices\n";
-    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60", 1, 0);
+    esForceMerge("${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}parliament_issues_v70,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}shareables_v60,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70", 1, 0);
     logmsg "\n" if ($verbose > 0);
 }
 ################################################################################
@@ -8543,17 +8868,18 @@ $PREFIX = "arkime_" if (! defined $PREFIX);
 
 showHelp("Missing arguments") if (@ARGV < 2);
 showHelp("Help:") if ($ARGV[1] =~ /^help$/);
-showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|upgrade|upgradenoprompt|disable-?users|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
+showHelp("Unknown command '$ARGV[1]'") if ($ARGV[1] !~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|clean|info|wipe|wipenoprompt|upgrade|upgradenoprompt|disable-?users|shareables-?import|users-?update|set-?shortcut|users-?import|import|restore|restorenoprompt|users-?export|export|repair|repair-old|backup|expire|rotate|optimize|optimize-admin|mv|rm|rm-?missing|rm-?node|add-?missing|field|field-list|field-rm|field-enable|field-disable|force-?put-?version|sync-?files|hide-?node|unhide-?node|add-?alias|show-?nodes|set-?replicas|set-?shards-?per-?node|set-?allocation-?enable|allocate-?empty|unflood-?stage|shrink|ilm|ism|recreate-users|recreate-stats|recreate-dstats|recreate-fields|recreate-files|update-fields|update-history|reindex|reindex-sessions2|force-sessions3-update|es-adduser|es-passwd|es-addapikey)$/);
 showHelp("Missing arguments") if (@ARGV < 3 && $ARGV[1] =~ /^(users-?update|users-?import|import|users-?export|backup|restore|restorenoprompt|rm|rm-?missing|rm-?node|hide-?node|unhide-?node|set-?allocation-?enable|unflood-?stage|reindex|reindex-sessions2|es-adduser|es-addapikey|field-rm|field-enable|field-disable)$/);
 showHelp("Missing arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(field|export|add-?missing|sync-?files|add-?alias|set-?replicas|set-?shards-?per-?node|set-?shortcut|ilm|ism)$/);
 showHelp("Missing arguments") if (@ARGV < 5 && $ARGV[1] =~ /^(allocate-?empty|set-?shortcut|shrink)$/);
 showHelp("Must have both <old fn> and <new fn>") if (@ARGV < 4 && $ARGV[1] =~ /^(mv)$/);
 showHelp("Must have both <type> and <num> arguments") if (@ARGV < 4 && $ARGV[1] =~ /^(rotate|expire)$/);
 
-parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|wipe|optimize)$/);
+parseArgs(2) if ($ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|wipe|wipenoprompt|optimize)$/);
 parseArgs(3) if ($ARGV[1] =~ /^(restore|restorenoprompt|backup)$/);
 
 $ESTIMEOUT = 240 if ($ESTIMEOUT < 240 && $ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|shrink|ilm|ism)$/);
+loadBaseFields() if ($ARGV[1] =~ /^(init|initnoprompt|initorupgrade|initorupgradenoprompt|upgrade|upgradenoprompt|clean|wipe|wipenoprompt|update-fields)$/);
 
 $main::userAgent = LWP::UserAgent->new(timeout => $ESTIMEOUT + 5, keep_alive => 5);
 
@@ -8663,7 +8989,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     my %cont3xtIndices = map { $_->{index} => $_ } @{ esGet("/_cat/indices/cont3xt*?format=json", 1) };
 
     # Indices we want to backup, if there is an alias
-    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "sequence", "stats", "users", "views", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
+    my @indices = ("configs", "dstats", "fields", "files", "hunts", "lookups", "notifiers", "parliament", "parliament_issues", "queries", "shareables", "sequence", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts", "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     # find which we have aliases for or are in cont3xt
     @indices = grep { exists $allAliases{"${PREFIX}${_}"} || $cont3xtIndices{$_} } @indices;
@@ -9065,6 +9391,18 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
 
     print "$matched user(s) matched '$pattern', $changed " . ($DRYRUN ? "would be changed" : "changed") . "\n";
     exit 0;
+} elsif ($ARGV[1] =~ /^(shareables-?import)$/) {
+    parseArgs(3);
+
+    my $what = $ARGV[2] // "all";
+    showHelp("Unknown shareables-import type '$what', must be one of: all, " . join(", ", sort keys %SHAREABLE_IMPORTS))
+        if ($what ne "all" && !$SHAREABLE_IMPORTS{$what});
+
+    my ($copied, $skipped) = shareablesImport($what, $DRYRUN, 0);
+
+    print "$copied " . ($DRYRUN ? "would be copied" : "copied") . ", $skipped already existed\n";
+    print "The originals were left on the user, so Arkime 6 keeps working. Re-run any time to pick up new ones.\n";
+    exit 0;
 } elsif ($ARGV[1] =~ /^(set-?shortcut)$/) {
     showHelp("Invalid name $ARGV[2], names cannot have special characters except '-' and '_'") if ($ARGV[2] =~ /[^-a-zA-Z0-9_]/);
     showHelp("file '$ARGV[4]' not found") if (! -e $ARGV[4]);
@@ -9364,10 +9702,15 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     printIndex($status, "notifiers_v40");
 
     printIndex($status, "parliament_v50");
+    printIndex($status, "parliament_issues_v70");
 
     printIndex($status, "queries_v30");
 
     printIndex($status, "shareables_v60");
+
+    printIndex($status, "featherprint_v70");
+    printIndex($status, "featherprint_history_v70");
+    printIndex($status, "featherprint_alerts_v70");
 
     printIndex($status, "sequence_v30");
     printIndex($status, "sequence_v3");
@@ -10146,6 +10489,24 @@ $policy = qq/{
             update => \&shareablesUpdate,
         },
         {
+            name => "featherprint_v70",
+            alias => "featherprint",
+            create => \&featherprintCreate,
+            update => \&featherprintUpdate,
+        },
+        {
+            name => "featherprint_history_v70",
+            alias => "featherprint_history",
+            create => \&featherprintHistoryCreate,
+            update => \&featherprintHistoryUpdate,
+        },
+        {
+            name => "featherprint_alerts_v70",
+            alias => "featherprint_alerts",
+            create => \&featherprintAlertsCreate,
+            update => \&featherprintAlertsUpdate,
+        },
+        {
             name => "stats_v30",
             alias => "stats",
             create => \&statsCreate,
@@ -10315,7 +10676,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "shareables_v60", "stats_v30", "users_v30", "views_v40") {
+    foreach my $i ("configs_v50", "dstats_v30", "fields_v30", "hunts_v30", "lookups_v30", "notifiers_v40", "parliament_v50", "queries_v30", "shareables_v60", "stats_v30", "users_v30", "views_v40", "featherprint_v70", "featherprint_history_v70", "featherprint_alerts_v70") {
         if (!defined $indices{"${PREFIX}$i"}) {
             print "--> Couldn't find index ${PREFIX}$i, repair might fail\n"
         }
@@ -10327,7 +10688,7 @@ $policy = qq/{
         }
     }
 
-    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "users", "views") {
+    foreach my $i ("configs", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts") {
         if (defined $indices{"${PREFIX}$i"}) {
             print "--> Will delete the index ${PREFIX}$i and recreate as alias, this WILL cause data loss in those indices, maybe cancel and run backup first\n"
         }
@@ -10346,7 +10707,7 @@ $policy = qq/{
     $verbose = 3 if ($verbose < 3);
 
     print "Deleting any indices that should be aliases\n";
-    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "stats", "users", "views") {
+    foreach my $i ("configs", "dstats", "fields", "hunts", "lookups", "notifiers", "parliament", "queries", "shareables", "stats", "users", "views", "featherprint", "featherprint_history", "featherprint_alerts") {
         esDelete("/${PREFIX}$i", 0) if (defined $indices{"${PREFIX}$i"});
     }
 
@@ -10365,6 +10726,9 @@ $policy = qq/{
     esAlias("add", "stats_v30", "stats");
     esAlias("add", "users_v30", "users");
     esAlias("add", "views_v40", "views");
+    esAlias("add", "featherprint_v70", "featherprint");
+    esAlias("add", "featherprint_history_v70", "featherprint_history");
+    esAlias("add", "featherprint_alerts_v70", "featherprint_alerts");
 
     if (defined $indices{"${PREFIX}users_v30"}) {
         usersUpdate();
@@ -10428,6 +10792,24 @@ $policy = qq/{
         shareablesCreate();
     } else {
         shareablesUpdate();
+    }
+
+    if (!defined $indices{"${PREFIX}featherprint_v70"}) {
+        featherprintCreate();
+    } else {
+        featherprintUpdate();
+    }
+
+    if (!defined $indices{"${PREFIX}featherprint_history_v70"}) {
+        featherprintHistoryCreate();
+    } else {
+        featherprintHistoryUpdate();
+    }
+
+    if (!defined $indices{"${PREFIX}featherprint_alerts_v70"}) {
+        featherprintAlertsCreate();
+    } else {
+        featherprintAlertsUpdate();
     }
 
     if (defined $indices{"${PREFIX}parliament_v50"}) {
@@ -10501,7 +10883,7 @@ if ($ARGV[1] eq "initorupgrade") {
     $ARGV[1] = ($main::versionNumber < 0) ? "initnoprompt" : "upgradenoprompt";
 }
 
-if ($ARGV[1] eq "wipe" && $main::versionNumber != $VERSION) {
+if ($ARGV[1] =~ /^wipe(noprompt)?$/ && $main::versionNumber != $VERSION) {
     die "Can only use wipe if mappings are up to date.  Use upgrade first.";
 }
 
@@ -10532,6 +10914,9 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}lookups_v30,${OLDPREFIX}lookups_v1,${OLDPREFIX}lookups,${PREFIX}lookups?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}notifiers_v40,${PREFIX}notifiers?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}shareables_v60,${PREFIX}shareables?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}featherprint_v70,${PREFIX}featherprint?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}featherprint_history_v70,${PREFIX}featherprint_history?ignore_unavailable=true", 1);
+    esDelete("/${PREFIX}featherprint_alerts_v70,${PREFIX}featherprint_alerts?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}views_v40,${PREFIX}views?ignore_unavailable=true", 1);
     my $indices;
     esDeleteIndices($indices, 1) if (($indices = esMatchingIndices("${OLDPREFIX}sessions2-*")) ne "");
@@ -10549,6 +10934,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}parliament_v50?ignore_unavailable=true", 1);
+        esDelete("/${PREFIX}parliament_issues_v70,${PREFIX}parliament_issues?ignore_unavailable=true", 1);
         esDelete("/${PREFIX}configs_v50,${PREFIX}configs?ignore_unavailable=true", 1);
     }
     esDelete("/tagger", 1);
@@ -10573,6 +10959,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     notifiersCreate();
     viewsCreate();
     shareablesCreate();
+    featherprintCreateAll();
     if ($ARGV[1] =~ "init") {
         usersCreate();
         queriesCreate();
@@ -10587,7 +10974,7 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     # backup writes the prefix into the file names, and the cont3xt indices
     # aren't prefixed, so work with full index names here
-    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "shareables");
+    my @indices = map { "${PREFIX}$_" } ("users", "sequence", "stats", "queries", "hunts", "files", "fields", "dstats", "lookups", "notifiers", "views", "configs", "parliament", "parliament_issues", "shareables", "featherprint", "featherprint_history", "featherprint_alerts");
     push(@indices, "cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history");
 
     my @filelist = ();
@@ -10633,9 +11020,12 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
     esDelete("/${PREFIX}users_v30,${OLDPREFIX}users_v7,${OLDPREFIX}users_v6,${OLDPREFIX}users_v5,${OLDPREFIX}users,${PREFIX}users?ignore_unavailable=true", 1);
     esDelete("/${PREFIX}queries_v30,${OLDPREFIX}queries_v3,${OLDPREFIX}queries_v2,${OLDPREFIX}queries_v1,${OLDPREFIX}queries,${PREFIX}queries?ignore_unavailable=true", 1);
 
-    # Only remove the cont3xt indices we actually have a backup of
+    # Only replace the newer indices the backup has, an empty index has settings but no docs file
+    foreach my $index ("featherprint", "featherprint_history", "featherprint_alerts", "parliament_issues") {
+        esDelete("/${PREFIX}${index}_v70,${PREFIX}${index}?ignore_unavailable=true", 1) if (-e "$ARGV[2].${PREFIX}${index}.settings.json");
+    }
     foreach my $index ("cont3xt_links", "cont3xt_views", "cont3xt_overviews", "cont3xt_history") {
-        esDelete("/${index}?ignore_unavailable=true", 1) if (-e "$ARGV[2].${index}.json");
+        esDelete("/${index}?ignore_unavailable=true", 1) if (-e "$ARGV[2].${index}.settings.json");
     }
 
     esDelete("/_template/${PREFIX}sessions3_ecs_template", 1);
@@ -10769,58 +11159,70 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
 
     logmsg "Starting Upgrade\n";
 
-    if ($main::versionNumber < 79) {
-        esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
+    # Common things forever
+    if ($main::versionNumber <= $VERSION) {
         checkForOld7Indices();
         sessions3Update();
         historyUpdate();
+    }
+
+    if ($main::versionNumber < 79) {
+        esDelete("/${PREFIX}users/_doc/_moloch_shared", 1);
         queriesUpdate();
         notifiersUpdate();
         notifiersAddMissingProps();
         parliamentCreate();
         viewsUpdate();
         lookupsUpdate();
-        usersUpdate();
-        filesUpdate();
         configsCreate();
         fields82Fix();
         shareablesCreate();
+        featherprintCreateAll();
+        usersUpdate();
+        filesUpdate();
     } elsif ($main::versionNumber <= 81) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
-        usersUpdate();
-        filesUpdate();
         configsCreate();
         fields82Fix();
         shareablesCreate();
-    } elsif ($main::versionNumber <= 83) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
+        featherprintCreateAll();
+        usersUpdate();
         filesUpdate();
+    } elsif ($main::versionNumber <= 83) {
         fields82Fix();
         shareablesCreate();
+        featherprintCreateAll();
         usersUpdate();
+        filesUpdate();
     } elsif ($main::versionNumber <= 85) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
         shareablesUpdate();
+        featherprintCreateAll();
         usersUpdate();
-    } elsif ($main::versionNumber <= 86) {
-        checkForOld7Indices();
-        sessions3Update();
-        historyUpdate();
+        filesUpdate();
+    } elsif ($main::versionNumber <= 88) {
+        featherprintCreateAll();
+        usersUpdate();
+        filesUpdate();
     } else {
         logmsg "db.pl is hosed\n";
+    }
+
+    # Sharables import one time version bump
+    if ($main::versionNumber < $VERSION) {
+        # never a dryrun: upgrade takes --dryrun but honors it nowhere else
+        my ($copied, $skipped) = eval { shareablesImport("all", 0, 1) };
+        if ($@) {
+            logmsg "WARNING - could not import layouts into shareables: $@";
+            logmsg "WARNING - run 'db.pl <host:port> shareables-import all' once the cause is fixed.\n";
+        } elsif ($copied) {
+            logmsg "Imported $copied layout(s) into shareables, $skipped already existed\n";
+        }
     }
 }
 
 if ($DOHOTWARM) {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}parliament_issues_v70,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": \"warm\"}");
 } else {
-    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
+    esPut("/${PREFIX}stats_v30,${PREFIX}dstats_v30,${PREFIX}fields_v30,${PREFIX}files_v30,${PREFIX}sequence_v30,${PREFIX}users_v30,${PREFIX}queries_v30,${PREFIX}hunts_v30,${PREFIX}history*,${PREFIX}lookups_v30,${PREFIX}notifiers_v40,${PREFIX}parliament_v50,${PREFIX}parliament_issues_v70,${PREFIX}shareables_v60,${PREFIX}views_v40,${PREFIX}configs_v50,${PREFIX}featherprint_v70,${PREFIX}featherprint_history_v70,${PREFIX}featherprint_alerts_v70/_settings?master_timeout=${ESTIMEOUT}s&allow_no_indices=true&ignore_unavailable=true", "{\"index.routing.allocation.require.molochtype\": null}");
 }
 
 logmsg "Finished\n";

@@ -1,0 +1,120 @@
+{
+  "name": "NetBIOS Names",
+  "description": "NetBIOS name service sessions: protocols == nbns",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == nbns",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "nbns.queryType",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "NetBIOS Names sessions by nbns.queryType"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "NetBIOS Names sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "NetBIOS Names bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "nbns.name",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Names"
+      },
+      {
+        "id": "w5",
+        "field": "nbns.queryType",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Query types"
+      },
+      {
+        "id": "w6",
+        "field": "nbns.queryHost",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Queried hosts"
+      },
+      {
+        "id": "w7",
+        "field": "nbns.ip",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Answer IPs"
+      },
+      {
+        "id": "w8",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "nbns.queryHost",
+          "nbns.queryType",
+          "nbns.name",
+          "nbns.ip"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

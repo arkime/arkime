@@ -1,4 +1,4 @@
-use Test::More tests => 133;
+use Test::More tests => 142;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -157,9 +157,14 @@ eq_or_diff($result, from_json('{"text": "There are no acknowledged issues to rem
 $result = parliamentPutToken("/parliament/api/removeSelectedAcknowledgedIssues?arkimeRegressionUser=parliamentAdminP", '{}', $parliamentAdminToken);
 eq_or_diff($result, from_json('{"text": "Must specify the acknowledged issue(s) to remove.", "success": false}'));
 
-# ignoreIssues requires a finite numeric ms (rejects non-numeric ms before it corrupts ignoreUntil)
+# ignoreIssues requires -1 or a sane positive ms, anything else would be saved as an ignoreUntil the db rejects
+my $badMs = from_json('{"text": "ms must be -1 or a positive number of milliseconds up to 10 years.", "success": false}');
 $result = parliamentPutToken("/parliament/api/ignoreIssues?arkimeRegressionUser=parliamentAdminP", '{"issues": [{"clusterId": "abc", "type": "esRed"}], "ms": "not-a-number"}', $parliamentAdminToken);
-eq_or_diff($result, from_json('{"text": "ms must be a finite number.", "success": false}'));
+eq_or_diff($result, $badMs);
+$result = parliamentPutToken("/parliament/api/ignoreIssues?arkimeRegressionUser=parliamentAdminP", '{"issues": [{"clusterId": "abc", "type": "esRed"}], "ms": 9e18}', $parliamentAdminToken);
+eq_or_diff($result, $badMs, "ignore ms past 10 years is rejected");
+$result = parliamentPutToken("/parliament/api/ignoreIssues?arkimeRegressionUser=parliamentAdminP", '{"issues": [{"clusterId": "abc", "type": "esRed"}], "ms": -5}', $parliamentAdminToken);
+eq_or_diff($result, $badMs, "negative ignore ms other than -1 is rejected");
 
 # parliament admin can access/update settings/parliament
 $result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
@@ -324,7 +329,10 @@ my $result = $result->{results}->{$k[0]};
 is ($result->{title}, "cluster 1a");
 is ($result->{id}, $k[0]);
 ok (exists $result->{deltaBPS});
+SKIP: {
+    skip "no OpenSearch/Elasticsearch data nodes", 1 if $ArkimeTest::noEs;
 ok (exists $result->{dataNodes});
+}
 
 # Delete cluster
 $result = parliamentDeleteToken("/parliament/api/groups/$firstGroupId/clusters/$firstClusterId?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
@@ -355,19 +363,60 @@ parliamentGet("/regressionTests/updateParliament");
 $result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 ok(scalar @{$result->{issues}} >= 2);
 
-# the poll saves its issues to the issues file once per cycle (written async, so allow a moment)
-my $issuesOnDisk = [];
+# the poll saves its issues to the db once per cycle (saved async, so allow a moment)
+my $issuesSaved = [];
 for (my $i = 0; $i < 10; $i++) {
-    if (open(my $fh, '<', 'parliament.dev.issues.json')) {
-        local $/;
-        my $data = eval { from_json(<$fh>) };
-        close($fh);
-        $issuesOnDisk = $data if ref $data eq 'ARRAY';
-    }
-    last if grep { ($_->{clusterId} // '') eq $down1Id } @$issuesOnDisk;
+    my $data = parliamentGet("/regressionTests/savedIssues");
+    $issuesSaved = $data if ref $data eq 'ARRAY';
+    last if grep { ($_->{clusterId} // '') eq $down1Id } @$issuesSaved;
     sleep(1);
 }
-ok((grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesOnDisk), "poll issues are written to the issues file");
+ok((grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesSaved), "poll issues are saved to the db");
+my ($savedDown) = grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @$issuesSaved;
+ok(!(grep { exists $savedDown->{$_} } qw(text title severity message)), "saved issues leave out the display strings");
+ok(defined $savedDown->{value}, "saved issues keep the value");
+
+# reloading from the db rebuilds the display strings
+parliamentGet("/regressionTests/loadIssues");
+$result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+my ($reloadedDown) = grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @{$result->{issues}};
+is($reloadedDown->{title}, "ES Down", "reloaded issue has its title");
+is($reloadedDown->{severity}, "red", "reloaded issue has its severity");
+is($reloadedDown->{message}, "ES is down: $savedDown->{value}", "reloaded issue message is rebuilt");
+
+# a doc saved with the display strings is rewritten without them after a reload
+esPost("/tests_parliament_issues/_update_by_query?refresh=true", '{"script": {"source": "ctx._source.title = \'old\'; ctx._source.message = \'old\'"}}');
+parliamentGet("/regressionTests/loadIssues");
+parliamentGet("/regressionTests/updateParliament");
+for (my $i = 0; $i < 10; $i++) {
+    $issuesSaved = parliamentGet("/regressionTests/savedIssues");
+    last if ref $issuesSaved eq 'ARRAY' && scalar @$issuesSaved && !grep { exists $_->{title} || exists $_->{message} } @$issuesSaved;
+    sleep(1);
+}
+ok(scalar @$issuesSaved && !(grep { exists $_->{title} || exists $_->{message} } @$issuesSaved), "old display strings are removed from saved issues");
+$result = parliamentGetToken("/parliament/api/issues?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+($reloadedDown) = grep { ($_->{clusterId} // '') eq $down1Id && $_->{type} eq 'esDown' } @{$result->{issues}};
+is($reloadedDown->{title}, "ES Down", "an old saved title isn't used");
+
+# a cluster sending huge names and number strings still has its issues saved, with bounded values
+$result = parliamentPostToken("/parliament/api/groups/$issueGroupId/clusters?arkimeRegressionUser=parliamentAdminP", '{"title": "hostile", "url": "http://127.0.0.1:8123/regressionTests/hostileCluster"}', $parliamentAdminToken);
+ok($result->{success}, "hostile cluster created");
+my $hostileId = $result->{cluster}->{id};
+parliamentGet("/regressionTests/updateParliament");
+parliamentGet("/regressionTests/updateParliament");
+my @hostileIssues;
+for (my $i = 0; $i < 10; $i++) {
+    my $data = parliamentGet("/regressionTests/savedIssues");
+    @hostileIssues = grep { ($_->{clusterId} // '') eq $hostileId } @$data if ref $data eq 'ARRAY';
+    last if grep { $_->{type} eq 'lowDiskSpaceES' } @hostileIssues;
+    sleep(1);
+}
+my ($lowDisk) = grep { $_->{type} eq 'lowDiskSpace' } @hostileIssues;
+my ($lowDiskES) = grep { $_->{type} eq 'lowDiskSpaceES' } @hostileIssues;
+ok($lowDisk && $lowDiskES, "hostile cluster issues are saved");
+is(length($lowDisk->{node} // ''), 256, "remote node name is capped");
+is($lowDisk->{value}, 0, "remote number string is stored as a number");
+is(length($lowDiskES->{node} // ''), 256, "remote es node name is capped");
 
 # filter passed as an array is ignored instead of throwing (500) on .toLowerCase()
 $result = parliamentGetToken("/parliament/api/issues?filter=a&filter=b&arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
@@ -405,8 +454,7 @@ const root = path.resolve(process.argv[2]);
 const require = createRequire(import.meta.url);
 const impls = {
   arkimeUtil: require(path.join(root, 'common/arkimeUtil')).commaString,
-  vueFilters: (await import(pathToFileURL(path.join(root, 'common/vueapp/vueFilters.js')))).commaString,
-  cont3xtVueFilters: (await import(pathToFileURL(path.join(root, 'cont3xt/common/vueapp/vueFilters.js')))).commaString
+  vueFilters: (await import(pathToFileURL(path.join(root, 'common/vueapp/vueFilters.js')))).commaString
 };
 
 function oldCommaString (input) {
@@ -445,7 +493,7 @@ is($? >> 8, 0, "runner exits cleanly") or diag($output);
 my ($json) = $output =~ /^RESULT (.*)$/m;
 my $commaResult = from_json($json // '{}');
 
-foreach my $name (qw(arkimeUtil vueFilters cont3xtVueFilters)) {
+foreach my $name (qw(arkimeUtil vueFilters)) {
     my $r = $commaResult->{$name};
     ok(defined $r, "$name loaded");
     is($r->{mismatch}, undef, "$name matches old regex output") or diag(to_json($r->{mismatch}));
@@ -455,4 +503,4 @@ foreach my $name (qw(arkimeUtil vueFilters cont3xtVueFilters)) {
 }
 
 ok($output !~ /Error/, "no errors") or diag($output);
-is(scalar(keys %$commaResult), 3, "all implementations tested");
+is(scalar(keys %$commaResult), 2, "all implementations tested");

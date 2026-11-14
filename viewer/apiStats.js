@@ -89,82 +89,49 @@ class StatsAPIs {
    * @returns {number} recordsFiltered - The number of nodes returned in this result.
    */
   static getStats (req, res) {
-    const query = {
-      from: 0,
-      size: 10000,
-      query: {
-        bool: {
-          filter: [],
-          should: [],
-          must_not: [
-            { term: { hide: true } }
-          ]
-        }
-      }
-    };
+    const now = Math.floor(Date.now() / 1000);
+    const and = [{ hide: { $ne: true } }];
 
-    if (req.query.filter !== undefined && req.query.filter !== '') {
-      const names = req.query.filter.split(',');
-      for (let n of names) {
+    if (ArkimeUtil.isString(req.query.filter) && req.query.filter !== '') {
+      const names = [];
+      for (let n of req.query.filter.split(',')) {
         n = n.trim();
         if (n !== '') {
           if (n.endsWith('$')) { n = n.slice(0, -1); } else { n += '.*'; }
-          query.query.bool.should.push({
-            regexp: { nodeName: n }
-          });
+          names.push({ nodeName: { $regex: n } });
         }
       }
+      if (names.length) { and.push({ $or: names }); }
     }
-    ViewerUtils.addCluster(req.query.cluster, query);
-
-    const rquery = {
-      query: { term: { locked: 0 } },
-      size: 0,
-      aggregations: {
-        buckets: {
-          terms: { field: 'node', size: 1000 },
-          aggregations: {
-            first: { min: { field: 'first' } }
-          }
-        }
-      }
-    };
-    ViewerUtils.addCluster(req.query.cluster, rquery);
 
     if (req.query.hide !== undefined && req.query.hide !== 'none') {
       if (req.query.hide === 'old' || req.query.hide === 'both') {
-        query.query.bool.filter.push({ range: { currentTime: { gte: 'now-5m' } } });
+        and.push({ currentTime: { $gte: now - 5 * 60 } });
       }
       if (req.query.hide === 'nosession' || req.query.hide === 'both') {
-        query.query.bool.filter.push({ range: { monitoring: { gte: '1' } } });
+        and.push({ monitoring: { $gte: 1 } });
       }
     }
+    const where = { $and: and };
 
-    const now = Math.floor(Date.now() / 1000);
-
-    Promise.all([Db.search('stats', query),
-      Db.numberOfDocuments('stats', rquery.cluster ? { cluster: rquery.cluster } : {}),
-      Db.search('files', rquery)
-    ]).then(([stats, total, retention]) => {
-      if (stats.error) { throw stats.error; }
-
-      if (retention.aggregations.buckets && retention.aggregations.buckets.buckets) {
-        retention = ViewerUtils.arrayToObject(retention.aggregations.buckets.buckets, 'key');
-      } else {
-        retention = {};
+    Promise.all([
+      Db.searchStats({ where, size: 10000 }, req.query.cluster),
+      Db.countStats(req.query.cluster),
+      Db.filesRetention(req.query.cluster)
+    ]).then(([stats, total, retentionBuckets]) => {
+      const retention = Object.create(null);
+      for (const bucket of retentionBuckets) {
+        retention[bucket.key] = bucket.first;
       }
 
-      const results = { total: stats.hits.total, results: [] };
+      const results = { total: stats.total, results: [] };
 
-      for (let i = 0, ilen = stats.hits.hits.length; i < ilen; i++) {
-        const fields = stats.hits.hits[i]._source || stats.hits.hits[i].fields;
-        if (stats.hits.hits[i]._source) {
-          ViewerUtils.mergeUnarray(fields, stats.hits.hits[i].fields);
-        }
-        fields.id = stats.hits.hits[i]._id;
+      for (const hit of stats.data) {
+        const fields = hit.doc;
+        fields.id = hit.id;
 
-        if (retention[fields.id]) {
-          fields.retention = now - retention[fields.id].first.value;
+        if (retention[fields.id] !== undefined && retention[fields.id] !== null) {
+          fields.retention = now - retention[fields.id];
         } else {
           fields.retention = 0;
         }
@@ -184,6 +151,27 @@ class StatsAPIs {
         fields.deltaDupDroppedPerSec = Math.floor(fields.deltaDupDropped * 1000.0 / fields.deltaMS) || 0;
         fields.deltaTotalDroppedPerSec = Math.floor((fields.deltaDropped + fields.deltaOverloadDropped) * 1000.0 / fields.deltaMS);
         fields.runningTime = fields.currentTime - fields.startTime;
+        // authoritative (server-clock) liveness so the dashboard dot doesn't
+        // depend on each browser's clock; matches the hide=old now-5m rule
+        fields.outOfDate = (now - fields.currentTime) > 300;
+
+        // each node's free-space recycle target as a percent, so the UI can
+        // color disk relative to the node's own target (freeSpaceG may be a
+        // percent like '5%' or an absolute GB value)
+        const fsg = Config.getFull(fields.nodeName, 'freeSpaceG', '5%');
+        if (typeof fsg === 'string' && fsg.endsWith('%')) {
+          fields.freeSpaceTargetP = parseFloat(fsg);
+        } else {
+          // GB target → percent. Use the node's exact statvfs-based total
+          // (freeSpaceM / freeSpaceP), since usedSpaceM is 0 when pcapDirTemplate
+          // is set and otherwise omits non-Arkime data. Fall back to used+free
+          // only when freeSpaceP is 0 (a full disk).
+          const totalSpaceM = fields.freeSpaceP > 0
+            ? fields.freeSpaceM * 100 / fields.freeSpaceP
+            : (fields.usedSpaceM || 0) + (fields.freeSpaceM || 0);
+          fields.freeSpaceTargetP = totalSpaceM > 0 ? (parseFloat(fsg) * 1000) / totalSpaceM * 100 : 0;
+        }
+
         results.results.push(fields);
       }
 
@@ -211,12 +199,12 @@ class StatsAPIs {
       const stopLen = from + (+req.query.length || 500);
 
       res.send({
-        recordsTotal: total.count,
+        recordsTotal: total,
         recordsFiltered: results.results.length,
         data: results.results.slice(from, stopLen)
       });
     }).catch((err) => {
-      console.log(`ERROR - ${req.method} /api/stats`, query, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/stats`, JSON.stringify(where), util.inspect(err, false, 50));
       res.send({ recordsTotal: 0, recordsFiltered: 0, data: [] });
     });
   }
@@ -244,27 +232,19 @@ class StatsAPIs {
 
     const nodeName = req.query.nodeName;
 
-    const query = {
-      query: {
-        bool: {
-          filter: [
-            {
-              range: { currentTime: { gte: req.query.start, lte: req.query.stop } }
-            },
-            {
-              term: { interval: req.query.interval || 60 }
-            }
-          ]
-        }
+    const params = {
+      where: {
+        currentTime: { $gte: +req.query.start, $lte: +req.query.stop },
+        interval: +(req.query.interval || 60)
       }
     };
 
     if (nodeName !== undefined && nodeName !== 'Total' && nodeName !== 'Average') {
-      query.sort = { currentTime: { order: 'desc' } };
-      query.size = req.query.size || 1440;
-      query.query.bool.filter.push({ term: { nodeName } });
+      params.sort = { currentTime: 'desc' };
+      params.size = +req.query.size || 1440;
+      params.where.nodeName = nodeName;
     } else {
-      query.size = 100000;
+      params.size = 100000;
     }
 
     const mapping = {
@@ -287,13 +267,13 @@ class StatsAPIs {
       cpu: { _source: ['cpu'], func: function (item) { return item.cpu * 0.01; } }
     };
 
-    query._source = mapping[req.query.name] ? mapping[req.query.name]._source : [req.query.name];
-    query._source.push('nodeName', 'currentTime');
+    params.fields = mapping[req.query.name] ? [...mapping[req.query.name]._source] : [req.query.name];
+    params.fields.push('nodeName', 'currentTime');
 
     const func = mapping[req.query.name] ? mapping[req.query.name].func : function (item) { return item[req.query.name]; };
 
     try {
-      const result = await Db.search('dstats', query, { filter_path: '_scroll_id,hits.total,hits.hits._source' });
+      const result = await Db.searchDStats(params);
 
       let i, ilen;
       // Keyed by nodeName, which sensors write
@@ -309,14 +289,15 @@ class StatsAPIs {
         console.log('/api/dstats result', util.inspect(result, false, 50));
       }
 
-      if (result && result.hits && result.hits.hits) {
-        for (i = 0, ilen = result.hits.hits.length; i < ilen; i++) {
-          const fields = result.hits.hits[i]._source;
+      if (result?.data) {
+        for (i = 0, ilen = result.data.length; i < ilen; i++) {
+          const fields = result.data[i].doc;
           const pos = Math.floor((fields.currentTime - req.query.start) / req.query.step);
 
           if (data[fields.nodeName] === undefined) {
             data[fields.nodeName] = Array(num).fill(0);
           }
+          if (!(pos >= 0 && pos < num)) { continue; }
           data[fields.nodeName][pos] = mult * func(fields);
         }
       }
@@ -348,7 +329,7 @@ class StatsAPIs {
         }
       }
     } catch (err) {
-      console.log(`ERROR - ${req.method} /api/dstats`, query, util.inspect(err, false, 50));
+      console.log(`ERROR - ${req.method} /api/dstats`, JSON.stringify(params), util.inspect(err, false, 50));
       res.send({});
     }
   }
@@ -451,11 +432,13 @@ class StatsAPIs {
           nodeExcluded: nodeExcludes.includes(node.name),
           storeSize: node.indices.store.size_in_bytes,
           freeSize: node.roles.some(str => str.startsWith('data')) ? node.fs.total.available_in_bytes : 0,
+          diskTotal: node.roles.some(str => str.startsWith('data')) ? node.fs.total.total_in_bytes : 0,
           docs: node.indices.docs.count,
           scrolls: node.indices.search.scroll_current,
           searches: node.indices.search.query_current,
           searchesTime: node.indices.search.query_time_in_millis,
           heapSize: node.jvm.mem.heap_used_in_bytes,
+          heapMax: node.jvm.mem.heap_max_in_bytes,
           nonHeapSize: node.jvm.mem.non_heap_used_in_bytes,
           uptime: Math.floor(node.jvm.uptime_in_millis / (1000 * 60)),
           cpu: node.process.cpu.percent,
@@ -938,6 +921,165 @@ class StatsAPIs {
 
   // --------------------------------------------------------------------------
   /**
+   * GET - /api/db/:db/queries
+   *
+   * Lists the queries running on a non OpenSearch/Elasticsearch db, like ClickHouse for the sessions.
+   * The query text is only returned to dbAdmin users.
+   * @name /db/:db/queries
+   * @param {string} db - The db, sessions, cluster or users.
+   * @param {string} filter - A regex to filter the user, db user or query by.
+   * @param {string} sortField=elapsed - The field to sort by.
+   * @param {boolean} desc=true - Sort descending.
+   * @returns {Array} data - The queries: id, user, dbUser, app, state, elapsed, rowsRead, bytesRead, memory, cancelled, query, each backend fills what it can.
+   * @returns {number} recordsTotal - The number of running queries.
+   * @returns {number} recordsFiltered - The number of queries returned.
+   */
+  static async getDbQueries (req, res) {
+    const impl = Db.adminDb(req.params.db);
+    if (!impl) { return res.serverError(404, 'Unknown db'); }
+
+    let regex;
+    if (ArkimeUtil.isString(req.query.filter) && req.query.filter !== '') {
+      try {
+        regex = new RE2(req.query.filter);
+      } catch (e) {
+        return res.serverError(400, `Regex Error: ${e}`);
+      }
+    }
+
+    try {
+      const queries = await impl.adminQueries();
+      const isDbAdmin = req.user.hasRole('dbAdmin');
+      let data = queries.filter(q => !regex || regex.test(q.user ?? '') || regex.test(q.dbUser ?? '') || regex.test(q.app ?? '') || (isDbAdmin && regex.test(q.query ?? '')));
+      if (!isDbAdmin) { data.forEach((q) => { delete q.query; }); }
+
+      const sortField = impl.adminFields?.includes(req.query.sortField) ? req.query.sortField : 'elapsed';
+      const dir = req.query.desc === 'false' ? 1 : -1;
+      data.sort((a, b) => dir * (typeof a[sortField] === 'string' ? a[sortField].localeCompare(b[sortField] ?? '') : (a[sortField] ?? 0) - (b[sortField] ?? 0)));
+      data = data.slice(0, Math.min(Math.max(parseInt(req.query.size) || 500, 1), 10000));
+
+      return res.send({ recordsTotal: queries.length, recordsFiltered: data.length, data });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/db/%s/queries`, ArkimeUtil.sanitizeStr(req.params.db), util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * POST - /api/db/:db/queries/:id/kill
+   *
+   * Kills a query running on a non OpenSearch/Elasticsearch db (dbAdmin only).
+   * @name /db/:db/queries/:id/kill
+   * @param {string} db - The db, sessions, cluster or users.
+   * @param {string} id - The query id from /api/db/:db/queries.
+   * @returns {boolean} success - Whether the query was found and killed.
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async killDbQuery (req, res) {
+    const impl = Db.adminDb(req.params.db);
+    if (!impl) { return res.serverError(404, 'Unknown db'); }
+    if (!ArkimeUtil.isString(req.params.id) || req.params.id.length > 1000) {
+      return res.serverError(400, 'Missing ID of query to kill');
+    }
+
+    try {
+      if (!await impl.adminKillQuery(req.params.id)) {
+        return res.serverError(404, 'Query not found');
+      }
+      return res.json({ success: true, text: 'Query killed' });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/db/%s/queries/%s/kill`, ArkimeUtil.sanitizeStr(req.params.db), ArkimeUtil.sanitizeStr(req.params.id), util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * GET - /api/db/:db/tables
+   *
+   * Lists the tables, or for ClickHouse the table partitions, of a non OpenSearch/Elasticsearch db.
+   * @name /db/:db/tables
+   * @param {string} db - The db, sessions, cluster or users.
+   * @param {string} filter - A regex to filter the table or partition by.
+   * @param {string} sortField=table - The field to sort by.
+   * @param {boolean} desc=false - Sort descending.
+   * @returns {Array} data - The tables, each backend fills the fields it has: id, table, partition, rows, parts,
+   *   patchParts, dead, bytes, compressed, uncompressed, tableBytes, indexBytes, memory, cached, first, last, modified,
+   *   lastVacuum, lastAnalyze.
+   * @returns {number} recordsTotal - The number of tables.
+   * @returns {number} recordsFiltered - The number of tables returned.
+   */
+  static async getDbTables (req, res) {
+    const impl = Db.adminDb(req.params.db);
+    if (typeof impl?.adminTables !== 'function') { return res.serverError(404, 'Unknown db'); }
+
+    let regex;
+    if (ArkimeUtil.isString(req.query.filter) && req.query.filter !== '') {
+      try {
+        regex = new RE2(req.query.filter);
+      } catch (e) {
+        return res.serverError(400, `Regex Error: ${e}`);
+      }
+    }
+
+    try {
+      const tables = await impl.adminTables();
+      let data = tables.filter(t => !regex || regex.test(t.table) || regex.test(t.partition ?? ''));
+      const sortField = impl.adminTableFields?.includes(req.query.sortField) ? req.query.sortField : 'table';
+      const dir = req.query.desc === 'true' ? -1 : 1;
+      data.sort((a, b) => {
+        const av = a[sortField] ?? (typeof b[sortField] === 'string' ? '' : 0);
+        const bv = b[sortField] ?? (typeof a[sortField] === 'string' ? '' : 0);
+        const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv;
+        return dir * (cmp || (a.partition ?? '').localeCompare(b.partition ?? ''));
+      });
+      data = data.slice(0, Math.min(Math.max(parseInt(req.query.size) || 10000, 1), 10000));
+
+      return res.send({ recordsTotal: tables.length, recordsFiltered: data.length, data });
+    } catch (err) {
+      console.log(`ERROR - ${req.method} /api/db/%s/tables`, ArkimeUtil.sanitizeStr(req.params.db), util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * POST - /api/db/:db/tables/:id/:action
+   * DELETE - /api/db/:db/tables/:id
+   *
+   * Runs an action on a table or partition of a non OpenSearch/Elasticsearch db (dbAdmin only), the DELETE drops it
+   * and also needs removeEnabled. ClickHouse can optimize and drop partitions, Postgres can vacuum tables.
+   * @name /db/:db/tables/:id/:action
+   * @param {string} db - The db, sessions, cluster or users.
+   * @param {string} id - The table id from /api/db/:db/tables.
+   * @param {string} action - optimize or vacuum, the ones the db supports.
+   * @returns {boolean} success - Whether the action ran (an optimize or vacuum is only started).
+   * @returns {string} text - The success/error message to (optionally) display to the user.
+   */
+  static async dbTableAction (req, res) {
+    // Only the DELETE route, which also needs removeEnabled, drops
+    const action = req.method === 'DELETE' ? 'drop' : req.params.action;
+    const impl = Db.adminDb(req.params.db);
+    if ((req.method !== 'DELETE' && action === 'drop') || !impl?.adminTableActions?.includes(action)) { return res.serverError(404, 'Unknown db or action'); }
+    if (!ArkimeUtil.isString(req.params.id) || req.params.id.length > 2000) {
+      return res.serverError(400, 'Missing table id');
+    }
+
+    try {
+      if (!await impl.adminTableAction(req.params.id, action)) {
+        return res.serverError(404, 'Table not found');
+      }
+      return res.json({ success: true, text: `${action} ${action === 'drop' ? 'done' : 'started'}` });
+    } catch (err) {
+      if (err.statusCode === 409) { return res.serverError(409, err.message); }
+      console.log(`ERROR - ${req.method} /api/db/%s/tables/%s %s`, ArkimeUtil.sanitizeStr(req.params.db), ArkimeUtil.sanitizeStr(req.params.id), action, util.inspect(err, false, 50));
+      return res.serverError(500, err.toString());
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  /**
    * POST - /api/estasks/cancelall
    *
    * Cancels all running OpenSearch/Elasticsearch tasks (admin only).
@@ -959,7 +1101,7 @@ class StatsAPIs {
   /**
    * GET - /api/esadmin
    *
-   * Fetches all OpenSearch/Elasticsearch settings that a user can change (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Fetches all OpenSearch/Elasticsearch settings that a user can change (requires the dbAdmin role).
    * @name /esadmin
    * @returns {array} settings - List of ES settings that a user can change
    */
@@ -1099,7 +1241,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/set
    *
-   * Sets OpenSearch/Elasticsearch settings (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Sets OpenSearch/Elasticsearch settings (requires the dbAdmin role).
    * @name /esadmin/set
    * @returns {boolean} success - Whether saving the settings was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1237,7 +1379,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/reroute
    *
-   * Try to restart any shard migrations that have failed or paused (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Try to restart any shard migrations that have failed or paused (requires the dbAdmin role).
    * @name /esadmin/reroute
    * @returns {boolean} success - Whether the reroute was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1255,7 +1397,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/flush
    *
-   * Flush and refresh any data waiting in OpenSearch/Elasticsearch to disk (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Flush and refresh any data waiting in OpenSearch/Elasticsearch to disk (requires the dbAdmin role).
    * @name /esadmin/flush
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
@@ -1274,7 +1416,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/unflood
    *
-   * Try and clear any indices marked as flooded (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Try and clear any indices marked as flooded (requires the dbAdmin role).
    * @name /esadmin/unflood
    * @returns {boolean} success - Always true
    * @returns {string} text - The success message to (optionally) display to the user.
@@ -1293,7 +1435,7 @@ class StatsAPIs {
   /**
    * POST - /api/esadmin/clearcache
    *
-   * Try and clear the cache for all indices (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Try and clear the cache for all indices (requires the dbAdmin role).
    * @name /esadmin/clearcache
    * @returns {boolean} success - Whether clearing the cache was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1317,7 +1459,7 @@ class StatsAPIs {
   /**
    * GET - /api/esadmin/allocation
    *
-   * Provides an explanation for shard allocation in the cluster (es admin only - set in config with <a href="settings#esadminusers">esAdminUsers</a>).
+   * Provides an explanation for shard allocation in the cluster (requires the dbAdmin role).
    * Returns details about why shards are assigned or unassigned.
    * @name /esadmin/allocation
    * @param {string} index - Optional specific index name to explain
@@ -1714,16 +1856,10 @@ class StatsAPIs {
    * @returns {number} recordsFiltered - The number of stats returned in this result.
    */
   static getParliament (req, res) {
-    const query = {
+    const params = {
+      where: { hide: { $ne: true } },
       size: 1000,
-      query: {
-        bool: {
-          must_not: [
-            { term: { hide: true } }
-          ]
-        }
-      },
-      _source: [
+      fields: [
         'ver', 'nodeName', 'currentTime', 'monitoring', 'deltaBytes',
         'deltaPackets', 'deltaMS', 'deltaESDropped', 'deltaDropped',
         'deltaOverloadDropped', 'freeSpaceM', 'freeSpaceP'
@@ -1731,21 +1867,17 @@ class StatsAPIs {
     };
 
     Promise.all([
-      Db.search('stats', query),
-      Db.numberOfDocuments('stats'),
-      Db.nodesStatsCache()
+      Db.searchStats(params),
+      Db.countStats(),
+      // With no OpenSearch/Elasticsearch there are only the capture nodes
+      Db.hasEs() ? Db.nodesStatsCache() : undefined
     ]).then(([stats, total, nodesStats]) => {
-      if (stats.error) { throw stats.error; }
+      const results = { total: stats.total, results: [] };
 
-      const results = { total: stats.hits.total, results: [] };
-
-      for (const stat of stats.hits.hits) {
-        const fields = stat._source || stat.fields;
-
-        if (stat._source) {
-          ViewerUtils.mergeUnarray(fields, stat.fields);
-        }
-        fields.id = stat._id;
+      for (const stat of stats.data) {
+        // only ES applies the fields hint
+        const fields = Object.fromEntries([...params.fields, 'cluster'].filter(f => stat.doc[f] !== undefined).map(f => [f, stat.doc[f]]));
+        fields.id = stat.id;
 
         // make sure necessary fields are not undefined
         const keys = ['deltaOverloadDropped', 'monitoring', 'deltaESDropped'];
@@ -1781,7 +1913,7 @@ class StatsAPIs {
 
       const r = {
         data: results.results,
-        recordsTotal: total.count,
+        recordsTotal: total,
         recordsFiltered: results.total,
         esNodes
       };
@@ -1795,6 +1927,7 @@ class StatsAPIs {
 
   // --------------------------------------------------------------------------
   static async initialize () {
+    if (!Db.hasEs()) { return; }
     try {
       const { body: info } = await Db.nodesStats({
         metric: 'jvm,process,fs,os,indices,thread_pool'

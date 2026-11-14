@@ -1,0 +1,150 @@
+{
+  "name": "Multicast",
+  "description": "Sessions sent to IPv4 and IPv6 multicast groups: who sends to which group, over what",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "ip.dst == [224.0.0.0/4, ff00::/8]",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 10,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Multicast sessions by protocol"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Multicast sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Multicast senders",
+        "metricType": "ip.src",
+        "metricAgg": "cardinality"
+      },
+      {
+        "id": "w4",
+        "field": "ip.dst",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "orientation": "horizontal",
+        "title": "Groups"
+      },
+      {
+        "id": "w5",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Senders"
+      },
+      {
+        "id": "w6",
+        "field": "protocols",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 10,
+        "other": true,
+        "title": "Protocols"
+      },
+      {
+        "id": "w7",
+        "field": "port.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Destination ports"
+      },
+      {
+        "id": "w8",
+        "field": "dns.query.host",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "mDNS and LLMNR names",
+        "expression": "protocols == [mdns, llmnr]"
+      },
+      {
+        "id": "w9",
+        "field": "ssdp.st",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "SSDP search targets",
+        "expression": "protocols == ssdp"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "matrix",
+        "width": 4,
+        "height": 3,
+        "length": 10,
+        "title": "Senders by group"
+      },
+      {
+        "id": "w11",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "sankey",
+        "width": 4,
+        "height": 3,
+        "length": 10,
+        "title": "Senders to groups"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "port.dst",
+          "protocols",
+          "bytes",
+          "packets"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

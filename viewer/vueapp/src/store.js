@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import { createStore } from 'vuex';
 
 import Utils from './components/utils/utils';
@@ -24,6 +28,11 @@ const store = createStore({
     // eslint-disable-next-line no-undef
     timeRange: DEFAULT_TIME_RANGE ?? 1,
     expression: undefined,
+    // the shown dashboard's own filter (data.expression), ANDed with the search
+    dashboardExpression: '',
+    // the dashboard's control widgets' variables and their picked values:
+    // { name: { field, applyAll, values } } (see dashboardVariables.js)
+    dashboardVariables: {},
     time: {
       startTime: undefined,
       stopTime: undefined
@@ -49,7 +58,6 @@ const store = createStore({
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc',
-    stickySessionsBtn: false,
     showCapStartTimes: true,
     capStartTimes: [{ nodeName: 'none', startTime: 1 }],
     roles: [],
@@ -165,6 +173,12 @@ const store = createStore({
     setViews (state, value) {
       state.views = value;
     },
+    setDashboardExpression (state, value) {
+      state.dashboardExpression = typeof value === 'string' ? value.trim() : '';
+    },
+    setDashboardVariables (state, value) {
+      state.dashboardVariables = value && typeof value === 'object' ? value : {};
+    },
     addView (state, value) {
       state.views.push(value);
     },
@@ -194,9 +208,6 @@ const store = createStore({
     },
     setSelectedCluster (state, value) {
       state.esCluster.selectedCluster = value;
-    },
-    setStickySessionsBtn (state, value) {
-      state.stickySessionsBtn = value;
     },
     setShowCapStartTimes (state, value) {
       state.showCapStartTimes = value;

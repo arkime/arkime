@@ -134,11 +134,49 @@ def sec_dns_bad_idna():
     return out
 
 
+def _max_ts(blob):
+    # Latest timestamp among the pcap records in blob (header already stripped for sections)
+    pos = 24 if blob[:4] in (b'\xd4\xc3\xb2\xa1', b'\xa1\xb2\xc3\xd4') else 0
+    best = 0.0
+    while pos + 16 <= len(blob):
+        sec, usec, caplen, _ = struct.unpack('<IIII', blob[pos:pos + 16])
+        best = max(best, sec + usec / 1e6)
+        pos += 16 + caplen
+    return best
+
+
+def _after(blob, tmax):
+    # Shift a section's records so they start after tmax, keeping their relative spacing.
+    # Sections were written with independent clocks; without this the file runs backwards in
+    # time and tools that expire sessions on the capture clock (Zeek, Arkime) tear every
+    # session apart packet by packet.
+    recs = []
+    pos = 0
+    while pos + 16 <= len(blob):
+        sec, usec, caplen, wirelen = struct.unpack('<IIII', blob[pos:pos + 16])
+        recs.append([sec, usec, blob[pos + 16:pos + 16 + caplen], wirelen])
+        pos += 16 + caplen
+    if not recs:
+        return blob, tmax
+    lowest = min(r[0] + r[1] / 1e6 for r in recs)
+    shift = int(tmax) + 1 - int(lowest) if lowest <= tmax else 0
+    out = b''
+    for sec, usec, pkt, wirelen in recs:
+        out += struct.pack('<IIII', sec + shift, usec, len(pkt), wirelen) + pkt
+        tmax = max(tmax, sec + shift + usec / 1e6)
+    return out, tmax
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/dnssec_synthetic.pcap'
     out = LEGACY
-    out += sec_dns_query_midsave()
-    out += sec_dns_bad_idna()
+    tmax = _max_ts(LEGACY)
+    for blob in [
+        sec_dns_query_midsave(),
+        sec_dns_bad_idna(),
+    ]:
+        blob, tmax = _after(blob, tmax)
+        out += blob
     with open(outpath, 'wb') as f:
         f.write(out)
     print('Created ' + outpath)

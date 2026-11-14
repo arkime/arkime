@@ -97,6 +97,10 @@
     ],
     "srcTTLCnt" : 1,
     "tls" : {
+     "clientAlpn" : [
+      "h3"
+     ],
+     "clientAlpnCnt" : 1,
      "ja3" : [
       "994befbc7d0879ee9be4b570e03a5284"
      ],

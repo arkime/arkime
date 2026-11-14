@@ -56,6 +56,10 @@
       "/stylesheets/screen.css"
      ],
      "pathCnt" : 3,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",

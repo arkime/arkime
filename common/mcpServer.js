@@ -15,7 +15,8 @@ const { EventEmitter } = require('events');
 const ArkimeConfig = require('./arkimeConfig');
 const ArkimeUtil = require('./arkimeUtil');
 
-ArkimeConfig.registerValidated({
+ArkimeConfig.registerSettings({
+  mcpEnabled: { type: 'bool' },
   mcpAllowedIps: { type: 'cidrs' },
   mcpMaxQueryDays: { type: 'float', min: 0, unlimited: -1 }
 });

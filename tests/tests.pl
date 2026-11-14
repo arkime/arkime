@@ -13,6 +13,10 @@ use Test::Differences;
 use Cwd;
 use URI::Escape;
 use TAP::Harness;
+use TAP::Formatter::Session;
+use File::Temp qw(tempdir);
+use POSIX ();
+use Time::HiRes ();
 use ArkimeTest;
 use Socket6 qw(AF_INET6 inet_pton);
 
@@ -22,6 +26,8 @@ $main::userAgent->ssl_opts(SSL_verify_mode => 0, verify_hostname => 0);
 
 my $ELASTICSEARCH = $ENV{ELASTICSEARCH} = "http://127.0.0.1:9200";
 my $USERSELASTICSEARCH = $ENV{USERSELASTICSEARCH} || $ELASTICSEARCH;
+# No OpenSearch/Elasticsearch at all, see tests_noes.sh
+my $NOES = $ENV{ARKIME_TEST_NOES};
 
 $ENV{'PERL5LIB'} = getcwd();
 $ENV{'TZ'} = 'US/Eastern';
@@ -33,19 +39,19 @@ my $EXTRA = "";
 ################################################################################
 sub doGeo {
     if (! -f "ipv4-address-space.csv") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/ipv4-address-space.csv");
     }
 
     if (! -f "oui.txt") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/oui.txt");
     }
 
     if (! -f "GeoLite2-City.mmdb") {
-        system("curl -sSfLO https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
+        system("curl -sSfLO --retry 3 --max-time 300 https://media.githubusercontent.com/media/arkime/arkime-test-data/main/GeoLite2-City.mmdb");
     }
 
     if (! -f "GeoLite2-ASN.mmdb") {
-        system("curl -sSfLO https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
+        system("curl -sSfLO --retry 3 --max-time 300 https://raw.githubusercontent.com/arkime/arkime-test-data/main/GeoLite2-ASN.mmdb");
     }
 
     if (! -f "plugins/test.so" || (stat('../capture/arkime.h'))[9] > (stat('plugins/test.so'))[9]) {
@@ -136,13 +142,13 @@ sub sortObj {
         if ($r eq "HASH") {
             sortObj($key, $obj->{$key});
         } elsif ($r eq "ARRAY") {
-            if ($key =~ /(dns)/) {
+            if ($key eq "dns") {
                 for my $dnsObj ( @{$obj->{$key}} ) {
                     sortObj($key, $dnsObj);
                 }
             }
             next if (scalar (@{$obj->{$key}}) < 2);
-            next if ($key =~ /(packetPos|packetLen|cert|dns)/);
+            next if ($key =~ /^(packetPos|packetLen|cert|dns)$/);
             next if ("$parentkey.$key" =~ /dns.answers|vlan.id/);
             if ("$parentkey.$key" =~ /http.statuscode|icmp.type|icmp.code/) {
                 my @tmp = sort { $a <=> $b } (@{$obj->{$key}});
@@ -183,29 +189,75 @@ sub sortJson {
 ################################################################################
 sub doTests {
     my @files = @ARGV;
-    @files = glob ("pcap/*.pcap") if ($#files == -1);
+    @files = (glob ("pcap/*.pcap"), glob ("pcap/*.pcapng")) if ($#files == -1);
 
     plan tests => scalar @files;
 
-    foreach my $filename (@files) {
-        $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
+    my @runs;
+    foreach my $origfilename (@files) {
+        my $filename = $origfilename;
+        if ($filename =~ /\.pcapng$/) {
+            $filename = substr($filename, 0, -7);
+        } elsif ($filename =~ /\.pcap$/) {
+            $filename = substr($filename, 0, -5);
+        } else {
+            $origfilename = "$filename.pcap";
+        }
         die "Missing $filename.test" if (! -f "$filename.test");
 
-        open my $fh, '<', "$filename.test" or die "error opening $filename.test: $!";
-        my $savedData = do { local $/; <$fh> };
-        my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
-
-        my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix";
+        my $cmd = "../capture/capture $SCHEME $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix";
 
         if ($main::valgrind) {
             $cmd = "G_SLICE=always-malloc valgrind --leak-check=full --log-file=$filename.val " . $cmd;
         }
 
-        if ($main::debug) {
-            print "$cmd\n";
+        push @runs, {filename => $filename, cmd => $cmd};
+    }
+
+    # Run up to --jobs captures at once, each child saves its output to a file,
+    # results are still compared in order so the output matches a serial run
+    my $outDir = tempdir(CLEANUP => 1);
+    # exit normally on ^C or kill so the output dir still gets cleaned up
+    local $SIG{INT} = sub { exit 130 };
+    local $SIG{TERM} = sub { exit 143 };
+    my %running;
+    my @finished;
+    my $started = 0;
+    for (my $i = 0; $i <= $#runs; $i++) {
+        while ($started <= $#runs && scalar(keys %running) < $main::jobs) {
+            print "$runs[$started]->{cmd}\n" if ($main::debug);
+            my $pid = fork();
+            die "fork failed: $!" if (!defined $pid);
+            if ($pid == 0) {
+                $SIG{INT} = $SIG{TERM} = 'DEFAULT';
+                my $out = `$runs[$started]->{cmd}`;
+                open my $ofh, '>', "$outDir/$started" or POSIX::_exit(1);
+                print $ofh $out;
+                close $ofh;
+                # skip Test::More's END block in the child
+                POSIX::_exit(0);
+            }
+            $runs[$started]->{start} = Time::HiRes::time();
+            $running{$pid} = $started++;
         }
 
-        my $testData = `$cmd`;
+        while (!$finished[$i]) {
+            my $pid = waitpid(-1, 0);
+            die "waitpid failed: $!" if ($pid == -1);
+            if (exists $running{$pid}) {
+                my $done = delete $running{$pid};
+                $finished[$done] = 1;
+                $runs[$done]->{ms} = int((Time::HiRes::time() - $runs[$done]->{start}) * 1000);
+            }
+        }
+
+        my $filename = $runs[$i]->{filename};
+        open my $fh, '<', "$filename.test" or die "error opening $filename.test: $!";
+        my $savedData = do { local $/; <$fh> };
+        my $savedJson = sortJson(from_json($savedData, {relaxed => 1}));
+
+        open my $tfh, '<', "$outDir/$i" or die "error opening capture output for $filename: $!";
+        my $testData = do { local $/; <$tfh> };
         my $testJson;
 
         eval {
@@ -218,8 +270,26 @@ sub doTests {
             exit 1;
         };
 
-        eq_or_diff($testJson, $savedJson, "$filename", { context => 3 });
+        eq_or_diff($testJson, $savedJson, "$filename [$runs[$i]->{ms}ms]", { context => 3 });
     }
+}
+################################################################################
+# Timestamped progress, "[time] msg" is printed when a step starts and " [Nms]" when it ends.
+# With --debug other output comes in between, so each gets its own line.
+my ($stepName, $stepStart);
+sub stepEnd {
+    return if (!defined $stepName);
+    my $ms = int((Time::HiRes::time() - $stepStart) * 1000);
+    local $| = 1;
+    print $main::debug ? POSIX::strftime("[%H:%M:%S] ", localtime()) . "$stepName [${ms}ms]\n" : " [${ms}ms]\n";
+    undef $stepName;
+}
+sub step {
+my ($msg) = @_;
+    stepEnd();
+    ($stepName, $stepStart) = ($msg, Time::HiRes::time());
+    local $| = 1;
+    print POSIX::strftime("[%H:%M:%S] ", localtime($stepStart)) . $msg . ($main::debug ? "\n" : "");
 }
 ################################################################################
 sub doFix {
@@ -298,17 +368,24 @@ my ($json) = @_;
 
 ################################################################################
 sub doMake {
-    foreach my $filename (@ARGV) {
-        $filename = substr($filename, 0, -5) if ($filename =~ /\.pcap$/);
+    foreach my $origfilename (@ARGV) {
+        my $filename = $origfilename;
+        if ($filename =~ /\.pcapng$/) {
+            $filename = substr($filename, 0, -7);
+        } elsif ($filename =~ /\.pcap$/) {
+            $filename = substr($filename, 0, -5);
+        } else {
+            $origfilename = "$filename.pcap";
+        }
         # Reject filenames with shell metacharacters / NUL since we still need
         # a shell to set up the pipe + redirection below.
-        if ($filename =~ /[\0\n\r`\$;&|<>(){}*?!"'\\]/) {
-            die "Invalid filename (contains shell metacharacter): $filename\n";
+        if ($origfilename =~ /[\0\n\r`\$;&|<>(){}*?!"'\\]/) {
+            die "Invalid filename (contains shell metacharacter): $origfilename\n";
         }
         if ($main::debug) {
-          print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
+          print("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test\n");
         }
-        system("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $filename.pcap 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
+        system("../capture/capture $EXTRA --tests -c config.test.ini -n test -r $origfilename 2>&1 1>/dev/null | ./tests.pl --fix > $filename.test");
     }
 }
 ################################################################################
@@ -363,36 +440,75 @@ my ($cmd) = @_;
     my $node = "node";
     $node = "c8 node" if ($main::c8);
 
+    # With ClickHouse or dbPlugins sessions esProxy also tees the bulked sessions to their teech_ prefix
+    if ($ArkimeTest::sessionsDbNonES) {
+        $ENV{ARKIME_tee__sessionsDbUrl} = $ArkimeTest::sessionsDbUrl;
+        $ENV{ARKIME_tee__prefix} = "teech";
+    }
+
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
-        print ("Initializing ES\n");
-        if ($main::debug) {
+        step("Initializing ES") if (!$NOES);
+        if ($NOES) {
+        } elsif ($main::debug) {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt");
             system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression");
         } else {
             system("../db/db.pl $INSECURE --prefix tests $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
             system("../db/db.pl $INSECURE --prefix tests2 $ELASTICSEARCH initnoprompt --compression best_compression 2>&1 1>/dev/null");
         }
+        if ($ENV{ARKIME_TEST_SPLIT} && !$NOES) {
+            system("../db/db.pl $INSECURE --prefix testscl $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
+            system("../db/db.pl $INSECURE --prefix tests2cl $ELASTICSEARCH initnoprompt 2>&1 1>/dev/null");
+        }
 
-        print ("Loading tagger\n");
-        print("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1\n");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger1.json iptaggertest1");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH host host.tagger1.json hosttaggertest1");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH md5 md5.tagger1.json md5taggertest1");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH ip ip.tagger2.json iptaggertest2");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH host host.tagger2.json hosttaggertest2");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH md5 md5.tagger2.json md5taggertest2");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH email email.tagger2.json emailtaggertest2");
-        system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH uri uri.tagger2.json uritaggertest2");
+        # Initialize ClickHouse if a sessionsDbUrl is configured for the test viewer
+        my $sessionsDbUrl = $ArkimeTest::sessionsDbUrl;
+        if ($sessionsDbUrl =~ m{^(clickhouses?|chttps?)://(.+)$}) {
+            my $chUrl = ($1 eq "clickhouses" || $1 eq "chttps" ? "https" : "http") . "://$2";
+            step("Initializing ClickHouse at $chUrl");
+            # Test pcaps span two decades; partition none keeps the table at a
+            # handful of parts so per-part query overhead stays negligible.
+            my $chRc;
+            if ($main::debug) {
+                $chRc = system("../db/ch.pl --no-prompt --prefix tests_ --partition none $chUrl init");
+            } else {
+                $chRc = system("../db/ch.pl --no-prompt --prefix tests_ --partition none $chUrl init 2>&1 1>/dev/null");
+            }
+            die "ClickHouse init failed (is ClickHouse running at $chUrl?), aborting so tests don't run against stale sessions\n" if ($chRc != 0);
+            # esProxy's [tee] sessionsDbUrl writes its copy of the bulked sessions here
+            system("../db/ch.pl --no-prompt --prefix teech_ --partition none $chUrl init 2>&1 1>/dev/null") == 0 or die "ClickHouse tee init failed\n";
+            # With no ES the tests2 viewers' sessions are in ClickHouse too
+            system("../db/ch.pl --no-prompt --prefix tests2_ --partition none $chUrl init 2>&1 1>/dev/null") == 0 or die "ClickHouse tests2 init failed\n" if ($NOES);
+        } elsif ($ArkimeTest::sessionsDbNonES) {
+            step("Wiping the $sessionsDbUrl sessions");
+            ArkimeTest::sessionsHelper("wipe", "tests_") or die "Couldn't wipe the sessions at $sessionsDbUrl\n";
+            ArkimeTest::sessionsHelper("wipe", "teech_") or die "Couldn't wipe the tee sessions at $sessionsDbUrl\n";
+        }
+
+        step("Loading tagger");
+        my $tagQuiet = $main::debug ? "" : " > /dev/null";
+        for my $t (["ip", "ip.tagger1.json", "iptaggertest1"], ["host", "host.tagger1.json", "hosttaggertest1"],
+                   ["md5", "md5.tagger1.json", "md5taggertest1"], ["ip", "ip.tagger2.json", "iptaggertest2"],
+                   ["host", "host.tagger2.json", "hosttaggertest2"], ["md5", "md5.tagger2.json", "md5taggertest2"],
+                   ["email", "email.tagger2.json", "emailtaggertest2"], ["uri", "uri.tagger2.json", "uritaggertest2"]) {
+            if ($NOES) {
+                system("$node ../capture/plugins/taggerUpload.js -c config.test.ini -n test $INSECURE @$t$tagQuiet");
+            } else {
+                system("../capture/plugins/taggerUpload.pl $INSECURE $ELASTICSEARCH @$t$tagQuiet");
+            }
+        }
     }
 
     if ($cmd ne "--viewernostart") {
+        step("Starting mock servers");
         if ($main::debug) {
             system("perl mini-redis.pl --debug 7379 > /tmp/arkime.redis 2>&1 &");
             system("perl mini-aws.pl --debug 4566 > /tmp/arkime.aws 2>&1 &");
             system("node mini-wise-source.js --debug 9998 > /tmp/arkime.wisesource 2>&1 &");
         } else {
-            system("perl mini-redis.pl 7379 &");
-            system("perl mini-aws.pl 4566 &");
+            system("perl mini-redis.pl 7379 > /dev/null &");
+            # Always logged, a hung api-s3.t command's report shows its last requests
+            system("perl mini-aws.pl --debug 4566 > /tmp/arkime.aws 2>&1 &");
             system("node mini-wise-source.js 9998 > /dev/null &");
         }
 
@@ -400,7 +516,7 @@ my ($cmd) = @_;
         waitFor($ArkimeTest::host, 9998, 1);
 
         my $wes = "-o 'wiseService.usersElasticsearch=$USERSELASTICSEARCH'";
-        print ("Starting WISE\n");
+        step("Starting WISE");
         if ($main::debug) {
             system("cd ../wiseService ; $node wiseService.js $wes $INSECURE --webcode thecode --webconfig --regressionTests -c ../tests/config.wise.yaml > /tmp/arkime.wise &");
         } else {
@@ -410,19 +526,25 @@ my ($cmd) = @_;
         waitFor($ArkimeTest::host, 8081, 1);
     }
 
-    my $es = "-o 'elasticsearch=$ELASTICSEARCH'";
-    my $ces = "-o 'cont3xt.elasticsearch=$ELASTICSEARCH'";
+    my $es = $NOES ? "-o 'elasticsearch='" : "-o 'elasticsearch=$ELASTICSEARCH'";
+    my $ces = $NOES ? "-o 'cont3xt.elasticsearch='" : "-o 'cont3xt.elasticsearch=$ELASTICSEARCH'";
     my $ues = "-o 'usersElasticsearch=$USERSELASTICSEARCH'";
     my $cues = "-o 'cont3xt.usersElasticsearch=$USERSELASTICSEARCH'";
     my $pues = "-o 'parliament.usersElasticsearch=$USERSELASTICSEARCH'";
-    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test;$ELASTICSEARCH,prefix:tests2_,name:test2'";
+    my $mesCh = $ArkimeTest::sessionsDbUrl ? ",sessionsDbUrl:$ArkimeTest::sessionsDbUrl" : "";
+    my $mesCluster = $ArkimeTest::dbUrl ? ",dbUrl:$ArkimeTest::dbUrl" : "";
+    # Only the sessions follow sessionsDbUrl, a dbUrl that is not ES needs one for them
+    my $mesNonESSessions = $ArkimeTest::clusterDbNonES ? ",sessionsDbUrl:" . ($NOES ? $ArkimeTest::sessionsDbUrl : $ELASTICSEARCH) : "";
+    $mesCh ||= $mesNonESSessions;
+    my ($mesSplit, $mesSplit2) = $ENV{ARKIME_TEST_SPLIT} ? (",dbPrefix:testscl,sessionsDbPrefix:tests", ",dbPrefix:tests2cl,sessionsDbPrefix:tests2") : ("", "");
+    my $mes = "-o 'multiESNodes=$ELASTICSEARCH,prefix:tests,name:test$mesCh$mesCluster$mesSplit;$ELASTICSEARCH,prefix:tests2_,name:test2$mesNonESSessions$mesCluster$mesSplit2'";
     my $s3 = "-o 's3AccessKeyId=$ENV{s3AccessKeyId}' -o 's3SecretAccessKey=$ENV{s3SecretAccessKey}'";
 
     if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
         $main::userAgent->get("$ELASTICSEARCH/_flush");
         $main::userAgent->get("$ELASTICSEARCH/_refresh");
 
-        print ("Loading PCAP\n");
+        step("Loading PCAP");
 
         my $mcmd = "../capture/capture $es $INSECURE $SCHEME $main::copy -c config.test.ini -n test -R pcap --flush";
         if (!$main::debug) {
@@ -440,12 +562,10 @@ my ($cmd) = @_;
         system($mcmd);
 
         die "Loaded" if ($cmd eq "--viewerload");
-
-        esCopy("tests_fields", "tests2_fields", "field");
     }
 
     if ($cmd ne "--viewernostart") {
-        print ("Starting viewer\n");
+        step("Starting viewers");
         if ($main::debug) {
             system("cd ../viewer ; $node --trace-warnings multies.js --regressionTests $mes -c ../tests/config.test.ini -n all --debug $INSECURE > /tmp/arkime.multies &");
             waitFor($ArkimeTest::host, 8200, 1);
@@ -481,31 +601,56 @@ my ($cmd) = @_;
         }
     }
 
+    step("Waiting for viewers") if ($cmd eq "--viewernostart");
     waitFor($ArkimeTest::host, 8123);
     waitFor($ArkimeTest::host, 8124);
     waitFor($ArkimeTest::host, 8125);
     waitFor($ArkimeTest::host, 8126);
     waitFor($ArkimeTest::host, 8008);
     waitFor($ArkimeTest::host, 3218);
-    waitFor($ArkimeTest::host, 7200);
+    # esProxy only proxies to OpenSearch/Elasticsearch
+    waitFor($ArkimeTest::host, 7200) if (!$NOES);
     waitFor($ArkimeTest::host, 7379);
     waitFor($ArkimeTest::host, 4566);
+    step("Preparing tests");
     sleep 1;
+
+    # tests2 viewers need the fields capture added to tests
+    if ($cmd ne "--viewernostart" && $cmd ne "--viewerstart" && $cmd ne "--viewerhang") {
+        clusterCopy(8123, 8124, "fields");
+        $main::userAgent->post("http://$ArkimeTest::host:$_/regressionTests/flushCache") for (8126, 8127, 8128);
+    }
 
     $main::userAgent->get("$ELASTICSEARCH/_flush");
     $main::userAgent->get("$ELASTICSEARCH/_refresh");
     sleep 1;
 
-    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0) });
+    stepEnd();
+    # timer prints each test's start time and how long it took, HARNESS_TIMER=0 turns it off
+    {
+        no warnings 'redefine';
+        *TAP::Formatter::Session::time_report = sub {
+            my ($self, $formatter, $parser) = @_;
+            return "" if (!$formatter->timer || !defined $parser->start_time || !defined $parser->end_time);
+            return sprintf(" [%dms]", ($parser->end_time - $parser->start_time) * 1000);
+        };
+    }
+    my $harness = TAP::Harness->new({ verbosity => ($ENV{HARNESS_VERBOSE} ? 1 : 0), timer => (($ENV{HARNESS_TIMER} // 1) ? 1 : 0) });
 
     my @tests = @ARGV;
     @tests = glob ("*.t") if ($#tests == -1);
+    # esProxy only knows one prefix
+    @tests = grep { !/^esProxy/ } @tests if ($ENV{ARKIME_TEST_SPLIT});
+    # These only test OpenSearch/Elasticsearch, esProxy and db.pl
+    @tests = grep { !/^(esProxy|dbpl|api-esadmin)/ } @tests if ($NOES);
     my $parser = $harness->runtests(@tests);
 
 # Cleanup
     if ($cmd ne "--viewernostart") {
+        step("Shutting down");
         doShutdown();
     }
+    stepEnd();
 
 # Coverage
     if ($main::c8) {
@@ -522,6 +667,7 @@ $main::debug = 0;
 $main::c8 = 0;
 $main::valgrind = 0;
 $main::copy = "";
+$main::jobs = 4;
 $main::cmd = "--capture";
 
 while (scalar (@ARGV) > 0) {
@@ -566,6 +712,14 @@ while (scalar (@ARGV) > 0) {
     } elsif ($ARGV[0] eq "--copy") {
         $main::copy = "--copy";
         shift @ARGV;
+    } elsif ($ARGV[0] eq "--splitprefix") {
+        $ENV{ARKIME_TEST_SPLIT} = 1;
+        shift @ARGV;
+    } elsif ($ARGV[0] eq "--jobs") {
+        shift @ARGV;
+        $main::jobs = $ARGV[0];
+        die "--jobs requires a number >= 1" if (!defined $main::jobs || $main::jobs !~ /^[1-9]\d*$/);
+        shift @ARGV;
     } elsif ($ARGV[0] =~ /^--(viewer|api-full|fix|make|capture|viewernostart|viewerstart|api-fast|viewerhang|viewerload|shutdown|help|reip|fuzz|fuzz2pcap|fuzz2pcapAll)$/) {
         $main::cmd = $ARGV[0];
         # Map new aliases to existing commands
@@ -579,6 +733,24 @@ while (scalar (@ARGV) > 0) {
     } else {
         last;
     }
+}
+
+# Every node with a prefix gets <prefix>cl_ for its cluster db, the viewers and capture read it from the environment.
+# Debian's sh drops names with a - in them, so those are spelled DASH like the config expects.
+if ($ENV{ARKIME_TEST_SPLIT}) {
+    my $section;
+    open(my $cfgFh, '<', "config.test.ini") or die "Can't open config.test.ini";
+    while (<$cfgFh>) {
+        $section = $1 if (/^\[(.*)\]/);
+        next if (!$section || !/^prefix\s*=\s*(\S+?)_?\s*$/);
+        my $prefix = $1;
+        (my $name = $section) =~ s/-/DASH/g;
+        $name =~ s/:/COLON/g;
+        $name =~ s/\./DOT/g;
+        $ENV{"ARKIME_${name}__dbPrefix"} = "${prefix}cl";
+        $ENV{"ARKIME_${name}__sessionsDbPrefix"} = $prefix;
+    }
+    close($cfgFh);
 }
 
 if ($main::cmd eq "--fix") {
@@ -606,6 +778,8 @@ if ($main::cmd eq "--fix") {
     print "  --elasticsearch <url>  Set elasticsearch URL\n";
     print "  --debug                Turn on debugging\n";
     print "  --valgrind             Use valgrind on capture\n";
+    print "  --jobs <n>             Run up to n captures at once for the pcap tests (default 4)\n";
+    print "  --splitprefix          Give the cluster db indices their own <prefix>cl_ prefix\n";
     print "\n";
     print "Commands:\n";
     print "  --help                 This help\n";

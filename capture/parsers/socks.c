@@ -21,6 +21,22 @@ LOCAL  int ipField;
 LOCAL  int portField;
 LOCAL  int userField;
 LOCAL  int hostField;
+LOCAL  int versionField;
+LOCAL  int statusField;
+LOCAL  int boundIpField;
+LOCAL  int boundPortField;
+
+LOCAL const char *socks5Status[] = {
+    "succeeded",
+    "failure",
+    "not-allowed",
+    "network-unreachable",
+    "host-unreachable",
+    "refused",
+    "ttl-expired",
+    "command-not-supported",
+    "address-type-not-supported"
+};
 
 //#define SOCKSDEBUG
 
@@ -40,6 +56,17 @@ LOCAL int socks4_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
                 arkime_field_ip4_add(ipField, session, socks->ip);
             arkime_field_int_add(portField, session, socks->port);
             arkime_session_add_protocol(session, "socks");
+            arkime_field_int_add(versionField, session, 4);
+            static const char *socks4Status[] = {"granted", "rejected", "no-identd", "identd-mismatch"};
+            arkime_field_string_add(statusField, session, socks4Status[data[1] - 0x5a], -1, TRUE);
+            // DSTIP/DSTPORT in the reply are the bound address when the server fills them in
+            if (data[4] || data[5] || data[6] || data[7]) {
+                uint32_t bip;
+                memcpy(&bip, data + 4, 4);
+                arkime_field_ip4_add(boundIpField, session, bip);
+            }
+            if (data[2] || data[3])
+                arkime_field_int_add(boundPortField, session, (data[2] & 0xff) << 8 | (data[3] & 0xff));
 
             if (socks->user) {
                 if (!arkime_field_string_add(userField, session, socks->user, socks->userlen, FALSE)) {
@@ -176,6 +203,9 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
                 arkime_parsers_unregister(session, uw);
                 return 0;
             }
+            socks->port = (data[20] & 0xff) << 8 | (data[21] & 0xff);
+            arkime_field_ip6_add(ipField, session, data + 4);
+            arkime_field_int_add(portField, session, socks->port);
             consumed = 4 + 16 + 2;
         } else {
             break;
@@ -188,6 +218,9 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
             arkime_parsers_unregister(session, uw);
             return 0;
         }
+        arkime_field_int_add(versionField, session, 5);
+        if (data[1] < ARRAY_LEN(socks5Status))
+            arkime_field_string_add(statusField, session, socks5Status[data[1]], -1, TRUE);
         if (data[1] != 0) {
             arkime_session_add_tag(session, "socks:connect-failed");
             arkime_parsers_unregister(session, uw);
@@ -209,6 +242,15 @@ LOCAL int socks5_parser(ArkimeSession_t *session, void *uw, const uint8_t *data,
             arkime_parsers_unregister(session, uw);
             return 0;
         }
+
+        if (data[3] == 1) {
+            uint32_t ip;
+            memcpy(&ip, data + 4, 4);
+            arkime_field_ip4_add(boundIpField, session, ip);
+        } else if (data[3] == 4) {
+            arkime_field_ip6_add(boundIpField, session, data + 4);
+        }
+        arkime_field_int_add(boundPortField, session, (data[consumed - 2] << 8) | data[consumed - 1]);
 
         arkime_parsers_classify_tcp(session, data + consumed, remaining - consumed, which);
         return consumed;
@@ -336,6 +378,32 @@ void arkime_parser_init()
                                     "aliases", "[\"socksuser\"]",
                                     "category", "user",
                                     (char *)NULL);
+
+    versionField = arkime_field_define("socks", "integer",
+                                       "socks.version", "Version", "socks.version",
+                                       "SOCKS protocol version",
+                                       ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                       (char *)NULL);
+
+    statusField = arkime_field_define("socks", "termfield",
+                                      "socks.status", "Status", "socks.status",
+                                      "SOCKS server reply status",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
+    boundIpField = arkime_field_define("socks", "ip",
+                                       "socks.bound.ip", "Bound IP", "socks.boundIp",
+                                       "SOCKS server bound address from the reply",
+                                       ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                       "category", "ip",
+                                       (char *)NULL);
+
+    boundPortField = arkime_field_define("socks", "integer",
+                                         "socks.bound.port", "Bound Port", "socks.boundPort",
+                                         "SOCKS server bound port from the reply",
+                                         ARKIME_FIELD_TYPE_INT_GHASH,  ARKIME_FIELD_FLAG_CNT,
+                                         "category", "port",
+                                         (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("socks5", NULL, 0, (uint8_t *)"\005", 1, socks5_classify);
     arkime_parsers_classifier_register_tcp("socks4", NULL, 0, (uint8_t *)"\004\002", 2, socks4_classify);

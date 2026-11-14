@@ -5,6 +5,7 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "db:c7:e9:0b:0d:a5:d8:8a:55:35:43:0e:eb:66:5d:07:78:59:e8:e8",
       "issuerCN" : [
        "digicert high assurance ev root ca"
@@ -15,12 +16,16 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1636502400000,
       "notBefore" : 1194609600000,
+      "pathLen" : 0,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 2906,
       "remainingSeconds" : 251105579,
       "serial" : "0337b928347c60a6aec5adb1217f3860",
+      "sha256" : "541af019961760ef19e8fb4134e6d43085b5e5e087f30197dc42b2097e10487e",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "digicert high assurance ev ca-1"
       ],
@@ -31,7 +36,8 @@
        "www.digicert.com"
       ],
       "validDays" : 5114,
-      "validSeconds" : 441892800
+      "validSeconds" : 441892800,
+      "version" : 3
      },
      {
       "alt" : [
@@ -39,6 +45,7 @@
        "www.github.com"
       ],
       "altCnt" : 2,
+      "exponent" : 65537,
       "hash" : "d7:12:e9:69:65:dc:f2:36:c8:74:c7:03:7d:c0:b2:24:a9:3b:d2:33",
       "issuerCN" : [
        "digicert high assurance ev ca-1"
@@ -49,12 +56,15 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1441195200000,
       "notBefore" : 1370822400000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 645,
       "remainingSeconds" : 55798379,
       "serial" : "047fbe2e4bde0084d2caf8e3ecfe7058",
+      "sha256" : "575aac186497e1291a4551d92a0836dcabfb56749430b529232764a7802646cb",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "github.com"
       ],
@@ -62,7 +72,8 @@
        "GitHub, Inc."
       ],
       "validDays" : 814,
-      "validSeconds" : 70372800
+      "validSeconds" : 70372800,
+      "version" : 3
      }
     ],
     "certCnt" : 2,

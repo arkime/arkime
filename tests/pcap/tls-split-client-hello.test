@@ -191,9 +191,18 @@
       "TLS_AES_128_GCM_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "h2",
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 2,
      "dstSessionId" : [
       "da4a3599da1bc634b855913b42c9764934b861fbdf7e32c97c246205e4fc8092"
      ],
+     "group" : [
+      "X25519MLKEM768"
+     ],
+     "groupCnt" : 1,
      "ja3" : [
       "35708a08e7be9f7aa5bce7f2d5c1cecb"
      ],

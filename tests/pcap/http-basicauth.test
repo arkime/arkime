@@ -85,6 +85,10 @@
       "http://10.000.000.001:1234/zzzzzzzzzzzzzzzz/zzzzzzzz/zz/zzzzzzzzz/index.html"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -115,6 +119,10 @@
       "zzzzzzzzzzzzzzzzzz=auto; cprelogin=no; cpsession=zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz; langedit=; lang="
      ],
      "requestHeaderValueCnt" : 6,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "cache-control",
       "connection",

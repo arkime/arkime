@@ -8,8 +8,7 @@ my %wisemapping = (
     "opendns" => "opendns-umbrella",
     "valueactions" => "value-actions",
     "fieldactions" => "field-actions",
-    "emergingthreats" => "emerging-threats",
-    "wiseproxy" => "wiseproxy"
+    "emergingthreats" => "emerging-threats"
 );
 
 # WISE
@@ -18,7 +17,7 @@ foreach my $file (glob '../wiseService/source.*.js') {
     my $filename = substr(basename($file, '.js'), 7);
     my $wise = `egrep -h 'getConfig\\(' ../wiseService/source.$filename.js`;
 
-    next if ($filename eq "hodiredis" || $filename eq "wiseproxy");
+    next if ($filename eq "hodiredis");
 
     if ($wisemapping{$filename}) {
         $filename = $wisemapping{$filename};

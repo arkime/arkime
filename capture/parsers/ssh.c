@@ -10,6 +10,9 @@ LOCAL  int verField;
 LOCAL  int keyField;
 LOCAL  int hasshField;
 LOCAL  int hasshServerField;
+LOCAL  int verSrcField;
+LOCAL  int verDstField;
+LOCAL  int negotiatedFields[5];
 
 LOCAL uint32_t ssh_counting200_func;
 
@@ -98,6 +101,68 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
     }
 }
 /******************************************************************************/
+// RFC 4253 7.1: the chosen algorithm is the first on the client's list that the server also lists
+LOCAL void ssh_negotiate_one(ArkimeSession_t *session, int field, const char *client, const char *server)
+{
+    char **cnames = g_strsplit(client, ",", 0);
+    char **snames = g_strsplit(server, ",", 0);
+
+    for (int c = 0; cnames[c]; c++) {
+        if (!*cnames[c] || strncmp(cnames[c], "ext-info-", 9) == 0 || strncmp(cnames[c], "kex-strict-", 11) == 0)
+            continue;
+        for (int s = 0; snames[s]; s++) {
+            if (strcmp(cnames[c], snames[s]) == 0) {
+                arkime_field_string_add(field, session, cnames[c], -1, TRUE);
+                g_strfreev(cnames);
+                g_strfreev(snames);
+                return;
+            }
+        }
+    }
+    g_strfreev(cnames);
+    g_strfreev(snames);
+}
+/******************************************************************************/
+LOCAL void ssh_negotiate(ArkimeSession_t *session, SSHInfo_t *ssh, const uint8_t *data, int remaining, int which)
+{
+    // KEXINIT: cookie[16] then name-lists kex, hostkey, enc c2s, enc s2c, mac c2s, mac s2c, comp c2s, comp s2c
+    static const int wanted[5] = {0, 1, 2, 4, 6};
+    BSB   bsb;
+    char *lists[5] = {NULL, NULL, NULL, NULL, NULL};
+
+    BSB_INIT(bsb, data, remaining);
+    BSB_IMPORT_skip(bsb, 16);
+    for (int i = 0, w = 0; i < 8 && w < 5; i++) {
+        uint32_t       len = 0;
+        const uint8_t *value = NULL;
+        BSB_IMPORT_u32(bsb, len);
+        BSB_IMPORT_ptr(bsb, value, len);
+        if (BSB_IS_ERROR(bsb) || len > 4096)
+            break;
+        if (i == wanted[w])
+            lists[w++] = g_strndup((char *)value, len);
+    }
+
+    if (ssh->listsWhich == -1 || ssh->listsWhich == which) {
+        for (int i = 0; i < 5; i++) {
+            g_free(ssh->lists[i]);
+            ssh->lists[i] = lists[i];
+        }
+        ssh->listsWhich = which;
+        return;
+    }
+
+    for (int i = 0; i < 5; i++) {
+        const char *client = which == 0 ? lists[i] : ssh->lists[i];
+        const char *server = which == 0 ? ssh->lists[i] : lists[i];
+        if (client && server)
+            ssh_negotiate_one(session, negotiatedFields[i], client, server);
+        g_free(lists[i]);
+        g_free(ssh->lists[i]);
+        ssh->lists[i] = NULL;
+    }
+}
+/******************************************************************************/
 LOCAL void ssh_send_counting200(ArkimeSession_t *session, SSHInfo_t *ssh)
 {
     arkime_parsers_call_named_func(ssh_counting200_func, session, NULL, 0, ssh);
@@ -150,6 +215,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             int len = (n - data);
 
             arkime_field_string_add_lower(verField, session, (char *)data, len);
+            arkime_field_string_add_lower(which == 0 ? verSrcField : verDstField, session, (char *)data, len);
         }
         return 0;
     }
@@ -180,6 +246,7 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         if (sshCode == 20) {
             // Only this record's content, not everything buffered
             ssh_parse_keyinit(session, BSB_WORK_PTR(bsb), sshLen - 2, which);
+            ssh_negotiate(session, ssh, BSB_WORK_PTR(bsb), sshLen - 2, which);
         } else if (sshCode == 33) {
             ssh->done = 1;
 
@@ -202,6 +269,10 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 /******************************************************************************/
 LOCAL void ssh_free(ArkimeSession_t UNUSED(*session), void *uw)
 {
+    SSHInfo_t *sshInfo = uw;
+    for (int i = 0; i < 5; i++) {
+        g_free(sshInfo->lists[i]);
+    }
     SSHInfo_t            *ssh          = uw;
 
     ARKIME_TYPE_FREE(SSHInfo_t, ssh);
@@ -223,6 +294,7 @@ LOCAL void ssh_classify(ArkimeSession_t *session, const uint8_t *UNUSED(data), i
     arkime_session_add_protocol(session, "ssh");
 
     SSHInfo_t            *ssh          = ARKIME_TYPE_ALLOC0(SSHInfo_t);
+    ssh->listsWhich = -1;
 
     arkime_parsers_register2(session, ssh_parser, ssh, ssh_free, ssh_save);
 }
@@ -252,6 +324,48 @@ void arkime_parser_init()
                                            "SSH HASSH Server field",
                                            ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
                                            (char *)NULL);
+
+    verSrcField = arkime_field_define("ssh", "lotermfield",
+                                      "ssh.ver.src", "Client Version", "ssh.clientVersion",
+                                      "SSH client software version",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
+    verDstField = arkime_field_define("ssh", "lotermfield",
+                                      "ssh.ver.dst", "Server Version", "ssh.serverVersion",
+                                      "SSH server software version",
+                                      ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
+    negotiatedFields[0] = arkime_field_define("ssh", "termfield",
+                                              "ssh.kex", "KEX Algorithm", "ssh.kex",
+                                              "SSH negotiated key exchange algorithm",
+                                              ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                              (char *)NULL);
+
+    negotiatedFields[1] = arkime_field_define("ssh", "termfield",
+                                              "ssh.hostKeyAlg", "Host Key Algorithm", "ssh.hostKeyAlg",
+                                              "SSH negotiated host key algorithm",
+                                              ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                              (char *)NULL);
+
+    negotiatedFields[2] = arkime_field_define("ssh", "termfield",
+                                              "ssh.cipher", "Cipher", "ssh.cipher",
+                                              "SSH negotiated client to server cipher",
+                                              ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                              (char *)NULL);
+
+    negotiatedFields[3] = arkime_field_define("ssh", "termfield",
+                                              "ssh.mac", "MAC", "ssh.mac",
+                                              "SSH negotiated client to server MAC algorithm",
+                                              ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                              (char *)NULL);
+
+    negotiatedFields[4] = arkime_field_define("ssh", "termfield",
+                                              "ssh.compression", "Compression", "ssh.compression",
+                                              "SSH negotiated client to server compression algorithm",
+                                              ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                              (char *)NULL);
 
     arkime_parsers_classifier_register_tcp("ssh", NULL, 0, (uint8_t *)"SSH", 3, ssh_classify);
 

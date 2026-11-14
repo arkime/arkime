@@ -129,7 +129,9 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
         if (params.Key.endsWith('.gz')) {
           header = zlib.gunzipSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else if (params.Key.endsWith('.zst')) {
-          header = zlib.zstdDecompressSync(body, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+          // ZSTD_e_flush, not Z_SYNC_FLUSH (= ZSTD_e_end): the body is a slice that
+          // ends mid-frame, which Node 24.22+ rejects in end mode (see pcap.js)
+          header = zlib.zstdDecompressSync(body, { finishFlush: zlib.constants.ZSTD_e_flush });
         } else {
           header = body;
         }
@@ -369,31 +371,20 @@ async function processSessionIdS3 (session, headerCb, packetCb, endCb, limit) {
 }
 /// ///////////////////////////////////////////////////////////////////////////////
 async function s3Expire (expireDays) {
-  const query = {
-    _source: ['num', 'name', 'first', 'size', 'node'],
-    from: '0',
-    size: 1000,
-    query: {
-      bool: {
-        must: [
-          { range: { first: { lte: Math.floor(Date.now() / 1000 - expireDays * 60 * 60 * 24) } } },
-          { prefix: { name: 's3://' } }
-        ],
-        must_not: { term: { locked: 1 } }
-      }
-    },
-    sort: { first: { order: 'asc' } }
-  };
-
   try {
-    const data = await Db.search('files', query);
-    if (!data.hits || !data.hits.hits) {
-      return;
-    }
+    const { data } = await Db.searchFiles({
+      where: {
+        first: { $lte: Math.floor(Date.now() / 1000 - expireDays * 60 * 60 * 24) },
+        name: { $prefix: 's3://' },
+        locked: { $ne: 1 }
+      },
+      sort: { first: 'asc' },
+      size: 1000
+    });
 
-    for (const item of data.hits.hits) {
-      const parts = splitRemain(item._source.name, '/', 4);
-      const s3 = makeS3(item._source.node, parts[2], parts[3]);
+    for (const item of data) {
+      const parts = splitRemain(item.doc.name, '/', 4);
+      const s3 = makeS3(item.doc.node, parts[2], parts[3]);
 
       try {
         await new Promise((resolve, reject) => {
@@ -407,12 +398,12 @@ async function s3Expire (expireDays) {
         });
 
         try {
-          await Db.deleteDocument('files', item._id);
+          await Db.deleteFileDoc(item.id);
         } catch (delErr) {
-          console.log("Couldn't delete from ES", item._id, item._source, delErr);
+          console.log("Couldn't delete the files doc", item.id, item.doc, delErr);
         }
       } catch (s3Err) {
-        console.log('Couldn\'t delete from S3', item._id, item._source, s3Err);
+        console.log('Couldn\'t delete from S3', item.id, item.doc, s3Err);
       }
     }
   } catch (err) {

@@ -18,9 +18,11 @@ SPDX-License-Identifier: Apache-2.0
       activator="parent"
       v-model="displayPicker"
       :close-on-content-click="false">
-      <chrome-picker
+      <v-color-picker
         :model-value="colorValue"
         @update:model-value="changeColor"
+        mode="hex"
+        :modes="['hex', 'rgb', 'hsl']"
         class="color-picker"
         data-testid="picker" />
     </v-menu>
@@ -28,15 +30,10 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import { Chrome } from '@ckpack/vue-color';
-
 let timeout;
 
 export default {
   name: 'ColorPicker',
-  components: {
-    ChromePicker: Chrome
-  },
   emits: ['color-selected'],
   props: {
     color: {
@@ -72,10 +69,11 @@ export default {
       this.$emit('color-selected', { color, index: this.index });
     },
     changeColor: function (color) {
+      this.colorValue = color; // v-color-picker is controlled, keep it tracking the drag
       if (timeout) { clearTimeout(timeout); }
       timeout = setTimeout(() => {
         timeout = null;
-        this.setColor(color.hex);
+        this.setColor(color);
       }, 1000);
     }
   },

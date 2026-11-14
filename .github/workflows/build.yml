@@ -2,11 +2,11 @@ name: "build"
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "dev7" ]
 
   pull_request:
     # The branches below must be a subset of the branches above
-    branches: [ "main" ]
+    branches: [ "dev7" ]
     paths-ignore:
       - '*.md'
       - '.*'
@@ -20,6 +20,11 @@ permissions:
   contents: read
   packages: read
 
+# Disable npm audit and funding notice to reduce requests
+env:
+  NPM_CONFIG_AUDIT: "false"
+  NPM_CONFIG_FUND: "false"
+
 jobs:
   generate-matrix:
     runs-on: ubuntu-latest
@@ -27,6 +32,7 @@ jobs:
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       freebsdmatrix: ${{ steps.set-matrix.outputs.freebsdmatrix }}
+      alpinematrix: ${{ steps.set-matrix.outputs.alpinematrix }}
     env:
       HEAD_REF: ${{ github.head_ref }}
     steps:
@@ -41,15 +47,19 @@ jobs:
           if [[ "${HEAD_REF}" == start-v* || "${HEAD_REF}" == release-v* ]]; then
             MATRIX='{"include":[]}'
             FREEBSD_MATRIX='{"include":[]}'
+            ALPINE_MATRIX='{"include":[]}'
           elif [ "${{ github.event_name }}" != "push" ]; then
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd|alpine") | not) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
             FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd")) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
+            ALPINE_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("alpine")) | select(.prbuild == "true")]}' .github/workflows/versions | jq -c)
           else
-            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd") | not)]}' .github/workflows/versions | jq -c)
+            MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd|alpine") | not)]}' .github/workflows/versions | jq -c)
             FREEBSD_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("freebsd"))]}' .github/workflows/versions | jq -c)
+            ALPINE_MATRIX=$(yq -o json eval '{"include": [.include[] | select(.version | test("alpine"))]}' .github/workflows/versions | jq -c)
           fi
           echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
           echo "freebsdmatrix=$FREEBSD_MATRIX" >> $GITHUB_OUTPUT
+          echo "alpinematrix=$ALPINE_MATRIX" >> $GITHUB_OUTPUT
 
   cache-node:
     runs-on: ubuntu-latest
@@ -92,6 +102,8 @@ jobs:
 
   build:
     needs: [generate-matrix, cache-node]
+    # An empty matrix fails the whole run, so skip the job instead
+    if: needs.generate-matrix.outputs.matrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.matrix)}}
@@ -146,6 +158,9 @@ jobs:
           if [ -d "/thirdparty" ]; then
             ln -s /thirdparty .
           fi
+          if [ -d "/arkime-test-data" ]; then
+            ln -sf /arkime-test-data/* tests/
+          fi
           git config --global --add safe.directory `pwd`
 
       - name: build and install
@@ -153,7 +168,6 @@ jobs:
           ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
           ldd capture/capture
           export PATH=/opt/arkime/bin:$PATH
-          ${{ matrix.npmgcc }}
           INSTALL_BUNDLE=bundle make install
 
       - name: lint
@@ -170,7 +184,7 @@ jobs:
         if: ${{ matrix.viewertest == 'normal' }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
+          (chown -R opensearch /opensearch; cd /opensearch ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
           npm run test:unit
           sleep 12
           for i in $(seq 1 12); do
@@ -178,8 +192,23 @@ jobs:
             sleep 1
           done
           curl -fsS http://localhost:9200/_cat/health || (cat /tmp/os; exit 1)
+          ARKIME_TEST_ES_URL=http://localhost:9200 npm run test:unit
           free -h || true
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer --debug)
+
+      - name: viewer test es9
+        if: ${{ matrix.viewertest == 'es9' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          (chown -R elasticsearch /elasticsearch; cd /elasticsearch ; su elasticsearch -c "ES_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/elasticsearch" > /tmp/es 2>&1 &)
+          npm run test:unit
+          for i in $(seq 1 60); do
+            curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=1s' >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9200/_cat/health || (cat /tmp/es; exit 1)
+          ARKIME_TEST_ES_URL=http://localhost:9200 npm run test:unit
+          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: viewer test arkimedb
         if: ${{ matrix.viewertest == 'packetpocket' }}
@@ -197,20 +226,85 @@ jobs:
           done
           curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
           head /tmp/arkimedb.log
-          (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
+          (cd tests ; G_SLICE=always-malloc ./tests.pl ${{ matrix.splitprefix == 'true' && '--splitprefix' || '' }} --viewer)
+
+      - name: viewer test clickhouse
+        if: ${{ matrix.viewertest == 'clickhouse' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          arch=$(arch | sed s/aarch64/arm64/ | sed s/x86_64/amd64/)
+          curl -fsSL -o /usr/local/bin/arkimedb "https://github.com/arkime/arkime-testdb/releases/latest/download/arkimedb-linux-${arch}"
+          chmod +x /usr/local/bin/arkimedb
+          mkdir -p /tmp/arkimedb-data
+          arkimedb serve --data-dir /tmp/arkimedb-data --port 9200 > /tmp/arkimedb.log 2>&1 &
+          clickhouse --version
+          mkdir -p /tmp/clickhouse-data
+          (cd /tmp/clickhouse-data ; clickhouse server -- --path=/tmp/clickhouse-data/ --http_port=9100 --listen_host=127.0.0.1 > /tmp/clickhouse.log 2>&1 &)
+          # arkimedb is up in a second; ClickHouse can take a while to start on a cold runner
+          for i in $(seq 1 120); do
+            curl -fsS http://localhost:9100/ping >/dev/null 2>&1 && curl -fsS http://localhost:9200/ >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
+          curl -fsS http://localhost:9100/ping || (echo "ClickHouse not answering after 120s"; pgrep -a clickhouse || echo "no clickhouse process"; ls -la /tmp/clickhouse.log /tmp/clickhouse-data; tail -50 /tmp/clickhouse.log; exit 1)
+          clickhouse client --query "SELECT version()"
+          (cd tests ; G_SLICE=always-malloc ./tests_ch.sh --viewer)
+
+      - name: viewer test postgres
+        if: ${{ matrix.viewertest == 'postgres' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          ldd capture/capture | grep -q libpq || (echo "capture wasn't built with libpq"; exit 1)
+          (chown -R opensearch /opensearch-2.7.0; cd /opensearch-2.7.0 ; su opensearch -c "OPENSEARCH_JAVA_OPTS='-Xms1000m -Xmx1000m' bin/opensearch" > /tmp/os &)
+          PGBIN=$(ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1)
+          mkdir -p /tmp/pgdata && chown postgres /tmp/pgdata
+          su postgres -c "$PGBIN/initdb -D /tmp/pgdata -A trust -U arkime" > /tmp/pginit.log
+          su postgres -c "$PGBIN/pg_ctl -D /tmp/pgdata -l /tmp/pgdata/postgres.log -o '-p 5433 -k /tmp' -w start" || (cat /tmp/pginit.log /tmp/pgdata/postgres.log; exit 1)
+          $PGBIN/createdb -h 127.0.0.1 -p 5433 -U arkime arkimetest
+          $PGBIN/createdb -h 127.0.0.1 -p 5433 -U arkime arkimecap
+          ARKIME_TEST_PG_URL=postgres://arkime@127.0.0.1:5433/arkimetest npm run test:unit
+          for i in $(seq 1 30); do
+            curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=green&timeout=1s' >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9200/_cat/health || (cat /tmp/os; exit 1)
+          ARKIME_TEST_ES_URL=http://localhost:9200 npm run test:unit
+          (cd tests ; ARKIME_default__dbUrl=postgres://arkime@127.0.0.1:5433/arkimecap G_SLICE=always-malloc ./tests.pl --viewer)
+
+      - name: viewer test noes
+        if: ${{ matrix.viewertest == 'noes' }}
+        run: |
+          export PATH=/opt/arkime/bin:$PATH
+          ldd capture/capture | grep -q libpq || (echo "capture wasn't built with libpq"; exit 1)
+          clickhouse --version
+          mkdir -p /tmp/clickhouse-data
+          (cd /tmp/clickhouse-data ; clickhouse server -- --path=/tmp/clickhouse-data/ --http_port=9100 --listen_host=127.0.0.1 > /tmp/clickhouse.log 2>&1 &)
+          mkdir -p /tmp/pgdata && chown postgres /tmp/pgdata
+          runuser -u postgres -- initdb -D /tmp/pgdata -A trust -U arkime > /tmp/pginit.log
+          runuser -u postgres -- pg_ctl -D /tmp/pgdata -l /tmp/pgdata/postgres.log -o '-p 5433 -k /tmp' -w start || (cat /tmp/pginit.log /tmp/pgdata/postgres.log; exit 1)
+          createdb -h 127.0.0.1 -p 5433 -U arkime arkimetest
+          createdb -h 127.0.0.1 -p 5433 -U arkime arkimenoes
+          ARKIME_TEST_PG_URL=postgres://arkime@127.0.0.1:5433/arkimetest npm run test:unit
+          for i in $(seq 1 120); do
+            curl -fsS http://localhost:9100/ping >/dev/null 2>&1 && break
+            sleep 1
+          done
+          curl -fsS http://localhost:9100/ping || (echo "ClickHouse not answering after 120s"; tail -50 /tmp/clickhouse.log; exit 1)
+          if curl -fsS http://localhost:9200/ > /dev/null 2>&1; then echo "something answers on 9200, the run must have no OpenSearch/Elasticsearch"; exit 1; fi
+          (cd tests ; CH=clickhouse://localhost:9100 PG=postgres://arkime@127.0.0.1:5433/arkimenoes G_SLICE=always-malloc ./tests_noes.sh --viewer)
 
       - name: otherdb viewer test
         if: ${{ matrix.otherdbtest == 'true' }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
           echo "LMDB"
-          (cd tests ; ARKIME_cache__type=lmdb ARKIME_cache__lmdbDir=/tmp/cache.lmdb ARKIME_cont3xt__dbUrl=lmdb:///tmp/cont3xt.lmdb USERSELASTICSEARCH=lmdb:///tmp/users.lmdb ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t)
+          (cd tests ; ARKIME_cache__type=lmdb ARKIME_cache__lmdbDir=/tmp/cache.lmdb ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.lmdb.db USERSELASTICSEARCH=sqlite:///tmp/users.lmdb.db ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t)
 
           echo "SQLITE"
           (cd tests ; ARKIME_cache__type=sqlite ARKIME_cache__sqliteFile=/tmp/cache.sql ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.db USERSELASTICSEARCH=sqlite:///tmp/users.db ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t api-views.t api-shareables.t api-shortcuts.t api-buildquery.t)
 
           echo "REDIS"
-          (cd tests ; ARKIME_cache__type=redis ARKIME_cache__redisURL=redis://localhost:7379/1 ARKIME_cont3xt__dbUrl=redis://localhost:7379/2 USERSELASTICSEARCH=redis://localhost:7379/0 ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t)
+          (cd tests ; ARKIME_cache__type=redis ARKIME_cache__redisURL=redis://localhost:7379/1 ARKIME_cont3xt__dbUrl=sqlite:///tmp/cont3xt.redis.db USERSELASTICSEARCH=sqlite:///tmp/users.redis.db ./tests.pl --viewerstart cont3xt.t addUser.t api-notifiers.t parliament.t api-users.t)
 
       - name: package arch
         if: ${{ matrix.package == 'arch' }}
@@ -241,16 +335,17 @@ jobs:
       - name: ja4plus
         if: ${{ matrix.ja4plus }}
         run: |
-          (cd .. ; git clone https://github.com/arkime/ja4)
+          (cd .. ; git clone -b dev7 https://github.com/arkime/ja4)
           cp ../ja4/ja4plus.c capture/plugins
           (cd capture/plugins; make)
           (cd ../ja4; make)
           (cd tests; ./tests.pl --extra "-o plugins=ja4plus.so" ../../ja4/pcap/*.pcap)
           mv capture/plugins/ja4plus.so ja4plus.${{ env.ARKIME_ARCH }}.so
+          cp ../ja4/ja4plus.dashboard.json .
           rm -f capture/plugins/ja4plus.c
 
       - name: moloch el package rpm
-        if: ${{ matrix.version == 'el8.x86_64' || matrix.version == 'el9.x86_64' }}
+        if: ${{ matrix.version == 'el9.x86_64' }}
         run: |
           export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1 | tr "-" "_"`
           rm -rf /data/moloch; mkdir -p /data
@@ -311,8 +406,9 @@ jobs:
         if: ${{ matrix.notice }}
         run: |
           export PATH=/opt/arkime/bin:$PATH
-          (npm install license-checker; release/notice.txt.pl /opt/arkime NOTICE release/CAPTURENOTICE > NOTICE.txt)
-          ls -l NOT*
+          (npm install license-checker; release/notice.txt.pl /opt/arkime release/NOTICEHEADER release/CAPTURENOTICE release/VIEWERNOTICE > NOTICE.txt)
+          release/sbom.mjs > arkime-sbom.cdx.json
+          ls -l NOT* arkime-sbom*
 
       - name: upload github
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
@@ -325,9 +421,11 @@ jobs:
           files: |
             *.deb
             *.so
+            ja4plus.dashboard.json
             *.rpm
             *.zst
             NOTICE.txt
+            arkime-sbom.cdx.json
 
       - name: tag last-commit
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7') && matrix.notice
@@ -380,6 +478,7 @@ jobs:
 ############# FreeBSD Build #############
   freebsd-build:
     needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.freebsdmatrix != '{"include":[]}'
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.generate-matrix.outputs.freebsdmatrix)}}
@@ -414,7 +513,7 @@ jobs:
           usesh: true
           prepare: |
             pkg update -f
-            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar pcre2 python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
+            pkg install -y bash git curl perl5 openssl jq yq sudo gmake autoconf automake m4 libtool autoconf-archive gtar python3 p5-LWP-Protocol-https p5-JSON p5-Test-Differences p5-Socket6
           run: |
             git config --global --add safe.directory `pwd`
             git config --global --add safe.directory /home/runner/work/arkime/arkime
@@ -429,10 +528,11 @@ jobs:
             ls -l *.pkg
 
             if [ "${{ matrix.ja4plus }}" = "true" ]; then
-              (cd .. ; git clone https://github.com/arkime/ja4)
+              (cd .. ; git clone -b dev7 https://github.com/arkime/ja4)
               cp ../ja4/ja4plus.c capture/plugins
               (cd capture/plugins; gmake)
               mv capture/plugins/ja4plus.so ja4plus.freebsd-${arch}.so
+              cp ../ja4/ja4plus.dashboard.json .
               ls -l *.so
             fi
 
@@ -451,6 +551,65 @@ jobs:
           files: |
             *.pkg
             *.so
+            ja4plus.dashboard.json
+
+############# Alpine Build #############
+  alpine-build:
+    needs: [generate-matrix]
+    if: needs.generate-matrix.outputs.alpinematrix != '{"include":[]}'
+    strategy:
+      fail-fast: false
+      matrix: ${{fromJson(needs.generate-matrix.outputs.alpinematrix)}}
+
+    permissions:
+      contents: write
+      packages: write
+
+    concurrency:
+      group: ${{ github.workflow }}-${{ matrix.version }}-${{ github.event.pull_request.number || github.ref }}
+      cancel-in-progress: true
+
+    runs-on: ${{ matrix.runson || 'ubuntu-latest' }}
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        with:
+          fetch-depth: 0
+
+      - name: set major version
+        run: |
+          export ARKIME_MAJOR_VERSION=`grep AC_INIT configure.ac | sed "s/.*\[\(.*\)\].*$/\1/" | cut -c 1-1`
+          echo "ARKIME_MAJOR_VERSION=$ARKIME_MAJOR_VERSION" >> $GITHUB_ENV
+
+      # JavaScript actions refuse to run in Alpine containers on arm64, so run
+      # the build with docker on the host and keep the actions outside it
+      - name: Build on Alpine
+        run: |
+          docker run --rm -i -v "$GITHUB_WORKSPACE:/work" -w /work ${{ matrix.container }} bash -s <<'EOF'
+          set -e
+          git config --global --add safe.directory /work
+          ./easybutton-build.sh ${{ matrix.buildopt }} --rminstall
+          ls -l capture/capture
+          export PATH=/opt/arkime/bin:$PATH
+          (cd tests; ./tests.pl)
+          INSTALL_BUNDLE=bundle make install
+          export ARKIME_VERSION=`sed 's/.*"\(.*\)\".*$/\1/' /opt/arkime/common/version.js | head -n 1`
+          ./release/alpinepkg.sh $ARKIME_VERSION ${{ github.run_id }} arkime-main.${{matrix.version}}.apk /opt/arkime
+          ls -l *.apk
+          EOF
+
+      - name: upload github
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev7')
+        uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          tag_name: last-commit${{ env.ARKIME_MAJOR_VERSION }}
+          draft: false
+          prerelease: true
+          generate_release_notes: false
+          files: |
+            *.apk
 
 ############# Docker Manifest #############
   create-manifest:
@@ -506,7 +665,10 @@ jobs:
   slack:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    needs: [build, freebsd-build]
+    needs: [generate-matrix, cache-node, build, freebsd-build, alpine-build]
+    # a job skipped for an empty matrix must not skip the notice, a failed or cancelled one does
+    # a timed out job reports as cancelled, which failure() and cancelled() (whole run only) don't catch
+    if: ${{ !failure() && !cancelled() && !contains(needs.*.result, 'cancelled') }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1

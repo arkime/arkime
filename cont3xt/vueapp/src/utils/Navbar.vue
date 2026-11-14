@@ -3,181 +3,94 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <div class="d-flex flex-column">
-    <!-- cont3xt navbar -->
-    <nav class="d-flex flex-row navbar navbar-expand navbar-dark bg-grey-darken-4 justify-space-between align-center pr-2">
+  <span>
+    <nav class="arkime-navbar d-flex align-center pe-2">
       <router-link
-        exact
         to="help"
-        tabindex="-1"
-        active-class="active">
-        <v-btn
-          variant="text"
-          color="white"
-          class="square-btn"
-          slim>
-          <v-icon
-            v-tooltip:bottom.close-on-content-click="'Can I help you? Click me to see the help page'"
-            title="Can I help you? Click me to see the help page"
-            icon="mdi-rocket-launch"
-            class="text-white"
-            id="tooltipHelp"
-            size="x-large" />
-        </v-btn>
-        <short-cut-tooltip target-id="tooltipHelp">
-          H
-        </short-cut-tooltip>
+        class="arkime-navbar-brand"
+        exact>
+        <img
+          :src="logo"
+          alt="hoot"
+          class="arkime-logo">
+        <v-tooltip activator="parent">
+          {{ $t('navigation.tooltipHelpTip') }}
+        </v-tooltip>
       </router-link>
-      <!-- page links -->
-      <ul class="navbar-nav mr-auto ml-3 d-flex flex-row pa-0">
-        <li class="nav-item mr-2">
-          <router-link
-            to="/"
-            exact
-            tabindex="-1"
-            class="nav-link"
-            active-class="active">
-            <v-btn
-              variant="text"
-              color="grey">
-              <span
-                class="nav-shortcut"
-                :class="{'text-warning':getShiftKeyHold}">C</span>ont3xt
-            </v-btn>
-          </router-link>
-        </li>
-        <li class="nav-item mr-2">
-          <router-link
-            exact
-            to="stats"
-            tabindex="-1"
-            class="nav-link"
-            active-class="active">
-            <v-btn
-              variant="text"
-              color="grey">
-              St<span
-                class="nav-shortcut"
-                :class="{'text-warning':getShiftKeyHold}">a</span>ts
-            </v-btn>
-          </router-link>
-        </li>
-        <li class="nav-item mr-2">
-          <router-link
-            to="settings"
-            tabindex="-1"
-            class="nav-link"
-            active-class="active">
-            <v-btn
-              variant="text"
-              color="grey">
-              <span
-                class="nav-shortcut"
-                :class="{'text-warning':getShiftKeyHold}">S</span>ettings
-            </v-btn>
-          </router-link>
-        </li>
-        <li class="nav-item mr-2">
-          <router-link
-            to="history"
-            tabindex="-1"
-            v-if="getUser"
-            class="nav-link"
-            active-class="active">
-            <v-btn
-              variant="text"
-              color="grey">
-              Histor<span
-                class="nav-shortcut"
-                :class="{'text-warning':getShiftKeyHold}">y</span>
-            </v-btn>
-          </router-link>
-        </li>
-        <li
-          class="nav-item mr-2"
-          v-if="getUser && getUser.roles && getUser.roles.includes('usersAdmin')">
-          <router-link
-            to="users"
-            tabindex="-1"
-            v-if="getUser"
-            class="nav-link"
-            active-class="active">
-            <v-btn
-              variant="text"
-              color="grey">
-              Users
-            </v-btn>
-          </router-link>
-        </li>
-        <li class="nav-item mr-2">
-          <router-link
-            to="roles"
-            tabindex="-1"
-            v-if="getUser && getUser.assignableRoles && getUser.assignableRoles.length > 0"
-            class="nav-link"
-            active-class="active">
-            <v-btn
-              variant="text"
-              color="grey">
-              Roles
-            </v-btn>
-          </router-link>
-        </li>
-      </ul> <!-- /page links -->
-      <!-- health check -->
-      <div class="mr-2 text-muted">
-        <span v-if="healthError">
-          {{ healthError || 'Network Error' }} - try
+
+      <div class="arkime-nav-list d-flex align-center">
+        <template
+          v-for="item of navItems"
+          :key="item.to">
+          <v-btn
+            v-if="!item.requiresUser || getUser"
+            :to="item.to"
+            :variant="$route.path === item.to ? 'flat' : 'text'"
+            :style="$route.path === item.to ? activePillStyle : null"
+            size="small"
+            class="arkime-nav-btn"
+            :exact="!!item.exact">
+            <span>{{ item.parts.before }}</span><span
+              v-if="item.parts.key"
+              :class="{'nav-shortcut-active': getShiftKeyHold}">{{ item.parts.key }}</span><span>{{ item.parts.after }}</span>
+          </v-btn>
+        </template>
+      </div>
+
+      <v-spacer />
+
+      <div class="arkime-navbar-actions d-flex align-center">
+        <!-- health check inline message -->
+        <span
+          v-if="healthError"
+          class="me-2 text-medium-emphasis">
+          {{ healthError || $t('errors.networkError') }} - {{ $t('cont3xt.nav.tryTo') }}
           <a
             tabindex="-1"
             @click="reload"
             class="cursor-pointer">
-            reloading the page
+            {{ $t('cont3xt.nav.reloadPage') }}
           </a>
         </span>
-      </div> <!-- /health check -->
-      <!-- version -->
-      <Version
-        :timezone="timezone"
-        class="no-wrap text-grey" />
-      <!-- help button -->
-      <router-link
-        tabindex="-1"
-        :to="{ path: 'help' }">
+
+        <!-- version (rainbow gradient via shared Version.vue) -->
+        <Version :timezone="timezone" />
+
+        <!-- language switcher -->
+        <LanguageSwitcher additional-classes="ms-2" />
+
+        <!-- help button -->
         <v-btn
+          to="/help"
           variant="text"
-          title="HELP!"
-          color="primary"
-          slim>
-          <v-icon
-            size="x-large"
-            icon="mdi-help-circle mdi-fw"
-            v-tooltip="'HELP!'" />
+          icon
+          size="small"
+          density="comfortable"
+          class="arkime-help-btn ms-2">
+          <v-icon icon="mdi-help-circle" />
+          <v-tooltip activator="parent">
+            {{ $t('navigation.helpTip') }}
+          </v-tooltip>
         </v-btn>
-      </router-link>
-      <!-- dark/light mode -->
-      <v-btn
-        size="small"
-        tabindex="-1"
-        @click="toggleTheme"
-        v-tooltip:start="'Toggle light/dark theme'"
-        class="square-btn cursor-pointer"
-        title="Toggle light/dark theme"
-        variant="outlined"
-        :color="(theme === 'light') ? 'warning' : 'info'">
-        <v-icon
-          v-if="theme === 'light'"
-          icon="mdi-white-balance-sunny mdi-fw" />
-        <v-icon
-          v-if="theme === 'dark'"
-          icon="mdi-weather-night mdi-fw" />
-      </v-btn>
-      <!-- </div> -->
-      <Logout
-        :base-path="path"
-        size="small" />
-    </nav> <!-- /cont3xt nav -->
-    <div class="progress-container bg-progress-bar">
+
+        <!-- admin menu (users/roles/banner) -->
+        <AdminMenu
+          v-if="adminItems.length"
+          :items="adminItems"
+          :active-pill-style="activePillStyle"
+          additional-classes="ms-2" />
+
+        <Logout
+          :base-path="path"
+          class="ms-2"
+          size="small" />
+      </div>
+    </nav>
+
+    <div class="navbarOffset" />
+
+    <!-- progress bar -->
+    <div class="cont3xt-progress-container">
       <v-progress-linear
         height="8px"
         min="0"
@@ -191,10 +104,12 @@ SPDX-License-Identifier: Apache-2.0
       <v-tooltip
         activator="parent"
         v-if="getLoading.total">
-        {{ `${this.getLoading.received}/${this.getLoading.total} fetched successfully${(this.getLoading.failed > 0) ? `, ${this.getLoading.failed}/${this.getLoading.total} failed` : ''}` }}
+        {{ getLoading.failed > 0
+          ? $t('cont3xt.nav.fetchProgressFailedTip', { received: getLoading.received, total: getLoading.total, failed: getLoading.failed })
+          : $t('cont3xt.nav.fetchProgressTip', { received: getLoading.received, total: getLoading.total }) }}
       </v-tooltip>
     </div>
-  </div>
+  </span>
 </template>
 
 <script>
@@ -203,10 +118,21 @@ import { mapGetters, useStore } from 'vuex';
 
 import Logout from '@common/Logout.vue';
 import Version from '@common/Version.vue';
-import ShortCutTooltip from '@/utils/ShortCutTooltip.vue';
+import AdminMenu from '@common/AdminMenu.vue';
+import LanguageSwitcher from '@common/LanguageSwitcher.vue';
 import { useTheme } from 'vuetify';
 import { watchEffect } from 'vue';
 import { useGetters } from '@/vue3-helpers';
+import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
+
+// Underline the shortcut letter wherever it lands in the translated
+// label. The shortcut is a physical key, so a translation that doesn't
+// contain that letter simply gets no hint -- the key still works.
+function shortcutParts (title, key) {
+  const i = title.toLowerCase().indexOf(key.toLowerCase());
+  if (i < 0) { return { before: title, key: '', after: '' }; }
+  return { before: title.slice(0, i), key: title[i], after: title.slice(i + 1) };
+}
 
 let interval;
 const minTimeToWait = 10000;
@@ -217,23 +143,39 @@ export default {
   components: {
     Logout,
     Version,
-    ShortCutTooltip
+    AdminMenu,
+    LanguageSwitcher
   },
   setup () {
     const theme = useTheme();
     const store = useStore();
-    const { getTheme } = useGetters(store);
+    const { getTheme, getCustomTheme, getDarkThemeEnabled } = useGetters(store);
 
+    // Re-runs when the theme id or custom palette arrives from the server
+    // (HYDRATE_THEME_FROM_SERVER). Register 'custom1' before switching to
+    // it so theme.change('custom1') resolves even when the palette only
+    // shows up after the async /api/user fetch.
     watchEffect(() => {
-      theme.change((getTheme.value === 'dark') ? 'cont3xtDarkTheme' : 'cont3xtLightTheme');
-      // once the few lingering reliances on body.dark are removed, this can be safely removed
-      document.body.classList = getTheme.value === 'dark' ? ['dark'] : [];
+      if (getCustomTheme.value && getCustomTheme.value.colors) {
+        registerVuetifyTheme({ theme }, 'custom1', getCustomTheme.value);
+      }
+      theme.change(getTheme.value || 'arkime-light');
+      // legacy body.dark hook for any non-Vuetify selectors that still read it
+      document.body.classList = getDarkThemeEnabled.value ? ['dark'] : [];
     });
   },
   data: function () {
     return {
       healthError: '',
-      path: this.$constants.WEB_PATH
+      path: this.$constants.WEB_PATH,
+      logo: 'assets/Arkime_Icon_White.png',
+      // active-pill colors -- use button-fg + foreground so the pill
+      // flips between themes (white-on-dark in light theme, dark-on-light
+      // in dark theme) without us picking specific colors per theme.
+      activePillStyle: {
+        backgroundColor: 'rgb(var(--v-theme-button-fg))',
+        color: 'rgb(var(--v-theme-foreground))'
+      }
     };
   },
   computed: {
@@ -241,36 +183,31 @@ export default {
     timezone () {
       return this.getUser?.settings?.timezone || 'local';
     },
-    theme: {
-      get () {
-        return this.getTheme;
-      },
-      set (value) {
-        this.$store.commit('SET_THEME', value);
-      }
+    navItems () {
+      // keys match the shifted shortcuts wired up in App.vue
+      return [
+        { to: '/', title: this.$t('navigation.cont3xt'), key: 'C', exact: true },
+        { to: '/stats', title: this.$t('navigation.stats'), key: 'A', exact: true },
+        { to: '/settings', title: this.$t('navigation.settings'), key: 'S' },
+        { to: '/history', title: this.$t('navigation.history'), key: 'Y', requiresUser: true }
+      ].map(item => ({ ...item, parts: shortcutParts(item.title, item.key) }));
+    },
+    adminItems () {
+      return [
+        { title: this.$t('navigation.users'), link: '/users', name: 'Users', show: !!this.getUser?.roles?.includes('usersAdmin') },
+        { title: this.$t('navigation.roles'), link: '/roles', name: 'Roles', show: this.getUser?.assignableRoles?.length > 0 },
+        { title: this.$t('navigation.banner'), link: '/banner', name: 'Banner', show: !!this.getUser?.roles?.includes('cont3xtAdmin') },
+        { title: this.$t('navigation.viewConfig'), link: '/viewconfig', name: 'ViewConfig', show: !!this.getUser?.canViewConfig }
+      ].filter(item => item.show).map(item => ({
+        ...item, isActive: this.$route.path === item.link
+      }));
     }
   },
   mounted: function () {
-    if (this.getTheme === undefined) {
-      if (window.matchMedia) {
-        const darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        this.theme = darkMode ? 'dark' : 'light';
-      } else {
-        this.theme = 'light';
-      }
-    } else {
-      this.theme = this.getTheme; // initialize theme setting side-effects
-    }
-
     this.getHealth();
   },
   methods: {
     /* page functions ------------------------------------------------------ */
-    toggleTheme () {
-      this.theme = (this.theme === 'dark') ? 'light' : 'dark';
-
-      localStorage.setItem('cont3xtTheme', this.theme);
-    },
     reload () {
       window.location.reload();
     },
@@ -300,16 +237,18 @@ export default {
 </script>
 
 <style scoped>
-.progress-container .progress {
+/* navbar shell comes from common/vueapp/arkime-navbar.css; below are
+   cont3xt-specific helpers only. */
+
+/* shortcut-letter underline shown when shift is held (so users see
+   which key jumps to which page) */
+.nav-shortcut-active {
+  text-decoration: underline;
+  text-decoration-color: rgb(var(--v-theme-warning));
+}
+
+/* progress bar sits flush under the navbar */
+.cont3xt-progress-container .v-progress-linear {
   border-radius: 0;
-}
-
-.active button {
-  color: white !important;
-}
-
-.nav-shortcut {
-  margin-left: -1px;
-  margin-right: -1px;
 }
 </style>

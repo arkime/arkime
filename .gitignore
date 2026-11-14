@@ -54,12 +54,15 @@ parliament/parliament.issues.json
 parliament/parliament.dev.issues.json
 parliament/vueapp/dist
 tests/parliament.dev.issues.json
+*.issues.json.imported
 
 # wiseservice
 wiseService/vueapp/dist
 
 # cont3xt
 cont3xt/vueapp/dist
+*/vueapp/third-party-licenses.json
+arkime-sbom.cdx.json
 
 # common
 common/version.js
@@ -100,3 +103,4 @@ docs/superpowers/
 
 # supacode
 supacode.json
+capture/plugins/zeeklog/compare-report.md

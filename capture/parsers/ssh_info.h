@@ -15,4 +15,6 @@ typedef struct {
     uint16_t   lens[2][MAX_LENS]; // Keep up to MAX_LENS packet lengths
     uint8_t    done;
     uint8_t    doneRS;
+    int8_t     listsWhich;   // side whose KEXINIT name-lists are held in lists, -1 none
+    char      *lists[5];     // kex, host key, cipher, mac, compression (client to server)
 } SSHInfo_t;
