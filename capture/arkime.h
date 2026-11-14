@@ -504,6 +504,7 @@ typedef struct arkime_config {
     char    **commandList;
     char      noConfigOption;
     gboolean  pcapSorted;
+    gboolean  pcapFollowLinks;
 } ArkimeConfig_t;
 
 typedef struct {
@@ -695,6 +696,8 @@ typedef struct {
     uint8_t               finishWaiting;
     void                 *notifyClientRef; // command-socket --notify: client to receive file-done
     char                 *notifyFilename;  // filename to report in the notification
+    uint64_t              notifyBytes;     // totals to report, a pcapng file can span several slots
+    uint64_t              notifyPackets;
     ArkimeInterfaceInfo_t interfaces[ARKIME_MAX_INTERFACES_PER_FILE];
     uint16_t              numInterfaces;   // number of populated entries in interfaces[]
     uint8_t               isPcapNG;        // source file was pcapng (multiple interfaces possible)
@@ -1036,6 +1039,7 @@ uint32_t arkime_string_hash(const void *key);
 uint32_t arkime_string_hash_len(const void *key, int len);
 uint32_t arkime_string_hash_keyed(const void *key);
 uint32_t arkime_string_hash_keyed_len(const void *key, int len);
+gboolean arkime_is_loopback_host(const char *host);
 int arkime_string_cmp(const void *keyv, const void *elementv);
 int arkime_string_ncmp(const void *keyv, const void *elementv);
 
@@ -1422,6 +1426,7 @@ void *arkime_http_get_or_create_server(const char *name, const char *hostnames, 
 
 void arkime_http_set_retries(void *server, uint16_t retries);
 void arkime_http_set_timeout(void *serverV, uint64_t timeout);
+void arkime_http_set_stall_timeout(void *serverV, uint32_t secs);
 void arkime_http_set_client_cert(void *serverV, char *clientCert, char *clientKey, char *clientKeyPass);
 void arkime_http_set_print_errors(void *server);
 void arkime_http_set_dont_free_response(void *server);
@@ -1540,6 +1545,7 @@ void     arkime_packet_batch_end_of_file(int readerPos);
 
 int      arkime_packet_set_interface(int readerPos, int interfaceIndex, int dlt, int snaplen);
 int      arkime_packet_interface_offsets_json(char *buf, int buflen, const ArkimeInterfaceInfo_t *interfaces, int count);
+int      arkime_packet_dlt_to_index(int dlt);
 int      arkime_packet_index_to_dlt(int dltIndex);
 int      arkime_packet_dlt_index_count(void);
 int      arkime_packet_dlt_index(const ArkimePacket_t *packet);
@@ -1860,6 +1866,10 @@ void arkime_readers_compile_bpf(const char *name, int dlt, int snaplen, const ch
 void arkime_readers_start();
 void arkime_readers_add(char *name, ArkimeReaderInit func);
 void arkime_readers_exit();
+gboolean arkime_readers_is_dir(const char *path, gboolean followLinks);
+struct stat;
+int  arkime_readers_open_nofollow(const char *path, struct stat *st);
+void arkime_readers_delete(const char *path, const struct stat *opened);
 
 /******************************************************************************/
 /*
@@ -1873,7 +1883,9 @@ typedef enum {
     ARKIME_SCHEME_FLAG_RECURSIVE = 0x0004,
     ARKIME_SCHEME_FLAG_SKIP      = 0x0008,
     ARKIME_SCHEME_FLAG_DELETE    = 0x0010,
-    ARKIME_SCHEME_FLAG_SORTED    = 0x0020
+    ARKIME_SCHEME_FLAG_SORTED    = 0x0020,
+    ARKIME_SCHEME_FLAG_INDIR     = 0x0040, // found by a directory walk or monitor, don't follow links
+    ARKIME_SCHEME_FLAG_FOLLOWLINKS = 0x0080
 } ArkimeSchemeFlags;
 
 typedef struct {

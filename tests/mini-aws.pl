@@ -110,6 +110,7 @@ while (1) {
                 $conn_buf{$fn} = '';
                 $conn_state{$fn} = {};
                 $sel->add($client);
+                print strftime("%H:%M:%S", localtime) . " AWS: conn $fn opened\n" if ($debug);
             }
             next;
         }
@@ -167,6 +168,7 @@ while (1) {
                 $state->{content_length} = int($headers{'content-length'} // 0);
                 $state->{body} = '';
                 $state->{headers_done} = 1;
+                print strftime("%H:%M:%S", localtime) . " AWS: conn $fn <- $state->{method} $state->{uri} content-length:$state->{content_length}\n" if ($debug);
 
                 # Handle Expect: 100-continue — client won't send body until we respond
                 if (($headers{'expect'} // '') =~ /100-continue/i) {
@@ -199,7 +201,7 @@ while (1) {
                 my $range = $state->{headers}{'range'} // '';
                 my $body_size = length($state->{body} // '');
                 my $ts2 = strftime("%H:%M:%S", localtime);
-                print "$ts2 AWS: $state->{method} $state->{uri}" . ($state->{query} ne '' ? "?$state->{query}" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . " -> $status\n";
+                print "$ts2 AWS: conn $fn -> $state->{method} $state->{uri}" . ($state->{query} ne '' ? "?$state->{query}" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . " -> $status\n";
             }
 
             write_all($fh, $resp);
@@ -217,6 +219,7 @@ while (1) {
 
 sub cleanup_conn {
     my ($fh, $fn) = @_;
+    print strftime("%H:%M:%S", localtime) . " AWS: conn $fn closed\n" if ($debug);
     delete $conn_buf{$fn};
     delete $conn_state{$fn};
     $sel->remove($fh);
@@ -240,7 +243,7 @@ sub write_all {
             # the server is single threaded, so a client that stops reading
             # must not hold everyone else up: give it 30s, then drop the response
             if (!IO::Select->new($fh)->can_write(5) && ++$stalls >= 6) {
-                print "write to client stalled, dropping response\n";
+                print strftime("%H:%M:%S", localtime) . " AWS: conn " . fileno($fh) . " write to client stalled, dropping response\n";
                 return;
             }
             next;

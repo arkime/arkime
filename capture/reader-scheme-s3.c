@@ -412,6 +412,7 @@ LOCAL void *scheme_s3_make_server(const char *schemehostport, const char *region
         arkime_http_set_aws_sigv4(server, aws_sigv4);
 
         arkime_http_set_timeout(server, 0);
+        arkime_http_set_stall_timeout(server, 60);
     }
     return server;
 }

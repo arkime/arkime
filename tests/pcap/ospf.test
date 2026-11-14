@@ -1714,7 +1714,7 @@
      ]
     },
     "client" : {
-     "bytes" : 0
+     "bytes" : 19
     },
     "destination" : {
      "bytes" : 0,
@@ -1784,6 +1784,7 @@
      "PCS Computer Systems GmbH"
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "ffffffffffffffff",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      254
@@ -1803,7 +1804,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 19
    },
    "header" : {
     "index" : {
@@ -1887,7 +1888,7 @@
      ]
     },
     "client" : {
-     "bytes" : 0
+     "bytes" : 19
     },
     "destination" : {
      "bytes" : 0,
@@ -1957,6 +1958,7 @@
      "PCS Computer Systems GmbH"
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "ffffffffffffffff",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      255
@@ -1976,7 +1978,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 19
    },
    "header" : {
     "index" : {
@@ -1987,8 +1989,13 @@
   {
    "body" : {
     "@timestamp" : "SET",
+    "bgp" : {
+     "type" : [
+      "KEEPALIVE"
+     ]
+    },
     "client" : {
-     "bytes" : 0
+     "bytes" : 38
     },
     "destination" : {
      "bytes" : 302,
@@ -2008,6 +2015,7 @@
      "PCS Computer Systems GmbH"
     ],
     "dstOuiCnt" : 1,
+    "dstPayload8" : "ffffffffffffffff",
     "dstRIR" : "ARIN",
     "dstTTL" : [
      255
@@ -2050,12 +2058,13 @@
      "lte" : 1571662610443
     },
     "protocol" : [
+     "bgp",
      "tcp"
     ],
-    "protocolCnt" : 1,
+    "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 0
+     "bytes" : 38
     },
     "source" : {
      "bytes" : 302,
@@ -2075,6 +2084,7 @@
      "PCS Computer Systems GmbH"
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "ffffffffffffffff",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      255
@@ -2094,7 +2104,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 76
    },
    "header" : {
     "index" : {

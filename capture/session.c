@@ -413,8 +413,9 @@ void arkime_session_flip_src_dst(ArkimeSession_t *session)
     FLIP_BITS(session->ackedUnseenSegment);
 
     // tcpData/sctpData are a union, and tcpFlagAckCnt shares one with the
-    // non-directional icmpInfo, so only flip what the ip protocol says is there
-    if (session->ipProtocol == IPPROTO_TCP) {
+    // non-directional icmpInfo, so only flip what the ip protocol says is there.
+    // Corrupt ip sessions can be ipProtocol TCP without tcp ever initializing tcpData.
+    if (session->ipProtocol == IPPROTO_TCP && session->mProtocol == mProtocolTcp) {
         FLIP_SWAP2(uint8_t, session->tcpFlagAckCnt);
         FLIP_SWAP2(uint32_t, session->tcpData.synSeq);
         FLIP_SWAP2(uint32_t, session->tcpData.tcpSeq);

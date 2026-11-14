@@ -1083,6 +1083,7 @@ LOCAL void writer_s3_init(const char *UNUSED(name))
         snprintf(host, sizeof(host), "https://%s", s3Host);
     }
     s3Server = arkime_http_create_server(host, s3MaxConns, s3MaxRequests, s3Compress);
+    arkime_http_set_stall_timeout(s3Server, 60);
     arkime_http_set_print_errors(s3Server);
     arkime_http_set_header_cb(s3Server, writer_s3_header_cb);
 

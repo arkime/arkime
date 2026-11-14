@@ -70,6 +70,8 @@ const Banner = require('../common/banner');
 const ViewConfig = require('../common/viewConfig');
 const MCPServer = require('../common/mcpServer');
 const MCPViewerAPIs = require('./apiMcp');
+const SafePug = require('./safePug');
+const pug = require('pug');
 
 // registers a get and a post
 app.getpost = (route, mw, func) => { app.get(route, mw, func); app.post(route, mw, func); };
@@ -519,45 +521,31 @@ ArkimeConfig.loaded(() => {
 // ============================================================================
 // UTILITY
 // ============================================================================
-function parseCustomView (key, input) {
+function parseCustomView (input) {
+  return {
+    require: input.match(/require:([^;]+)/)?.[1]?.trim(),
+    title: input.match(/title:([^;]+)/)?.[1]?.trim(),
+    fields: input.match(/fields:([^;]+)/)?.[1]
+  };
+}
+
+// Used by [custom-views]. Only an array index goes into the pug source, the
+// title, require path and fields are render data, so a view definition can't supply pug.
+// Returns an error string if the view is invalid.
+function addCustomView (found, customViews, key, view) {
+  if (!ArkimeUtil.isString(view.require) || !/^\w+(\.\w+)*$/.test(view.require)) {
+    return 'missing or invalid require section';
+  }
+  const fields = ArkimeUtil.isString(view.fields) ? view.fields.split(',').map(f => f.trim()).filter(f => f) : view.fields;
+  if (!Array.isArray(fields)) {
+    return 'missing fields section';
+  }
+
+  // Field docs are sensor-writable, so field info is render data too
   const fieldsMap = Config.getFieldsMap();
-
-  let match = input.match(/require:([^;]+)/);
-  if (!match) {
-    console.log(`custom-view ${key} missing require section`);
-    process.exit(1);
-  }
-  const req = match[1];
-
-  match = input.match(/title:([^;]+)/);
-  const title = match?.[1] || key;
-
-  match = input.match(/fields:([^;]+)/);
-  if (!match) {
-    console.log(`custom-view ${key} missing fields section`);
-    process.exit(1);
-  }
-  const fields = match[1];
-
-  const parts = req.split('.');
-  let output = '  if (';
-  for (let i = 0; i < parts.length; i++) {
-    if (i > 0) {
-      output += ' && ';
-    }
-    output += 'session';
-    for (let j = 0; j <= i; j++) {
-      output += `.${parts[j]}`;
-    }
-  }
-  output += ')\n';
-  output += `    div.sessionDetailMeta.bold ${title}\n    dl.sessionDetailMeta\n`;
-  // Field docs are sensor-writable, so field info is render data, not pug source
-  output += `      +customViewFields(session, customViewFields[${JSON.stringify(key)}])\n`;
-
   const viewFields = [];
-  for (const field of fields.split(',')) {
-    const info = fieldsMap[field];
+  for (const field of fields) {
+    const info = ArkimeUtil.isString(field) ? fieldsMap[field] : undefined;
     if (!info || !ArkimeUtil.isString(info.dbField)) {
       continue;
     }
@@ -571,12 +559,55 @@ function parseCustomView (key, input) {
     });
   }
 
-  output += '\n';
-  return { output, viewFields };
+  const cv = `customViews[${customViews.length}]`;
+  customViews.push({
+    title: ArkimeUtil.isString(view.title) && view.title ? view.title : key,
+    require: view.require.split('.'),
+    fields: viewFields
+  });
+
+  found[key] = `  if (${cv}.require.reduce((o, p) => (o && Object.hasOwn(o, p)) ? o[p] : undefined, session))\n` +
+               `    div.sessionDetailMeta.bold #{${cv}.title}\n` +
+               '    dl.sessionDetailMeta\n' +
+               `      +customViewFields(session, ${cv}.fields)\n\n`;
+  return undefined;
+}
+
+// Indent a view into the session detail template and put its sections in cards.
+// Done one view at a time, and before SafePug checks it, so this can't change what was checked.
+function sessionDetailCard (view) {
+  let spaces;
+  let state = 0;
+  return view.replaceAll(/^/mg, '  ').split('\n').map((line) => {
+    // Ignore lines that are just spaces
+    if (line.match(/^\s*$/)) {
+      return '';
+    }
+
+    if (state === 0) {
+      if (line.includes('div.sessionDetailMeta.bold')) {
+        // Save current indent level, so we can look for line without it
+        spaces = ' '.repeat(line.search(/\S/));
+        state = 1;
+        return spaces + 'div.session-detail-card\n  ' + line;
+      } else {
+        return line;
+      }
+    } else {
+      if (!line.startsWith(spaces) && !line.includes('dl.sessionDetailMeta')) {
+        state = 0;
+        return line;
+      } else {
+        return '  ' + line;
+      }
+    }
+  }).join('\n')
+    .replace(/div.sessionDetailMeta.bold/g, 'h4.session-card-title')
+    .replace(/dl.sessionDetailMeta/g, 'dl');
 }
 
 function createSessionDetail () {
-  const found = {};
+  const found = Object.create(null);
   let dirs = [];
 
   dirs = dirs.concat(Config.getArray('pluginsDir', `${version.config_prefix}/plugins`));
@@ -604,26 +635,53 @@ function createSessionDetail () {
     }
   }
 
-  const customViews = Config.keys('custom-views') || [];
-  const customViewFields = {};
-
-  for (const key of customViews) {
-    const view = Config.sectionGet('custom-views', key);
-    const { output, viewFields } = parseCustomView(key, view);
-    found[key] = output;
-    customViewFields[key] = viewFields;
+  const customViews = [];
+  for (const key of Config.keys('custom-views') || []) {
+    const err = addCustomView(found, customViews, key, parseCustomView(Config.sectionGet('custom-views', key)));
+    if (err) {
+      console.log(`custom-view ${key} ${err}`);
+      process.exit(1);
+    }
   }
-  internals.customViewFields = customViewFields;
 
+  // Views from plugins (WISE) come from another server, so only allow safe pug, and
+  // compile each by itself so one that throws while rendering only loses its own card
+  const pluginViews = [];
   const makers = internals.pluginEmitter.listeners('makeSessionDetail');
   async.each(makers, function (cb, nextCb) {
     cb(function (err, items) {
-      for (const k in items) {
-        found[k] = items[k].replace(/^/mg, '  ') + '\n';
+      for (const k of Object.keys(items ?? {})) {
+        if (!ArkimeUtil.isString(items[k])) {
+          continue;
+        }
+        const card = sessionDetailCard(items[k].replace(/^/mg, '  ') + '\n');
+        // An indented first line would nest under the include before it
+        let verr = /^\s*[ \t]\S/.test(items[k]) ? 'first line is indented' : SafePug.checkView(card);
+        let render;
+        if (!verr) {
+          try {
+            render = pug.compile('include views/mixins.pug\n' + card.replace(/^ {4}/mg, ''), {
+              filename: 'sessionDetail',
+              basedir: '/',
+              compileDebug: !internals.isProduction
+            });
+          } catch (e) {
+            verr = e.message.split('\n').pop();
+          }
+        }
+        if (verr) {
+          console.log(`WARNING - view ${k} isn't allowed pug (${verr}), ignoring`);
+          continue;
+        }
+        found[k] = { pluginView: pluginViews.length };
+        pluginViews.push(render);
       }
       return nextCb();
     });
   }, function () {
+    // Swap in with sessionDetailNew so the template and its data always match
+    internals.customViews = customViews;
+    internals.pluginViews = pluginViews;
     // Replaces the previous BVN structure (b-card-group(columns) > b-card).
     // .session-detail-cards uses CSS columns (column-count) for the masonry
     // layout, with each .session-detail-card child rendering as a bordered
@@ -631,44 +689,23 @@ function createSessionDetail () {
     // The action bar (link/download/tags/etc.) is now the client-side
     // SessionActions.vue component, fed by the `actions` object the
     // /detail endpoint returns alongside this html.
-    internals.sessionDetailNew = 'include views/mixins.pug\n' +
-                                 'div.session-detail(sessionid=session.id,hidepackets=hidePackets)\n' +
-                                 '  div.session-detail-cards\n' +
-                                 '    div.session-detail-card\n' +
-                                 '      include views/sessionDetail\n';
+    let detail = 'include views/mixins.pug\n' +
+                 'div.session-detail(sessionid=session.id,hidepackets=hidePackets)\n' +
+                 '  div.session-detail-cards\n' +
+                 '    div.session-detail-card\n' +
+                 '      include views/sessionDetail\n';
     for (const k of Object.keys(found).sort()) {
-      internals.sessionDetailNew += found[k].replaceAll(/^/mg, '  ') + '\n';
-    }
-
-    let spaces;
-    let state = 0;
-    internals.sessionDetailNew = internals.sessionDetailNew.split('\n').map((line) => {
-      // Ignore lines that are just spaces
-      if (line.match(/^\s*$/)) {
-        return '';
-      }
-
-      if (state === 0) {
-        if (line.includes('div.sessionDetailMeta.bold')) {
-          // Save current indent level, so we can look for line without it
-          spaces = ' '.repeat(line.search(/\S/));
-          state = 1;
-          return spaces + 'div.session-detail-card\n  ' + line;
-        } else {
-          return line;
-        }
+      if (ArkimeUtil.isString(found[k])) {
+        detail += sessionDetailCard(found[k]) + '\n';
       } else {
-        if (!line.startsWith(spaces) && !line.includes('dl.sessionDetailMeta')) {
-          state = 0;
-          return line;
-        } else {
-          return '  ' + line;
-        }
+        detail += `    | !{pluginViewsHtml[${found[k].pluginView}]}\n`;
       }
-    }).join('\n');
-
-    internals.sessionDetailNew = internals.sessionDetailNew.replace(/div.sessionDetailMeta.bold/g, 'h4.session-card-title')
-      .replace(/dl.sessionDetailMeta/g, 'dl');
+    }
+    // pug caches the compiled template by filename in production
+    if (detail !== internals.sessionDetailNew) {
+      delete pug.cache.sessionDetail;
+    }
+    internals.sessionDetailNew = detail;
   });
 }
 

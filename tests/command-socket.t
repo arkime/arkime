@@ -13,12 +13,13 @@
 
 use lib ".";
 use strict;
-use Test::More tests => 29;
+use Test::More tests => 30;
 use IO::Socket::UNIX;
 use IO::Select;
 use POSIX ":sys_wait_h";
 use Cwd;
 use File::Temp qw(tempdir);
+use File::Copy;
 
 my $cwd = getcwd();
 my $tmpdir = tempdir(CLEANUP => 1);
@@ -27,11 +28,20 @@ my $capture = "../capture/capture";
 my $config = "config.test.ini";
 my $pcap = "$cwd/pcap/dns-udp.pcap";
 
-# Create a temp directory with symlinks to two pcap files for add-dir tests
+# Create a temp directory with copies of two pcap files for add-dir tests, directory walks don't follow links
 my $pcapdir = "$tmpdir/pcaps";
 mkdir($pcapdir);
-symlink("$cwd/pcap/dns-udp.pcap", "$pcapdir/dns-udp.pcap");
-symlink("$cwd/pcap/dns-mx.pcap", "$pcapdir/dns-mx.pcap");
+copy("$cwd/pcap/dns-udp.pcap", "$pcapdir/dns-udp.pcap");
+copy("$cwd/pcap/dns-mx.pcap", "$pcapdir/dns-mx.pcap");
+
+# A pcapng file with two sections
+open(my $ngin, '<:raw', "$cwd/pcap/multidlt_synthetic.pcapng") or die "multidlt_synthetic.pcapng: $!";
+my $ngdata = do { local $/; <$ngin> };
+close($ngin);
+my $ngpcap = "$tmpdir/two-sections.pcapng";
+open(my $ngout, '>:raw', $ngpcap) or die "$ngpcap: $!";
+print $ngout $ngdata x 2;
+close($ngout);
 
 # Bytes read past the end of a line, per socket, so a notification that arrives
 # in the same read as an ack is returned by the next read_line call
@@ -124,7 +134,7 @@ for (my $i = 0; $i < 100; $i++) {
 ok($ready, "command socket appeared");
 
 SKIP: {
-    skip "capture did not start, skipping socket tests", 23 unless $ready;
+    skip "capture did not start, skipping socket tests", 24 unless $ready;
 
     my $sock = IO::Socket::UNIX->new(
         Peer => $sockpath,
@@ -132,7 +142,7 @@ SKIP: {
     );
     ok(defined $sock, "connected to command socket");
 
-    skip "could not connect to socket", 22 unless defined $sock;
+    skip "could not connect to socket", 23 unless defined $sock;
 
     $sock->autoflush(1);
     my $sel = IO::Select->new($sock);
@@ -186,6 +196,12 @@ SKIP: {
     # Read the async completion notification
     my $notify = read_line($sock, $sel, 30);
     like($notify, qr/^file-done filename=.*dns-udp\.pcap/, "file-done notification with filename");
+
+    # --- Test 2b: pcapng totals cover every section and count each byte once ---
+    print $sock "add-file --notify $ngpcap\n";
+    read_line($sock, $sel, 10);
+    my $ngbytes = 2 * length($ngdata);
+    like(read_line($sock, $sel, 30), qr/^file-done filename=.*two-sections\.pcapng packets=56 bytes=$ngbytes$/, "pcapng file-done has the totals of both sections");
 
     # --- Test 3: add-dir WITH --notify (file-done for each file) ---
     print $sock "add-dir --notify $pcapdir\n";

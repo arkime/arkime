@@ -1,4 +1,4 @@
-use Test::More tests => 97;
+use Test::More tests => 101;
 
 use Cwd;
 use URI::Escape;
@@ -325,6 +325,8 @@ my $cvDoc = '{
   "http": {"host": ["customview.test"], "hostCnt": 1},
   "iscool": ["yes"],
   "evillabel": ["val"],
+  "wise": {"str": ["boat"]},
+  "cloud": {"service": ["aws"]},
   "tags": ["' . $cvTag . '"],
   "tagsCnt": 1
 }';
@@ -347,6 +349,12 @@ ok($sd !~ m{'"<b>}s, "hostile label never raw in /detail");
 ok($sd !~ m{\{name: "\QEvil' + (7*191) + '"\E}s, "hostile label never breaks out of the name string");
 ok($sd =~ m{v-text="&quot;\QEvil' + (7*191) + '\E}s, "hostile label kept literal in dropdown text");
 ok($sd !~ m{Evil1337}s, "hostile label never evaluated as pug");
+
+# WISE views are pug from another server, the test WISE ones are all safe pug so they show
+ok($sd =~ m{<h4 class="session-card-title">Wise</h4>}s, "WISE pug view title in /detail");
+ok($sd =~ m{value="boat"}s, "WISE pug view value in /detail");
+ok($sd =~ m{<h4 class="session-card-title">Public Cloud</h4>}s, "WISE require view title in /detail");
+ok($sd !~ m{Throws}s, "WISE view that throws only loses its own card");
 
 sessionsDeleteByTag($noPcapIndex, $cvTag);
 

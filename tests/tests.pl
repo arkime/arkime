@@ -507,7 +507,8 @@ my ($cmd) = @_;
             system("node mini-wise-source.js --debug 9998 > /tmp/arkime.wisesource 2>&1 &");
         } else {
             system("perl mini-redis.pl 7379 > /dev/null &");
-            system("perl mini-aws.pl 4566 > /dev/null &");
+            # Always logged, a hung api-s3.t command's report shows its last requests
+            system("perl mini-aws.pl --debug 4566 > /tmp/arkime.aws 2>&1 &");
             system("node mini-wise-source.js 9998 > /dev/null &");
         }
 

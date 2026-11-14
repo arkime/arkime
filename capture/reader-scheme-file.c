@@ -7,10 +7,13 @@
  */
 
 #include <fcntl.h>
+#include <sys/stat.h>
 #include "arkime.h"
 #include "arkimeconfig.h"
 
 extern ArkimeConfig_t        config;
+
+#define SCHEME_FOLLOW(flags) (((flags) & ARKIME_SCHEME_FLAG_FOLLOWLINKS) != 0)
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -51,7 +54,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 
     if ((sw->flags & ARKIME_SCHEME_FLAG_RECURSIVE) &&
         (event->mask & IN_CREATE) &&
-        g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+        arkime_readers_is_dir(fullfilename, SCHEME_FOLLOW(sw->flags))) {
 
         scheme_file_monitor_dir(fullfilename, sw->flags, sw->actions);
         g_free(fullfilename);
@@ -70,7 +73,7 @@ LOCAL void scheme_file_monitor_do(struct inotify_event *event)
 
     if (config.debug)
         LOG("Monitor enqueuing %s", fullfilename);
-    arkime_reader_scheme_load(fullfilename, sw->flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), sw->actions);
+    arkime_reader_scheme_load(fullfilename, (sw->flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT)) | ARKIME_SCHEME_FLAG_INDIR, sw->actions);
     g_free(fullfilename);
 }
 /******************************************************************************/
@@ -116,7 +119,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
     if (config.debug)
         LOG("Monitoring %s", dirname);
 
-    int rc = inotify_add_watch(monitorFd, dirname, IN_CLOSE_WRITE | IN_CREATE);
+    int rc = inotify_add_watch(monitorFd, dirname, IN_CLOSE_WRITE | IN_CREATE | (SCHEME_FOLLOW(flags) ? 0 : IN_DONT_FOLLOW));
     if (rc == -1) {
         LOG("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
         return;
@@ -152,7 +155,7 @@ LOCAL void scheme_file_monitor_dir(const char *dirname, ArkimeSchemeFlags flags,
 
         gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
-        if (g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+        if (arkime_readers_is_dir(fullfilename, SCHEME_FOLLOW(flags))) {
             scheme_file_monitor_dir(fullfilename, flags | ARKIME_SCHEME_FLAG_DIRHINT, actions);
         }
         g_free(fullfilename);
@@ -211,7 +214,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
         gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
         // If recursive option and a directory then process all the files in that dir
-        if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+        if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && arkime_readers_is_dir(fullfilename, SCHEME_FOLLOW(flags))) {
             scheme_file_dir(fullfilename, flags, actions);
             g_free(fullfilename);
             continue;
@@ -222,7 +225,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
             continue;
         }
 
-        arkime_reader_scheme_load(fullfilename, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
+        arkime_reader_scheme_load(fullfilename, (flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT)) | ARKIME_SCHEME_FLAG_INDIR, actions);
         g_free(fullfilename);
     }
     g_dir_close(pcapGDir);
@@ -237,7 +240,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
         gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
         // If recursive option and a directory then process all the files in that dir
-        if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+        if ((flags & ARKIME_SCHEME_FLAG_RECURSIVE)  && arkime_readers_is_dir(fullfilename, SCHEME_FOLLOW(flags))) {
             scheme_file_dir(fullfilename, flags, actions);
             g_free(fullfilename);
             continue;
@@ -248,7 +251,7 @@ LOCAL int scheme_file_dir(const char *dirname, ArkimeSchemeFlags flags, ArkimeSc
             continue;
         }
 
-        arkime_reader_scheme_load(fullfilename, flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT), actions);
+        arkime_reader_scheme_load(fullfilename, (flags & (ArkimeSchemeFlags)(~ARKIME_SCHEME_FLAG_DIRHINT)) | ARKIME_SCHEME_FLAG_INDIR, actions);
         g_free(fullfilename);
     }
     g_ptr_array_free(files, TRUE);
@@ -262,11 +265,20 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
         uri += 7;
     }
 
-    if (g_file_test(uri, G_FILE_TEST_IS_DIR)) {
+    // Files found by walking a directory must be the entry itself, not where a link points
+    const gboolean noFollow = (flags & ARKIME_SCHEME_FLAG_INDIR) && !(flags & ARKIME_SCHEME_FLAG_FOLLOWLINKS);
+
+    if (arkime_readers_is_dir(uri, !noFollow)) {
+        // Walk from the real path, so a link below it shows up when a file is opened
+        char real[PATH_MAX + 1];
+        if (!(flags & ARKIME_SCHEME_FLAG_INDIR) && realpath(uri, real))
+            uri = real;
         return scheme_file_dir(uri, flags | ARKIME_SCHEME_FLAG_DIRHINT, actions);
     }
 
     int fd;
+    struct stat opened;
+    memset(&opened, 0, sizeof(opened));
     const int isStdin = strcmp(uri, "-") == 0;
     if (isStdin) {
         fd = fileno(stdin);
@@ -289,10 +301,16 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
         }
 
 
-        fd = open(filename, O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
-        if (fd < 0) {
-            LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d)", filename, strerror(errno), errno);
-            return 1;
+        if (noFollow) {
+            fd = arkime_readers_open_nofollow(uri, &opened);
+            if (fd < 0)
+                return 1;
+        } else {
+            fd = open(filename, O_RDONLY | O_NOFOLLOW | O_CLOEXEC);
+            if (fd < 0) {
+                LOG("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d)", filename, strerror(errno), errno);
+                return 1;
+            }
         }
 
         // check to see if viewer might have access issues to non-copied pcap file
@@ -310,11 +328,7 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
                     close(fd);
                 // Not if processing stopped because of quitting, the rest of the file wasn't read
                 if (config.ignoreErrors && (flags & ARKIME_SCHEME_FLAG_DELETE) && !config.quitting) { // ALW - Maybe this should always delete?
-                    if (config.debug)
-                        LOG("Deleting %s", uri);
-                    int rc = unlink(uri);
-                    if (rc != 0)
-                        LOG("Failed to delete file %s %s (%d)", uri, strerror(errno), errno);
+                    arkime_readers_delete(uri, noFollow ? &opened : NULL);
                 }
                 return 1;
             }
@@ -331,11 +345,7 @@ LOCAL int scheme_file_load(const char *uri, ArkimeSchemeFlags flags, ArkimeSchem
     if (!isStdin)
         close(fd);
     if (flags & ARKIME_SCHEME_FLAG_DELETE) {
-        if (config.debug)
-            LOG("Deleting %s", uri);
-        int rc = unlink(uri);
-        if (rc != 0)
-            LOG("Failed to delete file %s %s (%d)", uri, strerror(errno), errno);
+        arkime_readers_delete(uri, noFollow ? &opened : NULL);
     }
     return 0;
 }

@@ -99,6 +99,7 @@ struct arkimehttpserver_t {
     char                    *aws_sigv4;
     char                    *caTrustFile;
     uint64_t                 timeout;
+    uint32_t                 stallTimeout;
     int                      snamesCnt;
     int                      snamesPos;
     char                     compress;
@@ -437,6 +438,11 @@ LOCAL void arkime_http_curlm_check_multi_info(ArkimeHttpServer_t *server)
 #endif
 
             if (responseCode == 0 && request->retries >= 0) {
+                if (msg->data.result == CURLE_OPERATION_TIMEDOUT) {
+                    double totalTime;
+                    curl_easy_getinfo(easy, CURLINFO_TOTAL_TIME, &totalTime);
+                    LOG("WARNING - %s timed out after %.0fs, retrying", request->url, totalTime);
+                }
                 curl_multi_remove_handle(server->multi, easy);
 
                 request->retries--;
@@ -985,6 +991,10 @@ gboolean arkime_http_schedule2(void *serverV, const char *method, const char *ke
 
     curl_easy_setopt(request->easy, CURLOPT_CONNECTTIMEOUT, 10L);
     curl_easy_setopt(request->easy, CURLOPT_TIMEOUT, server->timeout);
+    if (server->stallTimeout) {
+        curl_easy_setopt(request->easy, CURLOPT_LOW_SPEED_LIMIT, 1L);
+        curl_easy_setopt(request->easy, CURLOPT_LOW_SPEED_TIME, (long)server->stallTimeout);
+    }
 
     memcpy(request->key, key, key_len);
     request->key[key_len] = 0;
@@ -1151,6 +1161,14 @@ void arkime_http_set_retries(void *serverV, uint16_t retries)
     server->maxRetries = retries;
 }
 /******************************************************************************/
+// Fail a request that moves no bytes for this many seconds, unlike the timeout a long transfer is fine
+void arkime_http_set_stall_timeout(void *serverV, uint32_t secs)
+{
+    ArkimeHttpServer_t        *server = serverV;
+
+    server->stallTimeout = secs;
+}
+/******************************************************************************/
 void arkime_http_set_timeout(void *serverV, uint64_t timeout)
 {
     ArkimeHttpServer_t        *server = serverV;
@@ -1220,6 +1238,32 @@ gboolean arkime_http_is_arkime(uint32_t hash, uint8_t *sessionId)
     return (conn ? 1 : 0);
 }
 /******************************************************************************/
+// Like ArkimeConfig.isLoopbackHost, parsed by curl so it is the host curl connects to.
+// Returns -1 if url isn't https, otherwise if its host is localhost, 127.x.x.x or ::1
+LOCAL int arkime_http_loopback_url(const char *url)
+{
+    CURLU *h = curl_url();
+    char  *scheme = NULL;
+    char  *host = NULL;
+    int    result;
+
+    if (curl_url_set(h, CURLUPART_URL, url, 0) != CURLUE_OK ||
+        curl_url_get(h, CURLUPART_SCHEME, &scheme, 0) != CURLUE_OK) {
+        result = g_ascii_strncasecmp(url, "https:", 6) == 0 ? 0 : -1;
+    } else if (g_ascii_strcasecmp(scheme, "https") != 0) {
+        result = -1;
+    } else if (curl_url_get(h, CURLUPART_HOST, &host, 0) != CURLUE_OK) {
+        result = 0;
+    } else {
+        result = arkime_is_loopback_host(host);
+    }
+
+    curl_free(scheme);
+    curl_free(host);
+    curl_url_cleanup(h);
+    return result;
+}
+/******************************************************************************/
 void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOutstandingRequests, int compress)
 {
     ArkimeHttpServer_t *server = ARKIME_TYPE_ALLOC0(ArkimeHttpServer_t);
@@ -1254,12 +1298,21 @@ void *arkime_http_create_server(const char *hostnames, int maxConns, int maxOuts
 
     server->insecure = config.insecure; // Default to global setting
 
-    // If https to localhost or 127.0.0.1 we don't check the cert
-    for (i = 0; !server->insecure && i < server->snamesCnt; i++) {
-        const char *name = server->snames[i].name;
-        if ((strncmp("https://localhost", name, 17) == 0 || strncmp("https://127.0.0.1", name, 17) == 0) &&
-            (name[17] == 0 || name[17] == ':' || name[17] == '/')) {
-            LOG("WARNING - Using insecure mode for %s", name);
+    // Same rule as ArkimeConfig.isInsecure, only skip the cert check when every https server is loopback
+    if (!server->insecure) {
+        gboolean loopback = FALSE;
+        for (i = 0; i < server->snamesCnt; i++) {
+            const int rc = arkime_http_loopback_url(server->snames[i].name);
+            if (rc == -1)
+                continue;
+            if (rc == 0) {
+                loopback = FALSE;
+                break;
+            }
+            loopback = TRUE;
+        }
+        if (loopback) {
+            LOG("WARNING - Using insecure mode for %s", hostnames);
             server->insecure = 1;
         }
     }

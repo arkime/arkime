@@ -13,12 +13,21 @@ my $aws = "AWS_EC2_METADATA_DISABLED=true AWS_DEFAULT_REGION=us-east-1 aws --end
 
 # A hung command's report also says what the mock aws last did and whether it still answers
 $ArkimeTest::hungExtra = sub {
-    diag "--- last of /tmp/arkime.aws\n" . `tail -40 /tmp/arkime.aws 2>&1` if (-s "/tmp/arkime.aws");
+    diag "--- last of /tmp/arkime.aws\n" . `tail -80 /tmp/arkime.aws 2>&1` if (-s "/tmp/arkime.aws");
     diag "--- mock aws answers with: " . `curl -s -m 5 -o /dev/null -w '%{http_code}' http://localhost:4566/_auth_seen 2>&1`;
     diag "--- connections to the mock\n" . `ss -tnp 2>/dev/null | grep 4566`;
 };
 
 sessionsDeleteByNode("tests2_sessions3-*", "s3-test", "sqs-test");
+
+# Also runs when a hung command ends the test, so its sessions don't change the multi viewer tests
+END {
+    my $died = $?;
+    local $?;
+    # a killed capture's last bulk can still be landing
+    sleep(2) if ($died);
+    sessionsDeleteByNode("tests2_sessions3-*", "s3-test", "sqs-test");
+}
 
 sub run {
 my ($tag, $compression, $extension, $gap, $input) = @_;
@@ -244,5 +253,3 @@ is($esjson->{hits}->{total}, 0, "all s3 files expired");
 # The S3 object itself should be gone
 isnt(timedSystem("AWS_ACCESS_KEY_ID='foo' AWS_SECRET_ACCESS_KEY='foo' $aws s3 cp $s3url /tmp/arkime.file.expired > /dev/null 2>&1"), 0, "s3 object deleted");
 unlink("/tmp/arkime.file.expired");
-
-sessionsDeleteByNode("tests2_sessions3-*", "s3-test", "sqs-test");
