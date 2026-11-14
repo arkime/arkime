@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 160;
+use Test::More tests => 167;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -391,7 +391,7 @@ ok(!grep(/^role:headerRole$/, @{$sameReq->{roles}}), "sameequser loses role:head
 #### JWT Auth Header tests (test4 node on port 8127)
 
 # Valid JWT with short_id claim — should auto-create user
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIxIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMSJ9.fakesig');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6Imp3dHVzZXIxIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMSJ9.fakesig');
 is ($response->code, 200, "JWT header auth success");
 
 # Verify user was created with short_id as userId
@@ -407,18 +407,32 @@ $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt
 is ($response->code, 403, "Invalid JWT returns 403");
 is ($response->content, '{"success":false,"text":"Invalid JWT in header"}');
 
+# Unsigned, expired, not yet valid and signatureless JWTs — should 403, sac- so getUser won't auto create
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6InNhYy1qd3R1c2VyMyJ9.fakesig');
+is ($response->code, 403, "JWT with alg none returns 403");
+is ($response->content, '{"success":false,"text":"Invalid JWT in header"}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6InNhYy1qd3R1c2VyMyIsImV4cCI6MTAwMDAwMDAwMH0.fakesig');
+is ($response->code, 403, "Expired JWT returns 403");
+is ($response->content, '{"success":false,"text":"Invalid JWT in header"}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6InNhYy1qd3R1c2VyMyIsIm5iZiI6NDAwMDAwMDAwMH0.fakesig');
+is ($response->code, 403, "Not yet valid JWT returns 403");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6InNhYy1qd3R1c2VyMyJ9.');
+is ($response->code, 403, "JWT without a signature returns 403");
+$response = viewerGet("/regressionTests/getUser/sac-jwtuser3");
+ok(!defined $response->{userId}, "Rejected JWTs did not create sac-jwtuser3");
+
 # JWT without the required short_id claim — should 403
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.fakesig');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.fakesig');
 is ($response->code, 403, "JWT without required claim returns 403");
 is ($response->content, '{"success":false,"text":"User name header is empty"}');
 
 # JWT with role: prefix in claim — should be rejected
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6InJvbGU6ZXZpbCIsInByZWZlcnJlZF91c2VybmFtZSI6IkhhY2tlciJ9.fakesig');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6InJvbGU6ZXZpbCIsInByZWZlcnJlZF91c2VybmFtZSI6IkhhY2tlciJ9.fakesig');
 is ($response->code, 403, "JWT with role: prefix rejected");
 is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 # JWT with department claim — should get role:securityTeam via role mappings
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMiIsImRlcGFydG1lbnQiOiJzZWN1cml0eSJ9.fakesig');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6Imp3dHVzZXIyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMiIsImRlcGFydG1lbnQiOiJzZWN1cml0eSJ9.fakesig');
 is ($response->code, 200, "JWT with department claim auth success");
 $response = viewerGet("/regressionTests/getUser/jwtuser2");
 ok(grep(/^role:securityTeam$/, @{$response->{roles}}), "jwtuser2 has role:securityTeam from JWT department claim");

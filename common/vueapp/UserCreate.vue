@@ -202,6 +202,14 @@ SPDX-License-Identifier: Apache-2.0
               :label="$t('users.disablePcapDownload')"
               @update:model-value="setRoleField('disablePcapDownload', $event)" />
           </div>
+          <v-alert
+            v-if="createMode === 'user' && newUser.roles?.includes('superAdmin')"
+            type="info"
+            variant="tonal"
+            density="compact"
+            class="mb-2">
+            {{ $t('users.superAdminNoInherit') }}
+          </v-alert>
 
           <!-- Role permission tri-state toggles -->
           <div

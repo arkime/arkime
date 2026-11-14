@@ -280,6 +280,14 @@ SPDX-License-Identifier: Apache-2.0
                     :label="$t('users.disablePcapDownload')"
                     @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
                 </div>
+                <v-alert
+                  v-if="isUser(item) && item.roles?.includes('superAdmin')"
+                  type="info"
+                  variant="tonal"
+                  density="compact"
+                  class="mb-2">
+                  {{ $t('users.superAdminNoInherit') }}
+                </v-alert>
 
                 <v-text-field
                   class="mt-2"
@@ -319,6 +327,15 @@ SPDX-License-Identifier: Apache-2.0
                   class="row"
                   v-if="isUser(item) && canChangePassword">
                   <div class="col-9 mt-2">
+                    <v-text-field
+                      v-if="item.userId === currentUser.userId"
+                      class="mt-1"
+                      type="password"
+                      :label="$t('settings.password.currentPassword')"
+                      v-model="currentPassword"
+                      autocomplete="current-password"
+                      @keydown.enter="changePassword(item.userId)"
+                      :placeholder="$t('settings.password.currentPasswordPlaceholder')" />
                     <v-text-field
                       class="mt-1"
                       type="password"
@@ -527,6 +544,7 @@ export default {
       sortBy: [{ key: 'userId', order: 'asc' }],
       createMode: 'user',
       // password
+      currentPassword: '',
       newPassword: '',
       confirmNewPassword: '',
       confirmDelete: {},
@@ -758,8 +776,12 @@ export default {
       const data = {
         newPassword: this.newPassword
       };
+      if (userId === this.currentUser.userId) {
+        data.currentPassword = this.currentPassword;
+      }
 
       UserService.changePassword(data, userId).then((response) => {
+        this.currentPassword = '';
         this.newPassword = null;
         this.confirmNewPassword = null;
         // display success message to user

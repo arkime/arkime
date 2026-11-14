@@ -543,7 +543,7 @@ User.prototype.getCont3xtKeys = function () {
   }
 
   try {
-    return Auth.auth2obj(v, Auth.passwordSecret256, Auth.STORED_AUTH_MAX);
+    return Auth.auth2obj(v, Auth.passwordSecret256, { stored: true });
   } catch (err) {
     console.log('ERROR - decrypting cont3xt keys for', this.userId, err.message);
     return undefined;

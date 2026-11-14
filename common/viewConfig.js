@@ -57,7 +57,8 @@ const WHOLE_USERINFO_SCHEMES = new Set(['redis-sentinel://']);
 // Where #redactString held a secret's place
 const HOLE_RE = /\u0000(\d+)\u0000/g;
 
-const INNER_SECRET_RE = /([\w.-]*(?:secret|password|token|apikey|basicauth)[\w.-]*|\b(?:pass|passwd|pwd))(\s*[:=]\s*)([^;]*)/gi;
+// Also the credential headers a wise source's `headers=Authorization:Bearer x;X-API-Key:y` sends
+const INNER_SECRET_RE = /([\w.-]*(?:secret|password|token|api[-_]?key|basicauth|authorization|cookie)[\w.-]*|(?<!\/\/)\b(?:pass|passwd|pwd|auth))(\s*[:=]\s*)([^;]*)/gi;
 
 // what the browser must send back after verifying a totp code
 const GRANT_HEADER = 'x-arkime-viewconfig';

@@ -1398,6 +1398,7 @@
     "hideFilesPage": "Hide Arkime Files Page",
     "hidePcap": "Hide Arkime PCAP",
     "disablePcapDownload": "Disable Arkime PCAP Download",
+    "superAdminNoInherit": "superAdmins don't inherit anything from their roles. Anything left on Inherit uses the default: hunting allowed, email search and data removal disabled, nothing hidden.",
     "forcedExpression": "Forced Expression",
     "forcedExpressionTip": "An Arkime search expression that is silently added to all queries. Useful to limit what data can be accessed (e.g. which nodes or IPs)",
     "forcedExpressionPlaceholder": "node == test",

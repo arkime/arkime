@@ -204,6 +204,10 @@ class Notifier {
       if (field.value !== undefined && typeof field.value !== 'string' && typeof field.value !== 'boolean') {
         return `Notifier field ${field.name} must be a string or true/false`;
       }
+      // Senders write some of these straight into a protocol stream, like the syslog tag
+      if (typeof field.value === 'string' && /[\u0000-\u001f\u007f]/.test(field.value)) {
+        return `Notifier field ${field.name} can not contain control characters`;
+      }
     }
 
     // check that required notifier fields exist

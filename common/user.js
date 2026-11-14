@@ -40,6 +40,17 @@ const searchColumns = [
 
 const allSettingColumns = [ 'emailSearch', 'removeEnabled', 'packetSearch', 'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
 
+// What the Users page gives a new user, and what a superAdmin gets for anything its own record leaves unset
+const DEFAULT_PERMISSIONS = Object.freeze({
+  emailSearch: false,
+  removeEnabled: false,
+  packetSearch: true,
+  hideStats: false,
+  hideFiles: false,
+  hidePcap: false,
+  disablePcapDownload: false
+});
+
 let readOnly = false;
 let getCurrentUserCB;
 
@@ -837,7 +848,8 @@ class User {
       return res.serverError(403, 'Password needs to be at least 3 characters');
     }
 
-    if (userIdTest.match(userIdRegexp)) {
+    // . and .. would be dot segments in the admin pages' api urls
+    if (userIdTest.match(userIdRegexp) || userIdTest === '.' || userIdTest === '..') {
       return res.serverError(403, 'User ID must be word characters');
     }
 
@@ -950,6 +962,12 @@ class User {
     });
   }
 
+  // The first admin role target has that actor doesn't, a superAdmin has them all
+  static #missingAdminRole (actor, target) {
+    if (actor.hasRole('superAdmin')) { return undefined; }
+    return adminRolesWithSuper.find(role => !actor.hasRole(role) && target.hasRole(role));
+  }
+
   /**
    * DELETE - /api/user/:id
    *
@@ -976,6 +994,11 @@ class User {
       }
       if (user.hasRole('superAdmin') && !req.user.hasRole('superAdmin')) {
         return res.serverError(403, 'Can not delete superAdmin unless you are superAdmin');
+      }
+      // Otherwise the userId could be recreated with a password we picked
+      const missingRole = User.#missingAdminRole(req.user, user);
+      if (missingRole) {
+        return res.serverError(403, `Not allowed to delete ${missingRole}`);
       }
       try {
         await User.deleteUser(userId);
@@ -1151,6 +1174,12 @@ class User {
         return res.serverError(403, 'User not found');
       }
 
+      // A role assigner can't change the roles of someone with an admin role they don't have
+      const missingRole = User.#missingAdminRole(req.user, user);
+      if (missingRole) {
+        return res.serverError(403, `Not allowed to change roles for ${missingRole}`);
+      }
+
       // The stored roles (a readOnly viewer only sees usersAdmin) written back only if
       // unchanged, so a role change made in between isn't undone
       for (let tries = 0; ; tries++) {
@@ -1213,7 +1242,8 @@ class User {
    * POST - /api/user/password
    *
    * Update user password.
-   * NOTE: currentPassword is not required so that a usersAdmin can update any user's password.
+   * NOTE: currentPassword is required to change your own password, even for admins, but not
+   * for a usersAdmin changing someone else's.
    * @name /user/password
    * @returns {boolean} success - Whether the update password operation was successful.
    * @returns {string} text - The success/error message to (optionally) display to the user.
@@ -1223,23 +1253,22 @@ class User {
       return res.serverError(403, 'New password needs to be at least 3 characters');
     }
 
+    // Otherwise a stolen admin session could lock the real admin out for good
+    const isSelf = req.settingUser.userId === req.user.userId;
     const storeHa1 = Auth.store2ha1(req.user.passStore, req.user.userId);
     const reqHa1 = Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword), req.token.userId);
-    if (!req.user.hasRole('usersAdmin') && (
+    if ((isSelf || !req.user.hasRole('usersAdmin')) && (
+      !ArkimeUtil.isString(req.body.currentPassword) ||
       storeHa1.length !== reqHa1.length ||
       !cryptoLib.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(reqHa1)) ||
       req.token.userId !== req.user.userId)) {
       return res.serverError(403, 'Password mismatch');
     }
 
-    // Skip this check if we are a superAdmin
-    if (!req.user.hasRole('superAdmin')) {
-      // Only change the password if we have the same admin role(s)
-      for (const role of adminRolesWithSuper) {
-        if (!req.user.hasRole(role) && req.settingUser.hasRole(role)) {
-          return res.serverError(403, `Not allowed to change ${role} password`);
-        }
-      }
+    // Only change the password if we have the same admin role(s)
+    const missingRole = User.#missingAdminRole(req.user, req.settingUser);
+    if (missingRole) {
+      return res.serverError(403, `Not allowed to change ${missingRole} password`);
     }
 
     const user = req.settingUser;
@@ -1266,6 +1295,19 @@ class User {
   // Frontend mirror: common/vueapp/themes/customTheme.js.
   static USER_SETTINGS_KEYS = ['vuetifyTheme', 'vuetifyCustomTheme'];
   static USER_SETTINGS_OBJECT_KEYS = ['vuetifyCustomTheme'];
+
+  static #MAX_SETTINGS_SIZE = 64 * 1024;
+
+  // A scalar, a list of strings (field names), or for an object key a theme style
+  // record of scalars and one level of nested scalars, `{ dark, colors: {...} }`
+  static #validSettingValue (val, isObjectKey) {
+    const isScalar = (v) => typeof v === 'string' || typeof v === 'boolean' || (typeof v === 'number' && Number.isFinite(v));
+    if (isScalar(val)) { return true; }
+    if (Array.isArray(val)) { return val.every(v => typeof v === 'string'); }
+    if (!isObjectKey || typeof val !== 'object') { return false; }
+    return Object.values(val).every(v => isScalar(v) ||
+      (v !== null && typeof v === 'object' && !Array.isArray(v) && Object.values(v).every(isScalar)));
+  }
 
   /**
    * Build an Express settings-update handler shared by viewer / cont3xt /
@@ -1298,12 +1340,22 @@ class User {
         if (val === undefined) { continue; }
         // Explicit null is the unset signal: delete the key, don't store null.
         if (val === null) { delete merged[key]; continue; }
-        // Reject stray object values unless this key may hold one (e.g. the
-        // vuetifyCustomTheme `{ dark, colors }` record).
-        if (typeof val === 'object' && !Array.isArray(val) && !objAllowed.has(key)) { continue; }
-        if (key === 'theme' && typeof val !== 'string') { continue; }
+        // Refuse stray object values unless this key may hold one (e.g. the
+        // vuetifyCustomTheme `{ dark, colors }` record), saving nothing.
+        if (!User.#validSettingValue(val, objAllowed.has(key)) || (key === 'theme' && typeof val !== 'string')) {
+          // The viewer sends back every setting, an old stored value shouldn't block every save
+          if (util.isDeepStrictEqual(val, merged[key])) { continue; }
+          return res.send({ success: false, text: `Bad value for user setting ${key}`, i18n: 'api.users.settingsUpdateFailed' });
+        }
         if (Object.hasOwn(enumKeys, key) && !enumKeys[key].includes(val)) { continue; }
         merged[key] = val;
+      }
+
+      // One settings record per user is shared by every app, keep it to what a person could set
+      // A record already over the cap can still shrink
+      const size = JSON.stringify(merged).length;
+      if (size > User.#MAX_SETTINGS_SIZE && size >= JSON.stringify(req.settingUser.settings ?? {}).length) {
+        return res.send({ success: false, text: 'User settings too large', i18n: 'api.users.settingsUpdateFailed' });
       }
 
       // res.send, not res.serverError -- wise mounts this handler too and has no res.serverError.
@@ -1410,7 +1462,8 @@ class User {
    * POST - /api/user/totp/setup
    *
    * Start TOTP enrollment - generates a new secret and returns the QR code URI.
-   * The secret is not saved until confirmed with a valid code.
+   * The secret is not saved until confirmed with a valid code. Fails if TOTP is
+   * already enabled, it must be disabled (which needs a code) first.
    * @name /user/totp/setup
    * @returns {boolean} success - Whether the setup initiation was successful.
    * @returns {string} secret - The TOTP secret (Base32 encoded) for manual entry.
@@ -1420,6 +1473,11 @@ class User {
     // The new secret is returned to the caller, so only enroll yourself
     if (req.settingUser.userId !== req.user.userId) {
       return res.serverError(403, 'Can only set up two-factor authentication for yourself');
+    }
+
+    // Replacing a factor must prove the current one, which disable already requires
+    if (req.settingUser.totpSecret) {
+      return res.serverError(403, 'Two-factor authentication is already enabled, disable it first');
     }
 
     const secret = User.#generateTotpSecret();
@@ -1458,6 +1516,11 @@ class User {
 
     if (!ArkimeUtil.isString(req.body.code)) {
       return res.serverError(403, 'Missing verification code');
+    }
+
+    if (req.settingUser.totpSecret) {
+      User.#totpPendingSecrets.delete(req.settingUser.userId);
+      return res.serverError(403, 'Two-factor authentication is already enabled, disable it first');
     }
 
     if (!req.settingUser.#checkTotpRateLimit()) {
@@ -1528,14 +1591,10 @@ class User {
     }
     // else: admin disabling another user's TOTP - no code required
 
-    // Skip this check if we are a superAdmin
-    if (!req.user.hasRole('superAdmin')) {
-      // Only disable TOTP if we have the same admin role(s)
-      for (const role of adminRolesWithSuper) {
-        if (!req.user.hasRole(role) && user.hasRole(role)) {
-          return res.serverError(403, `Not allowed to disable TOTP for ${role}`);
-        }
-      }
+    // Only disable TOTP if we have the same admin role(s)
+    const missingRole = User.#missingAdminRole(req.user, user);
+    if (missingRole) {
+      return res.serverError(403, `Not allowed to disable TOTP for ${missingRole}`);
     }
 
     try {
@@ -1587,6 +1646,10 @@ class User {
     // The roles we need to process to see if any subroles
     const rolesQ = [...user.roles ?? []];
 
+    // A usersAdmin can edit any role, so roles never grant or restrict a superAdmin,
+    // only its own record does, with DEFAULT_PERMISSIONS for anything left unset
+    const isSuperAdmin = rolesQ.includes('superAdmin');
+
     // First do settings, skipped when only the roles are wanted
     const needSettings = [];
     for (const col of withSettings ? allSettingColumns : []) {
@@ -1601,7 +1664,7 @@ class User {
     }
 
     // We only look at our direct roles for settings, since those should already be expanded
-    for (const r of withSettings ? rolesQ : []) {
+    for (const r of withSettings && !isSuperAdmin ? rolesQ : []) {
       if (systemRolesMapping.has(r)) {
         continue;
       }
@@ -1626,7 +1689,7 @@ class User {
 
     for (const col of needSettings) {
       if (allSettings[col] === undefined) {
-        allSettings[col] = false;
+        allSettings[col] = isSuperAdmin ? DEFAULT_PERMISSIONS[col] : false;
       }
     }
 
@@ -1654,7 +1717,8 @@ class User {
       if (!role || (!role.enabled && !includeDisabled)) { continue; }
       allRoles.add(r);
 
-      if (role.expression && role.expression.trim().length > 0) {
+      // A superAdmin is still a member, for sharing, just not restricted by it
+      if (!isSuperAdmin && role.expression && role.expression.trim().length > 0) {
         if (!allExpression) {
           allExpression = '(' + role.expression.trim() + ')';
         } else {
@@ -1662,7 +1726,7 @@ class User {
         }
       }
 
-      if (role.timeLimit !== undefined) {
+      if (role.timeLimit !== undefined && !isSuperAdmin) {
         if (allTimeLimit === undefined) {
           allTimeLimit = role.timeLimit;
         } else {

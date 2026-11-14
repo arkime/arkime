@@ -8300,7 +8300,7 @@ sub usersUpdate
     },
     "settings": {
       "type": "object",
-      "dynamic": "true"
+      "dynamic": "false"
     },
     "columnConfigs": {
       "type": "object",

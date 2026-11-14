@@ -46,6 +46,8 @@ class Auth {
   static #app;
   static #sessionAuth = false;
   static #keyCache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 5 });
+  static #macKeys = new Map();
+  static #v6Compatible;
   static #logoutUrl;
   static #logoutUrlMethod;
 
@@ -78,6 +80,7 @@ class Auth {
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
    * @param {string} options.passwordSecret=password For basic/digest mode, what password to use to encrypt the password hash
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
+   * @param {boolean} options.v6Compatible=true Accept what older versions send, like S2S and cookie tokens without a mac
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
    * @param {boolean} options.s2s Support s2s auth also
@@ -94,6 +97,7 @@ class Auth {
     options.userNameHeader ??= ArkimeConfig.get('userNameHeader');
     options.passwordSecret ??= ArkimeConfig.getFull(options.passwordSecretSection ?? undefined, 'passwordSecret');
     options.serverSecret ??= ArkimeConfig.get('serverSecret');
+    options.v6Compatible ??= ArkimeConfig.getBool('v6Compatible', true);
     options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
     options.requiredAuthHeaderVal ??= ArkimeConfig.get('requiredAuthHeaderVal');
     options.userAuthIps = ArkimeConfig.getArray('userAuthIps');
@@ -121,6 +125,7 @@ class Auth {
     options.authConfig.jwtUserIdPrefix ??= ArkimeConfig.get('authJwtUserIdPrefix');
     options.authConfig.jwtRequiredScopes ??= ArkimeConfig.get('authJwtRequiredScopes');
     options.authConfig.jwtClockSkew ??= ArkimeConfig.getInt('authJwtClockSkew', 60);
+    options.authConfig.headerJwtVerify ??= ArkimeConfig.getBool('authHeaderJwtVerify', false);
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
@@ -155,6 +160,10 @@ class Auth {
       Auth.#serverSecret = Auth.passwordSecret;
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
+    Auth.#v6Compatible = options.v6Compatible;
+    // Derive now so the first request doesn't pay for it
+    Auth.#macKey(Auth.#serverSecret);
+    Auth.#macKey(Auth.passwordSecret256);
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#requiredAuthHeaderHmacs = Auth.#requiredAuthHeaderVal?.map(v => crypto.createHmac('sha256', 'compare').update(v).digest());
@@ -286,6 +295,11 @@ class Auth {
       break;
     case 'header-jwt':
       check('userIdField', 'authUserIdField');
+      if (Auth.#authConfig.headerJwtVerify) {
+        check('jwtJwksUrl', 'authJwtJwksUrl');
+        check('jwtIssuer', 'authJwtIssuer');
+        check('jwtAudience', 'authJwtAudience');
+      }
       Auth.#strategies = ['header'];
       break;
     case 's2s':
@@ -316,6 +330,12 @@ class Auth {
         !ArkimeUtil.isString(Auth.#userNameHeader)) {
       console.log('ERROR - userNameHeader missing from config file, required for mcpAuthMode=header (the default). Set userNameHeader or set mcpAuthMode to jwt');
       process.exit(1);
+    }
+
+    // Before 7.0 mcpAllowedIps also limited jwt callers, so it may have been widened for them
+    if (ArkimeConfig.getBool('mcpEnabled', false) && ArkimeConfig.getArray('mcpAuthMode', 'header').includes('jwt') &&
+        ArkimeConfig.getArray('mcpAllowedIps', '').length > 0) {
+      console.log('WARNING - mcpAllowedIps only lists the hosts trusted to send the MCP username header, jwt requests are not checked against it. Make sure it only lists your proxies.');
     }
 
     // Add basic to beginning
@@ -554,36 +574,72 @@ class Auth {
       }
     }
 
-    let userId;
-    let vals;
-
     if (Auth.mode === 'header-jwt') {
-      // No signature verification — the upstream proxy (ALB, Cloudflare Access, etc.)
-      // has already verified the JWT before forwarding the request.
+      // The upstream proxy (ALB, Cloudflare Access, etc.) has already verified the JWT,
+      // so by default only check it is well formed and current. authHeaderJwtVerify
+      // also checks the signature against authJwtJwksUrl.
+      const jwt = req.headers[Auth.#userNameHeader];
+      let payload;
       try {
-        const jwt = req.headers[Auth.#userNameHeader];
-        const parts = jwt.split('.');
-        if (parts.length !== 3) {
-          return done('Invalid JWT in header');
-        }
-        const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-        userId = payload[Auth.#authConfig.userIdField]?.toString().trim();
-        vals = payload;
+        payload = Auth.#decodeHeaderJwt(jwt);
       } catch (e) {
-        console.log('AUTH: Failed to decode JWT from header', Auth.#userNameHeader, e.message);
-        return done('Failed to decode JWT');
+        console.log('AUTH: Bad JWT in header', Auth.#userNameHeader, e.message);
+        return done('Invalid JWT in header');
       }
-    } else {
-      // Node decodes HTTP header values as ISO-8859-1 (RFC 7230). Reverse proxies
-      // (Caddy, nginx, oauth2-proxy, ALB OIDC, etc.) typically write UTF-8 bytes
-      // directly into headers, so non-ASCII characters arrive as mojibake. Re-decode
-      // each string header from latin-1 bytes back to UTF-8 so auto-create
-      // expressions, dynamic roles, and downstream consumers see the original UTF-8
-      // string. Pure-ASCII values are unchanged.
-      vals = Auth.#utf8Headers(req.headers);
-      userId = vals[Auth.#userNameHeader].trim();
+
+      const userIdOf = (claims) => claims[Auth.#authConfig.userIdField]?.toString().trim();
+      if (!Auth.#authConfig.headerJwtVerify) {
+        return Auth.#headerAuthUser(userIdOf(payload), payload, done);
+      }
+
+      Auth.verifyJwt(jwt, { checkScopes: false }).then(
+        (claims) => Auth.#headerAuthUser(userIdOf(claims), claims, done),
+        (e) => {
+          console.log('AUTH: JWT in header failed verification', Auth.#userNameHeader, e.message);
+          done('Invalid JWT in header');
+        }
+      );
+      return;
     }
 
+    // Node decodes HTTP header values as ISO-8859-1 (RFC 7230). Reverse proxies
+    // (Caddy, nginx, oauth2-proxy, ALB OIDC, etc.) typically write UTF-8 bytes
+    // directly into headers, so non-ASCII characters arrive as mojibake. Re-decode
+    // each string header from latin-1 bytes back to UTF-8 so auto-create
+    // expressions, dynamic roles, and downstream consumers see the original UTF-8
+    // string. Pure-ASCII values are unchanged.
+    const vals = Auth.#utf8Headers(req.headers);
+    return Auth.#headerAuthUser(vals[Auth.#userNameHeader].trim(), vals, done);
+  }
+
+  // ----------------------------------------------------------------------------
+  /* Decode a proxy supplied JWT without checking its signature, rejecting
+   * anything malformed, unsigned, expired or not yet valid. */
+  static #decodeHeaderJwt (jwt) {
+    if (!ArkimeUtil.isString(jwt) || jwt.split('.').some(part => part === '')) {
+      throw new Error('not a signed JWT');
+    }
+
+    const header = jose.decodeProtectedHeader(jwt);
+    if (typeof header.alg !== 'string' || header.alg.toLowerCase() === 'none') {
+      throw new Error('unsigned JWT');
+    }
+
+    const payload = jose.decodeJwt(jwt);
+    const now = Date.now() / 1000;
+    const skew = Auth.#authConfig.jwtClockSkew;
+    if (payload.exp !== undefined && !(typeof payload.exp === 'number' && now <= payload.exp + skew)) {
+      throw new Error('expired JWT');
+    }
+    if (payload.nbf !== undefined && !(typeof payload.nbf === 'number' && now + skew >= payload.nbf)) {
+      throw new Error('JWT not yet valid');
+    }
+
+    return payload;
+  }
+
+  // ----------------------------------------------------------------------------
+  static #headerAuthUser (userId, vals, done) {
     if (!userId || userId === '') {
       return done('User name header is empty');
     }
@@ -624,8 +680,9 @@ class Auth {
   /**
    * Verify a Bearer JWT against the configured remote JWKS and return its claims.
    * Throws when the token is missing, malformed, or fails any check.
+   * authJwtRequiredScopes is for Bearer tokens, a proxy's header JWT passes { checkScopes: false }.
    */
-  static async verifyJwt (token) {
+  static async verifyJwt (token, { checkScopes = true } = {}) {
     // Refuse to run half configured. Without an expected issuer and audience a
     // valid token minted for some *other* service would authenticate here.
     // Checked on every call, not just when the JWKS is first built.
@@ -641,7 +698,7 @@ class Auth {
       clockTolerance: Auth.#authConfig.jwtClockSkew
     });
 
-    const required = Auth.#authConfig.jwtRequiredScopes?.split(',').map(s => s.trim()).filter(s => s !== '');
+    const required = !checkScopes ? undefined : Auth.#authConfig.jwtRequiredScopes?.split(',').map(s => s.trim()).filter(s => s !== '');
     if (required?.length) {
       const scopes = Array.isArray(payload.scp) ? payload.scp : (payload.scope ?? '').split(' ');
       const missing = required.filter(s => !scopes.includes(s));
@@ -1033,6 +1090,12 @@ class Auth {
       if (req.query.username !== undefined || req.query.password !== undefined) {
         return done('Credentials must be in the POST body');
       }
+      // Another site can post a login form here too, logging the victim in as the attacker. Browsers
+      // set Sec-Fetch-Site and pages can't, older browsers and scripts don't send it at all.
+      const fetchSite = req.headers['sec-fetch-site'];
+      if (fetchSite !== undefined && fetchSite !== 'same-origin' && fetchSite !== 'none') {
+        return done('Login must come from this site');
+      }
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Cannot authenticate with role`);
         return done('Cannot authenticate with role');
@@ -1156,6 +1219,13 @@ class Auth {
       console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
     }
 
+    // userIds end up in the admin pages' api urls, where these could send an admin's request
+    // elsewhere. The UI encodes ids, but no encoding stops . and .. from being dot segments.
+    if (/[\u0000-\u001f\u007f/?#%]/.test(userId) || userId === '.' || userId === '..') {
+      console.log('AUTH - not auto creating user with a bad userId', ArkimeUtil.sanitizeStr(userId));
+      return cb('Bad userId');
+    }
+
     const nuser = {};
     // No user record exists yet, so `this` is undefined in these expressions,
     // unlike [user-role-mappings] which binds the existing user
@@ -1274,8 +1344,17 @@ class Auth {
     const savedOgurl = req.session?.ogurl;
 
     const passportAuthOptionsExtra = {};
-    if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
-      passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
+    if (Auth.#strategies.includes('oidc')) {
+      const redirectURIs = Auth.#authConfig.redirectURIs?.split(',').map(s => s.trim()).filter(s => s !== '') ?? [];
+      if (redirectURIs.length === 0) {
+        passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
+      } else if (redirectURIs.length > 1) {
+        // Always one of ours, so a forged Host header can't have the IdP send the code elsewhere
+        const host = req.hostname?.toLowerCase();
+        passportAuthOptionsExtra.redirect_uri = redirectURIs.find(uri => {
+          try { return new URL(uri).hostname.toLowerCase() === host; } catch { return false; }
+        }) ?? redirectURIs[0];
+      }
     }
     // receiveSession's s2s placeholder user has no userId, so never try to session-serialize it
     if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
@@ -1305,7 +1384,8 @@ class Auth {
         // Redirect to / if this is a login url
         if (req.route?.path === '/api/login' || req._parsedUrl.pathname === '/auth/login/callback') {
           const ogurlEncoded = req.body?.ogurl || req.session?.ogurl || savedOgurl;
-          if (ogurlEncoded) {
+          // Buffer.from walks any object with a length, so only a bounded string
+          if (typeof ogurlEncoded === 'string' && ogurlEncoded.length <= 16384) {
             try {
               const ogurl = Auth.auth2objNext(Buffer.from(ogurlEncoded, 'base64').toString());
               // Only redirect to a local same-origin path; reject absolute, protocol-relative
@@ -1450,8 +1530,26 @@ class Auth {
       data, // already hex
       tag: tag.toString('hex')
     };
+    auth.mac = Auth.#authMac(secret, auth.iv, auth.salt, auth.data, auth.tag).toString('hex');
 
     return JSON.stringify(auth);
+  }
+
+  // ----------------------------------------------------------------------------
+  // Lets auth2objNext reject a forged token before paying for its PBKDF2. The key
+  // is derived once per secret, so it uses a fixed salt.
+  static #authMac (secret, iv, salt, data, tag) {
+    return crypto.createHmac('sha256', Auth.#macKey(secret)).update(`${iv}.${salt}.${data}.${tag}`).digest();
+  }
+
+  static #macKey (secret) {
+    const id = crypto.createHash('sha256').update(secret).digest('hex');
+    let key = Auth.#macKeys.get(id);
+    if (!key) {
+      key = crypto.pbkdf2Sync(secret, 'arkime auth mac', 300000, 32, 'sha256');
+      Auth.#macKeys.set(id, key);
+    }
+    return key;
   }
 
   // ----------------------------------------------------------------------------
@@ -1466,16 +1564,18 @@ class Auth {
   static STORED_AUTH_MAX = 1024 * 1024;
 
   // ----------------------------------------------------------------------------
-  // Decrypt the auth string into an object
-  static auth2objNext (auth, secret, maxDataLen = 8192) {
+  // Decrypt the auth string into an object. Pass { stored: true } only for values
+  // read back from our own db, which may be larger and may predate the mac.
+  static auth2objNext (auth, secret, { stored = false } = {}) {
     secret ??= Auth.#serverSecret;
+    const maxDataLen = stored ? Auth.STORED_AUTH_MAX : 8192;
     try {
       const parsed = JSON.parse(auth);
       if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed) ||
           ArkimeUtil.isPP(Object.keys(parsed))) {
         throw new Error('Malformed auth token');
       }
-      const { iv, salt, data, tag } = parsed;
+      const { iv, salt, data, tag, mac } = parsed;
 
       // Validate strict shapes BEFORE expensive PBKDF2 (DoS protection)
       const isHex = /^[0-9a-fA-F]+$/;
@@ -1484,6 +1584,15 @@ class Auth {
           typeof tag !== 'string' || tag.length !== 32 || !isHex.test(tag) ||
           typeof data !== 'string' || data.length === 0 || data.length > maxDataLen || !isHex.test(data)) {
         throw new Error('Malformed auth token');
+      }
+
+      if (mac !== undefined) {
+        if (typeof mac !== 'string' || mac.length !== 64 || !isHex.test(mac) ||
+            !crypto.timingSafeEqual(Buffer.from(mac, 'hex'), Auth.#authMac(secret, iv, salt, data, tag))) {
+          throw new Error('Bad auth token mac');
+        }
+      } else if (!Auth.#v6Compatible && !stored) {
+        throw new Error('Auth token has no mac');
       }
 
       const cacheKey = `${secret}:${salt}`;
@@ -1512,14 +1621,17 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
-  static auth2obj (auth, secret, maxDataLen) {
+  static auth2obj (auth, secret, options) {
     // New json style
-    if (auth[0] === '{') { return Auth.auth2objNext(auth, secret, maxDataLen); }
+    if (auth[0] === '{') { return Auth.auth2objNext(auth, secret, options); }
 
     // New json style, but still encoded, bad proxy probably
-    if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret, maxDataLen); }
+    if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret, options); }
 
-    // IV.E.H
+    // IV.E.H, written before 6.4.0, cont3xt keys saved then are still stored this way
+    if (!Auth.#v6Compatible && !options?.stored) {
+      throw new Error('Unsupported auth2obj IV.E.H');
+    }
     const parts = auth.split('.');
 
     if (parts.length !== 3) {
@@ -1782,7 +1894,10 @@ ArkimeConfig.registerSettings({
   passwordSecret: { secret: true },
   serverSecret: { secret: true },
   authClientSecret: { secret: true },
+  requiredAuthHeaderVal: { secret: true },
   userAuthIps: { type: 'cidrs' },
+  v6Compatible: { type: 'bool' },
+  authHeaderJwtVerify: { type: 'bool' },
   // A non numeric skew becomes NaN, and jose compares exp against NaN, which is
   // always false - so an expired token would verify forever
   authJwtClockSkew: { type: 'int', min: 0 }

@@ -36,6 +36,10 @@ class ArkimeUtil {
   static jsonParser = bodyParser.json({
     limit: '1mb',
     verify: function (req, res, buf, encoding) {
+      // The checks below read the raw bytes, which only match what JSON.parse sees for utf-8
+      if (encoding !== 'utf-8') {
+        throw Object.assign(new Error(`unsupported charset "${encoding}"`), { status: 415, type: 'charset.unsupported' });
+      }
       if (buf !== undefined && buf.length) {
         ArkimeUtil.#checkJsonDepth(buf);
         sjson.parse(buf);

@@ -1,4 +1,4 @@
-use Test::More tests => 140;
+use Test::More tests => 142;
 use Cwd;
 use IO::Socket::INET;
 use IO::Select;
@@ -262,6 +262,12 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   $json = viewerPutToken("/api/notifier/$syslogId", '{"name":"syslog1a","type":"syslog","fields":[{"name":"host","value":"syslog.example.com"},{"name":"port","value":"6514"},{"name":"protocol","value":"tls"},{"name":"facility","value":"local1"},{"name":"severity","value":"err"},{"name":"tag","value":"parliament"}]}', $token);
   ok($json->{success}, "syslog notifier update success");
   is($json->{notifier}->{name}, "syslog1a", "syslog notifier name updated");
+
+# syslog notifier - a CRLF in the tag would inject lines into the tcp stream
+  $json = viewerPutToken("/api/notifier/$syslogId", '{"name":"syslog1a","type":"syslog","fields":[{"name":"host","value":"localhost"},{"name":"port","value":"514"},{"name":"protocol","value":"tcp"},{"name":"tag","value":"arkime\\r\\nSET x 1\\r\\n"}]}', $token);
+  is($json->{text}, "Notifier field tag can not contain control characters", "syslog tag with a CRLF refused");
+  my $syslogMsg = `cd ../common && node -e "process.stdout.write(require('./notifier.syslog.js').buildSyslogMessage({tag:'x\\r\\nSET a 1'}, 'm'))" 2>&1`;
+  like($syslogMsg, qr/^<\d+>1 \S+ \S+ arkime \d+ - - m$/, "a stored tag with a CRLF is replaced at send time");
 
 # cleanup
   $json = viewerDeleteToken("/api/notifier/$syslogId", $token);

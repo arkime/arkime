@@ -168,8 +168,11 @@ dropGroup=daemon
 # If the header specified in userNameHeader contains a JWT (e.g., from AWS ALB
 # OIDC, Cloudflare Access, or Google IAP), set authMode=header-jwt and
 # authUserIdField to the JWT claim that contains the user id.
-# The JWT payload is decoded (base64) but NOT signature-verified — the
-# upstream proxy must have already verified the JWT before forwarding.
+# The JWT must be well formed, signed and not expired, but by default its
+# signature is NOT verified, the upstream proxy must have already verified it.
+# authHeaderJwtVerify=true also verifies it using authJwtJwksUrl, authJwtIssuer
+# and authJwtAudience. That works with Cloudflare Access and Google IAP, but not
+# AWS ALB, which doesn't publish its keys as a JWKS.
 # When enabled, JWT claims are also passed to [user-auto-create] and
 # [user-role-mappings] as the 'vals' object instead of raw request headers.
 #
@@ -226,9 +229,9 @@ dropGroup=daemon
 # mcpMaxQueryDays caps how much time a query may span, in days, floating point,
 # so 0.5 is 12 hours. Defaults to 7. Use -1 for no limit, which lets an
 # assistant ask for all data and can be expensive on a large cluster.
-# mcpAllowedIps is a list of CIDRs allowed to reach /mcp, checked before auth.
-# A header auth mode defaults to localhost only, set this to the address of the
-# proxy instead.
+# mcpAllowedIps is a list of CIDRs trusted to send the MCP username header, the
+# address of the proxy in front of /mcp. It defaults to userAuthIps when authMode
+# is a header mode, otherwise localhost. JWT requests aren't checked against it.
 # Tool results include a link to the same query in the web ui, built from
 # arkimeWebURL, the url users open the viewer at. Defaults to this host.
 # See https://arkime.com/settings#mcp for the auth modes, the authJwt* settings
