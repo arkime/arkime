@@ -1,4 +1,4 @@
-use Test::More tests => 366;
+use Test::More tests => 368;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -372,6 +372,8 @@ my $hToken = getTokenCookie('sac-huntuser');
   $hunts = viewerGetToken("/api/hunts?all&arkimeRegressionUser=user3", $nonadminToken);
   is ($hunts->{data}->[3]->{id}, "", "empty roles: should hide id");
   is ($hunts->{data}->[3]->{search}, "", "empty roles: should hide search");
+  is ($hunts->{data}->[3]->{description}, undef, "empty roles: should hide description");
+  ok (defined $hunts->{data}->[3]->{name}, "empty roles: still shows name");
 
 # can update hunt roles
   $json = viewerPutToken("/api/hunt/$id7", '{"roles":["arkimeUser"]}', $token);

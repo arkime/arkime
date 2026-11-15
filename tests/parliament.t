@@ -1,4 +1,4 @@
-use Test::More tests => 142;
+use Test::More tests => 145;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -199,6 +199,14 @@ ok($result->{success});
 $result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
 eq_or_diff($result->{settings}->{general}->{noPacketsLength}, 100);
 ok(!exists $result->{settings}->{general}->{evilKey});
+
+# number settings are range checked, a negative timeout used to stop parliament
+$result = parliamentPutToken("/parliament/api/settings?arkimeRegressionUser=parliamentAdminP", '{"settings": { "general": { "esQueryTimeout": -1 } } }', $parliamentAdminToken);
+eq_or_diff($result, from_json('{"success": false, "text": "esQueryTimeout must be a number from 1 to 60."}'));
+$result = parliamentPutToken("/parliament/api/settings?arkimeRegressionUser=parliamentAdminP", '{"settings": { "general": { "noPacketsLength": {"toString": 1, "valueOf": 1} } } }', $parliamentAdminToken);
+ok(!$result->{success});
+$result = parliamentGetToken("/parliament/api/parliament?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);
+eq_or_diff($result->{settings}->{general}->{esQueryTimeout}, 5);
 
 # notifier types have been initiated
 $result = parliamentGetToken("/parliament/api/notifierTypes?arkimeRegressionUser=parliamentAdminP", $parliamentAdminToken);

@@ -486,6 +486,11 @@ class CronAPIs {
     const nodes = Object.create(null);
 
     for (const item of list) {
+      // Both end up in the signed path and ids body sent to the remote node
+      if (!ViewerUtils.isSafeSegment(item.node) || !ViewerUtils.isSafeSegment(item.id)) {
+        console.log('ERROR - cron send skipping session with a bad node or id');
+        continue;
+      }
       if (!nodes[item.node]) {
         nodes[item.node] = [];
       }
@@ -553,8 +558,7 @@ class CronAPIs {
             resolve();
           });
           preq.setHeader('content-type', 'application/x-www-form-urlencoded');
-          preq.write('ids=');
-          preq.write(nodes[node].join(','));
+          preq.write('ids=' + encodeURIComponent(nodes[node].join(',')));
           preq.end();
           CronAPIs.#qlworking[url.pathname] = 'sent';
         });

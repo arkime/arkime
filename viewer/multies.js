@@ -98,6 +98,8 @@ function hasBody (req) {
   return encoding || len;
 }
 
+const MAX_BODY = 32 * 1024 * 1024;
+
 function saveBody (req, res, next) {
   if (req._body) { return next(); }
   req.body = req.body || {};
@@ -107,12 +109,18 @@ function saveBody (req, res, next) {
   // flag as parsed
   req._body = true;
 
-  // parse
-  let buf = '';
-  req.setEncoding('utf8');
-  req.on('data', (chunk) => { buf += chunk; });
+  // Keep only what was really sent, a too large body is refused rather than truncated
+  const chunks = [];
+  let size = 0;
+  req.on('data', (chunk) => {
+    size += chunk.length;
+    if (size <= MAX_BODY) { chunks.push(chunk); }
+  });
   req.on('end', () => {
-    req.body = buf;
+    if (size > MAX_BODY) {
+      return res.status(413).send('Request body too large');
+    }
+    req.body = Buffer.concat(chunks, size).toString('utf8');
     next();
   });
 }
@@ -127,18 +135,11 @@ const app = express();
 app.enable('jsonp callback');
 app.use(favicon(path.join(__dirname, '/public/favicon.ico')));
 ArkimeUtil.logger(app);
-app.use(saveBody);
-app.use(compression());
-app.use(function (req, res, next) {
-  if (res.setTimeout) {
-    res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
-    return next();
-  }
-});
 
 // ============================================================================
 // Optional basic auth: if multiESBasicAuth ("user:password") is set in config,
-// require it on every request. Compared in constant time.
+// require it on every request. Compared in constant time. Before saveBody so
+// an unauthenticated request never gets its body buffered.
 // ============================================================================
 app.use((req, res, next) => {
   if (!multiESBasicAuthHmac) { return next(); }
@@ -155,6 +156,15 @@ app.use((req, res, next) => {
   }
 
   return next();
+});
+
+app.use(saveBody);
+app.use(compression());
+app.use(function (req, res, next) {
+  if (res.setTimeout) {
+    res.setTimeout(10 * 60 * 1000); // Increase default from 2 min to 10 min
+    return next();
+  }
 });
 
 // Routing looks at the raw path, so refuse one that new URL() would rewrite (dot segments, \) before forwarding
@@ -984,7 +994,7 @@ app.get(/^\/$/, function (req, res) {
 /// ///////////////////////////////////////////////////////////////////////////////
 
 function facet2Obj (field, facet) {
-  const obj = {};
+  const obj = Object.create(null);
   for (let i = 0; i < facet.length; i++) {
     obj[facet[i][field]] = facet[i];
   }
@@ -1033,7 +1043,7 @@ function facetAdd (obj1, obj2) {
     obj1[facetname].other += obj2[facetname].other;
 
     for (const entry in obj2[facetname][facetarray]) {
-      if (!obj1[facetname][facetarray][entry]) {
+      if (!Object.hasOwn(obj1[facetname][facetarray], entry)) {
         obj1[facetname][facetarray][entry] = obj2[facetname][facetarray][entry];
       } else {
         const o1 = obj1[facetname][facetarray][entry];

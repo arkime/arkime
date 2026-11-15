@@ -49,47 +49,56 @@ function freePort () {
   }));
 }
 
+// Starts multies in front of two fake clusters, extra holds more [multi] settings.
+// Everything is on the returned object as it is made, so stopMulties can clean up a failed start
+async function startMulties (m, extra = []) {
+  m.out = ''; // multies' stdout + stderr
+  m.clusters = await Promise.all([startFakeCluster(), startFakeCluster()]);
+  const [a, b] = m.clusters.map(s => s.address().port);
+  const port = await freePort();
+  m.url = `http://127.0.0.1:${port}`;
+  m.dir = fs.mkdtempSync(path.join(os.tmpdir(), 'multies-unit-'));
+  const ini = path.join(m.dir, 'config.ini');
+  fs.writeFileSync(ini, [
+    '[default]',
+    `elasticsearch=http://127.0.0.1:${a}`,
+    '[multi]',
+    'multiES=true',
+    'multiESHost=127.0.0.1',
+    `multiESPort=${port}`,
+    `multiESNodes=127.0.0.1:${a},prefix:a_,name:siteA;127.0.0.1:${b},prefix:b_,name:siteB`,
+    ...extra,
+    ''
+  ].join('\n'));
+
+  m.multies = spawn(process.execPath, [path.join(VIEWER, 'multies.js'), '-c', ini, '-n', 'multi'], { cwd: VIEWER, stdio: ['ignore', 'pipe', 'pipe'] });
+  m.multies.stdout.on('data', (d) => { m.out += d; });
+  m.multies.stderr.on('data', (d) => { m.out += d; });
+  const started = Date.now();
+  while (!m.out.includes('listening on')) {
+    if (m.multies.exitCode !== null || Date.now() - started > 15000) { throw new Error(`multies did not start:\n${m.out}`); }
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+}
+
+async function stopMulties (m) {
+  if (m.multies?.exitCode === null) {
+    await new Promise((resolve) => { m.multies.once('exit', resolve); m.multies.kill('SIGKILL'); });
+  }
+  await Promise.all((m.clusters || []).map(s => new Promise((resolve) => { s.closeAllConnections(); s.close(resolve); })));
+  if (m.dir) { fs.rmSync(m.dir, { recursive: true, force: true }); }
+}
+
+// one over the largest request body multies reads
+const TOO_LARGE = Buffer.alloc(32 * 1024 * 1024 + 1, 0x20);
+
 describe('multies', () => {
-  let clusters, multies, url, dir;
-  let out = ''; // multies' stdout + stderr
+  const m = {};
 
-  before(async () => {
-    clusters = await Promise.all([startFakeCluster(), startFakeCluster()]);
-    const [a, b] = clusters.map(s => s.address().port);
-    const port = await freePort();
-    url = `http://127.0.0.1:${port}`;
-    dir = fs.mkdtempSync(path.join(os.tmpdir(), 'multies-unit-'));
-    const ini = path.join(dir, 'config.ini');
-    fs.writeFileSync(ini, [
-      '[default]',
-      `elasticsearch=http://127.0.0.1:${a}`,
-      '[multi]',
-      'multiES=true',
-      'multiESHost=127.0.0.1',
-      `multiESPort=${port}`,
-      `multiESNodes=127.0.0.1:${a},prefix:a_,name:siteA;127.0.0.1:${b},prefix:b_,name:siteB`,
-      ''
-    ].join('\n'));
+  before(() => startMulties(m));
+  after(() => stopMulties(m));
 
-    multies = spawn(process.execPath, [path.join(VIEWER, 'multies.js'), '-c', ini, '-n', 'multi'], { cwd: VIEWER, stdio: ['ignore', 'pipe', 'pipe'] });
-    multies.stdout.on('data', (d) => { out += d; });
-    multies.stderr.on('data', (d) => { out += d; });
-    const started = Date.now();
-    while (!out.includes('listening on')) {
-      if (multies.exitCode !== null || Date.now() - started > 15000) { throw new Error(`multies did not start:\n${out}`); }
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-  });
-
-  after(async () => {
-    if (multies?.exitCode === null) {
-      await new Promise((resolve) => { multies.once('exit', resolve); multies.kill('SIGKILL'); });
-    }
-    await Promise.all((clusters || []).map(s => new Promise((resolve) => { s.closeAllConnections(); s.close(resolve); })));
-    if (dir) { fs.rmSync(dir, { recursive: true, force: true }); }
-  });
-
-  const post = (urlPath, body) => fetch(`${url}${urlPath}`, {
+  const post = (urlPath, body) => fetch(`${m.url}${urlPath}`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
     body,
@@ -118,10 +127,10 @@ describe('multies', () => {
     const res = await search('?x=%c');
     assert.equal(res.status, 500);
     const started = Date.now();
-    while (!/x=%c merging cluster results [\s\S]*TypeError/.test(out) && Date.now() - started < 2000) {
+    while (!/x=%c merging cluster results [\s\S]*TypeError/.test(m.out) && Date.now() - started < 2000) {
       await new Promise((resolve) => setTimeout(resolve, 20));
     }
-    assert.match(out, /x=%c merging cluster results [\s\S]*TypeError/);
+    assert.match(m.out, /x=%c merging cluster results [\s\S]*TypeError/);
   });
 
   test('an msearch no cluster answers gets a 500', async () => {
@@ -136,5 +145,39 @@ describe('multies', () => {
     const res = await msearch('?cluster=nosuchcluster', { size: 0, query: { fileand: 'test.pcap' } });
     assert.equal(res.status, 500);
     assert.match((await res.json()).error, /No cluster answered/);
+  });
+
+  test('a request body over 32MB is refused', async () => {
+    const res = await fetch(`${m.url}/MULTIPREFIX_sessions3-*/_search`, { method: 'POST', body: TOO_LARGE, signal: AbortSignal.timeout(20000) });
+    assert.equal(res.status, 413);
+    // and multies still answers
+    answerAggs = () => ({ bytes: { value: 10 } });
+    assert.equal((await search()).status, 200);
+  });
+});
+
+describe('multies with multiESBasicAuth', () => {
+  const m = {};
+  const authorization = 'Basic ' + Buffer.from('user:pass').toString('base64');
+
+  before(() => startMulties(m, ['multiESBasicAuth=user:pass']));
+  after(() => stopMulties(m));
+
+  const post = (headers, body) => fetch(`${m.url}/MULTIPREFIX_sessions3-*/_search`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', ...headers },
+    body,
+    signal: AbortSignal.timeout(20000)
+  });
+
+  test('the right credentials are let through', async () => {
+    const res = await post({ authorization }, '{"size":0}');
+    assert.equal(res.status, 200);
+  });
+
+  test('auth is checked before the body, so a too large one gets a 401 not a 413', async () => {
+    assert.equal((await post({}, TOO_LARGE)).status, 401);
+    assert.equal((await post({ authorization: 'Basic ' + Buffer.from('user:wrong').toString('base64') }, TOO_LARGE)).status, 401);
+    assert.equal((await post({ authorization }, TOO_LARGE)).status, 413);
   });
 });

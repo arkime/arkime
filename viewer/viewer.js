@@ -478,10 +478,8 @@ Auth.app(app);
 
 // check for arkimeUser
 app.use(async (req, res, next) => {
-  if (Auth.isAnonymousMode()) {
-    return next();
-  }
-  // For receiveSession there is no user (so no role check can be done) AND must be s2s
+  // For receiveSession there is no user (so no role check can be done) AND must be s2s,
+  // in anonymous mode too or anyone could push sessions and pcap
   if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
     if (req.headers['x-arkime-auth'] === undefined) {
       return res.status(401).send('receive session only allowed s2s');
@@ -503,6 +501,10 @@ app.use(async (req, res, next) => {
     } catch (e) {
       return res.status(401).send('receive session only allowed s2s');
     }
+  }
+
+  if (Auth.isAnonymousMode()) {
+    return next();
   }
 
   if (!req.user.hasRole('arkimeUser')) {
@@ -1040,8 +1042,9 @@ function getSettingUserCache (req, res, next) {
     return next();
   }
 
-  // user is trying to get another user's settings without admin privilege
-  if (!req.user.hasRole(['usersAdmin', 'arkimeAdmin'])) { return res.serverError(403, 'Need admin privileges', 'api.viewer.needAdminPrivileges'); }
+  // user is trying to get another user's settings without admin privilege, both
+  // roles like Auth.getSettingUserDb
+  if (!req.user.hasAllRole(['usersAdmin', 'arkimeAdmin'])) { return res.serverError(403, 'Need admin privileges', 'api.viewer.needAdminPrivileges'); }
 
   User.getUserCache(req.query.userId, (err, user) => {
     if (err || !user) {
@@ -2006,7 +2009,7 @@ app.get( // OpenSearch/Elasticsearch indices endpoint
 
 app.delete( // delete OpenSearch/Elasticsearch index endpoint
   ['/api/esindices/:index'],
-  [ArkimeUtil.noCacheJson, recordResponseTime, checkDbAdmin, User.checkPermissions(['removeEnabled']), setCookie],
+  [ArkimeUtil.noCacheJson, logAction(), checkCookieToken, checkDbAdmin, User.checkPermissions(['removeEnabled'])],
   StatsAPIs.deleteESIndex
 );
 

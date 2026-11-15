@@ -237,6 +237,29 @@ class ArkimeUtil {
 
   // ----------------------------------------------------------------------------
   /**
+   * Parse a number or numeric string, undefined if it isn't one or is outside
+   * min/max. Other types aren't converted, an object's own toString or valueOf
+   * can throw.
+   * @returns {number|undefined}
+   */
+  static parseNumber (value, min = -Infinity, max = Infinity) {
+    if (typeof value === 'string' && value.trim() !== '') { value = Number(value); }
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max) { return undefined; }
+    return value;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * Like parseNumber, but truncated to an integer before the min/max check, as parseInt would
+   * @returns {number|undefined}
+   */
+  static parseInteger (value, min = -Infinity, max = Infinity) {
+    const num = ArkimeUtil.parseNumber(value);
+    return num === undefined ? undefined : ArkimeUtil.parseNumber(Math.trunc(num), min, max);
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
    * Parse a url, undefined if it isn't one. An elasticsearch entry may leave
    * off the scheme, eg localhost:9200, which the callers prepend http:// to.
    * @ignore

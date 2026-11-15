@@ -144,8 +144,8 @@ LOCAL uint32_t arkime_db_pg_next_sequence(const char *name)
     const char *t = arkime_db_pg_table("sequence");
     char sql[400];
     snprintf(sql, sizeof(sql), "INSERT INTO %s (id, doc) VALUES ($1, '{\"seq\":1}') "
-             "ON CONFLICT (id) DO UPDATE SET doc = jsonb_set(%s.doc, '{seq}', to_jsonb(COALESCE((%s.doc->>'seq')::bigint, 0) + 1)) "
-             "RETURNING (doc->>'seq')::bigint", t, t, t);
+                               "ON CONFLICT (id) DO UPDATE SET doc = jsonb_set(%s.doc, '{seq}', to_jsonb(COALESCE((%s.doc->>'seq')::bigint, 0) + 1)) "
+                               "RETURNING (doc->>'seq')::bigint", t, t, t);
     PGresult *res = arkime_db_pg_exec("sequence", sql, 1, params, PGRES_TUPLES_OK);
     if (!res)
         return 0;
@@ -173,13 +173,13 @@ LOCAL gboolean arkime_db_pg_do_put(const char *name, const char *id, const char 
         snprintf(vstr, sizeof(vstr), "%" PRIu64, version);
         const char *params[3] = {id, json, vstr};
         snprintf(sql, sizeof(sql), "INSERT INTO %s (id, doc, version) VALUES ($1, $2::jsonb, $3) "
-                 "ON CONFLICT (id) DO UPDATE SET doc = excluded.doc, version = excluded.version WHERE %s.version < excluded.version", table, table);
+                                   "ON CONFLICT (id) DO UPDATE SET doc = excluded.doc, version = excluded.version WHERE %s.version < excluded.version", table, table);
         return arkime_db_pg_command(table, sql, 3, params);
     }
 
     const char *params[2] = {id, json};
     snprintf(sql, sizeof(sql), "INSERT INTO %s (id, doc) VALUES ($1, $2::jsonb) "
-             "ON CONFLICT (id) DO UPDATE SET doc = excluded.doc, version = %s.version + 1", table, table);
+                               "ON CONFLICT (id) DO UPDATE SET doc = excluded.doc, version = %s.version + 1", table, table);
     return arkime_db_pg_command(table, sql, 2, params);
 }
 /******************************************************************************/
@@ -357,7 +357,7 @@ LOCAL gboolean arkime_db_pg_file_exists(const char *node, const char *name, uint
     const char *params[2] = {node, name};
     char sql[200];
     snprintf(sql, sizeof(sql), "SELECT f_num FROM %s WHERE f_node = to_jsonb($1::text) AND f_name = to_jsonb($2::text) "
-             "ORDER BY f_num DESC LIMIT 1", arkime_db_pg_table("files"));
+                               "ORDER BY f_num DESC LIMIT 1", arkime_db_pg_table("files"));
 
     ARKIME_LOCK(pgConn);
     PGresult *res = arkime_db_pg_exec("files", sql, 2, params, PGRES_TUPLES_OK);

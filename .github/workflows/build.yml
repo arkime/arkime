@@ -248,6 +248,7 @@ jobs:
           curl -fsS http://localhost:9200/ || (cat /tmp/arkimedb.log; exit 1)
           curl -fsS http://localhost:9100/ping || (echo "ClickHouse not answering after 120s"; pgrep -a clickhouse || echo "no clickhouse process"; ls -la /tmp/clickhouse.log /tmp/clickhouse-data; tail -50 /tmp/clickhouse.log; exit 1)
           clickhouse client --query "SELECT version()"
+          ARKIME_TEST_CH_URL=http://localhost:9100 npm run test:unit
           (cd tests ; G_SLICE=always-malloc ./tests_ch.sh --viewer)
 
       - name: viewer test postgres

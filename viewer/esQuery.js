@@ -23,6 +23,11 @@ function defaultUnsupported (feature) {
   return new Error(`Unsupported ${feature}`);
 }
 
+// ES refuses an empty clause, matching everything for one would drop a filter like the forced expression
+function checkClause (c) {
+  if (c === null || typeof c !== 'object' || Array.isArray(c) || Object.keys(c).length === 0) { throw new Error('Empty query clause'); }
+}
+
 function fieldValue (obj, key = 'value') {
   const field = Object.keys(obj)[0];
   const v = obj[field];
@@ -41,9 +46,15 @@ class EsQuery {
    */
   static parse (clause, opts = {}) {
     const unsupported = opts.unsupported ?? defaultUnsupported;
-    const parse = (c) => EsQuery.parse(c, opts);
+    const parse = (c) => {
+      checkClause(c);
+      return EsQuery.parse(c, opts);
+    };
 
-    if (!clause || Object.keys(clause).length === 0 || clause.match_all) { return { all: true }; }
+    // No query at all is every session
+    if (clause === undefined) { return { all: true }; }
+    checkClause(clause);
+    if (clause.match_all) { return { all: true }; }
     if (clause.bool) { return EsQuery.#bool(clause.bool, parse, unsupported); }
     if (clause.term) {
       const [field, value] = fieldValue(clause.term);
@@ -98,6 +109,8 @@ class EsQuery {
     const and = [...list(bool.must), ...list(bool.filter)].map(parse);
     for (const item of list(bool.must_not)) { and.push({ not: parse(item) }); }
     const should = list(bool.should);
+    // checked even when it only scores and isn't translated, ES refuses an empty one anywhere
+    should.forEach(checkClause);
     const min = Number(bool.minimum_should_match ?? (and.length ? 0 : 1));
     if (min > 1) { throw unsupported('bool minimum_should_match > 1'); }
     if (min === 1 && should.length) { and.push({ or: should.map(parse) }); }

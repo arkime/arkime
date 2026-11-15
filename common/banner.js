@@ -110,8 +110,8 @@ class Banner {
 
     let expires = req.body.expires;
     if (expires === undefined || expires === null || expires === '') { expires = 0; }
-    expires = Number(expires);
-    if (!Number.isFinite(expires) || expires < 0) {
+    expires = ArkimeUtil.parseNumber(expires, 0);
+    if (expires === undefined) {
       return { error: 'Banner expires must be a number' };
     }
 

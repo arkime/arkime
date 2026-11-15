@@ -754,10 +754,23 @@ class DbCHImpl {
     const col = this.columnForField(field);
     const isArr = this.isJsonArrayField(field);
     if (path === 'ip') {
-      // Normalize both sides so IPv6 textual variants compare equal
-      const ipSet = sub('toIPv6OrNull');
-      if (isArr) { return `arrayExists(x -> toIPv6OrNull(toString(x)) IN ${ipSet}, ${col})`; }
-      return `toIPv6OrNull(toString(${col})) IN ${ipSet}`;
+      // Like ES ip terms, a value is an address or a CIDR, compared normalized so
+      // IPv6 textual variants match. One that is neither throws, so it can't
+      // leave a negated shortcut excluding nothing.
+      const table = this.lookupsTableName();
+      const isCidr = (v) => `position(${v}, '/') > 0`;
+      const addr = (v) => `splitByChar('/', ${v})[1]`;
+      const bits = (v) => `toUInt8OrNull(splitByChar('/', ${v})[2])`;
+      const valid = (v) => `if(${isCidr(v)}, (isIPv4String(${addr(v)}) AND ${bits(v)} <= 32) OR (isIPv6String(${addr(v)}) AND ${bits(v)} <= 128), isNotNull(toIPv6OrNull(${v})))`;
+      const bad = `(SELECT throwIf(arrayExists(v -> NOT ifNull(${valid('v')}, 0), any(ip)), 'CH backend: shortcut ip is not an address or CIDR') FROM ${table} FINAL WHERE id = ${id})`;
+      const from = `FROM ${table} FINAL WHERE id = ${id} AND ${found} = 0 AND ${bad} = 0`;
+      const exact = `(SELECT toIPv6OrNull(arrayJoin(arrayFilter(v -> NOT ${isCidr('v')}, ip))) ${from})`;
+      const bits6 = (v) => `toUInt8(assumeNotNull(${bits(v)}) + if(isIPv4String(${addr(v)}), 96, 0))`;
+      const ranges = `(SELECT any(arrayMap(v -> IPv6CIDRToRange(toIPv6(${addr('v')}), ${bits6('v')}), arrayFilter(v -> ${isCidr('v')}, ip))) ${from})`;
+      const norm = (x) => `toIPv6OrNull(toString(${x}))`;
+      const match = (x) => `(${norm(x)} IN ${exact} OR arrayExists(r -> ${norm(x)} BETWEEN r.1 AND r.2, ${ranges}))`;
+      if (isArr) { return `arrayExists(x -> ${match('x')}, ${col})`; }
+      return match(col);
     }
     if (path === 'number') {
       const numSet = sub('toFloat64');

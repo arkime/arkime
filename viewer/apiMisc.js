@@ -11,6 +11,7 @@ const Config = require('./config.js');
 const Db = require('./db.js');
 const dns = require('dns');
 const fs = require('fs');
+const stream = require('stream');
 const unzipper = require('unzipper');
 const util = require('util');
 const ArkimeUtil = require('../common/arkimeUtil');
@@ -476,18 +477,27 @@ class MiscAPIs {
       res.setHeader('Content-Type', 'image/png');
     }
 
-    fs.createReadStream(
-      `public/CyberChef_v${internals.CYBERCHEFVERSION}.zip`
-    ).pipe(unzipper.Parse()).on('entry', (entry) => {
-      if (entry.path === path) {
-        entry.pipe(res);
+    const file = fs.createReadStream(`public/CyberChef_v${internals.CYBERCHEFVERSION}.zip`);
+    const zip = unzipper.Parse();
+    // A client going away mid zip would otherwise leave it open, one fd per aborted request
+    res.on('close', () => { file.destroy(); zip.destroy(); });
+    zip.on('entry', (entry) => {
+      if (!found && entry.path === path) {
         found = true;
+        entry.on('error', () => res.destroy());
+        entry.pipe(res);
       } else {
         entry.autodrain();
       }
     }).on('finish', () => {
       if (!found) {
         res.status(404).end('Page not found');
+      }
+    });
+    stream.pipeline(file, zip, (err) => {
+      if (err && !res.headersSent && !res.destroyed) {
+        console.log('ERROR - reading the CyberChef zip', util.inspect(err, false, 50));
+        res.status(500).end();
       }
     });
   }

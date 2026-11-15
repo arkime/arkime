@@ -1,7 +1,7 @@
 # Many of these test user/roles start with sac- (skip auto create) because
 # otherwise viewer in regression mode would auto create the user.
 # Some day should remove all autocreate code.
-use Test::More tests => 342;
+use Test::More tests => 348;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -26,6 +26,8 @@ my $json;
 # users
     my $users = viewerPost("/api/users", "");
     is (@{$users->{data}}, 1, "anonymous");
+    $users = viewerPost("/api/users", '{"start":{"toString":1,"valueOf":1},"length":{"toString":1,"valueOf":1}}');
+    is (@{$users->{data}}, 1, "object start and length use the defaults");
 
 # csv
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
@@ -570,6 +572,9 @@ SKIP: {
     eq_or_diff($users->{data}->[$test2pos]->{timeLimit}, 72, "time limit updated");
     $json = viewerGet("/sessions.json?arkimeRegressionUser=sac-test2&date=-1");
     eq_or_diff($json->{error}, "User time limit (72 hours) exceeded", "user can't exceed their time limit");
+
+    $json = viewerPostToken("/api/user/sac-test2", '{"timeLimit":{"toString":1,"valueOf":1}, "roles": ["arkimeUser"]}', $token);
+    eq_or_diff($json, from_json('{"text": "timeLimit must be a non-negative integer", "success": false}'), "object time limit refused");
     $json = viewerGet("/api/sessions?arkimeRegressionUser=sac-test2&date=72");
     is (exists $json->{data}, 1, "user can make a query within their time range");
 
@@ -706,6 +711,9 @@ SKIP: {
     $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test2", '{"roleId": "role:sac-test1"}', $test2Token);
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
 
+    $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test2", '{"roleId": {"toString":1,"valueOf":1}}', $test2Token);
+    eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'), "object roleId refused");
+
     # a roleAssigner that isn't a usersAdmin can still list users with their roleId
     $json = viewerPostToken("/api/user/role:sac-test1", '{"userName": "UserName", "enabled":true, "roleAssigners": ["sac-test1", "sac-test2"]}', $token);
     eq_or_diff($json, from_json('{"text": "User role:sac-test1 updated successfully", "success": true}'));
@@ -713,6 +721,10 @@ SKIP: {
     $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test2", '{"roleId": "role:sac-test1"}', $test2Token);
     is ($json->{success}, 1, "roleAssigner users/min with roleId succeeds");
     is (scalar(grep { $_->{userId} eq "sac-test1" && exists $_->{hasRole} } @{$json->{data}}), 1, "roleAssigner users/min returns hasRole");
+
+    # a roleAssigner that isn't a usersAdmin can't nest roles, that reaches every holder of the target role
+    $json = viewerPostToken("/api/user/role:sac-test1/assignment?arkimeRegressionUser=sac-test2", '{"roleId": "role:sac-test1", "newRoleState": true}', $test2Token);
+    eq_or_diff($json, from_json('{"text": "Only a usersAdmin can change the roles of a role","success":false}'), "roleAssigner can't change a role's roles");
 
     $json = viewerPostToken("/api/users/min?arkimeRegressionUser=sac-test2", "", $test2Token);
     eq_or_diff($json, from_json('{"text": "You do not have permission to access this resource","success":false}'));
@@ -803,12 +815,19 @@ my $tuToken = getTokenCookie('testuser');
 my $saToken = getTokenCookie('testsuperadmin');
 my $uaToken = getTokenCookie('testusersadmin');
 
+# acting on another user's settings needs both usersAdmin and arkimeAdmin
+    $json = viewerGet("/api/views?userId=testuser&arkimeRegressionUser=testusersadmin");
+    is($json->{i18n}, "api.viewer.needAdminPrivileges", "usersAdmin without arkimeAdmin can't act as another user");
+
 # Password changing - by user
     $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testuser', '{"newPassword": "wrong"}', $tuToken);
     eq_or_diff($json, from_json('{"text": "Password mismatch", "success": false}'));
 
     $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testuser', '{"currentPassword": "wrong", "newPassword": "wrong"}', $tuToken);
     eq_or_diff($json, from_json('{"text": "Password mismatch", "success": false}'));
+
+    $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testuser', '{"currentPassword": {"toString":1,"valueOf":1}, "newPassword": "wrong"}', $tuToken);
+    eq_or_diff($json, from_json('{"text": "Password mismatch", "success": false}'), "object currentPassword refused");
 
     $json = viewerPostToken('/api/user/password?arkimeRegressionUser=testuser', '{"currentPassword": "testuser"}', $tuToken);
     eq_or_diff($json, from_json('{"text": "New password needs to be at least 3 characters", "success": false}'));

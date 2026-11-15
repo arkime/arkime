@@ -132,6 +132,7 @@ let savedIssues = new Map();
 // save noPackets issues so that the time of issue can be compared to the
 // noPacketsLength user setting (only issue alerts when the time the issue
 // was encountered exceeds the noPacketsLength user setting)
+// cluster id -> Map of node name -> first seen, only the nodes in the cluster's last stats response
 const noPacketsMap = new Map();
 
 // super secret
@@ -288,6 +289,23 @@ class Parliament {
     'lowDiskSpaceType', 'lowDiskSpaceES', 'lowDiskSpaceESType',
     'hostname', 'wiseUrl', 'cont3xtUrl', 'includeUrl'
   ]);
+
+  // [min, max, integer] for the number settings, the same ranges the settings page allows
+  static #numberSettings = {
+    noPackets: [-1, 100000, true],
+    noPacketsLength: [1, 100000, true],
+    outOfDate: [1, 3600, true],
+    esQueryTimeout: [1, 60, true],
+    removeIssuesAfter: [1, 10080, true],
+    removeAcknowledgedAfter: [1, 10080, true],
+    lowDiskSpace: [0, 100000, false],
+    lowDiskSpaceES: [0, 100000, false]
+  };
+
+  static #parseNumberSetting (key, value) {
+    const [min, max, integer] = Parliament.#numberSettings[key];
+    return integer ? ArkimeUtil.parseInteger(value, min, max) : ArkimeUtil.parseNumber(value, min, max);
+  }
 
   static async initialize (options) {
     Parliament.name = options.name;
@@ -455,11 +473,10 @@ class Parliament {
             return res.serverError(422, 'includeUrl must be a boolean.');
           }
         } else { // all other settings are numbers
-          if (setting === '' || !Number.isFinite(Number(setting))) {
-            return res.serverError(422, `${s} must be a finite number and not an empty string.`);
-          } else {
-            // Use parseFloat for settings that allow decimals
-            setting = (s === 'lowDiskSpace' || s === 'lowDiskSpaceES') ? parseFloat(setting) : parseInt(setting);
+          setting = Parliament.#parseNumberSetting(s, setting);
+          if (setting === undefined) {
+            const [min, max] = Parliament.#numberSettings[s];
+            return res.serverError(422, `${s} must be a number from ${min} to ${max}.`);
           }
         }
 
@@ -876,7 +893,12 @@ class Parliament {
    * @param {string} type - The type of setting to retrieve.
    */
   static getGeneralSetting (type) {
-    return Parliament.#cache.get('parliament')?.settings?.general[type] ?? Parliament.settingsDefault.general[type];
+    const value = Parliament.#cache.get('parliament')?.settings?.general[type];
+    // a bad number saved before the checks, such as a negative timeout, gets the default
+    if (Object.hasOwn(Parliament.#numberSettings, type) && Parliament.#parseNumberSetting(type, value) === undefined) {
+      return Parliament.settingsDefault.general[type];
+    }
+    return value ?? Parliament.settingsDefault.general[type];
   }
 }
 
@@ -1007,9 +1029,10 @@ async function buildAlert (cluster, issue) {
   const notifiers = await Notifier.searchNotifiers({ all: true });
 
   // if there are no notifiers set, skip everything, there's nowhere to alert
-  if (notifiers.length === 0) { return; }
-
-  issue.alerted = Date.now();
+  if (notifiers.length === 0) {
+    issue.alerted = undefined;
+    return;
+  }
 
   // escape the whole composed message: the cluster title, the remote node
   // name, and any error values come from monitored clusters and must not be
@@ -1165,7 +1188,22 @@ function remoteNumber (value) {
   return Number.isFinite(n) ? n : undefined;
 }
 
-function setIssue (cluster, newIssue) {
+// key of an issue within its cluster
+function clusterIssueKey (issue) {
+  return `${issue.type}\t${issue.node}`;
+}
+
+// The cluster's issues by clusterIssueKey, so a stats response with many nodes isn't quadratic
+function clusterIssueIndex (cluster) {
+  const index = new Map();
+  for (const issue of issues) {
+    const key = clusterIssueKey(issue);
+    if (issue.clusterId === cluster.id && !index.has(key)) { index.set(key, issue); }
+  }
+  return index;
+}
+
+function setIssue (cluster, newIssue, index) {
   // last guard for any issue type, esDown's value is the locally built error message
   if (newIssue.node !== undefined) { newIssue.node = remoteName(newIssue.node); }
   if (newIssue.value !== undefined && newIssue.type !== 'esDown') { newIssue.value = remoteNumber(newIssue.value); }
@@ -1177,44 +1215,44 @@ function setIssue (cluster, newIssue) {
   addIssueStrings(newIssue);
   newIssue.provisional = true;
 
-  let existingIssue = false;
-
   // don't duplicate existing issues, update them
-  for (const issue of issues) {
-    if (issue.clusterId === newIssue.clusterId &&
-        issue.type === newIssue.type &&
-        issue.node === newIssue.node) {
-      existingIssue = true;
+  const issue = index
+    ? index.get(clusterIssueKey(newIssue))
+    : issues.find(i => i.clusterId === newIssue.clusterId && i.type === newIssue.type && i.node === newIssue.node);
 
-      // this is at least the second time we've seen this issue
-      // so it must be a persistent issue
-      issue.provisional = false;
+  if (issue) {
+    // this is at least the second time we've seen this issue
+    // so it must be a persistent issue
+    issue.provisional = false;
 
-      if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
-        // the ignore has expired, so alert!
-        issue.ignoreUntil = undefined;
-        issue.alerted = undefined;
-      }
-
-      issue.lastNoticed = Date.now();
-
-      // if the issue has not been acknowledged, ignored, or alerted, or
-      // if the cluster is not a no alert cluster or multiviewer cluster,
-      // build and issue an alert
-      if (!issue.acknowledged && !issue.ignoreUntil &&
-        !issue.alerted && cluster.type !== 'noAlerts' &&
-        cluster.type !== 'multiviewer') {
-        buildAlert(cluster, issue);
-      }
+    if (Date.now() > issue.ignoreUntil && issue.ignoreUntil !== -1) {
+      // the ignore has expired, so alert!
+      issue.ignoreUntil = undefined;
+      issue.alerted = undefined;
     }
-  }
 
-  if (!existingIssue) {
+    issue.lastNoticed = Date.now();
+
+    // if the issue has not been acknowledged, ignored, or alerted, or
+    // if the cluster is not a no alert cluster or multiviewer cluster,
+    // build and issue an alert
+    if (!issue.acknowledged && !issue.ignoreUntil &&
+      !issue.alerted && cluster.type !== 'noAlerts' &&
+      cluster.type !== 'multiviewer') {
+      // marked before buildAlert's db lookup, so the issue is only alerted once
+      issue.alerted = Date.now();
+      buildAlert(cluster, issue).catch((err) => {
+        issue.alerted = undefined;
+        console.log('ERROR - building alert', err.message ?? err);
+      });
+    }
+  } else {
     // this is the first time we've seen this issue
     // don't alert yet, but create the issue
     newIssue.firstNoticed = Date.now();
     newIssue.lastNoticed = Date.now();
     issues.push(newIssue);
+    index?.set(clusterIssueKey(newIssue), newIssue);
   }
 
   if (ArkimeConfig.debug > 1) {
@@ -1222,6 +1260,11 @@ function setIssue (cluster, newIssue) {
   }
 
   internals.issuesDirty = true;
+}
+
+// The deadline signal aborts with axios' generic 'canceled', so name it as the timeout it is
+function pollErrorMessage (error, timeout) {
+  return axios.isCancel(error) ? `timeout of ${timeout}ms exceeded` : error.message ?? error;
 }
 
 function getHealth (cluster) {
@@ -1234,7 +1277,9 @@ function getHealth (cluster) {
       httpsAgent: internals.httpsAgent,
       maxContentLength: MAX_CLUSTER_RESPONSE_SIZE,
       maxBodyLength: MAX_CLUSTER_RESPONSE_SIZE,
-      timeout
+      maxRedirects: 0, // only ever poll the configured cluster
+      timeout,
+      signal: AbortSignal.timeout(timeout) // timeout is idle time, a trickled response never hits it
     };
 
     axios(options).then((response) => {
@@ -1245,7 +1290,9 @@ function getHealth (cluster) {
         health = response.data;
       } catch (e) {
         cluster.healthError = 'ES health parse failure';
-        console.log('Bad response for es health', cluster.localUrl ?? cluster.url);
+        if (ArkimeConfig.debug) {
+          console.log('Bad response for es health', cluster.localUrl ?? cluster.url);
+        }
         return resolve({ cluster });
       }
 
@@ -1263,7 +1310,7 @@ function getHealth (cluster) {
 
       return resolve({ cluster });
     }).catch((error) => {
-      const message = error.message ?? error;
+      const message = pollErrorMessage(error, timeout);
 
       setIssue(cluster, { type: 'esDown', value: message });
 
@@ -1280,13 +1327,17 @@ function getHealth (cluster) {
 
 async function getStats (cluster) {
   return new Promise((resolve, reject) => {
+    const timeout = Parliament.getGeneralSetting('esQueryTimeout') * 1000;
+
     const options = {
       url: `${cluster.localUrl ?? cluster.url}/api/parliament`,
       method: 'GET',
       httpsAgent: internals.httpsAgent,
       maxContentLength: MAX_CLUSTER_RESPONSE_SIZE,
       maxBodyLength: MAX_CLUSTER_RESPONSE_SIZE,
-      timeout: Parliament.getGeneralSetting('esQueryTimeout') * 1000
+      maxRedirects: 0, // only ever poll the configured cluster
+      timeout,
+      signal: AbortSignal.timeout(timeout) // timeout is idle time, a trickled response never hits it
     };
 
     // Get now before the query since we don't know how long query/response will take
@@ -1305,7 +1356,9 @@ async function getStats (cluster) {
         stats = response.data;
       } catch (e) {
         cluster.statsError = 'ES stats parse failure';
-        console.log('Bad response for stats', cluster.localUrl ?? cluster.url);
+        if (ArkimeConfig.debug) {
+          console.log('Bad response for stats', cluster.localUrl ?? cluster.url);
+        }
         return resolve({ cluster });
       }
 
@@ -1316,9 +1369,18 @@ async function getStats (cluster) {
       cluster.arkimeNodes = 0;
       cluster.monitoring = 0;
 
+      const index = clusterIssueIndex(cluster);
+      const seen = new Set();
+      // only the nodes in this response are kept, so rotating node names can't grow it
+      const lastNoPackets = noPacketsMap.get(cluster.id);
+      const noPackets = new Map();
+
       for (const stat of stats.data) {
         // remote data, checks and issues only see a bounded name and finite numbers
         const nodeName = remoteName(stat.nodeName);
+        // a repeated node would count twice and make its new issues persistent at once
+        if (seen.has(nodeName)) { continue; }
+        seen.add(nodeName);
         const statTime = remoteNumber(stat.currentTime);
         const deltaPacketsPerSec = remoteNumber(stat.deltaPacketsPerSec);
         const freeSpaceP = remoteNumber(stat.freeSpaceP);
@@ -1348,30 +1410,22 @@ async function getStats (cluster) {
             type: 'outOfDate',
             node: nodeName,
             value: statTime * 1000
-          });
+          }, index);
         }
 
-        // look for no packets issue
+        // look for no packets issue, only set once the node has had no packets
+        // for noPacketsLength. A node seeing packets again isn't kept, so a
+        // future dip has to persist for noPacketsLength again
         if (deltaPacketsPerSec <= Parliament.getGeneralSetting('noPackets')) {
-          const id = cluster.title + ':' + nodeName;
-
-          // only set the noPackets issue if there is a record of this cluster/node
-          // having noPackets and that issue has persisted for the set length of time
-          if (noPacketsMap.has(id) &&
-            Date.now() - noPacketsMap.get(id) >= (Parliament.getGeneralSetting('noPacketsLength') * 1000)) {
+          const firstSeen = lastNoPackets?.get(nodeName) ?? Date.now();
+          noPackets.set(nodeName, firstSeen);
+          if (Date.now() - firstSeen >= (Parliament.getGeneralSetting('noPacketsLength') * 1000)) {
             setIssue(cluster, {
               type: 'noPackets',
               node: nodeName,
               value: deltaPacketsPerSec
-            });
-          } else if (!noPacketsMap.has(id)) {
-            // if this issue has not been encountered yet, make a record of it
-            noPacketsMap.set(id, Date.now());
+            }, index);
           }
-        } else {
-          // the node is seeing packets again, clear the record so a future
-          // dip has to persist for noPacketsLength again
-          noPacketsMap.delete(cluster.title + ':' + nodeName);
         }
 
         const esDropped = Number(stat.deltaESDroppedPerSec) || 0;
@@ -1380,7 +1434,7 @@ async function getStats (cluster) {
             type: 'esDropped',
             node: nodeName,
             value: esDropped
-          });
+          }, index);
         }
 
         // look for low disk space issue
@@ -1402,9 +1456,10 @@ async function getStats (cluster) {
             value: freeSpaceP,
             freeSpaceM,
             thresholdType: lowDiskSpaceType
-          });
+          }, index);
         }
       }
+      noPacketsMap.set(cluster.id, noPackets);
 
       // Check ES node disk space issues
       if (stats.esNodes && stats.esNodes.length > 0) {
@@ -1433,14 +1488,14 @@ async function getStats (cluster) {
               value: esFreeSpaceP,
               freeSpaceM: esFreeSpaceM,
               thresholdType: lowDiskSpaceESType
-            });
+            }, index);
           }
         }
       }
 
       return resolve({ cluster });
     }).catch((error) => {
-      const message = error.message ?? error;
+      const message = pollErrorMessage(error, timeout);
 
       setIssue(cluster, { type: 'esDown', value: message });
 
@@ -1581,6 +1636,7 @@ async function updateParliament () {
     if (!parliament) { return; }
 
     const promises = [];
+    const statsIds = new Set();
     for (const group of parliament.groups) {
       if (group.clusters) {
         for (const cluster of group.clusters) {
@@ -1590,10 +1646,16 @@ async function updateParliament () {
           }
           // don't get stats for multiviewers or offline clusters
           if (cluster.type !== 'multiviewer' && cluster.type !== 'disabled') {
+            statsIds.add(cluster.id);
             promises.push(getStats(cluster));
           }
         }
       }
+    }
+
+    // clusters removed or no longer polled for stats don't keep their no packets records
+    for (const id of noPacketsMap.keys()) {
+      if (!statsIds.has(id)) { noPacketsMap.delete(id); }
     }
 
     issuesRemoved = cleanUpIssues();
@@ -1633,7 +1695,7 @@ function removeIssue (issueType, clusterId, nodeId) {
       issues.splice(len, 1);
       if (issue.type === 'noPackets') {
         // also remove it from the no packets record
-        noPacketsMap.delete(issue.cluster + ':' + nodeId);
+        noPacketsMap.get(clusterId)?.delete(nodeId);
       }
     }
   }
@@ -2137,6 +2199,11 @@ async function setupAuth () {
 // See https://github.com/nodejs/node/issues/4182
 process.on('SIGINT', function () {
   process.exit();
+});
+
+// Express 4 ignores a rejected async handler, without this one bad request stops Parliament
+process.on('unhandledRejection', (reason, p) => {
+  console.trace('Unhandled Rejection at: Promise', p, 'reason:', reason);
 });
 
 // ============================================================================

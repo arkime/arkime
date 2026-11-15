@@ -545,9 +545,16 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // Session ids and node names come from sensor written docs, only allow ones
+  // that can't change the structure of the s2s path or body they are put in
+  static isSafeSegment (str) {
+    return typeof str === 'string' && /^[A-Za-z0-9_.:@+=-]+$/.test(str) && str !== '.' && str !== '..';
+  }
+
+  // ----------------------------------------------------------------------------
   static async makeRequest (node, path, user, cb, cluster) {
     try {
-      if (ViewerUtils.#hasDotSegment(path)) {
+      if (ViewerUtils.#hasDotSegment(path) || path.includes('#')) {
         throw new Error(`Bad path ${path}`);
       }
 
@@ -640,7 +647,7 @@ class ViewerUtils {
   static async proxyRequest (req, res) {
     ArkimeUtil.noCache(req, res);
 
-    if (ViewerUtils.#hasDotSegment(req.url)) {
+    if (ViewerUtils.#hasDotSegment(req.url) || req.url.includes('#')) {
       console.log('ERROR - proxyRequest bad path', ArkimeUtil.sanitizeStr(req.url));
       return res.status(400).send('Bad path');
     }

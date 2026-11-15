@@ -11,8 +11,9 @@
 // Aggregations are a pain, we convert from array to map to back to array
 /// ///////////////////////////////////////////////////////////////////////////////
 
+// Keyed by bucket key, which comes from the data, so no prototype for a key like constructor or __proto__ to hit
 function agg2Obj (field, agg) {
-  const obj = {};
+  const obj = Object.create(null);
   for (let i = 0; i < agg.length; i++) {
     obj[agg[i][field]] = agg[i];
   }
@@ -221,9 +222,9 @@ function newAggregations (aggregations) {
     } else if (aggConfig.histogram) {
       // a histogram response has no sum_other_doc_count, so the merged one
       // doesn't either (a caller's "Other" is the buckets past its limit)
-      result[agg] = { buckets: {}, _type: 'histogram', _order: aggConfig.histogram.order, _subAggs: subAggOps(aggConfig), _nested: nestedTermsInfo(aggConfig) };
+      result[agg] = { buckets: Object.create(null), _type: 'histogram', _order: aggConfig.histogram.order, _subAggs: subAggOps(aggConfig), _nested: nestedTermsInfo(aggConfig) };
     } else {
-      result[agg] = { buckets: {}, _type: 'terms', _order: aggConfig.terms?.order, _subAggs: subAggOps(aggConfig), _nested: nestedTermsInfo(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
+      result[agg] = { buckets: Object.create(null), _type: 'terms', _order: aggConfig.terms?.order, _subAggs: subAggOps(aggConfig), _nested: nestedTermsInfo(aggConfig), doc_count_error_upper_bound: 0, sum_other_doc_count: 0 };
     }
   }
   return result;
@@ -340,7 +341,7 @@ function aggAdd (obj1, obj2) {
         obj1[aggname].sum_other_doc_count += obj2[aggname].sum_other_doc_count;
       }
       for (const entry in obj2[aggname].buckets) {
-        if (!obj1[aggname].buckets[entry]) {
+        if (!Object.hasOwn(obj1[aggname].buckets, entry)) {
           obj1[aggname].buckets[entry] = obj2[aggname].buckets[entry];
         } else {
           // merge metric sub-aggs (the timeline's source.bytes/client.bytes, the
