@@ -37,6 +37,10 @@ const MATERIALIZED = {
 // Most per-bucket sub-agg queries in flight at once for one agg
 const BUCKET_QUERY_CONCURRENCY = 8;
 
+// Most msearch searches in flight at once, and most values one batched scan matches
+const MSEARCH_CONCURRENCY = 8;
+const MAX_BATCH_VALUES = 1000;
+
 // Most buckets one search may create, ES's search.max_buckets default
 const MAX_BUCKETS = 65536;
 const MAX_SCROLLS = 500;
@@ -343,6 +347,13 @@ function addBuckets (budget, count) {
   if (budget.buckets > MAX_BUCKETS) {
     throw new Error(`Trying to create too many buckets. Must be less than or equal to: [${MAX_BUCKETS}] but was [${budget.buckets}]`);
   }
+}
+
+// A date histogram row as an ES bucket
+function histogramBucket (row, subNames) {
+  const bucket = { key: Number(row.key), doc_count: Number(row.doc_count) };
+  for (const subName of subNames) { bucket[subName] = { value: row[subName] ?? 0 }; }
+  return bucket;
 }
 
 class DbCHImpl {
@@ -1272,13 +1283,28 @@ class DbCHImpl {
     return `(toStartOfInterval(${column} - INTERVAL ${offsetSeconds} second, INTERVAL ${intervalSeconds} second) + INTERVAL ${offsetSeconds} second)`;
   }
 
-  async runHistogramAgg (agg, where, budget) {
+  // A date histogram's field, interval and ES offset (buckets start that many ms after the interval's multiples)
+  #histogramParams (agg) {
     const histo = agg.histogram || agg.date_histogram;
     const intervalMs = typeof histo.interval === 'number' ? histo.interval : this.intervalToMs(histo.fixed_interval || histo.calendar_interval || histo.interval);
-    const intervalSeconds = Math.max(1, Math.floor(intervalMs / 1000));
-    const field = histo.field === '@timestamp' ? 'timestamp' : histo.field;
-    // ES histogram offset: buckets start that many ms after the interval's multiples
-    const offsetMs = Math.floor(Number(histo.offset) || 0);
+    return {
+      histo,
+      intervalMs,
+      intervalSeconds: Math.max(1, Math.floor(intervalMs / 1000)),
+      field: histo.field === '@timestamp' ? 'timestamp' : histo.field,
+      offsetMs: Math.floor(Number(histo.offset) || 0)
+    };
+  }
+
+  // The bucket key, doc_count and metric sub-aggs of a date histogram
+  #histogramSelect (agg, field, intervalSeconds, offsetMs) {
+    const keyExpr = this.histogramKeyExpr(this.columnForField(field), intervalSeconds, offsetMs);
+    const metricSelect = Object.entries(agg.aggregations || agg.aggs || {}).map(([subName, subAgg]) => `${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
+    return [`toUnixTimestamp(${keyExpr}) * 1000 AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
+  }
+
+  async runHistogramAgg (agg, where, budget) {
+    const { histo, intervalMs, intervalSeconds, field, offsetMs } = this.#histogramParams(agg);
     if (histo.field === 'packetRange') {
       // ES packetRange is a date_range field (firstPacket..lastPacket); a
       // histogram over it counts the session in EVERY interval it spans.
@@ -1302,22 +1328,11 @@ class DbCHImpl {
         })
       };
     }
-    const keyExpr = this.histogramKeyExpr(this.columnForField(field), intervalSeconds, offsetMs);
-    const subAggs = agg.aggregations || agg.aggs || {};
-    const metricSelect = [];
-    for (const [subName, subAgg] of Object.entries(subAggs)) {
-      metricSelect.push(`${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
-    }
-    const select = [`toUnixTimestamp(${keyExpr}) * 1000 AS key`, 'count() AS doc_count', ...metricSelect].join(', ');
+    const select = this.#histogramSelect(agg, field, intervalSeconds, offsetMs);
     const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key ORDER BY key ASC LIMIT ${bucketLimit(budget)}`)).data || [];
     addBuckets(budget, rows.length);
-    return {
-      buckets: rows.map(row => {
-        const bucket = { key: Number(row.key), doc_count: Number(row.doc_count) };
-        for (const subName of Object.keys(subAggs)) { bucket[subName] = { value: row[subName] ?? 0 }; }
-        return bucket;
-      })
-    };
+    const subNames = Object.keys(agg.aggregations || agg.aggs || {});
+    return { buckets: rows.map(row => histogramBucket(row, subNames)) };
   }
 
   // An ES histogram over a numeric field (the summary's bucketInterval ranges)
@@ -1528,12 +1543,145 @@ class DbCHImpl {
     }
   }
 
+  // spigraph's msearch is one search per top value of a field, run as a single GROUP BY
+  // scan when the searches allow it, otherwise each search on its own a few at a time
   async msearchSessions (index, queries, options = {}) {
-    const responses = await Promise.all(queries.map(query => {
-      const q = typeof query === 'string' ? JSON.parse(query) : query;
-      return this.searchSessions(index, q, options);
-    }));
+    const parsed = queries.map(query => typeof query === 'string' ? JSON.parse(query) : query);
+    const batch = this.#termBatch(parsed);
+    const responses = batch
+      ? await this.#tagged(options, () => this.#batchedSearch(index, parsed[0], batch))
+      : await async.mapLimit(parsed, MSEARCH_CONCURRENCY, async (query) => this.searchSessions(index, query, options));
     return { body: { responses } };
+  }
+
+  // The field and values when the searches differ only in a last term filter on one field,
+  // and their aggregations are ones a GROUP BY on the value answers the same way
+  #termBatch (queries) {
+    if (queries.length < 2 || queries.length > MAX_BATCH_VALUES) { return undefined; }
+    const filters = queries[0].query?.bool?.filter;
+    if (!Array.isArray(filters) || filters.length === 0) { return undefined; }
+    const last = filters.length - 1;
+    const termOf = (query) => {
+      const filter = query.query?.bool?.filter;
+      const clause = Array.isArray(filter) && filter.length === filters.length ? filter[last] : undefined;
+      if (clause === null || typeof clause !== 'object' || Object.keys(clause).length !== 1) { return undefined; }
+      const term = clause.term;
+      return term !== null && typeof term === 'object' && Object.keys(term).length === 1 ? term : undefined;
+    };
+    const rest = (query) => JSON.stringify({ ...query, query: { ...query.query, bool: { ...query.query.bool, filter: query.query.bool.filter.slice(0, last) } } });
+
+    const first = termOf(queries[0]);
+    if (!first || !this.#batchable(queries[0])) { return undefined; }
+    const field = Object.keys(first)[0];
+    const common = rest(queries[0]);
+    const values = [];
+    for (const query of queries) {
+      const term = termOf(query);
+      if (!term || !Object.hasOwn(term, field) || rest(query) !== common) { return undefined; }
+      values.push(term[field]);
+    }
+    return { field, values };
+  }
+
+  // No hits, and only metric aggs or date histograms of metrics
+  #batchable (query) {
+    if (Number(query.size ?? 10) !== 0 || query.from) { return false; }
+    return Object.values(query.aggregations || query.aggs || {}).every((agg) => {
+      if (this.isMetricAgg(agg)) { return !(agg.aggregations || agg.aggs); }
+      const histo = agg.histogram || agg.date_histogram;
+      if (!histo || histo.field === 'packetRange' || (agg.histogram && this.isNumericHistogram(histo))) { return false; }
+      return Object.keys(agg).every(key => ['histogram', 'date_histogram', 'aggregations', 'aggs'].includes(key)) &&
+        Object.values(agg.aggregations || agg.aggs || {}).every(sub => this.isMetricAgg(sub));
+    });
+  }
+
+  // Each value's term on its own, every row compared to every value
+  #valueMatches (field, values) {
+    const matches = values.map(value => `ifNull((${this.translateClause({ term: { [field]: value } })}), 0)`);
+    return {
+      tag: `arrayJoin(arrayFilter(i -> i >= 0, [${matches.map((match, i) => `if(${match}, ${i}, -1)`).join(', ')}]))`,
+      match: `(${matches.join(' OR ')})`
+    };
+  }
+
+  // One indexOf per row instead, when each value's term is a plain equality on one column whose
+  // type the values already have, or an exact address on an ip field
+  #valueLookup (field, values) {
+    const info = this.fieldsMap()[field];
+    if (this.nestedArrayParent(field) || info?.type?.endsWith('textfield') || info?.type === 'date' || DATE_FIELDS.has(field)) { return undefined; }
+    const ip = this.isIpField(field);
+    const key = ip ? x => `toIPv6OrNull(toString(${x}))` : x => x;
+    let literals;
+    if (ip) {
+      const ranges = values.map(v => typeof v === 'string' ? ipRange(v) : null);
+      if (!ranges.every(r => r?.exact)) { return undefined; }
+      literals = ranges.map(r => `toIPv6(${sqlLiteral(r.lo)})`);
+    } else {
+      const type = MATERIALIZED[field]?.type ?? this.typedPaths.get(field) ?? this.scalarTypeForField(field);
+      if (/Int|Float/.test(type)) {
+        const numbers = values.map(v => typeof v === 'string' && /^-?\d+(\.\d+)?$/.test(v) ? Number(v) : v);
+        if (!numbers.every(v => Number.isFinite(v) && Math.abs(v) <= Number.MAX_SAFE_INTEGER)) { return undefined; }
+        literals = numbers.map(v => sqlLiteral(v, field));
+      } else if (/String/.test(type) && values.every(v => typeof v === 'string')) {
+        literals = values.map(v => sqlLiteral(v, field));
+      } else {
+        return undefined;
+      }
+    }
+    if (new Set(literals).size !== literals.length) { return undefined; }
+    const list = `[${literals.join(', ')}]`;
+    const col = this.columnForField(field);
+    if (this.isJsonArrayField(field)) {
+      return {
+        tag: `arrayJoin(arrayDistinct(arrayFilter(i -> i >= 0, arrayMap(x -> indexOf(${list}, ${key('x')}) - 1, ${col}))))`,
+        match: ip ? `arrayExists(x -> has(${list}, ${key('x')}), ${col})` : `hasAny(${col}, ${list})`
+      };
+    }
+    return { tag: `indexOf(${list}, ${key(col)}) - 1`, match: `${key(col)} IN (${literals.join(', ')})` };
+  }
+
+  // Each value's search answered from one scan: a row joins every value whose term it matches,
+  // as it would in that value's own search, and the counts, metrics and histograms group by it
+  async #batchedSearch (index, query, { field, values }) {
+    await this.schemaReady;
+    const filter = query.query.bool.filter.slice(0, -1);
+    const common = { ...query, query: { ...query.query, bool: { ...query.query.bool, filter } } };
+    const { where } = this.translateQuery(common, { timeClause: this.timeClauseFromIndex(index) });
+    const { tag, match } = this.#valueLookup(field, values) ?? this.#valueMatches(field, values);
+    const scan = `FROM ${this.tableName()} WHERE ${where} AND ${match}`;
+
+    const aggs = Object.entries(common.aggregations || common.aggs || {});
+    const metrics = aggs.filter(([, agg]) => this.isMetricAgg(agg));
+    const histograms = aggs.filter(([, agg]) => !this.isMetricAgg(agg));
+    const responses = values.map(() => ({ hits: { total: 0, hits: [] }, aggregations: {} }));
+    const budgets = values.map(() => ({ buckets: 0 }));
+
+    const metricSelect = metrics.map(([aggName, agg]) => `, ${this.metricExpression(agg)} AS ${quoteIdent(aggName)}`).join('');
+    const counts = this.query(`SELECT ${tag} AS __v, count() AS __count${metricSelect} ${scan} GROUP BY __v`).then((result) => {
+      const byValue = new Map((result.data || []).map(row => [Number(row.__v), row]));
+      responses.forEach((response, i) => {
+        const row = byValue.get(i) ?? {};
+        response.hits.total = Number(row.__count ?? 0);
+        for (const [aggName, agg] of metrics) {
+          const nullable = DbCHImpl.NULLABLE_METRICS.some(op => agg[op]);
+          response.aggregations[aggName] = { value: row[aggName] ?? (nullable ? null : 0) };
+        }
+      });
+    });
+    const buckets = histograms.map(async ([aggName, agg]) => {
+      const { field: histoField, intervalSeconds, offsetMs } = this.#histogramParams(agg);
+      const select = this.#histogramSelect(agg, histoField, intervalSeconds, offsetMs);
+      const result = await this.query(`SELECT ${tag} AS __v, ${select} ${scan} GROUP BY __v, key ORDER BY __v ASC, key ASC LIMIT ${MAX_BUCKETS + 1} BY __v`);
+      const subNames = Object.keys(agg.aggregations || agg.aggs || {});
+      const byValue = values.map(() => []);
+      for (const row of result.data || []) { byValue[Number(row.__v)]?.push(histogramBucket(row, subNames)); }
+      byValue.forEach((valueBuckets, i) => {
+        addBuckets(budgets[i], valueBuckets.length);
+        responses[i].aggregations[aggName] = { buckets: valueBuckets };
+      });
+    });
+    await Promise.all([counts, ...buckets]);
+    return responses;
   }
 
   tagsAddAssignment (tags) {
@@ -1865,9 +2013,15 @@ class DbCHImpl {
     return { body: result };
   }
 
+  // Only the "of N total" figure, so concurrent requests share one count up to 5s old
+  #docCount;
   async numberOfDocuments () {
-    const result = await this.query(`SELECT count() AS count FROM ${this.tableName()}`);
-    return { count: Number(result.data?.[0]?.count ?? 0) };
+    if (!this.#docCount || Date.now() - this.#docCount.at > 5000) {
+      const count = this.query(`SELECT count() AS count FROM ${this.tableName()}`).then(result => Number(result.data?.[0]?.count ?? 0));
+      this.#docCount = { at: Date.now(), count };
+      count.catch(() => { if (this.#docCount?.count === count) { this.#docCount = undefined; } });
+    }
+    return { count: await this.#docCount.count };
   }
 
   close () {
