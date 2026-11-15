@@ -81,7 +81,7 @@ SKIP: {
 }
 
 SKIP: {
-    skip "the OpenSearch/Elasticsearch admin apis need one", 96 if $ArkimeTest::noEs;
+    skip "the OpenSearch/Elasticsearch admin apis need one", 97 if $ArkimeTest::noEs;
 
 # esstats.json
     my $esstats = viewerGet("/api/esstats");
