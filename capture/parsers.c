@@ -1017,7 +1017,7 @@ int arkime_parsers_load()
     ArkimeString_t *hstring;
     int count = 0;
 
-    char **disableParsers = arkime_config_str_list(NULL, "disableParsers", "arp.so");
+    char **disableParsers = arkime_config_str_list(NULL, "disableParsers", "");
     for (int d = 0; disableParsers[d]; d++) {
         hstring = ARKIME_TYPE_ALLOC0(ArkimeString_t);
         hstring->str = disableParsers[d];
