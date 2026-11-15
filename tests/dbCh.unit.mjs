@@ -4,7 +4,7 @@ SPDX-License-Identifier: Apache-2.0
 
 The ClickHouse sessions backend's scroll, sessions iterator and field map, with query() answered from rows in memory
 
-Set ARKIME_TEST_CH_URL=http://localhost:8123 to also run the shortcut lookup SQL against a real ClickHouse
+Set ARKIME_TEST_CH_URL=http://localhost:8123 to also run the shortcut lookup and batched msearch SQL against a real ClickHouse
 */
 import { test, describe, before as beforeAll, after as afterAll } from 'node:test';
 import assert from 'node:assert/strict';
@@ -385,4 +385,202 @@ describe('ClickHouse shortcut ip lookups', { skip: !process.env.ARKIME_TEST_CH_U
     await assert.rejects(match('badbits', '10.1.2.3'), /shortcut ip is not an address or CIDR/);
     await assert.rejects(match('missing', '10.1.2.3'), /shortcut not found in lookups table/);
   });
+});
+
+// Answers the batched spigraph SQL and the per-value searches from canned rows, recording each statement
+class MsearchCH extends DbCHImpl {
+  sqls = [];
+  fail = 0;
+  async query (sql) {
+    (this.sqls ??= []).push(sql);
+    await new Promise(resolve => setImmediate(resolve));
+    if (this.fail > 0 && sql.startsWith('SELECT count() AS count FROM `arkime`.`tests_sessions3`')) { this.fail--; throw new Error('down'); }
+    if (sql.includes('AS __v') && sql.includes('GROUP BY __v, key')) {
+      return { data: [{ __v: 0, key: 60000, doc_count: 2, 'source.bytes': 10 }, { __v: 1, key: 0, doc_count: 1, 'source.bytes': 5 }, { __v: 1, key: 60000, doc_count: 3, 'source.bytes': 7 }] };
+    }
+    if (sql.includes('AS __v')) { return { data: [{ __v: 0, __count: 2, p95: 100 }, { __v: 1, __count: 4, p95: 50 }] }; }
+    if (sql.startsWith('SELECT count() AS count')) { return { data: [{ count: 7 }] }; }
+    return { data: [] };
+  }
+}
+
+describe('ClickHouse msearch', () => {
+  const newCHs = async () => {
+    const ch = new MsearchCH({ sessionsDbUrl: 'clickhouse://127.0.0.1:1/arkime', prefix: 'tests_' });
+    await ch.schemaReady;
+    ch.sqls = [];
+    return ch;
+  };
+  // spigraph's per-value searches: the same query with one more term filter
+  const search = (extra = {}) => ({
+    size: 0,
+    query: { bool: { filter: [{ range: { lastPacket: { gte: 0 } } }] } },
+    aggregations: {
+      dbHisto: { histogram: { field: 'lastPacket', interval: 60000, min_doc_count: 1 }, aggregations: { 'source.bytes': { sum: { field: 'source.bytes' } } } },
+      p95: { percentiles: { field: 'network.bytes', percents: [95] } },
+      low: { min: { field: 'network.bytes' } }
+    },
+    ...extra
+  });
+  const perValue = (field, values, extra) => values.map((value) => {
+    const query = search(extra);
+    query.query.bool.filter.push({ term: { [field]: value } });
+    return JSON.stringify(query);
+  });
+
+  test('one search per value of a field runs as one count and one histogram scan', async () => {
+    const ch = await newCHs();
+    const { body: { responses } } = await ch.msearchSessions('tests_sessions3-*', perValue('destination.ip', ['10.0.0.1', '10.0.0.2', '10.0.0.3']));
+    assert.equal(ch.sqls.length, 2);
+    assert.ok(ch.sqls.every(sql => sql.includes("indexOf([toIPv6('10.0.0.1'), toIPv6('10.0.0.2'), toIPv6('10.0.0.3')], toIPv6OrNull(toString(`destination.ip`))) - 1 AS __v")));
+    assert.ok(ch.sqls.some(sql => sql.includes(' LIMIT 65537 BY __v')));
+    assert.deepEqual(responses[0], {
+      hits: { total: 2, hits: [] },
+      aggregations: { p95: { value: 100 }, low: { value: null }, dbHisto: { buckets: [{ key: 60000, doc_count: 2, 'source.bytes': { value: 10 } }] } }
+    });
+    assert.deepEqual(responses[1].aggregations.dbHisto.buckets.map(b => [b.key, b.doc_count, b['source.bytes'].value]), [[0, 1, 5], [60000, 3, 7]]);
+    assert.equal(responses[1].hits.total, 4);
+    // a value no row matches answers like its own empty search
+    assert.deepEqual(responses[2], { hits: { total: 0, hits: [] }, aggregations: { p95: { value: 0 }, low: { value: null }, dbHisto: { buckets: [] } } });
+  });
+
+  test('values that aren\'t a plain equality are each compared on their own in the one scan', async () => {
+    for (const [field, values] of [['destination.ip', ['10.0.0', '10.0.1.0/24']], ['destination.port', ['x', 80]], ['node', ['a', 'a']], ['http.uriTokens', ['a', 'b']]]) {
+      const ch = await newCHs();
+      ch.fieldsMap = () => ({ 'http.uriTokens': { type: 'textfield' } });
+      await ch.msearchSessions('tests_sessions3-*', perValue(field, values));
+      assert.equal(ch.sqls.length, 2, field);
+      assert.ok(ch.sqls.every(sql => sql.includes('arrayJoin(arrayFilter(i -> i >= 0, [if(') && !sql.includes('indexOf(')), field);
+    }
+  });
+
+  test('anything a GROUP BY on the value might answer differently runs one search per value', async () => {
+    const twoTerms = perValue('destination.port', [80, 443]).map((query, i) => {
+      const parsed = JSON.parse(query);
+      parsed.query.bool.filter.splice(1, 0, { term: { 'destination.ip': `10.0.0.${i}` } });
+      return JSON.stringify(parsed);
+    });
+    const withTerms = perValue('destination.ip', ['10.0.0.1', '10.0.0.2'], { aggregations: { mapG1: { terms: { field: 'source.geo.country_iso_code', size: 10 } } } });
+    const withHits = perValue('destination.ip', ['10.0.0.1', '10.0.0.2'], { size: 5 });
+    const packetRange = perValue('destination.ip', ['10.0.0.1', '10.0.0.2'], { aggregations: { dbHisto: { histogram: { field: 'packetRange', interval: 60000 } } } });
+    for (const [what, queries] of [['two terms differ', twoTerms], ['terms agg', withTerms], ['hits', withHits], ['packetRange', packetRange], ['one value', perValue('destination.ip', ['10.0.0.1'])]]) {
+      const ch = await newCHs();
+      const { body: { responses } } = await ch.msearchSessions('tests_sessions3-*', queries);
+      assert.equal(responses.length, queries.length, what);
+      assert.ok(!ch.sqls.some(sql => sql.includes('__v')), what);
+      assert.equal(ch.sqls.filter(sql => sql.startsWith('SELECT count() AS count FROM `arkime`.`tests_sessions3` WHERE')).length, queries.length, what);
+    }
+  });
+
+  test('searches that can\'t be batched run a few at a time', async () => {
+    const ch = await newCHs();
+    let inFlight = 0;
+    let most = 0;
+    const searchSessions = ch.searchSessions.bind(ch);
+    ch.searchSessions = async (...args) => {
+      most = Math.max(most, ++inFlight);
+      try { return await searchSessions(...args); } finally { inFlight--; }
+    };
+    const values = Array.from({ length: 30 }, (_, i) => `10.0.0.${i}`);
+    const { body: { responses } } = await ch.msearchSessions('tests_sessions3-*', perValue('destination.ip', values, { size: 5 }));
+    assert.equal(responses.length, 30);
+    assert.ok(most > 1 && most <= 8, `most in flight ${most}`);
+  });
+
+  test('numberOfDocuments shares one count between callers for a few seconds and retries after an error', async () => {
+    const ch = await newCHs();
+    const total = 'SELECT count() AS count FROM `arkime`.`tests_sessions3`';
+    const [a, b] = await Promise.all([ch.numberOfDocuments(), ch.numberOfDocuments()]);
+    assert.deepEqual([a, b], [{ count: 7 }, { count: 7 }]);
+    assert.deepEqual(await ch.numberOfDocuments(), { count: 7 });
+    assert.equal(ch.sqls.filter(sql => sql === total).length, 1);
+
+    const failing = await newCHs();
+    failing.fail = 1;
+    await assert.rejects(failing.numberOfDocuments(), /down/);
+    assert.deepEqual(await failing.numberOfDocuments(), { count: 7 });
+  });
+});
+
+// Each value's answer from the one batched scan matches that value's own search, both on ARKIME_TEST_CH_URL
+describe('ClickHouse msearch on a real ClickHouse', { skip: !process.env.ARKIME_TEST_CH_URL }, () => {
+  const url = process.env.ARKIME_TEST_CH_URL;
+  const db = `arkime_unit_msearch_${process.pid}`;
+  const q = async (sql) => {
+    const res = await fetch(url, { method: 'POST', body: sql });
+    const text = await res.text();
+    if (!res.ok) { throw new Error(text); }
+    return text.trim();
+  };
+  const ips = ['10.0.0.1', '10.0.0.2', 'fe80::1', '2001:db8::1', '10.0.1.7', undefined];
+  const protocols = [['tcp'], ['udp', 'dns'], ['tcp', 'http'], ['udp'], []];
+  const rows = Array.from({ length: 60 }, (_, i) => ({
+    _id: `id${i}`,
+    lastPacket: 1700000000000 + i * 17000,
+    node: ['n1', 'n2', 'n3'][i % 3],
+    'source.bytes': i * 10,
+    protocol: protocols[i % 5],
+    'source.ip': ips[i % 6],
+    ...(i % 7 ? { 'destination.port': [80, 443, 53][i % 3] } : {}),
+    ...(i % 4 ? { 'http.method': ['GET', 'POST'][i % 2], 'http.statuscode': [[200], [404, 200]][i % 2] } : {}),
+    ...(i % 3 ? { tags: ['a', 'b', 'c'].slice(i % 2, 3) } : {}),
+    ...(i % 5 ? { 'email.ip': [['10.0.0.1'], ['::1', '10.0.0.1'], ['0:0:0:0:0:0:0:1']][i % 3] } : {})
+  }));
+  let ch;
+  let sqls;
+
+  beforeAll(async () => {
+    await q(`CREATE DATABASE ${db}`);
+    await q(`CREATE TABLE ${db}.t_sessions3 (
+      fields JSON(\`_id\` String, lastPacket Nullable(Int64), \`destination.port\` Nullable(Int64), \`source.bytes\` Nullable(Int64), protocol Array(String), \`http.statuscode\` Array(Int64)),
+      \`_id\` String DEFAULT fields.\`_id\`,
+      node LowCardinality(String) MATERIALIZED ifNull(fields.node, ''),
+      lastPacket DateTime64(3, 'UTC') DEFAULT fromUnixTimestamp64Milli(ifNull(fields.lastPacket, 0)),
+      \`source.ip\` String MATERIALIZED ifNull(fields.\`source.ip\`, ''),
+      \`destination.ip\` String MATERIALIZED ifNull(fields.\`destination.ip\`, '')
+    ) ENGINE = MergeTree ORDER BY lastPacket`);
+    await q(`INSERT INTO ${db}.t_sessions3 (fields) FORMAT JSONEachRow\n${rows.map(fields => JSON.stringify({ fields })).join('\n')}`);
+    ch = new DbCHImpl({ sessionsDbUrl: `${url}/${db}`, prefix: 't_', fieldsMap: () => ({ 'email.ip': { type: 'ip' } }) });
+    await ch.schemaReady;
+    const query = ch.query.bind(ch);
+    ch.query = (sql, ...args) => { sqls.push(sql); return query(sql, ...args); };
+  });
+  afterAll(async () => {
+    ch?.close();
+    await q(`DROP DATABASE IF EXISTS ${db}`);
+  });
+
+  const perValue = (field, values) => values.map(value => ({
+    size: 0,
+    query: { bool: { filter: [{ range: { lastPacket: { gte: 1700000100000 } } }, { term: { [field]: value } }] } },
+    aggregations: {
+      dbHisto: { histogram: { field: 'lastPacket', interval: 60000, min_doc_count: 1 }, aggregations: { 'source.bytes': { sum: { field: 'source.bytes' } } } },
+      bytes: { sum: { field: 'source.bytes' } },
+      low: { min: { field: 'destination.port' } }
+    }
+  }));
+
+  for (const [field, values, lookup] of [
+    ['node', ['n1', 'n3', 'none'], true],
+    ['destination.port', [80, 443, 53, 22], true],
+    ['destination.port', ['80', '443'], true],
+    ['protocol', ['tcp', 'udp', 'dns', 'none'], true],
+    ['tags', ['a', 'b', 'c'], true],
+    ['http.method', ['GET', 'POST', 'none'], true],
+    ['http.statuscode', [200, 404, 500], true],
+    ['source.ip', ['10.0.0.1', 'fe80:0:0:0:0:0:0:1', '2001:db8::1', '10.0.0.9'], true],
+    ['email.ip', ['10.0.0.1', '::1'], true],
+    ['source.ip', ['10.0.0', '10.0.1.0/24'], false]
+  ]) {
+    test(`${field} ${JSON.stringify(values)}`, async () => {
+      const queries = perValue(field, values);
+      sqls = [];
+      const { body: { responses } } = await ch.msearchSessions('t_sessions3-*', queries.map(query => JSON.stringify(query)));
+      assert.equal(sqls.length, 2);
+      assert.equal(sqls.every(sql => sql.includes('indexOf(')), lookup);
+      const own = await Promise.all(queries.map(query => ch.searchSessions('t_sessions3-*', query)));
+      assert.ok(own.some(response => response.hits.total > 0));
+      assert.deepEqual(responses, own.map(response => ({ hits: response.hits, aggregations: response.aggregations })));
+    });
+  }
 });
