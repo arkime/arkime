@@ -15,6 +15,7 @@ the slider is let go and text on Enter, so each reloads the dashboard once.
   <WidgetCard
     :png="false"
     :title="title"
+    :widget-id="widget.id"
     :loading="loading && !hasBounds && !error && !taken"
     :error="taken || error"
     :has-data="kind !== 'range' || hasBounds"

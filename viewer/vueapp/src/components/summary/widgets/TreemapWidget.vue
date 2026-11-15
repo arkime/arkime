@@ -10,6 +10,7 @@ card; instance-safe (no shared DOM ids). Hover shows the shared chart popover.
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

@@ -9,6 +9,7 @@ a time series (a "timeline applied to a field"). Self-fetches /api/spigraph
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

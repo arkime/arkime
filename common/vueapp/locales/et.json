@@ -2867,5 +2867,19 @@
     "notComparable": "mõlemad varjatud, ei saa võrrelda",
     "appliesInfo": "Ilma sektsioonita kirjutatud seadet otsitakse järjekorras {sections}.",
     "noResults": "Ükski seade ei vasta filtrile"
+  },
+  "queryTimes": {
+    "count": "{count} päring | {count} päringut",
+    "longest": "Pikim",
+    "sum": "Summa",
+    "elapsed": "Kulunud",
+    "query": "Päring",
+    "server": "Server",
+    "client": "Klient",
+    "pending": "töötab",
+    "error": "ebaõnnestus",
+    "cancelled": "tühistatud",
+    "tip": "Pikim päring {longest}, kulunud {elapsed}, seisuga {time}. Klõpsake kõigi päringute nägemiseks.",
+    "took": "Kestis {ms}ms"
   }
 }

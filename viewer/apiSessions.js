@@ -4131,13 +4131,14 @@ class SessionAPIs {
       // parallelize without cloning the query per iteration.
       for (const spec of widgetSpecs) {
         if (clientDisconnected || res.destroyed) { break; }
+        const specStart = Date.now();
         try {
           if (spec.unknown) {
-            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}` }, false);
+            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart }, false);
             continue;
           }
           if (spec.unsupported) {
-            await send({ id: spec.id, field: spec.field, error: spec.unsupported }, false);
+            await send({ id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart }, false);
             continue;
           }
 
@@ -4255,10 +4256,11 @@ class SessionAPIs {
           }
           field.data = data;
           if (spec.other) { field.other = otherBucket(phase2.aggregations, spec); }
+          field.took = Date.now() - specStart;
           await send(field, false);
         } catch (fieldErr) {
           // Send error for this specific widget, continue with others
-          await send({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr) }, false);
+          await send({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart }, false);
         }
       }
       if (!res.destroyed) {

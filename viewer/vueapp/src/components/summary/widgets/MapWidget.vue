@@ -10,6 +10,7 @@ Clicking a country adds a `<field> == <code>` term to the search.
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

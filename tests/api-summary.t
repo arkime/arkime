@@ -1,4 +1,4 @@
-use Test::More tests => 203;
+use Test::More tests => 204;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -21,6 +21,16 @@ sub getField {
     return undef;
 }
 
+# took is a timing, it differs on every request; every widget chunk has one
+my $tookOk = 1;
+sub noTook {
+    my ($json) = @_;
+    foreach my $chunk (@{$json}) {
+        $tookOk = 0 if $chunk->{id} && !(defined $chunk->{took} && $chunk->{took} =~ /^\d+$/);
+        delete $chunk->{took};
+    }
+}
+
 # Helper function to test both single and multi viewer responses
 sub getSummary {
     my ($url, $fields) = @_;
@@ -32,6 +42,8 @@ sub getSummary {
     my $json = viewerPost($url, $postData);
     my $mjson = multiPost($url, $postData);
 
+    noTook($json);
+    noTook($mjson);
     eq_or_diff($mjson, $json, "single doesn't match multi for $url", { context => 3 });
 
     # Normalize into single JSON
@@ -220,6 +232,8 @@ sub postSummary {
     my $postData = to_json($body);
     my $json = viewerPost($url, $postData);
     my $mjson = multiPost($url, $postData);
+    noTook($json);
+    noTook($mjson);
     eq_or_diff($mjson, $json, "single doesn't match multi for $url widgets body", { context => 3 });
     return $json;
 }
@@ -624,3 +638,6 @@ my $goodChunk = getChunk($chunks, 'wGood');
 ok(defined $badChunk && exists $badChunk->{error}, "unknown widget field returns a per-widget error chunk");
 like($badChunk->{error}, qr/Unknown field/, "unknown field error names the problem");
 ok(defined $goodChunk && @{$goodChunk->{data}} > 0, "widgets after an unknown-field widget still return data");
+
+# the summary widget chunks checked above all had a took
+ok($tookOk, "every widget chunk has a took");

@@ -12,6 +12,7 @@ into elements and text nodes only, never as HTML.
   <WidgetCard
     :png="false"
     :title="title"
+    :widget-id="widget.id"
     :has-data="true"
     :info-items="infoItems"
     :link="link"

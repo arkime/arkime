@@ -84,6 +84,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4456 Fix the widget and graph settings editor resetting a connections sample size to 100 when opened
   - #4457 Add a New dashboard option to the dashboards menu: name it and pick its folder, then add widgets and save
   - #4459 Custom views are now rendered from data and WISE views are checked before use, so a view definition can't run code in the viewer
+  - #4461 The footer time now shows the longest query of the last search or auto refresh instead of whichever request finished last, click it to see every query and its time, dashboard widgets show their own time in their menu
 ## WISE
   - #4459 The built in source views use field names for labels, OpenDNS Security Cat/Content Cat are now Security/Content and VirusTotal Links is now Link
 

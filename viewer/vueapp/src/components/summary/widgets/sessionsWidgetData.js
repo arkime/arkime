@@ -11,7 +11,7 @@ import { fetchWrapper } from '@common/fetchWrapper.js';
 import { timezoneDateString, protocol, extractIPv6String } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 import { lengthOptions, defaultLength } from './viewModes';
-import { buildWidgetParams, widgetFields } from './widgetData';
+import { buildWidgetParams, widgetFields, queryInfo } from './widgetData';
 
 // session start time: the widget's sort when it has none (the Sessions page's too)
 export const DEFAULT_SORT_DB_FIELD = 'firstPacket';
@@ -141,6 +141,6 @@ export async function fetchSessions (route, store, widget, { signal } = {}) {
   const columns = sessionsColumns(widgetFields(widget));
   if (!columns.length) { throw { i18n: 'sessions.summary.widget.fieldRequired' }; }
   const data = buildWidgetParams(route, store, widget, sessionsRequestParams(columns, widget));
-  const res = await fetchWrapper({ url: 'api/sessions', method: 'POST', data, signal });
+  const res = await fetchWrapper({ url: 'api/sessions', method: 'POST', data, signal, ...queryInfo(widget) });
   return { rows: Array.isArray(res?.data) ? res.data : [], total: res?.recordsFiltered || 0 };
 }

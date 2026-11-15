@@ -2867,5 +2867,19 @@
     "notComparable": "beide zensiert, nicht vergleichbar",
     "appliesInfo": "Eine Einstellung ohne Abschnitt wird in {sections} gesucht, in dieser Reihenfolge.",
     "noResults": "Keine Einstellungen entsprechen dem Filter"
+  },
+  "queryTimes": {
+    "count": "{count} Abfrage | {count} Abfragen",
+    "longest": "Längste",
+    "sum": "Summe",
+    "elapsed": "Verstrichen",
+    "query": "Abfrage",
+    "server": "Server",
+    "client": "Client",
+    "pending": "läuft",
+    "error": "fehlgeschlagen",
+    "cancelled": "abgebrochen",
+    "tip": "Längste Abfrage {longest}, {elapsed} verstrichen, Stand {time}. Klicken, um alle Abfragen anzuzeigen.",
+    "took": "Dauer: {ms}ms"
   }
 }

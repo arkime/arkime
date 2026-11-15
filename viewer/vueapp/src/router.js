@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 import { createRouter, createWebHistory } from 'vue-router';
 
 import store from '@/store';
+import { newQueryBatch } from '@common/queryTimes.js';
 import UserService from '@/components/users/UserService';
 import { createRequireRole } from '@common/routeGuards.js';
 import Stats from '@/components/stats/Stats.vue';
@@ -208,6 +209,10 @@ const router = createRouter({
       component: Arkime404
     }
   ]
+});
+
+router.afterEach((to, from) => {
+  if (to.path !== from.path) { newQueryBatch(); }
 });
 
 router.beforeEach((to, from) => {

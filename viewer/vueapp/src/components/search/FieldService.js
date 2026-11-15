@@ -78,7 +78,7 @@ export default {
    * to allow the request to be cancelled
    */
   getValues (params) {
-    return cancelFetchWrapper({ url: 'api/unique', params });
+    return cancelFetchWrapper({ url: 'api/unique', params, background: true });
   },
 
   /**

@@ -2867,5 +2867,19 @@
     "notComparable": "両方とも秘匿されており比較できません",
     "appliesInfo": "セクションを指定しない設定は {sections} の順に参照されます。",
     "noResults": "フィルターに一致する設定はありません"
+  },
+  "queryTimes": {
+    "count": "{count} 件のクエリ",
+    "longest": "最長",
+    "sum": "合計",
+    "elapsed": "経過時間",
+    "query": "クエリ",
+    "server": "サーバー",
+    "client": "クライアント",
+    "pending": "実行中",
+    "error": "失敗",
+    "cancelled": "キャンセル済み",
+    "tip": "最長クエリ {longest}、経過時間 {elapsed}、{time} 時点。クリックしてすべてのクエリを表示します。",
+    "took": "所要時間 {ms}ms"
   }
 }

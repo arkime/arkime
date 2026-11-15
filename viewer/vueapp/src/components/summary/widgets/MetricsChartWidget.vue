@@ -12,6 +12,7 @@ aggregated per value and the first one ranking the Top/Bottom N.
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

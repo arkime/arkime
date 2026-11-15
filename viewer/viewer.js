@@ -2625,7 +2625,7 @@ app.use(cspHeader, setCookie, (req, res) => {
     .replace(/_userName_/g, req.user ? req.user.userName : '-');
 
   const footerConfig = Config.get('footerTemplate', '_version_ | <a href="https://arkime.com">arkime.com</a> | _responseTime_')
-    .replace(/_version_/g, `Arkime v${version.version}`).replace(/_responseTime_/g, '{{ commaString(responseTime) }}ms');
+    .replace(/_version_/g, `Arkime v${version.version}`).replace(/_responseTime_/g, '<query-times></query-times>');
 
   const limit = req.user.hasRole('arkimeAdmin') ? Config.getInt('huntAdminLimit', 10000000) : Config.getInt('huntLimit', 1000000);
 

@@ -15,6 +15,7 @@ the host.
 <template>
   <WidgetCard
     :title="displayTitle"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

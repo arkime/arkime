@@ -2868,5 +2868,19 @@
     "notComparable": "othbay edactedray, annotcay omparecay",
     "appliesInfo": "Away ettingsay ittenwray ithoutway away ectionsay isway ookedlay upway inway {sections}, inway atthay orderway.",
     "noResults": "Onay ettingssay atchmay ethay ilterfay"
+  },
+  "queryTimes": {
+    "count": "{count} ueryqay | {count} ueriesqay",
+    "longest": "Ongestlay",
+    "sum": "Umsay",
+    "elapsed": "Elapsedway",
+    "query": "Ueryqay",
+    "server": "Erversay",
+    "client": "Ientclay",
+    "pending": "unningray",
+    "error": "ailedfay",
+    "cancelled": "ancelledcay",
+    "tip": "Ongestlay ueryqay {longest}, {elapsed} elapsedway, asway ofway {time}. Ickclay otay eesay everyway ueryqay.",
+    "took": "Ooktay {ms}ms"
   }
 }

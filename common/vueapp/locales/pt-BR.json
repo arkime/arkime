@@ -2867,5 +2867,19 @@
     "notComparable": "ambos ocultados, não é possível comparar",
     "appliesInfo": "Uma configuração escrita sem seção é procurada em {sections}, nessa ordem.",
     "noResults": "Nenhuma configuração corresponde ao filtro"
+  },
+  "queryTimes": {
+    "count": "{count} consulta | {count} consultas",
+    "longest": "Mais longa",
+    "sum": "Soma",
+    "elapsed": "Decorrido",
+    "query": "Consulta",
+    "server": "Servidor",
+    "client": "Cliente",
+    "pending": "em execução",
+    "error": "falhou",
+    "cancelled": "cancelada",
+    "tip": "Consulta mais longa {longest}, {elapsed} decorrido, às {time}. Clique para ver todas as consultas.",
+    "took": "Levou {ms}ms"
   }
 }

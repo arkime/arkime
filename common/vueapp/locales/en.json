@@ -2867,5 +2867,19 @@
     "notComparable": "both redacted, cannot compare",
     "appliesInfo": "A setting written without a section is looked up in {sections}, in that order.",
     "noResults": "No settings match the filter"
+  },
+  "queryTimes": {
+    "count": "{count} query | {count} queries",
+    "longest": "Longest",
+    "sum": "Sum",
+    "elapsed": "Elapsed",
+    "query": "Query",
+    "server": "Server",
+    "client": "Client",
+    "pending": "running",
+    "error": "failed",
+    "cancelled": "cancelled",
+    "tip": "Longest query {longest}, {elapsed} elapsed, as of {time}. Click to see every query.",
+    "took": "Took {ms}ms"
   }
 }

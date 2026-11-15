@@ -10,6 +10,7 @@ search AND the widget's local filter) and folds it client side.
 <template>
   <WidgetCard
     :title="displayTitle"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

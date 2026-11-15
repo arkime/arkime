@@ -5,6 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widgetId"
     :loading="loading"
     :error="error"
     :has-data="cardHasData"
@@ -201,7 +202,9 @@ const props = defineProps({
     default: () => []
   },
   link: { type: Object, default: null },
-  graphDef: { type: Object, default: null }
+  graphDef: { type: Object, default: null },
+  // the dashboard widget's id, for how long its query took
+  widgetId: { type: [String, Number], default: undefined }
 });
 
 defineEmits(['export', 'show-tooltip', 'hide-tooltip', 'remove-field', 'retry-field', 'edit']);

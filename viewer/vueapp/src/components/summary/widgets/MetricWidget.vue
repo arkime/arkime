@@ -10,6 +10,7 @@ top-N value when a split field is chosen. Self-fetches /api/sessions/summary
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

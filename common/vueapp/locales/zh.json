@@ -2867,5 +2867,19 @@
     "notComparable": "双方均已脱敏，无法比较",
     "appliesInfo": "未指定节的设置会按 {sections} 的顺序查找。",
     "noResults": "没有配置项匹配过滤条件"
+  },
+  "queryTimes": {
+    "count": "{count} 个查询",
+    "longest": "最长",
+    "sum": "总和",
+    "elapsed": "已用时间",
+    "query": "查询",
+    "server": "服务器",
+    "client": "客户端",
+    "pending": "运行中",
+    "error": "失败",
+    "cancelled": "已取消",
+    "tip": "最长查询 {longest}，已用时间 {elapsed}，截至 {time}。点击查看所有查询。",
+    "took": "耗时 {ms}ms"
   }
 }
