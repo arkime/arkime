@@ -3,6 +3,7 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
 import { createApp } from 'vue';
+import { enableQueryTimes } from '@common/queryTimes.js';
 import { createVuetify } from 'vuetify/lib/framework.mjs';
 import { aliases as mdiAliases, mdi as mdiSet } from 'vuetify/iconsets/mdi';
 
@@ -37,6 +38,9 @@ import './overrides.css';
 // Themes now live in common/vueapp/themes/manifest.js -- 10 Vuetify-native
 // themes (8 ports + 2 new v7) registered via buildVuetifyThemes() below.
 // The legacy per-theme CSS files in src/themes/*.css are gone.
+
+// the footer shows the query times
+enableQueryTimes();
 
 /**
  * Initialize the application with dynamically loaded locales

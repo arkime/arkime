@@ -10,11 +10,37 @@ const SETTLE_MS = 500; // idle time after which the next request starts a new ba
 const MAX_BATCHES = 6;
 
 export const queryTimes = reactive({
-  batches: [] // newest first: { id, start, end, pending, entries: [] }
+  batches: [], // newest first: { id, start, end, pending, entries: [] }
+  owners: {} // owner → { batchId, ms }: its longest time in the newest batch it is in
 });
 
 let nextId = 1;
 let forceNew = false;
+let enabled = false;
+
+/** Turns tracking on, for the apps that show the times (the viewer). */
+export function enableQueryTimes () {
+  enabled = true;
+}
+
+// a time that counts: a cancelled request's result was thrown away
+const counts = (entry) => entry.serverMs !== undefined && entry.status !== 'cancelled';
+
+// the owner's time is the longest of its requests in the newest batch it is in
+function ownerStarted (owner, batch) {
+  const own = owner && queryTimes.owners[owner];
+  if (owner && (!own || own.batchId < batch.id)) {
+    queryTimes.owners[owner] = { batchId: batch.id, ms: undefined };
+  }
+}
+
+function ownerFinished (owner, batch, ms) {
+  if (!owner) { return; }
+  ownerStarted(owner, batch);
+  const own = queryTimes.owners[owner];
+  // a late finish in an older batch does not replace the newer one's time
+  if (own.batchId === batch.id && (own.ms === undefined || ms > own.ms)) { own.ms = ms; }
+}
 
 function currentBatch () {
   const now = Date.now();
@@ -38,9 +64,10 @@ export function newQueryBatch () {
 /**
  * Starts tracking a request.
  * @param {object} info - { url, method, label, owner } (owner: a dashboard widget id)
- * @returns {object} The handle to pass to finishQuery
+ * @returns {object} The handle to pass to finishQuery (undefined when tracking is off)
  */
 export function startQuery ({ url, method, label, owner }) {
+  if (!enabled) { return undefined; }
   const batch = currentBatch();
   const entry = {
     id: nextId++,
@@ -55,6 +82,7 @@ export function startQuery ({ url, method, label, owner }) {
   };
   batch.entries.push(entry);
   batch.pending++;
+  ownerStarted(owner, batch);
   return { batchId: batch.id, entryId: entry.id };
 }
 
@@ -85,6 +113,14 @@ export function finishQuery (handle, { serverMs, error } = {}) {
   entry.serverMs = isNaN(ms) ? undefined : ms;
   entry.clientMs = now - entry.start;
   entry.status = result;
+  if (result === 'cancelled') {
+    // what a cancelled stream already delivered was thrown away with it
+    for (const part of batch.entries) {
+      if (part.parent === entry.id) { part.status = 'cancelled'; }
+    }
+  } else if (entry.serverMs !== undefined) {
+    ownerFinished(entry.owner, batch, entry.serverMs);
+  }
 }
 
 /**
@@ -110,27 +146,32 @@ export function addQueryPart (handle, { label, owner, serverMs, status: result =
     serverMs: ms,
     clientMs: undefined
   });
+  ownerFinished(owner, batch, ms);
 }
 
-/** The batches that have something to show, newest first. */
+/** The batches that have something to show, newest first: a time, or a
+ *  request still running. A batch of only untimed failures is left out, so it
+ *  does not take the footer over from the last search. */
 export function shownBatches () {
-  return queryTimes.batches.filter(b => b.entries.length);
+  return queryTimes.batches.filter(b => b.pending > 0 || b.entries.some(counts));
 }
 
 /** The longest server time of a batch's finished requests (undefined when none). */
 export function batchLongest (batch) {
   let longest;
   for (const e of batch.entries) {
-    if (e.serverMs !== undefined && (longest === undefined || e.serverMs > longest)) { longest = e.serverMs; }
+    if (counts(e) && (longest === undefined || e.serverMs > longest)) { longest = e.serverMs; }
   }
   return longest;
 }
 
-/** The longest server time of the owner's requests in the newest batch it is in
- *  (undefined while they run, or when they failed without a time). */
+/** The sum of the server times of a batch's finished requests. */
+export function batchSum (batch) {
+  return batch.entries.reduce((total, e) => total + (counts(e) ? e.serverMs : 0), 0);
+}
+
+/** The longest server time of the owner's requests in the newest batch it was
+ *  in (undefined while they run, or when they finished without a time). */
 export function ownerTook (owner) {
-  if (!owner) { return undefined; }
-  const batch = queryTimes.batches.find(b => b.entries.some(e => e.owner === owner));
-  const times = (batch?.entries || []).filter(e => e.owner === owner && e.serverMs !== undefined).map(e => e.serverMs);
-  return times.length ? Math.max(...times) : undefined;
+  return owner ? queryTimes.owners[owner]?.ms : undefined;
 }

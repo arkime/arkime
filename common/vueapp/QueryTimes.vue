@@ -92,7 +92,7 @@ SPDX-License-Identifier: Apache-2.0
 import { computed, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { commaString } from './vueFilters.js';
-import { shownBatches, batchLongest as longest } from './queryTimes.js';
+import { shownBatches, batchLongest as longest, batchSum as sum } from './queryTimes.js';
 
 const { t } = useI18n();
 
@@ -104,7 +104,6 @@ const toggle = (id) => { opened.value = opened.value === id ? undefined : id; };
 
 const ms = (value) => value === undefined ? '-' : `${commaString(value)}ms`;
 const timeString = (time) => new Date(time).toLocaleTimeString();
-const sum = (batch) => batch.entries.reduce((total, e) => total + (e.serverMs || 0), 0);
 // the ones still running on top, then slowest first, the ones without a time last
 const sorted = (batch) => [...batch.entries].sort((a, b) =>
   (b.status === 'pending') - (a.status === 'pending') || (b.serverMs ?? -1) - (a.serverMs ?? -1));

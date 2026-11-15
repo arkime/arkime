@@ -235,6 +235,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
+import { newQueryBatch } from '@common/queryTimes.js';
 import ArkimeSearch from '../search/Search.vue';
 import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 import PageLayout from '../utils/PageLayout.vue';
@@ -585,6 +586,8 @@ export default {
     reloadSummaryView: function () {
       if (this.reloadQueued) { return; }
       this.reloadQueued = true;
+      // a reload's queries are their own batch, even while the last one still runs
+      newQueryBatch();
       this.$nextTick(() => {
         this.reloadQueued = false;
         this.$refs.summaryView?.reloadSummary?.();
