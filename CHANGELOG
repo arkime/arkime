@@ -46,6 +46,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4460 With mcpAuthMode=jwt,header a Bearer token that fails to verify is refused instead of falling back to the username header
   - #4460 superAdmins get their permissions only from their own user record, not their roles, anything unset uses the defaults: packet search on, email search and remove data off, nothing hidden
   - #4462 Parliament no longer follows redirects when polling a cluster, set each cluster's url to its final address
+  - #4464 disableParsers now defaults to empty so every parser loads, including arp, set disableParsers=arp.so for the old behavior
+  - #4464 saveUnknownPackets now defaults to all;corrupt so unknown ether, unknown ip and corrupt packets are saved as sessions, set saveUnknownPackets= for the old behavior
 ## All
   - #4460 A role assigner can no longer change the roles of a user with an admin role the assigner doesn't have
   - #4460 Add authHeaderJwtVerify=true to also verify authMode=header-jwt signatures, using authJwtJwksUrl, authJwtIssuer and authJwtAudience

@@ -1374,7 +1374,7 @@ LOCAL void arkime_config_load()
     config.enablePacketDedup     = arkime_config_boolean(NULL, "enablePacketDedup", TRUE);
 
 
-    gchar **saveUnknownPackets     = arkime_config_str_list(keyfile, "saveUnknownPackets", NULL);
+    gchar **saveUnknownPackets     = arkime_config_str_list(keyfile, "saveUnknownPackets", "all;corrupt");
     if (saveUnknownPackets) {
         for (int i = 0; saveUnknownPackets[i]; i++) {
             const char *s = saveUnknownPackets[i];
