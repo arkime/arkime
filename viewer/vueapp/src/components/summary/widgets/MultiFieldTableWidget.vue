@@ -10,6 +10,7 @@ by rank. Metric columns are the widget's metrics[] (falls back to metricType).
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

@@ -2,8 +2,8 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import store from '@/store';
 import setReqHeaders from './setReqHeaders';
+import { startQuery, finishQuery } from './queryTimes';
 
 export class ArkimeError extends Error {
   /**
@@ -30,6 +30,9 @@ export class ArkimeError extends Error {
  * @param {Object} [options.params] - The URL parameters to include with the request.
  * @param {Object} [options.data] - The JSON data to include in the body of the request (will be stringified).
  * @param {AbortSignal} [options.signal] - An AbortSignal to cancel the request.
+ * @param {boolean} [options.background] - A poll or typeahead request, left out of the footer's query times.
+ * @param {string} [options.queryLabel] - The name the footer's query times show instead of the URL.
+ * @param {string} [options.queryOwner] - The dashboard widget the request is for.
  * @returns {Promise<Object>} The response data parsed as JSON.
  * @throws {Error} If the URL is missing, the response status is not in the range 200-299, or if there is a bsq error (bsq = build session query).
  */
@@ -75,13 +78,31 @@ export async function fetchWrapper (options) {
     delete options.data;
   }
 
-  const response = await fetch(url, options); // fetch the data!
+  const { background, queryLabel, queryOwner } = options;
+  delete options.background;
+  delete options.queryLabel;
+  delete options.queryOwner;
+  const query = background ? undefined : startQuery({ url, method: options.method, label: queryLabel, owner: queryOwner });
 
-  // add the response time to the store so it can be displayed
-  if (response.headers.get('x-arkime-response-time')) {
-    store.commit('setResponseTime', response.headers.get('x-arkime-response-time'));
+  let response;
+  try {
+    response = await fetch(url, options); // fetch the data!
+    const data = await checkResponse(response, options);
+    finishQuery(query, { serverMs: response.headers.get('x-arkime-response-time') });
+    return data; // done!
+  } catch (err) {
+    finishQuery(query, { serverMs: response?.headers.get('x-arkime-response-time'), error: err });
+    throw err;
   }
+}
 
+/**
+ * Parses a response and throws on a bad status or an error in its body.
+ * @param {Response} response - The fetch response
+ * @param {Object} options - The fetch options (for the requested Content-Type)
+ * @returns {Promise<Object>} The response data
+ */
+async function checkResponse (response, options) {
   let data; // parse the response based on the content type
   const contentType = response.headers.get('Content-Type');
   if (contentType?.includes('application/json') || (options.headers['Content-Type'] === 'application/json' && !contentType)) {
@@ -123,7 +144,7 @@ export async function fetchWrapper (options) {
     throw new Error(data.error);
   }
 
-  return data; // done!
+  return data;
 }
 
 /**

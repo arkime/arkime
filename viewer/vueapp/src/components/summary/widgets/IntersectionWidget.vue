@@ -10,6 +10,7 @@ combinations (a column pair per field level, grouped by parent). Count-based.
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"

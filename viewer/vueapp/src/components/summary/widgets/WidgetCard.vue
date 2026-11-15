@@ -119,6 +119,17 @@ The widget content is provided via the default slot.
               {{ a.title }}
             </v-list-item>
           </template>
+          <template v-if="took !== undefined">
+            <v-divider />
+            <v-list-item
+              disabled
+              class="widget-took">
+              <v-icon
+                icon="mdi-timer-outline"
+                class="me-2" />
+              {{ $t('queryTimes.took', { ms: commaString(took) }) }}
+            </v-list-item>
+          </template>
         </v-list>
       </v-menu>
     </div>
@@ -175,6 +186,8 @@ import { useI18n } from 'vue-i18n';
 import { substituteTitle } from './dashboardVariables';
 import { downloadWidgetPng } from './widgetPng';
 import { themedColor } from '@common/themes/themedColor.js';
+import { commaString } from '@common/vueFilters.js';
+import { ownerTook } from '@common/queryTimes.js';
 
 // the dashboard provides this; it opens the save-graph dialog for a widget
 const saveWidgetGraph = inject('saveWidgetGraph', null);
@@ -203,10 +216,15 @@ const props = defineProps({
   // vue-router location of the widget's full page view (null: no link)
   link: { type: Object, default: null },
   // the widget as saved-graph data, when it can be saved as one (null: can't)
-  graph: { type: Object, default: null }
+  graph: { type: Object, default: null },
+  // the dashboard widget's id, for how long its last query took
+  widgetId: { type: [String, Number], default: undefined }
 });
 
 const emit = defineEmits(['edit', 'remove', 'export', 'retry']);
+
+// how long the widget's last query took
+const took = computed(() => ownerTook(props.widgetId));
 
 // the full page a widget opens on: SPI Graph, or Sessions for the session-wide ones
 const openLabel = computed(() => t(props.link?.path === '/sessions' ? 'sessions.summary.openInSessions' : 'sessions.summary.openInSpigraph'));

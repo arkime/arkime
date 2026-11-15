@@ -8,6 +8,7 @@ summary stream). Combines the global search expression with the widget's local
 filter and the global time window.
 */
 import { fetchWrapper } from '@common/fetchWrapper.js';
+import { startQuery, finishQuery } from '@common/queryTimes.js';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 import { defaultLength, fieldCountLimits, slotMetrics, isPercentileAgg, PERCENTILE_VIEW_MODES, allowsSplit, allowsOther, allowsBucketInterval } from './viewModes';
@@ -312,6 +313,11 @@ export function buildWidgetParams (route, store, widget, extra = {}) {
   return params;
 }
 
+// names a widget's request in the footer's query times
+export function queryInfo (widget) {
+  return { queryOwner: widget?.id, queryLabel: widget?.title || defaultWidgetTitle(widget) };
+}
+
 /**
  * Fetch SPIGraph data for one field (top-N values, each with a per-value graph).
  * The endpoint forces facets, so the per-value time series is always returned;
@@ -326,7 +332,7 @@ export async function fetchSpigraph (route, store, widget, { signal } = {}) {
     extra.sort = metricHistoKey(widget);
   }
   const data = buildWidgetParams(route, store, widget, extra);
-  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -342,7 +348,7 @@ export async function fetchGraph (route, store, widget, { signal, timeShift } = 
     spigraphMetric(widget, extra);
   }
   const data = shiftWindow(buildWidgetParams(route, store, widget, extra), store, timeShift);
-  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -358,7 +364,7 @@ export async function fetchSplitGraph (route, store, widget, { signal } = {}) {
     extra.sort = metricHistoKey(widget);
   }
   const data = buildWidgetParams(route, store, widget, extra);
-  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -393,7 +399,7 @@ export async function fetchTimeOfDay (route, store, widget, { signal } = {}) {
     interval: 'hourOfWeek',
     timezone: requestTimezone(store.state.user?.settings?.timezone)
   };
-  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal });
+  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -440,7 +446,7 @@ export async function fetchHierarchy (route, store, widget, { signal } = {}) {
   // zero, and a mosaic's columns and cells add up to their sessions with it
   if (((widget.viewMode === 'pie' || widget.viewMode === 'waffle') && widget.other) || widget.viewMode === 'matrix' || widget.viewMode === 'mosaic') { extra.other = true; }
   const data = buildWidgetParams(route, store, widget, extra);
-  return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal });
+  return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal, ...queryInfo(widget) });
 }
 
 /** True when a circle can color its arcs by the field: /api/connections lists
@@ -501,7 +507,7 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
     // the field the circle colors its arcs by comes with the sample
     ...(widget.viewMode === 'circle' ? { fields: circleColorDbField(widget.colorField) } : {})
   });
-  return await fetchWrapper({ url: 'api/connections', method: 'POST', data, signal });
+  return await fetchWrapper({ url: 'api/connections', method: 'POST', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -530,7 +536,7 @@ export async function fetchSummaryFields (route, store, widget, { signal, exclud
       ...(localExp ? { expression: localExp } : {})
     }))
   };
-  const res = await postSummary(route, store, body, signal, excludeVariable);
+  const res = await postSummary(route, store, body, signal, excludeVariable, undefined, widget);
   const chunks = Array.isArray(res) ? res : [];
   return fields.map((exp, i) => {
     const chunk = chunks.find(c => c && c.id === `f${i}`);
@@ -572,7 +578,7 @@ export function summaryRequestWidget (w, store) {
  */
 export async function fetchSummaryWidget (route, store, widget, { signal } = {}) {
   const body = { facets: 1, noStats: true, widgets: [{ ...summaryRequestWidget(widget, store), id: 'w' }] };
-  const res = await postSummary(route, store, body, signal);
+  const res = await postSummary(route, store, body, signal, undefined, undefined, widget);
   const chunk = (Array.isArray(res) ? res : []).find(c => c && c.id === 'w');
   if (chunk?.error) { throw new Error(chunk.error); }
   return { data: chunk?.data || [], other: chunk?.other || null };
@@ -635,7 +641,7 @@ export async function fetchControlRange (route, store, widget, excludeVariable, 
   }
   const localExp = widgetLocalExpression(widget, store.state.views, withoutPicks(store.state.dashboardVariables, excludeVariable));
   const bound = (id, agg) => ({ id, field: '', total: true, metricType: widget.field, metricAgg: agg, ...(localExp ? { expression: localExp } : {}) });
-  const res = await postSummary(route, store, { facets: 1, noStats: true, widgets: [bound('lo', 'min'), bound('hi', 'max')] }, signal, excludeVariable);
+  const res = await postSummary(route, store, { facets: 1, noStats: true, widgets: [bound('lo', 'min'), bound('hi', 'max')] }, signal, excludeVariable, undefined, widget);
   const chunks = Array.isArray(res) ? res : [];
   const value = (id) => {
     const chunk = chunks.find(c => c && c.id === id);
@@ -648,7 +654,7 @@ export async function fetchControlRange (route, store, widget, excludeVariable, 
 
 /** POST a widgets body to /api/sessions/summary with the page's search, time
  *  window and route params folded in. Returns the chunk array. */
-async function postSummary (route, store, body, signal, excludeVariable, timeShift) {
+async function postSummary (route, store, body, signal, excludeVariable, timeShift, widget) {
   const pageExp = pageExpression(route, store, excludeVariable); // global search + dashboard filter + controls
   if (pageExp) { body.expression = pageExp; }
   body.dashboardPage = dashboardPageQuery(route);
@@ -663,7 +669,24 @@ async function postSummary (route, store, body, signal, excludeVariable, timeShi
     body.stopTime = store.state.time.stopTime;
   }
   shiftWindow(body, store, timeShift);
-  return await fetchWrapper({ url: 'api/sessions/summary', method: 'POST', data: body, signal });
+
+  // the response streams, so its time header only covers the first chunk: time
+  // the request by its chunks' own times instead (these bodies skip the stats)
+  const { queryLabel, queryOwner } = widget ? queryInfo(widget) : {};
+  const query = startQuery({ url: 'api/sessions/summary', method: 'POST', label: queryLabel, owner: queryOwner });
+  try {
+    const res = await fetchWrapper({ url: 'api/sessions/summary', method: 'POST', data: body, signal, background: true });
+    const chunks = Array.isArray(res) ? res : [];
+    const timed = chunks.filter(c => Number.isFinite(c?.took));
+    finishQuery(query, {
+      serverMs: timed.length ? timed.reduce((total, c) => total + c.took, 0) : undefined,
+      error: chunks.some(c => c?.error || c?.bsqErr)
+    });
+    return res;
+  } catch (err) {
+    finishQuery(query, { error: err });
+    throw err;
+  }
 }
 
 /**
@@ -690,7 +713,7 @@ export async function fetchMetric (route, store, widget, { signal, timeShift } =
       ...(localExp ? { expression: localExp } : {})
     }]
   };
-  const res = await postSummary(route, store, body, signal, undefined, timeShift);
+  const res = await postSummary(route, store, body, signal, undefined, timeShift, widget);
   const chunk = (Array.isArray(res) ? res : []).find(c => c && c.id === 'm');
   if (chunk?.error) { throw new Error(chunk.error); }
   return chunk?.data || [];

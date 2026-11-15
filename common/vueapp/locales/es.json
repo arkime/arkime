@@ -2867,5 +2867,19 @@
     "notComparable": "ambos ocultados, no se pueden comparar",
     "appliesInfo": "Una opción escrita sin sección se busca en {sections}, en ese orden.",
     "noResults": "Ninguna opción coincide con el filtro"
+  },
+  "queryTimes": {
+    "count": "{count} consulta | {count} consultas",
+    "longest": "Más larga",
+    "sum": "Suma",
+    "elapsed": "Transcurrido",
+    "query": "Consulta",
+    "server": "Servidor",
+    "client": "Cliente",
+    "pending": "en curso",
+    "error": "fallida",
+    "cancelled": "cancelada",
+    "tip": "Consulta más larga {longest}, {elapsed} transcurrido, a las {time}. Haga clic para ver todas las consultas.",
+    "took": "Tardó {ms}ms"
   }
 }

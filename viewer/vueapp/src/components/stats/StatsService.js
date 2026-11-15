@@ -19,7 +19,7 @@ export default {
    */
   async getESHealth () {
     try {
-      const response = await fetchWrapper({ url: 'api/eshealth' });
+      const response = await fetchWrapper({ url: 'api/eshealth', background: true });
       store.commit('setESHealthError', undefined);
       store.commit('setESHealth', response);
       return response;

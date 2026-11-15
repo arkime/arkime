@@ -13,6 +13,7 @@ inline before its dashboards.
   <WidgetCard
     :png="false"
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :has-data="true"
     :info-items="infoItems"

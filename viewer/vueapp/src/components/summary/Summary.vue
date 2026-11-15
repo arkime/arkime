@@ -147,6 +147,7 @@ SPDX-License-Identifier: Apache-2.0
           <SummaryWidget
             v-else-if="isStreamMode(w.viewMode) && !isSplitWaffle(w)"
             :title="w.title || defaultWidgetTitle(w)"
+            :widget-id="w.id"
             :data="w.data"
             :loading="w.loading"
             :error="w.error"
@@ -365,6 +366,7 @@ import { useI18n } from 'vue-i18n';
 import Sortable from 'sortablejs';
 // internal dependencies
 import setReqHeaders from '@common/setReqHeaders';
+import { startQuery, finishQuery, addQueryPart } from '@common/queryTimes.js';
 import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import MatrixWidget from './widgets/MatrixWidget.vue';
@@ -836,6 +838,17 @@ const mergeFieldChunk = (chunk) => {
   };
 };
 
+// a streamed widget chunk's query time, for the footer and the widget's card
+const trackChunk = (query, chunk) => {
+  const def = props.widgets.find(w => w.id === chunk.id);
+  addQueryPart(query, {
+    label: def?.title || defaultWidgetTitle(def),
+    owner: chunk.id,
+    serverMs: chunk.took,
+    status: chunk.error ? 'error' : 'ok'
+  });
+};
+
 // the widgets still loading from one fetch show its failure, with a retry
 const markErrored = (widgetDefs, message) => {
   if (!summary.value?.fields) { return; }
@@ -856,6 +869,9 @@ const fetchWidgets = async (widgetDefs) => {
   const body = buildRequestBody(widgetDefs, cancelId, true);
 
   const controller = new AbortController();
+  const query = startQuery({ url: 'api/sessions/summary', method: 'POST' });
+  let serverMs;
+  let searchFailed = false;
 
   try {
     const fetchResponse = await fetch('api/sessions/summary', {
@@ -865,6 +881,7 @@ const fetchWidgets = async (widgetDefs) => {
       signal: controller.signal
     });
 
+    serverMs = fetchResponse.headers.get('x-arkime-response-time');
     if (!fetchResponse.ok) {
       throw new Error(fetchResponse.statusText);
     }
@@ -890,14 +907,20 @@ const fetchWidgets = async (widgetDefs) => {
         if (chunk?.bsqErr) {
           // the search itself failed (a time limit, a bad expression): the
           // stream has no widget chunks, so say so on each widget asked for
+          searchFailed = true;
           markErrored(widgetDefs, String(chunk.bsqErr));
         } else if (chunk && chunk.id) {
           // Only process widget chunks — ignore the stats chunk
           mergeFieldChunk(chunk);
+          trackChunk(query, chunk);
         }
       }
     }
+    // without stats, the time to the first chunk is the first widget's time,
+    // which its part already has, so only a failed search keeps the request's time
+    finishQuery(query, searchFailed ? { serverMs, error: true } : {});
   } catch (err) {
+    finishQuery(query, { serverMs, error: err });
     if (err.name === 'AbortError') return;
     markErrored(widgetDefs, err.message || String(err));
   }
@@ -957,6 +980,9 @@ const generateSummary = async () => {
   error.value = '';
   summary.value = null; // Reset for progressive display
 
+  const query = startQuery({ url: 'api/sessions/summary', method: 'POST' });
+  let serverMs;
+
   try {
     // Create unique cancel id to make cancel req for corresponding es task
     const cancelId = Utils.createRandomString();
@@ -978,14 +1004,10 @@ const generateSummary = async () => {
       signal: controller.signal
     });
 
+    // the time to the first chunk: the stats, the widgets' times are its parts
+    serverMs = fetchResponse.headers.get('x-arkime-response-time');
     if (!fetchResponse.ok) {
       throw new Error(fetchResponse.statusText);
-    }
-
-    // Extract and commit response time to store (matches fetchWrapper pattern)
-    const responseTime = fetchResponse.headers.get('x-arkime-response-time');
-    if (responseTime) {
-      store.commit('setResponseTime', responseTime);
     }
 
     // Stream the response using newline-delimited JSON
@@ -1011,6 +1033,7 @@ const generateSummary = async () => {
       } else if (chunk.id) {
         // Widget chunks have an id - find and update the placeholder
         mergeFieldChunk(chunk);
+        trackChunk(query, chunk);
       }
       // Empty object {} signals stream end (ignore)
     };
@@ -1043,7 +1066,9 @@ const generateSummary = async () => {
 
     pendingPromise = null;
     streaming.value = false;
+    finishQuery(query, { serverMs });
   } catch (err) {
+    finishQuery(query, { serverMs, error: err });
     if (err.name === 'AbortError') {
       // Request was cancelled, don't show as error
       streaming.value = false;

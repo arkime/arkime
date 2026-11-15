@@ -2867,5 +2867,19 @@
     "notComparable": "les deux sont masqués, comparaison impossible",
     "appliesInfo": "Un paramètre écrit sans section est recherché dans {sections}, dans cet ordre.",
     "noResults": "Aucun paramètre ne correspond au filtre"
+  },
+  "queryTimes": {
+    "count": "{count} requête | {count} requêtes",
+    "longest": "La plus longue",
+    "sum": "Somme",
+    "elapsed": "Écoulé",
+    "query": "Requête",
+    "server": "Serveur",
+    "client": "Client",
+    "pending": "en cours",
+    "error": "échec",
+    "cancelled": "annulée",
+    "tip": "Requête la plus longue {longest}, {elapsed} écoulé, à {time}. Cliquez pour voir toutes les requêtes.",
+    "took": "Durée : {ms}ms"
   }
 }

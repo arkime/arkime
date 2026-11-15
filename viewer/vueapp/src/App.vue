@@ -44,7 +44,9 @@ SPDX-License-Identifier: Apache-2.0
         <code>'?'</code> - shows you this dialog, but I guess you already knew that
       </template>
     </keyboard-shortcuts>
-    <arkime-footer :store="$store" />
+    <arkime-footer
+      :store="$store"
+      :template-components="footerComponents" />
     <arkime-help-notes v-if="user" />
   </div>
   <div v-else>
@@ -58,6 +60,7 @@ import ArkimeToast from './components/utils/Toast.vue';
 import ArkimeNavbar from './components/utils/Navbar.vue';
 import AppBanner from '@common/AppBanner.vue';
 import ArkimeFooter from '@common/Footer.vue';
+import QueryTimes from '@common/QueryTimes.vue';
 import ArkimeHelpNotes from './components/utils/HelpNotes.vue';
 import ArkimeUpgradeBrowser from './components/utils/UpgradeBrowser.vue';
 import KeyboardShortcuts from '@common/KeyboardShortcuts.vue';
@@ -87,6 +90,10 @@ export default {
     };
   },
   computed: {
+    // what the footer template's _responseTime_ (<query-times>) renders with
+    footerComponents () {
+      return { QueryTimes };
+    },
     shiftKeyHold: {
       get: function () {
         return this.$store.state.shiftKeyHold;

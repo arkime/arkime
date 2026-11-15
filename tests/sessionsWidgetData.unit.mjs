@@ -23,6 +23,7 @@ const STUBS = {
   '/utils/utils': stub(`
     let n = 0;
     export default { createRandomString: () => 'rand' + (++n) };`),
+  '@common/queryTimes.js': stub('export const startQuery = () => undefined; export const finishQuery = () => {};'),
   '@common/fetchWrapper.js': stub(`
     export const fetchWrapper = async (opts) => { globalThis.lastFetch = opts; return globalThis.fetchResult; };`),
   '@common/vueFilters.js': stub(`

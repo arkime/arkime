@@ -13,6 +13,7 @@ back to the configured one); the hover popover shows a branch's session count.
 <template>
   <WidgetCard
     :title="title"
+    :widget-id="widget.id"
     :loading="loading"
     :error="error"
     :has-data="hasData"
