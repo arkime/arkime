@@ -631,8 +631,8 @@ class User {
     }
 
     const query = {
-      from: parseInt(req.body.start) || 0,
-      size: parseInt(req.body.length) || 10000
+      from: ArkimeUtil.parseInteger(req.body.start, 0) ?? 0,
+      size: ArkimeUtil.parseInteger(req.body.length, 0) || 10000
     };
 
     if (ArkimeUtil.isString(req.body.filter)) {
@@ -909,8 +909,8 @@ class User {
     // Validate timeLimit same as update path
     let timeLimit;
     if (req.body.timeLimit !== undefined && req.body.timeLimit !== null && req.body.timeLimit !== '') {
-      timeLimit = parseInt(req.body.timeLimit, 10);
-      if (!Number.isFinite(timeLimit) || timeLimit < 0) {
+      timeLimit = ArkimeUtil.parseInteger(req.body.timeLimit, 0);
+      if (timeLimit === undefined) {
         return res.serverError(422, 'timeLimit must be a non-negative integer');
       }
     }
@@ -1116,8 +1116,8 @@ class User {
 
       fields.timeLimit = User.UNSET_FIELD;
       if (req.body.timeLimit !== undefined && req.body.timeLimit !== null && req.body.timeLimit !== '') {
-        const tl = parseInt(req.body.timeLimit, 10);
-        if (!Number.isFinite(tl) || tl < 0) {
+        const tl = ArkimeUtil.parseInteger(req.body.timeLimit, 0);
+        if (tl === undefined) {
           return res.serverError(422, 'timeLimit must be a non-negative integer');
         }
         fields.timeLimit = tl;
@@ -1166,6 +1166,11 @@ class User {
 
     if (userId === '_moloch_shared') {
       return res.serverError(403, "_moloch_shared is a shared user. This user's settings cannot be updated");
+    }
+
+    // A role's roles reach every user holding it, which the admin role check below can't see
+    if (userId.startsWith('role:') && !req.user.hasRole('usersAdmin')) {
+      return res.serverError(403, 'Only a usersAdmin can change the roles of a role');
     }
 
     User.getUser(userId, async (err, user) => {
@@ -1255,14 +1260,16 @@ class User {
 
     // Otherwise a stolen admin session could lock the real admin out for good
     const isSelf = req.settingUser.userId === req.user.userId;
-    const storeHa1 = Auth.store2ha1(req.user.passStore, req.user.userId);
-    const reqHa1 = Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword), req.token.userId);
-    if ((isSelf || !req.user.hasRole('usersAdmin')) && (
-      !ArkimeUtil.isString(req.body.currentPassword) ||
-      storeHa1.length !== reqHa1.length ||
-      !cryptoLib.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(reqHa1)) ||
-      req.token.userId !== req.user.userId)) {
-      return res.serverError(403, 'Password mismatch');
+    if (isSelf || !req.user.hasRole('usersAdmin')) {
+      // checked before hashing, pass2store would convert a non string
+      if (!ArkimeUtil.isString(req.body.currentPassword) || req.token.userId !== req.user.userId) {
+        return res.serverError(403, 'Password mismatch');
+      }
+      const storeHa1 = Auth.store2ha1(req.user.passStore, req.user.userId);
+      const reqHa1 = Auth.store2ha1(Auth.pass2store(req.token.userId, req.body.currentPassword), req.token.userId);
+      if (storeHa1.length !== reqHa1.length || !cryptoLib.timingSafeEqual(Buffer.from(storeHa1), Buffer.from(reqHa1))) {
+        return res.serverError(403, 'Password mismatch');
+      }
     }
 
     // Only change the password if we have the same admin role(s)
@@ -1858,8 +1865,8 @@ class User {
   static async checkAssignableRole (req, res, next) {
     const role = req.body.roleId;
 
-    if (role !== null && role !== undefined && !(await req.user.getAssignableRoles(req.user.userId)).includes(role)) {
-      console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${role}`);
+    if (role !== null && role !== undefined && (!ArkimeUtil.isString(role) || !(await req.user.getAssignableRoles(req.user.userId)).includes(role))) {
+      console.log(`Permission denied to ${req.user.userId} while requesting resource: ${req._parsedUrl.pathname}, for assignment-access to role ${ArkimeUtil.sanitizeStr(role)}`);
       return res.serverError(403, 'You do not have permission to access this resource');
     }
     next();

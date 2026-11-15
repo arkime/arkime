@@ -3,8 +3,10 @@ Copyright Andy Wick
 SPDX-License-Identifier: Apache-2.0
 
 The ClickHouse sessions backend's scroll, sessions iterator and field map, with query() answered from rows in memory
+
+Set ARKIME_TEST_CH_URL=http://localhost:8123 to also run the shortcut lookup SQL against a real ClickHouse
 */
-import { test, describe } from 'node:test';
+import { test, describe, before as beforeAll, after as afterAll } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
 import { EventEmitter } from 'node:events';
@@ -330,5 +332,57 @@ describe('ClickHouse admin tables', () => {
     assert.equal(await ch.adminTableAction(JSON.stringify(['a', 1, 'b']), 'drop'), false);
     assert.ok(!ch.requests.some(r => /DROP|OPTIMIZE/.test(r.sql)));
     ch.close();
+  });
+});
+
+describe('ClickHouse shortcut ip lookups', { skip: !process.env.ARKIME_TEST_CH_URL }, () => {
+  const url = process.env.ARKIME_TEST_CH_URL;
+  const db = `arkime_unit_lookups_${process.pid}`;
+  const q = async (sql) => {
+    const res = await fetch(url, { method: 'POST', body: sql });
+    const text = await res.text();
+    if (!res.ok) { throw new Error(text); }
+    return text.trim();
+  };
+  // Only the SQL is built here, it runs against ARKIME_TEST_CH_URL
+  const ch = new StubCH({ sessionsDbUrl: `clickhouse://127.0.0.1:1/${db}`, prefix: 't_' });
+  ch.columnForField = () => 'col';
+  // [== $id, != $id] for a session whose ip is value, != negated the way compileNode does
+  const match = (id, value) => {
+    ch.isJsonArrayField = () => Array.isArray(value);
+    const pred = ch.termsLookupPredicate('source.ip', { id, path: 'ip' });
+    const col = Array.isArray(value) ? `[${value.map(v => `'${v}'`).join(', ')}]` : `'${value}'`;
+    return q(`SELECT ${pred}, NOT ifNull((${pred}), 0) FROM (SELECT ${col} AS col) FORMAT TSV`);
+  };
+
+  beforeAll(async () => {
+    await q(`CREATE DATABASE ${db}`);
+    await q(`CREATE TABLE ${db}.t_lookups (id String, updated DateTime DEFAULT now(), ip Array(String), string Array(String), number Array(Float64)) ENGINE = ReplacingMergeTree(updated) ORDER BY (id)`);
+    await q(`INSERT INTO ${db}.t_lookups (id, ip) VALUES ('nets', ['10.1.0.0/16', '192.168.1.5', '2001:db8::/32']), ('notip', ['10.1.0.0/16', 'nonsense']), ('badbits', ['10.1.0.0/40'])`);
+  });
+  afterAll(() => q(`DROP DATABASE IF EXISTS ${db}`));
+
+  test('a CIDR matches its whole range, so != excludes it', async () => {
+    assert.equal(await match('nets', '10.1.2.3'), '1\t0');
+    assert.equal(await match('nets', '::ffff:10.1.9.9'), '1\t0');
+    assert.equal(await match('nets', '2001:db8:1::1'), '1\t0');
+    assert.equal(await match('nets', '10.2.0.1'), '0\t1');
+    assert.equal(await match('nets', '2001:db9::1'), '0\t1');
+  });
+
+  test('an exact address only matches itself', async () => {
+    assert.equal(await match('nets', '192.168.1.5'), '1\t0');
+    assert.equal(await match('nets', '192.168.1.6'), '0\t1');
+  });
+
+  test('an array field matches when any element does', async () => {
+    assert.equal(await match('nets', ['10.9.9.9', '10.1.0.7']), '1\t0');
+    assert.equal(await match('nets', ['10.9.9.9']), '0\t1');
+  });
+
+  test('a value that is not an address or CIDR, or a missing shortcut, throws', async () => {
+    await assert.rejects(match('notip', '10.1.2.3'), /shortcut ip is not an address or CIDR/);
+    await assert.rejects(match('badbits', '10.1.2.3'), /shortcut ip is not an address or CIDR/);
+    await assert.rejects(match('missing', '10.1.2.3'), /shortcut not found in lookups table/);
   });
 });

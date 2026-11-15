@@ -1284,13 +1284,13 @@ function validateDstatsDoc (req) {
 }
 
 // Partial doc update only, and it can't move the file to another node or change
-// the path or lock that viewers trust when reading and expiring the file
+// the path, location or lock that viewers trust when reading and expiring the file
 function validateFilesUpdate (req) {
   try {
     const json = parseDocBody(req);
     return Object.keys(json).length === 1 && typeof json.doc === 'object' && json.doc !== null &&
       (json.doc.node === undefined || json.doc.node === req.sensor.node) &&
-      !Object.hasOwn(json.doc, 'name') && !Object.hasOwn(json.doc, 'indexFilename') && !Object.hasOwn(json.doc, 'locked');
+      !['name', 'indexFilename', 'locked', 'scheme', 'extra'].some(key => Object.hasOwn(json.doc, key));
   } catch (e) {
     return false;
   }

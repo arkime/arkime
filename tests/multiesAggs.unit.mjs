@@ -142,6 +142,13 @@ describe('terms buckets', () => {
     assert.equal(second.m1.value, 3, 'a unique count keeps the larger cluster count');
     assert.equal(merged.agg0._nested, undefined, 'merge bookkeeping is removed');
   });
+
+  test('keys that are Object.prototype names merge like any other value', () => {
+    const plain = { agg0: { terms: { field: 'http.uri', size: 10 } } };
+    const cluster = () => ({ agg0: terms(['constructor', '__proto__', 'toString'].map(key => ({ key, doc_count: 1 }))) });
+    const merged = merge(plain, cluster(), cluster());
+    assert.deepEqual(merged.agg0.buckets.map(b => [b.key, b.doc_count]).sort(), [['__proto__', 2], ['constructor', 2], ['toString', 2]]);
+  });
 });
 
 describe('buckets with no values for the order metric', () => {

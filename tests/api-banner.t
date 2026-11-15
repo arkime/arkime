@@ -1,4 +1,4 @@
-use Test::More tests => 35;
+use Test::More tests => 36;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -56,6 +56,8 @@ my $notAdminToken = getTokenCookie('banner-notadmin');
   is($json->{text}, "Banner effects must be an array", "non-array effects caught");
   $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"x","type":"info","expires":"soon"}', $token);
   is($json->{text}, "Banner expires must be a number", "invalid expires caught");
+  $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"x","type":"info","expires":{"toString":1,"valueOf":1}}', $token);
+  is($json->{text}, "Banner expires must be a number", "object expires caught");
 
 # effects + expires saved and reflected
   $json = viewerPutToken("/api/banner", '{"enabled":true,"message":"ticker","type":"info","effects":["marquee","rainbow"],"expires":9999999999999}', $token);

@@ -2507,7 +2507,7 @@ LOCAL gboolean arkime_db_field_names_array(const char *value)
 LOCAL gboolean arkime_db_field_json_string_body(const char *value)
 {
     for (; *value; value++) {
-        if (*value == '"' || (uint8_t)*value < 0x20)
+        if (*value == '"' || (uint8_t)(*value) < 0x20)
             return FALSE;
         if (*value != '\\')
             continue;

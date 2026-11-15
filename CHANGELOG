@@ -38,55 +38,78 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 
 7.0.0-rc2 2026/12/xx
 ## Breaking
-  - #4459 Offline directory reading (-R, --monitor, add-dir) no longer follows symlinks to files or directories, use --followlinks to allow them
-  - #4459 WISE views written as pug can only use simple tags, text, if tests on session fields and +arrayList, others are skipped with a warning in the viewer log, require:/title:/fields: views always work
-  - #4459 Removed the wiseproxy WISE source, it hasn't returned results in years, point wiseURL at the WISE directly
+  - #4459 Offline directory reading (-R, --monitor, add-dir) no longer follows symlinks, use --followlinks to allow them
+  - #4459 WISE views written in pug may only use simple tags, text, if tests on session fields and +arrayList, other views are skipped with a warning in the viewer log; require:/title:/fields: views are unaffected
+  - #4459 Removed the wiseproxy WISE source, point wiseURL at WISE directly
   - #4460 authMode=header-jwt now refuses JWTs that are malformed, unsigned (alg none), expired or not yet valid
-  - #4460 mcpAllowedIps now only lists the hosts trusted to send the MCP username header, JWT requests are no longer checked against it, and when unset it defaults to userAuthIps on header authMode sites
-  - #4460 With mcpAuthMode=jwt,header a request with a Bearer token that fails to verify no longer falls back to the username header
-  - #4460 superAdmins are no longer granted or restricted by their roles, only by their own user record, anything it leaves unset uses the defaults: packet search on, email search and remove data off, nothing hidden
+  - #4460 mcpAllowedIps now only limits which hosts can send the MCP username header, JWT requests aren't checked against it, and when unset it defaults to userAuthIps with a header authMode
+  - #4460 With mcpAuthMode=jwt,header a Bearer token that fails to verify is refused instead of falling back to the username header
+  - #4460 superAdmins get their permissions only from their own user record, not their roles, anything unset uses the defaults: packet search on, email search and remove data off, nothing hidden
+  - #4462 Parliament no longer follows redirects when polling a cluster, set each cluster's url to its final address
 ## All
   - #4460 A role assigner can no longer change the roles of a user with an admin role the assigner doesn't have
-  - #4460 Add authHeaderJwtVerify=true to have authMode=header-jwt also check the JWT signature using authJwtJwksUrl, authJwtIssuer and authJwtAudience
-  - #4460 Fix two-factor authentication being replaceable without the current code, turn it off first to enroll a new authenticator
-  - #4460 requiredAuthHeaderVal and credential headers (Authorization, X-API-Key, Cookie) in WISE source headers are now hidden on the view config and WISE config pages
-  - #4460 Fix a usersAdmin being able to delete, and so recreate, a user with an admin role the usersAdmin doesn't have
-  - #4460 JSON request bodies in a charset other than UTF-8 are now refused
-  - #4460 Notifier fields can no longer contain control characters, a bad syslog tag is sent as arkime
+  - #4460 Add authHeaderJwtVerify=true to also verify authMode=header-jwt signatures, using authJwtJwksUrl, authJwtIssuer and authJwtAudience
+  - #4460 Enrolling a new two-factor authenticator now requires turning off the current one first
+  - #4460 requiredAuthHeaderVal and WISE source credential headers (Authorization, X-API-Key, Cookie) are hidden on the config pages
+  - #4460 A usersAdmin can no longer delete, and so recreate, a user with an admin role they don't have
+  - #4460 JSON request bodies in a charset other than UTF-8 are refused
+  - #4460 Notifier fields can't contain control characters, a bad syslog tag is sent as arkime
   - #4460 Fix a login request being able to stall the viewer
-  - #4460 Changing your own password now always needs the current password, including for usersAdmin and superAdmin
-  - #4460 With several authRedirectURIs, OIDC login uses the entry for the request's host instead of building one from the Host header
-  - #4460 authMode=form refuses a login posted from another web site
-  - #4460 User settings values are now checked and size limited, and db.pl upgrade stops indexing new user settings so one user can't break the users index for everyone
-  - #4460 User auto-create now refuses userIds containing / ? # % or control characters, or that are . or ..
+  - #4460 Changing your own password always requires the current one, including for usersAdmin and superAdmin
+  - #4460 With several authRedirectURIs, OIDC login uses the one for the request's host instead of building one from the Host header
+  - #4460 authMode=form refuses logins posted from another web site
+  - #4460 User settings are validated and size limited, and db.pl upgrade stops indexing new user settings so one user can't break the users index
+  - #4460 User auto-create refuses userIds containing / ? # % or control characters, or that are . or ..
   - #4460 Fix the Users page acting on the wrong user for userIds with characters like + or /
-  - #4460 S2S tokens are now signed so forged ones are rejected cheaply, set v6Compatible=false to refuse tokens from older versions once every node, including other clusters, runs this version or later
+  - #4460 Viewer to viewer (S2S) tokens are now signed, once every node, including other clusters, runs this version set v6Compatible=false to refuse older tokens
+  - #4462 Only a usersAdmin can change the roles of a role, not a role assigner
+  - #4462 User time limits and banner expiration must be plain numbers
 ## Capture
-  - #4459 Add --followlinks and add-file/add-dir --followlinks to follow symlinks when reading offline directories
-  - #4459 Fix one pcap-over-ip server connection being able to change another connection's link type
-  - #4459 Fix an unsupported link type, or one the bpf filter doesn't compile for, from a pcap-over-ip peer stopping capture, now only that connection is closed
-  - #4459 Fix the pcap-over-ip bpf filter being compiled only for the first peer's link type
+  - #4459 Add --followlinks, and --followlinks on add-file/add-dir, to follow symlinks in offline directories
+  - #4459 Fix pcap-over-ip with several peers: each connection now has its own link type and bpf filter, and a bad link type closes only that connection instead of stopping capture
   - #4459 Fix pcapng files with many sections attributing packets to the wrong file
-  - #4459 Fix the file size saved for pcapng files, and the add-file --notify byte count, counting the start of the file twice
-  - #4459 Fix a duplicate IPv4 fragment, or an overlapping one with the same bytes, causing the whole datagram to be dropped
-  - #4459 IPv6 fragments are now reassembled, they used to be dropped, set disableIp6Defrag=true to turn it off. Like hosts, datagrams with overlapping IPv6 fragments are dropped
-  - #4459 Fix a crash when _flipSrcDst ran on a corrupt TCP packet session
-  - #4459 Datagrams of up to 128 fragments are now reassembled (was 50), and fragments held are limited to 5 times maxFrags
-  - #4459 Fix crafted IP fragments being able to slow down fragment reassembly
-  - #4459 Certificates keep at most 256 of each alt name type and 16 of each subject/issuer name, tagged cert-too-many-names
-  - #4459 DNS HTTPS/SVCB answers keep at most 16 params and 16 alpn/ipv4hint/ipv6hint values, tagged dns:svcb-truncated
-  - #4459 An https://localhost entry in a server list no longer disables certificate checks for the other servers, like the viewer
-  - #4459 When exiting takes more than 30s capture logs what it is still waiting on, without needing --debug
-  - #4459 S3 and SQS requests that get no data for 60s are logged and retried, they used to wait forever
-  - #4459 TCP sessions where no SYN was seen now have their data processed, it used to be at most a single packet. They wait up to maxTcpOutOfOrderPackets/8 packets for a SYN, then start from the lowest sequence numbers seen
+  - #4459 Fix the saved pcapng file size and the add-file --notify byte count counting the file header twice
+  - #4459 Fix duplicate, or identical overlapping, IPv4 fragments dropping the whole datagram
+  - #4459 IPv6 fragments are now reassembled instead of dropped, set disableIp6Defrag=true to turn it off; like hosts, datagrams with overlapping IPv6 fragments are dropped
+  - #4459 Datagrams of up to 128 fragments are reassembled (was 50), and held fragments are limited to 5 times maxFrags
+  - #4459 Fix crafted IP fragments being able to slow down reassembly
+  - #4459 Fix a crash when _flipSrcDst is set on a session with a corrupt TCP packet
+  - #4459 Certificates keep at most 256 of each alt name type and 16 of each subject/issuer name, more are tagged cert-too-many-names
+  - #4459 DNS HTTPS/SVCB answers keep at most 16 params and 16 alpn/ipv4hint/ipv6hint values, more are tagged dns:svcb-truncated
+  - #4459 An https://localhost server no longer turns off certificate checks for the other servers in the same list
+  - #4459 When exiting takes over 30s, capture logs what it is waiting on, without --debug
+  - #4459 S3 and SQS requests that get no data for 60s are logged and retried instead of waiting forever
+  - #4459 TCP sessions with no SYN now have all their data parsed, not just one packet, starting from the lowest sequence number after waiting up to maxTcpOutOfOrderPackets/8 packets for a SYN
 ## Viewer
-  - #4456 Add a connection circle widget and SPI Graph type: hosts on a ring, each talking pair an arc across it, colored by protocol or a field you pick
-  - #4456 Fix the widget and graph settings editor resetting a connections sample size to 100 when opened
-  - #4457 Add a New dashboard option to the dashboards menu: name it and pick its folder, then add widgets and save
-  - #4459 Custom views are now rendered from data and WISE views are checked before use, so a view definition can't run code in the viewer
-  - #4461 The footer time now shows the longest query of the last search or auto refresh instead of whichever request finished last, click it to see every query and its time, dashboard widgets show their own time in their menu
+  - #4456 Add a connection circle widget and SPI Graph type, hosts on a ring with an arc between each talking pair, colored by protocol or a chosen field
+  - #4456 Fix the settings editor resetting a connections widget or graph sample size to 100 when opened
+  - #4457 Add a New dashboard option to the dashboards menu
+  - #4459 Custom and WISE session views can no longer run code in the viewer
+  - #4461 The footer shows the longest query time of the last search or refresh, click it to see each query's time; dashboard widgets show their own in their menu
+  - #4462 Fix crafted session ids from a sensor turning viewer to viewer requests into other actions, like a pcap download into a scrub of a different session
+  - #4462 Fix field definitions from a sensor being able to run scripts in OpenSearch/Elasticsearch
+  - #4462 Deleting an OpenSearch/Elasticsearch index now needs the request token like other admin actions, so a page served by the viewer such as CyberChef can't trigger it, and is recorded in history
+  - #4462 Viewing or changing another user's views, shareables, crons, shortcuts and page settings needs both usersAdmin and arkimeAdmin
+  - #4462 Fix authMode=anonymous viewers accepting sent sessions and pcap from anyone, not just other viewers
+  - #4462 A $shortcut* that matches no shortcuts is now an error; with ClickHouse, a forced expression using one showed every session
+  - #4462 Fix CIDRs in ip shortcuts never matching with ClickHouse, so a forced expression like ip.src != $blocked_nets excluded nothing
+  - #4462 The Hunts page only shows name, status and progress for hunts you don't have access to
+  - #4462 SPI Graph returns at most 10000 values per field
+  - #4462 Fix interrupted CyberChef page loads leaving files open on the viewer
+  - #4462 Fix a crafted Sessions page link changing what remove, tag and send act on
+## ESProxy
+  - #4462 A sensor can no longer change a pcap file's scheme or S3 location after creating its file record
+## Multies
+  - #4462 multiESBasicAuth is checked before the request body is read, and request bodies over 32MB are refused
+  - #4462 Fix results with values like constructor or __proto__ being dropped or failing to merge
+## Parliament
+  - #4462 Number settings are range checked, an out of range value saved earlier uses the default
+  - #4462 Cluster polls time out after esQueryTimeout even when a cluster responds slowly
+  - #4462 Fix duplicate alerts for the same issue
+  - #4462 Fix a cluster reporting many or repeated node names slowing Parliament or growing its memory
+  - #4462 Fix one bad request being able to stop Parliament
 ## WISE
-  - #4459 The built in source views use field names for labels, OpenDNS Security Cat/Content Cat are now Security/Content and VirusTotal Links is now Link
+  - #4459 Built in source views label values by field name, OpenDNS Security Cat/Content Cat are now Security/Content and VirusTotal Links is now Link
 
 7.0.0-rc1 2026/11/12
 ## Breaking

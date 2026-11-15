@@ -621,7 +621,11 @@ function formatQuery (yy, field, op, value, completed) {
   const nonShortcuts = ListToArray(value, true);
 
   const shortcutsObj = formatShortcutsQuery(yy, field, op, value);
-  if (nonShortcuts.length === 0) { return shortcutsObj; }
+  if (nonShortcuts.length === 0) {
+    // A $shortcut* matching none would otherwise drop the clause, so it matches everything
+    if (shortcutsObj === undefined) { throw value + ' - no shortcuts match'; }
+    return shortcutsObj;
+  }
 
   const normalObj = formatNormalQuery(yy, field, op, value, completed);
   if (!shortcutsObj) { return normalObj; }

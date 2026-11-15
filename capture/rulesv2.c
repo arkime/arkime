@@ -1805,8 +1805,8 @@ LOCAL ArkimeRulesV2Node_t *rv2_lower(RV2Parser_t *p, ArkimeRulesV2Node_t *node, 
         node->op = RV2_TOK_EQ;
 
         if (node->andList && node->nvalues > 1) {
-            ArkimeRulesV2Node_t *and = rv2_node_new(RV2_NODE_AND, node->start, node->end);
-            and->vtype = RV2_VT_BOOL;
+            ArkimeRulesV2Node_t *andNode = rv2_node_new(RV2_NODE_AND, node->start, node->end);
+            andNode->vtype = RV2_VT_BOOL;
             for (int v = 0; v < node->nvalues; v++) {
                 ArkimeRulesV2Node_t *match = rv2_node_new(RV2_NODE_MATCH, node->start, node->end);
                 match->op = RV2_TOK_EQ;
@@ -1816,11 +1816,11 @@ LOCAL ArkimeRulesV2Node_t *rv2_lower(RV2Parser_t *p, ArkimeRulesV2Node_t *node, 
                 match->values[0] = node->values[v];
                 match->nvalues = 1;
                 match->textNeg = ne;
-                rv2_node_add_kid(and, rv2_lower(p, match, depth));
+                rv2_node_add_kid(andNode, rv2_lower(p, match, depth));
             }
             node->nvalues = 0;
             arkime_rulesv2_free(node);
-            return ne ? rv2_wrap_not(and) : and;
+            return ne ? rv2_wrap_not(andNode) : andNode;
         }
 
         node->andList = 0;
@@ -2124,7 +2124,7 @@ LOCAL inline uint32_t rv2_str_hash(const char *str)
 {
     uint32_t h = 2166136261u;
     for (; *str; str++)
-        h = (h ^ (uint8_t)*str) * 16777619u;
+        h = (h ^ (uint8_t)(*str)) * 16777619u;
     return h;
 }
 /******************************************************************************/
@@ -2870,11 +2870,11 @@ LOCAL void rv2_merge(ArkimeRulesV2Node_t *node)
                 merged = TRUE;
             } else if (node->type == RV2_NODE_OR && rv2_is_call(a, "any") && rv2_is_call(b, "any") &&
                        a->i == b->i && RV2_KID(a, 0)->field == RV2_KID(b, 0)->field) {
-                ArkimeRulesV2Node_t *or = rv2_node_new(RV2_NODE_OR, a->start, b->end);
-                or->vtype = RV2_VT_BOOL;
-                rv2_node_add_kid(or, rv2_detach(a, 1));
-                rv2_node_add_kid(or, rv2_detach(b, 1));
-                g_ptr_array_index(a->kids, 1) = rv2_optimize(or);
+                ArkimeRulesV2Node_t *orNode = rv2_node_new(RV2_NODE_OR, a->start, b->end);
+                orNode->vtype = RV2_VT_BOOL;
+                rv2_node_add_kid(orNode, rv2_detach(a, 1));
+                rv2_node_add_kid(orNode, rv2_detach(b, 1));
+                g_ptr_array_index(a->kids, 1) = rv2_optimize(orNode);
                 a->start = MIN(a->start, b->start);
                 a->end = MAX(a->end, b->end);
                 merged = TRUE;
@@ -4826,7 +4826,7 @@ LOCAL gboolean rv2_exec_tests(RV2Ctx_t *ctx, int pc)
 }
 /******************************************************************************/
 LOCAL gboolean rv2_eval(const ArkimeRulesV2Prog_t *prog, ArkimeSession_t *session, ArkimePacket_t *packet, GString *explain,
-                         int triggerField, const void *triggerValue, int pc)
+                        int triggerField, const void *triggerValue, int pc)
 {
     RV2Ctx_t ctx;
     ctx.triggerField = triggerField;

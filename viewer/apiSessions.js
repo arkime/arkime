@@ -183,6 +183,9 @@ class PcapOutput {
 }
 
 class SessionAPIs {
+  // spigraph runs a query per value, so cap how many values one request asks for
+  static #spigraphMaxSize = 10000;
+
   static #scriptAggs = {
     'ip.dst:port': {
       script: 'if (doc["destination.ip"].value.indexOf(".") > 0) {return doc["destination.ip"].value + ":" + doc["destination.port"].value} else {return doc["destination.ip"].value + "." + doc["destination.port"].value}',
@@ -950,6 +953,11 @@ class SessionAPIs {
         });
       } else {
         // Get from remote DISK
+        const sid = Db.session2Sid(item);
+        if (!ViewerUtils.isSafeSegment(fields.node) || !ViewerUtils.isSafeSegment(sid)) {
+          console.log('ERROR - sessionsPcapList skipping session with a bad node or id');
+          return;
+        }
         try {
           // A node with a live packet portal cannot be dialed directly, so go
           // over the portal. Not cached: the portal session must be current.
@@ -962,7 +970,7 @@ class SessionAPIs {
           }
           const { viewUrl, client, ca } = result;
 
-          const sessionPath = '/api/session/' + fields.node + '/' + Db.session2Sid(item) + '.' + extension + (check ? '?check=true' : '');
+          const sessionPath = '/api/session/' + fields.node + '/' + sid + '.' + extension + (check ? '?check=true' : '');
           let options;
           if (postPcapFetch) {
             options = {
@@ -1110,6 +1118,10 @@ class SessionAPIs {
         // Get from our DISK
         await internals.sendSessionQueue.push(options);
       } else {
+        if (!ViewerUtils.isSafeSegment(fields.node) || !ViewerUtils.isSafeSegment(sid)) {
+          console.log('ERROR - sendSessionsList skipping session with a bad node or id');
+          return;
+        }
         let sendPath = `/api/session/${fields.node}/${sid}/send?saveId=${saveId}&remoteCluster=${cluster}`;
         if (ArkimeUtil.isString(req.body.tags)) {
           sendPath += `&tags=${encodeURIComponent(req.body.tags)}`;
@@ -1659,7 +1671,12 @@ class SessionAPIs {
         await SessionAPIs.#pcapScrub(req, res, Db.session2Sid(item), whatToRemove);
       } else {
         // Get from remote DISK
-        const scrubPath = `/api/session/${fields.node}/${Db.session2Sid(item)}/scrub/${whatToRemove}`;
+        const sid = Db.session2Sid(item);
+        if (!ViewerUtils.isSafeSegment(fields.node) || !ViewerUtils.isSafeSegment(sid)) {
+          console.log('ERROR - scrubList skipping session with a bad node or id');
+          return;
+        }
+        const scrubPath = `/api/session/${fields.node}/${sid}/scrub/${whatToRemove}`;
         // makeRequest is callback based, awaiting it without one throws in the
         // response handler, which is an uncaught exception, not a rejection
         await new Promise((resolve) => {
@@ -2440,7 +2457,7 @@ class SessionAPIs {
 
       delete query.sort;
       query.size = 0;
-      const size = ViewerUtils.clampInt(req.query.size, 20);
+      const size = ViewerUtils.clampInt(req.query.size, 20, SessionAPIs.#spigraphMaxSize);
 
       let field = req.query.field || 'node';
 
@@ -2654,7 +2671,7 @@ class SessionAPIs {
     const fields = [];
     const parts = req.query.exp.split(',');
     for (let i = 0; i < parts.length; i++) {
-      if (SessionAPIs.#scriptAggs[parts[i]] !== undefined) {
+      if (Object.hasOwn(SessionAPIs.#scriptAggs, parts[i])) {
         fields.push(SessionAPIs.#scriptAggs[parts[i]]);
         continue;
       }
@@ -2674,18 +2691,19 @@ class SessionAPIs {
       query.size = 0; // Don't need any real results, just aggregations
       delete query.sort;
       delete query.aggregations;
-      const size = ViewerUtils.clampInt(req.query.size, 20);
+      const size = ViewerUtils.clampInt(req.query.size, 20, SessionAPIs.#spigraphMaxSize);
       // a per-field size wins over the shared one (eg a split pie: a few pies
       // of many slices each)
       const sizes = ArkimeUtil.isString(req.query.sizes) ? req.query.sizes.split(',') : [];
-      const levelSizes = fields.map((field, i) => ViewerUtils.clampInt(sizes[i], size));
+      const levelSizes = fields.map((field, i) => ViewerUtils.clampInt(sizes[i], size, SessionAPIs.#spigraphMaxSize));
       const other = req.query.other === true || req.query.other === 'true';
       // unique: each field's own top values, not their combinations
       const unique = req.query.mode === 'unique';
 
+      // Only our own scriptAggs supply painless, never a field doc
       const termsAgg = (i) => ({
-        terms: fields[i].script
-          ? { script: { lang: 'painless', source: fields[i].script }, size: levelSizes[i] }
+        terms: Object.hasOwn(SessionAPIs.#scriptAggs, parts[i])
+          ? { script: { lang: 'painless', source: SessionAPIs.#scriptAggs[parts[i]].script }, size: levelSizes[i] }
           : { field: fields[i].dbField, size: levelSizes[i] },
         aggregations: {
           srcip: { cardinality: { field: 'source.ip' } },
@@ -2916,8 +2934,8 @@ class SessionAPIs {
         query.query.bool.filter.push({
           script: {
             script: {
-              source: `doc["${req.query.field}"].size() > 0 && doc["${req.query.field}"].value.toString().startsWith(params.prefix)`,
-              params: { prefix: req.query.autocomplete }
+              source: 'doc[params.field].size() > 0 && doc[params.field].value.toString().startsWith(params.prefix)',
+              params: { field: req.query.field, prefix: req.query.autocomplete }
             }
           }
         });
@@ -4629,6 +4647,10 @@ class SessionAPIs {
               });
             } else {
               // get file from the remote disk
+              if (!ViewerUtils.isSafeSegment(nodeName) || !ViewerUtils.isSafeSegment(sessionID)) {
+                res.status(400);
+                return res.end('Bad session');
+              }
               const preq = Object.assign({}, req);
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;

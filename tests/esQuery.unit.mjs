@@ -43,6 +43,25 @@ describe('EsQuery', () => {
     assert.throws(() => EsQuery.parse({ nested: {} }, { unsupported: (f) => new Error(`no ${f}`) }), /no nested queries/);
   });
 
+  test('an empty clause is refused like ES does, not read as match everything', () => {
+    const a = { term: { a: 1 } };
+    // a dropped clause, like a forced expression whose $shortcut* matched none
+    for (const empty of [null, true, 1, 'x', {}, []]) {
+      assert.throws(() => EsQuery.parse(empty), /Empty query clause/, JSON.stringify(empty));
+      for (const key of ['filter', 'must', 'must_not', 'should']) {
+        assert.throws(() => EsQuery.parse({ bool: { [key]: [a, empty] } }), /Empty query clause/, `${key} ${JSON.stringify(empty)}`);
+      }
+    }
+    assert.throws(() => EsQuery.parse({ bool: { filter: [a, undefined] } }), /Empty query clause/);
+    assert.throws(() => EsQuery.parse({ bool: { must_not: undefined, filter: [undefined] } }), /Empty query clause/);
+    // a should that only scores is still checked, but not translated, so one the backend can't do is fine
+    assert.throws(() => EsQuery.parse({ bool: { filter: [a], should: [{}] } }), /Empty query clause/);
+    assert.deepEqual(EsQuery.parse({ bool: { filter: [a], should: [{ script: {} }] } }), { field: 'a', op: 'eq', value: 1 });
+    // a missing query, or an empty bool, is still every session
+    assert.deepEqual(EsQuery.parse(undefined), { all: true });
+    assert.deepEqual(EsQuery.parse({ bool: { filter: [] } }), { all: true });
+  });
+
   test('query_string', () => {
     const q = (s) => EsQuery.queryString(s);
     assert.deepEqual(q('a:1'), { field: 'a', op: 'eq', value: '1' });

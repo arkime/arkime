@@ -34,6 +34,8 @@ class HuntAPIs {
   // --------------------------------------------------------------------------
   static #runningHuntJob;
   static #publicSortFields = new Set(['created', 'name', 'status', 'size', 'started', 'lastUpdated', 'lastPacketTime', 'totalSessions', 'searchedSessions', 'matchedSessions']);
+  // All a hunt shows someone who can't see it, an allow list so a field added later isn't shown by default
+  static #publicFields = [...HuntAPIs.#publicSortFields, 'removed', 'unrunnable'];
   static isHuntJobRunning () {
     return HuntAPIs.#runningHuntJob !== undefined;
   }
@@ -1040,7 +1042,7 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
       const results = { total: hunts.total, results: [] };
       for (let i = 0, ilen = hunts.data.length; i < ilen; i++) {
         const hit = hunts.data[i];
-        const hunt = hit.doc;
+        let hunt = hit.doc;
         hunt.id = hit.id;
         hunt.index = hit.index;
         hunt.users = hunt.users || [];
@@ -1050,17 +1052,15 @@ ${Config.arkimeWebURL()}sessions?expression=huntId==${huntId}&stopTime=${hunt.qu
           hunt.notifier = hunt.notifier.split(',');
         }
 
-        // clear out secret fields for users who don't have access to that hunt
+        // only the public fields for users who don't have access to that hunt
         // if the user is not an admin and didn't create the hunt and isn't part of the user's list
         if (!isAdmin && req.user.userId !== hunt.userId && !hunt.users.includes(req.user.userId)) {
           if (!hunt.roles || !hunt.roles.length || !req.user.hasRole(hunt.roles)) {
-            // since hunt isn't cached we can just modify
-            hunt.id = '';
-            hunt.search = '';
-            hunt.userId = '';
-            hunt.searchType = '';
-            delete hunt.query;
-            delete hunt.notifier;
+            const shown = { id: '', userId: '', search: '', searchType: '', users: [] };
+            for (const field of HuntAPIs.#publicFields) {
+              if (hunt[field] !== undefined) { shown[field] = hunt[field]; }
+            }
+            hunt = shown;
           }
         }
 

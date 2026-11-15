@@ -253,7 +253,7 @@ export default {
 
     // add tags and cluster to data instead of url params
     options.data.tags = params.tags;
-    options.data.remoteCluster = cluster; // use the cluster before routeParams replaces it
+    options.data.remoteCluster = cluster; // the destination cluster goes in the body, not the url params
     delete options.params.tags;
     delete options.params.cluster;
 
@@ -432,10 +432,11 @@ export default {
     // add segments to data instead of url parameters
     const data = { segments: params.segments };
 
-    // merge params and routeParams
+    // merge params and routeParams, the action's own params win so a crafted
+    // link can't change what the action applies to or does
     const combinedParams = { // last object property overwrites the previous one
-      ...params,
-      ...routeParams
+      ...routeParams,
+      ...params
     };
 
     // fallback to store time values if not in route query (can happen when navigating directly to /sessions)

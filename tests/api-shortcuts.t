@@ -1,4 +1,4 @@
-use Test::More tests => 135;
+use Test::More tests => 147;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -117,6 +117,24 @@ countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==[\$test_shortcut_updated,\$ip_shortcut]"));
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip==[\$test_shortcut_updated,\$ip_shortcut]"));
 countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=[\$test_shortcut_updated,\$ip_shortcut]"));
+
+# a CIDR in an ip shortcut matches its range like the CIDR typed in the expression,
+# bt-udp.pcap's ip.dst are 10.0.0.1, 10.0.0.3 and 10.0.0.5
+$json = viewerPostToken("/api/shortcut", '{"name":"cidr_shortcut","type":"ip","value":"10.0.0.0/30"}', $token);
+my $cidrShortcutId = $json->{shortcut}->{id};
+esGet("/_refresh");
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==10.0.0.0/30"));
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==\$cidr_shortcut"));
+countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$cidr_shortcut"));
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip==\$cidr_shortcut"));
+countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=\$cidr_shortcut"));
+viewerDeleteToken("/api/shortcut/$cidrShortcutId", $token);
+
+# a $shortcut* matching none is refused, it used to drop the clause so on ClickHouse it matched everything
+$json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==\$no_such_shortcut*"));
+like($json->{error}, qr/no shortcuts match/, "shortcut wildcard matching none is an error");
+$json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$no_such_shortcut*"));
+like($json->{error}, qr/no shortcuts match/, "negated shortcut wildcard matching none is an error");
 
 # same tests with multi
 countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));

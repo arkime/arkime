@@ -1,4 +1,4 @@
-use Test::More tests => 172;
+use Test::More tests => 173;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -135,6 +135,8 @@ SKIP: {
     my $del = viewerDeleteToken("/api/esindices/nonexistent_fake_index_12345", $token);
     is($del->{success}, 0, "delete fake index fails");
     is($del->{i18n}, "api.stats.errorDeletingIndex", "delete fake index error i18n");
+    $del = viewerDelete("/api/esindices/nonexistent_fake_index_12345");
+    is($del->{i18n}, "api.viewer.missingToken", "delete index requires token");
 
 # esindices optimize
     my $opt = viewerPostToken("/api/esindices/tests_users/optimize", "", $token);

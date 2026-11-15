@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 386;
+use Test::More tests => 390;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -869,8 +869,8 @@ $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 400, "POST files update changing node rejected");
 is ($response->content, "Not authorized for API");
 
-# Viewers trust name, indexFilename and locked when reading and expiring the file
-foreach my $field ('"name": "/opt/arkime/raw/../../../tmp/esProxy-x"', '"indexFilename": "/tmp/esProxy-x"', '"locked": 0') {
+# Viewers trust name, indexFilename, locked, scheme and extra when reading and expiring the file
+foreach my $field ('"name": "/opt/arkime/raw/../../../tmp/esProxy-x"', '"indexFilename": "/tmp/esProxy-x"', '"locked": 0', '"scheme": "s3"', '"extra": {"bucket": "esProxy-x"}') {
   $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/tests_files/_update/test-99999");
   $req->header('Content-Type' => 'application/json');
   $req->content(qq({"doc": {"filesize": 1234, $field}}));
