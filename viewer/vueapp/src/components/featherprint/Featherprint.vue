@@ -395,7 +395,14 @@ SPDX-License-Identifier: Apache-2.0
           v-else
           class="ms-1 me-1">
           <div class="mb-5 info-area horizontal-center">
-            <div>
+            <div v-if="lookupNotFound">
+              <v-icon
+                icon="mdi-alert"
+                size="x-large"
+                class="text-muted-more" />&nbsp;
+              {{ $t('featherprint.errorNoSignals', { ip: lookupNotFound }) }}
+            </div>
+            <div v-else>
               <v-icon
                 icon="mdi-magnify"
                 size="x-large"
@@ -567,6 +574,7 @@ export default {
       ips: [],
       filter: '',
       detail: null,          // lookup only: one transient result
+      lookupNotFound: null,  // lookup: the ip looked up when nothing was observed
       lookupHistory: [],     // lookup: persisted history for that ip, if any
       expanded: {},          // tracked: ip -> row expanded
       detailHistory: {},     // tracked: ip -> history rows, fetched on expand
@@ -697,6 +705,7 @@ export default {
         if (r.mac && r.mac.value && r.mac.value.toLowerCase().includes(q)) return true;
         if (r.mac && r.mac.history && r.mac.history.some(h => h && h.mac && h.mac.toLowerCase().includes(q))) return true;
         if (r.classification && String(r.classification).toLowerCase().includes(q)) return true;
+        if (r.dhcp && r.dhcp.vendorClass && String(r.dhcp.vendorClass).toLowerCase().includes(q)) return true;
         return false;
       });
     },
@@ -899,13 +908,13 @@ export default {
           (stopSec ? `&stop=${stopSec}` : '');
         const url = `api/featherprint/lookup?${qs}`;
         const r = await fetchWrapper({ url });
-        this.detail = r?.device ?? null;
+        // an ip with no signals in the range comes back as { ip, notFound }
+        const device = r?.device;
+        this.detail = device && !device.notFound ? device : null;
+        this.lookupNotFound = this.detail ? null : ip;
         this.lookupHistory = [];
         this.lookupResultTs = Date.now();
-        if (!this.detail) {
-          this.error = this.$t('featherprint.errorNoSignals', { ip });
-          return;
-        }
+        if (!this.detail) { return; }
         // History is keyed by ip and written only by the monitor, so it is
         // independent of this transient scan: a monitored ip has real rows
         // here, anything else correctly comes back empty. On an old schema
@@ -920,6 +929,7 @@ export default {
         }
       } catch (err) {
         this.detail = null;
+        this.lookupNotFound = null;
         this.error = this.$t('featherprint.errorLookupFailed', { ip, reason: resolveMessage(err, this.$t) });
       } finally {
         this.lookupBusy = false;
