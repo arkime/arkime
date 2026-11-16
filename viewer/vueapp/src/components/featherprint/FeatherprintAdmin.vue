@@ -120,7 +120,7 @@ SPDX-License-Identifier: Apache-2.0
                 v-for="(value, key) in adminConfig.settings"
                 :key="key"
                 class="fp-field">
-                <small class="d-block">{{ key }}</small>
+                <small class="d-block">{{ settingNames[key] || key }}</small>
                 <v-icon
                   v-if="typeof value === 'boolean'"
                   size="small"
@@ -240,6 +240,20 @@ import ArkimeCollapsible from '../utils/CollapsibleWrapper.vue';
 // how long a scan outcome stays on the button before it reverts
 const TICK_STATUS_MS = 5000;
 
+// the config setting each /api/featherprint/config settings key comes from
+// (FeatherprintAPIs.loadConfig), so admins see what to set in the ini
+const SETTING_NAMES = {
+  monitorEnabled: 'featherprintMonitorEnabled',
+  intervalSec: 'featherprintInterval',
+  notifier: 'featherprintNotifier',
+  historyLimit: 'featherprintHistoryLimit',
+  lookupLimit: 'featherprintLookupLimit',
+  safetyLagSec: 'featherprintSafetyLag',
+  initialLookbackDays: 'featherprintInitialLookbackDays',
+  chunkSec: 'featherprintChunkSec',
+  maxChunksPerTick: 'featherprintMaxChunksPerTick'
+};
+
 export default {
   name: 'FeatherprintAdmin',
   components: {
@@ -266,7 +280,8 @@ export default {
     clearTimeout(this.tickStatusTimer);
   },
   computed: {
-    tertiaryBtnStyle: () => TERTIARY_BTN_STYLE
+    tertiaryBtnStyle: () => TERTIARY_BTN_STYLE,
+    settingNames: () => SETTING_NAMES
   },
   methods: {
     fmtTs (ts) {

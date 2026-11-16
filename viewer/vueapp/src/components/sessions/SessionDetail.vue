@@ -33,7 +33,7 @@ SPDX-License-Identifier: Apache-2.0
           icon="mdi-information-outline"
           size="small"
           class="me-1" />
-        Details
+        {{ $t('settings.general.tab-details') }}
       </v-tab>
       <v-tab
         v-if="!hidePackets && !user.hidePcap"
@@ -43,11 +43,11 @@ SPDX-License-Identifier: Apache-2.0
           icon="mdi-package-variant-closed"
           size="small"
           class="me-1" />
-        Packets
+        {{ $t('settings.general.tab-packets') }}
         <v-tooltip
           v-if="actions?.packets != null"
           location="bottom"
-          :text="`${actions.packets.toLocaleString()} packets in session`">
+          :text="$t('sessions.detail.tabPacketsTip', { count: actions.packets.toLocaleString() }, actions.packets)">
           <template #activator="{ props: tipProps }">
             <span
               v-bind="tipProps"
@@ -63,11 +63,11 @@ SPDX-License-Identifier: Apache-2.0
           icon="mdi-magnify-scan"
           size="small"
           class="me-1" />
-        Shark
+        {{ $t('settings.general.tab-shark') }}
         <v-tooltip
           v-if="tsharkPackets.length"
           location="bottom"
-          :text="`${tsharkPackets.length.toLocaleString()} parsed packets`">
+          :text="$t('sessions.detail.tabSharkTip', { count: tsharkPackets.length.toLocaleString() }, tsharkPackets.length)">
           <template #activator="{ props: tipProps }">
             <span
               v-bind="tipProps"
@@ -165,7 +165,7 @@ SPDX-License-Identifier: Apache-2.0
           <span class="d-inline-flex align-center small text-medium-emphasis">
             <v-icon
               icon="mdi-loading"
-              class="mdi-spin me-1" /> running…
+              class="mdi-spin me-1" /> {{ $t('sessions.detail.sharkRunning') }}
           </span>
           <v-btn
             color="warning"
@@ -174,7 +174,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-cancel"
               class="me-1" />
-            cancel
+            {{ $t('common.cancel') }}
           </v-btn>
         </div>
 
@@ -197,21 +197,21 @@ SPDX-License-Identifier: Apache-2.0
           class="tb-group">
           <v-btn
             variant="text"
-            title="Expand all fields"
+            :title="$t('sessions.detail.sharkExpandTip')"
             @click="tsharkExpandAll(true)">
             <v-icon
               icon="mdi-unfold-more-horizontal"
               class="me-1" />
-            expand
+            {{ $t('sessions.detail.sharkExpand') }}
           </v-btn>
           <v-btn
             variant="text"
-            title="Collapse all fields"
+            :title="$t('sessions.detail.sharkCollapseTip')"
             @click="tsharkExpandAll(false)">
             <v-icon
               icon="mdi-unfold-less-horizontal"
               class="me-1" />
-            collapse
+            {{ $t('sessions.detail.sharkCollapse') }}
           </v-btn>
         </div>
       </template>
@@ -376,7 +376,7 @@ SPDX-License-Identifier: Apache-2.0
                 variant="text"
                 size="x-small"
                 density="comfortable"
-                title="Pane layout">
+                :title="$t('sessions.detail.sharkLayoutTip')">
                 <svg
                   class="shark-layout-icon me-1"
                   viewBox="0 0 24 24"
@@ -392,7 +392,7 @@ SPDX-License-Identifier: Apache-2.0
                     rx="1.5"
                     fill="currentColor" />
                 </svg>
-                layout
+                {{ $t('sessions.detail.sharkLayout') }}
                 <v-icon
                   icon="mdi-menu-down"
                   class="ms-1" />
@@ -422,7 +422,7 @@ SPDX-License-Identifier: Apache-2.0
                   </svg>
                 </template>
                 <v-list-item-title class="ms-2">
-                  {{ def.label }}
+                  {{ $t(def.labelKey) }}
                 </v-list-item-title>
               </v-list-item>
             </v-list>
@@ -474,9 +474,9 @@ SPDX-License-Identifier: Apache-2.0
                     v-for="col in sharkColumns"
                     :key="col.key"
                     :class="[`c-${col.key}`, 'shark-list-th']"
-                    :title="`Sort by ${col.label}`"
+                    :title="$t('sessions.detail.sharkSortBy', { column: $t(col.labelKey) })"
                     @click="setTsharkSort(col.key)">
-                    {{ col.label }}
+                    {{ $t(col.labelKey) }}
                     <v-icon
                       v-if="tsharkSort.key === col.key"
                       :icon="tsharkSort.dir === 1 ? 'mdi-menu-up' : 'mdi-menu-down'"
@@ -1214,13 +1214,13 @@ const tsharkRows = computed(() => {
 });
 
 const sharkColumns = [
-  { key: 'no', label: 'No.' },
-  { key: 'time', label: 'Time' },
-  { key: 'src', label: 'Source' },
-  { key: 'dst', label: 'Destination' },
-  { key: 'proto', label: 'Protocol' },
-  { key: 'len', label: 'Length' },
-  { key: 'info', label: 'Info' }
+  { key: 'no', labelKey: 'sessions.detail.sharkCol-no' },
+  { key: 'time', labelKey: 'sessions.detail.sharkCol-time' },
+  { key: 'src', labelKey: 'sessions.detail.sharkCol-src' },
+  { key: 'dst', labelKey: 'sessions.detail.sharkCol-dst' },
+  { key: 'proto', labelKey: 'sessions.detail.sharkCol-proto' },
+  { key: 'len', labelKey: 'sessions.detail.sharkCol-len' },
+  { key: 'info', labelKey: 'sessions.detail.sharkCol-info' }
 ];
 const sharkNumericColumns = new Set(['no', 'time', 'len']);
 

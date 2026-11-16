@@ -25,7 +25,7 @@ SPDX-License-Identifier: Apache-2.0
         class="shark-handle"
         :class="`shark-handle--${outerDir}`"
         style="order: 1"
-        title="Drag to resize"
+        :title="$t('sessions.detail.sharkResizeTip')"
         @mousedown="startDrag(0, $event)"
         @dblclick="reset(0)" />
       <div
@@ -41,7 +41,7 @@ SPDX-License-Identifier: Apache-2.0
         <div
           class="shark-handle"
           :class="`shark-handle--${innerDir}`"
-          title="Drag to resize"
+          :title="$t('sessions.detail.sharkResizeTip')"
           @mousedown="startDrag(1, $event)"
           @dblclick="reset(1)" />
         <div class="shark-pane">
@@ -51,7 +51,7 @@ SPDX-License-Identifier: Apache-2.0
     </div>
     <div
       class="shark-handle shark-handle--col shark-handle--height"
-      title="Drag to resize the whole area"
+      :title="$t('sessions.detail.sharkResizeAllTip')"
       @mousedown="startHeightDrag"
       @dblclick="resetHeight" />
   </div>

@@ -226,7 +226,8 @@ export default {
     },
     isAToolBarPage: function () {
       if (!this.activePage) { return false; }
-      return ['settings', 'upload', 'help', 'users', 'banner'].every(item => item !== this.activePage);
+      // pages without a collapsible toolbar, where the toggle would do nothing
+      return ['settings', 'upload', 'help', 'users', 'roles', 'banner', 'viewconfig'].every(item => item !== this.activePage);
     },
     user: function () {
       return this.$store.state.user;

@@ -523,6 +523,9 @@ const onConfigSaved = (savedConfig) => {
 
 // Delete a configuration
 const deleteConfig = async (config) => {
+  if (!window.confirm(t('settings.dashboards.deleteConfirm', { name: config.name }))) {
+    return;
+  }
   try {
     await SummaryConfigService.delete(config.id);
     // Remove from local list

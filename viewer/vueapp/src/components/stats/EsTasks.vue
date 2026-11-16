@@ -129,7 +129,6 @@ export default {
         filter: this.searchTerm || undefined,
         sortField: 'action',
         desc: false,
-        cancellable: false,
         cluster: this.cluster || undefined
       }
     };
@@ -180,9 +179,6 @@ export default {
         this.loadData();
         this.setRequestInterval();
       }
-    },
-    'query.cancellable': function () {
-      this.loadData();
     },
     refreshData: function () {
       if (this.refreshData) {

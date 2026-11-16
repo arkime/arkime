@@ -302,6 +302,9 @@ const onAdded = ({ name: dashboardName }) => {
 };
 
 const deleteGraph = async (graph) => {
+  if (!window.confirm(t('settings.graphs.deleteConfirm', { name: graph.name }))) {
+    return;
+  }
   try {
     await GraphService.delete(graph.id);
     graphs.value = graphs.value.filter(g => g.id !== graph.id);

@@ -16,7 +16,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="outlined"
           hide-details
           :model-value="filename"
-          label="Filename"
+          :label="$t('sessions.exports.filename')"
           :placeholder="$t('sessions.exports.filenamePlaceholder')"
           @update:model-value="filename = $event" />
         <p

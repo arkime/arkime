@@ -100,6 +100,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4462 Fix interrupted CyberChef page loads leaving files open on the viewer
   - #4462 Fix a crafted Sessions page link changing what remove, tag and send act on
   - #4463 SPI Graph and its dashboard widgets are much faster with ClickHouse sessions, one scan per field instead of one per value
+  - #4466 Featherprint lists up to 10000 tracked IPs and alerts instead of 500, says when a list is cut short, and counts every open alert
+  - #4466 Deleting a saved graph or dashboard asks first, and SPI Graph and the widget editor use the same graph type names
+  - #4466 Fix the History page Expression and View exists checkboxes never showing
 ## ESProxy
   - #4462 A sensor can no longer change a pcap file's scheme or S3 location after creating its file record
 ## Multies

@@ -63,7 +63,7 @@ SPDX-License-Identifier: Apache-2.0
         density="compact"
         variant="outlined"
         hide-details
-        label="Fields"
+        :label="$t('sessions.intersection.fields')"
         :model-value="intersectionFields"
         :placeholder="$t('sessions.intersection.exportFieldsTip')"
         @update:model-value="intersectionFields = $event">
@@ -155,7 +155,7 @@ watch(() => props.fields, () => {
 // Methods
 const openIntersectionAction = () => {
   if (!intersectionFields.value) {
-    error.value = t('sessions.intersection.noFieldsError');
+    error.value = t('sessions.intersection.noFieldsErr');
     return;
   }
 

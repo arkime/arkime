@@ -1,4 +1,4 @@
-use Test::More tests => 59;
+use Test::More tests => 65;
 use ArkimeTest;
 use JSON;
 use Data::Dumper;
@@ -74,6 +74,12 @@ my $al = viewerGet("/api/featherprint/alerts?limit=10000");
 ok($al->{success} && ref($al->{alerts}) eq 'ARRAY',      "alerts list returns array");
 ok((grep { $_->{kind} eq 'changeIp' } @{$al->{alerts}}), "changeIp alert fired for moved mac");
 ok((grep { $_->{kind} eq 'newIp' } @{$al->{alerts}}),    "newIp alerts fired");
+is($al->{total}, scalar(@{$al->{alerts}}),               "alerts total matches the full list");
+is($al->{openCount}, scalar(grep { !$_->{acked} } @{$al->{alerts}}),
+   "alerts openCount counts the open alerts");
+my $al1 = viewerGet("/api/featherprint/alerts?limit=1");
+is($al1->{total}, $al->{total},                          "alerts total counts past the limit");
+is($al1->{openCount}, $al->{openCount},                  "alerts openCount ignores the limit");
 
 SKIP: {
     skip "a non-ES cluster db keeps the mac doc out of ES", 1 if $ArkimeTest::clusterDbNonES;
@@ -141,6 +147,9 @@ ok(!$ackBad->{success},                                  "ack all rejects a non-
 # Search + validation.
 my $list = viewerGet("/api/featherprint/search?limit=500");
 ok($list->{success} && ref($list->{devices}) eq 'ARRAY', "search returns devices array");
+is($list->{total}, scalar(@{$list->{devices}}),          "search total matches the full list");
+my $list1 = viewerGet("/api/featherprint/search?limit=1");
+is($list1->{total}, $list->{total},                      "search total counts past the limit");
 my $bymac = viewerGet("/api/featherprint/search?mac=b8:27:eb&limit=10");
 ok((grep { $_->{ip} eq '10.177.0.12' } @{$bymac->{devices}}), "search by mac substring finds pi");
 
