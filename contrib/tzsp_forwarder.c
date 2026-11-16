@@ -129,7 +129,12 @@ int main(int argc, char *argv[]) {
 
         int pos = snprintf(default_filter_exp, len, "not (port %d and (", TZSP_PORT);
         for (int i = 0; i < num_dests; i++) {
-            pos += snprintf(default_filter_exp + pos, len - pos, "%shost %s", i > 0 ? " or " : "", dest_names[i]);
+            int n = snprintf(default_filter_exp + pos, len - pos, "%shost %s", i > 0 ? " or " : "", dest_names[i]);
+            if (n < 0 || (size_t)n >= len - pos) {
+                fprintf(stderr, "Hostnames too long\n");
+                return 1;
+            }
+            pos += n;
         }
         snprintf(default_filter_exp + pos, len - pos, "))");
         filter_exp = default_filter_exp;
