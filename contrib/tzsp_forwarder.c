@@ -2,11 +2,12 @@
 /* tzsp_forwarder.c
  *
  *
- * Simple TZSP forwarder that reads from the interface and sends to the hostname
+ * Simple TZSP forwarder that reads from the interface and sends to one or more hostnames
  *
- * Usage: tzsp_forwarder <interface> <hostname> [bpf_filter]
- *    bpf_filter defaults to "not (host <hostname> and port 37008)" if not provided, 
- *    which prevents forwarding packets that are already being sent to the destination.
+ * Usage: tzsp_forwarder <interface> <hostname>[,<hostname>...] [bpf_filter]
+ *    Each packet is sent to every hostname in the comma separated list.
+ *    bpf_filter defaults to "not (port 37008 and (host <hostname> or ...))" if not provided,
+ *    which prevents forwarding packets that are already being sent to any destination.
  *
  * Compile: cc tzsp_forwarder.c -o tzsp_forwarder -lpcap
  *
@@ -27,9 +28,12 @@
 #define TZSP_VERSION 1
 #define TZSP_TYPE_RX_PACKET 0
 #define SNAP_LEN 64000
+#define MAX_DESTS 16
 
 int sock_fd;
-struct sockaddr_in dest_addr;
+struct sockaddr_in dest_addrs[MAX_DESTS];
+char *dest_names[MAX_DESTS];
+int num_dests;
 
 void packet_handler(u_char *user_data, const struct pcap_pkthdr *pkthdr, const u_char *packet) {
     unsigned char tzsp_packet[SNAP_LEN + 6]; // 6 bytes for TZSP header
@@ -53,34 +57,61 @@ void packet_handler(u_char *user_data, const struct pcap_pkthdr *pkthdr, const u
     // Copy packet data
     memcpy(tzsp_packet + offset, packet, caplen);
 
-    // Send TZSP packet
-    sendto(sock_fd, tzsp_packet, caplen + offset, 0,
-           (struct sockaddr *)&dest_addr, sizeof(dest_addr));
+    // Send TZSP packet to each destination
+    for (int i = 0; i < num_dests; i++) {
+        sendto(sock_fd, tzsp_packet, caplen + offset, 0,
+               (struct sockaddr *)&dest_addrs[i], sizeof(dest_addrs[i]));
+    }
 }
 
 int main(int argc, char *argv[]) {
     if (argc < 3 || argc > 4) {
-        fprintf(stderr, "Usage: %s <interface> <hostname> [bpf_filter]\n", argv[0]);
+        fprintf(stderr, "Usage: %s <interface> <hostname>[,<hostname>...] [bpf_filter]\n", argv[0]);
         return 1;
     }
 
     char *interface = argv[1];
-    char *hostname = argv[2];
+    char *hostnames = argv[2];
     char errbuf[PCAP_ERRBUF_SIZE];
     pcap_t *handle;
     struct addrinfo hints, *res;
 
-    char default_filter_exp[256];
+    char *default_filter_exp = NULL;
     char *filter_exp = NULL;
     struct bpf_program fp;
 
-    // Resolve hostname (needed for socket setup)
+    // Split the comma separated hostnames and resolve each (needed for socket setup)
+    char *hostlist = strdup(hostnames);
+    if (!hostlist) {
+        perror("strdup");
+        return 1;
+    }
+
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;
     hints.ai_socktype = SOCK_DGRAM;
 
-    if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
-        fprintf(stderr, "Failed to resolve hostname: %s\n", hostname);
+    char *saveptr = NULL;
+    for (char *hostname = strtok_r(hostlist, ",", &saveptr); hostname; hostname = strtok_r(NULL, ",", &saveptr)) {
+        if (num_dests >= MAX_DESTS) {
+            fprintf(stderr, "Too many hostnames, max is %d\n", MAX_DESTS);
+            return 1;
+        }
+
+        if (getaddrinfo(hostname, NULL, &hints, &res) != 0) {
+            fprintf(stderr, "Failed to resolve hostname: %s\n", hostname);
+            return 1;
+        }
+
+        memcpy(&dest_addrs[num_dests], res->ai_addr, sizeof(struct sockaddr_in));
+        dest_addrs[num_dests].sin_port = htons(TZSP_PORT);
+        dest_names[num_dests] = hostname;
+        num_dests++;
+        freeaddrinfo(res);
+    }
+
+    if (num_dests == 0) {
+        fprintf(stderr, "No hostnames provided\n");
         return 1;
     }
 
@@ -88,8 +119,19 @@ int main(int argc, char *argv[]) {
     if (argc == 4) {
         filter_exp = argv[3]; // Use provided filter
     } else {
-        snprintf(default_filter_exp, sizeof(default_filter_exp),
-                 "not (host %s and port %d)", hostname, TZSP_PORT);
+        // "not (port 37008 and (host a or host b ...))"
+        size_t len = strlen(hostnames) + num_dests * 10 + 64;
+        default_filter_exp = malloc(len);
+        if (!default_filter_exp) {
+            perror("malloc");
+            return 1;
+        }
+
+        int pos = snprintf(default_filter_exp, len, "not (port %d and (", TZSP_PORT);
+        for (int i = 0; i < num_dests; i++) {
+            pos += snprintf(default_filter_exp + pos, len - pos, "%shost %s", i > 0 ? " or " : "", dest_names[i]);
+        }
+        snprintf(default_filter_exp + pos, len - pos, "))");
         filter_exp = default_filter_exp;
     }
 
@@ -97,16 +139,14 @@ int main(int argc, char *argv[]) {
     sock_fd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock_fd < 0) {
         perror("socket");
-        freeaddrinfo(res);
         return 1;
     }
 
-    // Setup destination address
-    memcpy(&dest_addr, res->ai_addr, sizeof(struct sockaddr_in));
-    dest_addr.sin_port = htons(TZSP_PORT);
-    freeaddrinfo(res);
-
-    printf("Forwarding packets from %s to %s:%d with bpf '%s'\n", interface, hostname, TZSP_PORT, filter_exp);
+    printf("Forwarding packets from %s to", interface);
+    for (int i = 0; i < num_dests; i++) {
+        printf("%s %s:%d", i > 0 ? "," : "", dest_names[i], TZSP_PORT);
+    }
+    printf(" with bpf '%s'\n", filter_exp);
 
     // Open pcap handle
     handle = pcap_open_live(interface, SNAP_LEN, 1, 1000, errbuf);
@@ -140,6 +180,8 @@ int main(int argc, char *argv[]) {
     // Cleanup (never reached in normal operation)
     pcap_close(handle);
     close(sock_fd);
+    free(default_filter_exp);
+    free(hostlist);
 
     return 0;
 }
