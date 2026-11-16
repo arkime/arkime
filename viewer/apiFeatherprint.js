@@ -1578,6 +1578,7 @@ class FeatherprintAPIs {
    * @param {number} limit=200 - Max records to return.
    * @returns {boolean} success - Whether the search succeeded.
    * @returns {array} devices - Matching device records, sorted by lastSeen desc.
+   * @returns {number} total - How many records match, which is more than devices holds when limit cut it short.
    */
   static async apiSearch (req, res) {
     try {
@@ -1585,13 +1586,13 @@ class FeatherprintAPIs {
       if (req.query.ip !== undefined && !FeatherprintAPIs.#isIpOrCidr(req.query.ip)) {
         return res.serverError(400, 'ip must be an exact IP or CIDR');
       }
-      const out = await FeatherprintDb.searchDevices({
+      const { devices, total } = await FeatherprintDb.searchDevices({
         ip: req.query.ip,
         mac: ArkimeUtil.isString(req.query.mac) ? req.query.mac : undefined,
         name: ArkimeUtil.isString(req.query.name) ? req.query.name : undefined,
         limit: FeatherprintAPIs.#limitParam(req.query.limit, 200, 10000)
       });
-      return res.send({ success: true, devices: out });
+      return res.send({ success: true, devices, total });
     } catch (e) {
       return res.serverError(500, `featherprint search: ${e.message}`);
     }
@@ -1637,6 +1638,8 @@ class FeatherprintAPIs {
    * @param {string} acked - Optional server-side filter: "true" or "false".
    * @returns {boolean} success - Whether the lookup succeeded.
    * @returns {array} alerts - Alert documents, newest first.
+   * @returns {number} total - How many alerts match, which is more than alerts holds when limit cut it short.
+   * @returns {number} openCount - How many alerts are open (not acked), whatever the acked filter and limit.
    */
   static async apiGetAlerts (req, res) {
     try {
@@ -1644,11 +1647,12 @@ class FeatherprintAPIs {
       let acked;
       if (req.query.acked === 'true') acked = true;
       else if (req.query.acked === 'false') acked = false;
-      const out = await FeatherprintDb.listAlerts({
+      const { alerts, total } = await FeatherprintDb.listAlerts({
         acked,
         limit: FeatherprintAPIs.#limitParam(req.query.limit, 500, 10000)
       });
-      return res.send({ success: true, alerts: out });
+      const openCount = await FeatherprintDb.countOpenAlerts();
+      return res.send({ success: true, alerts, total, openCount });
     } catch (e) {
       return res.serverError(500, `featherprint alerts: ${e.message}`);
     }

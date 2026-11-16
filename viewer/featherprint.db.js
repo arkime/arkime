@@ -58,8 +58,9 @@ class FeatherprintDb {
     if (mac) where['mac.value'] = { $contains: mac.toLowerCase() };
     if (nameQ) where['names.name'] = { $contains: nameQ };
 
-    const { data } = await FeatherprintDb.#devices().find({ where, sort: { lastSeen: 'desc' }, size: limit });
-    return data.map(h => ({ _id: h.id, ...h.doc }));
+    const { data, total } = await FeatherprintDb.#devices().find({ where, sort: { lastSeen: 'desc' }, size: limit });
+    // total is every match, so callers can tell when limit cut the list short
+    return { devices: data.map(h => ({ _id: h.id, ...h.doc })), total };
   }
 
   // --------------------------------------------------------------------------
@@ -103,8 +104,12 @@ class FeatherprintDb {
 
   static async listAlerts ({ acked, limit = 500 } = {}) {
     const where = acked === undefined ? null : { acked };
-    const { data } = await FeatherprintDb.#alerts().find({ where, sort: { ts: 'desc' }, size: limit });
-    return data.map(h => ({ _id: h.id, ...h.doc }));
+    const { data, total } = await FeatherprintDb.#alerts().find({ where, sort: { ts: 'desc' }, size: limit });
+    return { alerts: data.map(h => ({ _id: h.id, ...h.doc })), total };
+  }
+
+  static async countOpenAlerts () {
+    return FeatherprintDb.#alerts().count({ acked: false });
   }
 
   // Ack state is shared across the team, not per user -- ackedBy/ackedAt are

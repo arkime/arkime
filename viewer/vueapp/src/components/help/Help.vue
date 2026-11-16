@@ -501,7 +501,7 @@ SPDX-License-Identifier: Apache-2.0
         </ul>
         <p>
           The chart widgets are the same as the <a href="help#spigraphTypes">SPI Graph graph types</a>
-          (in the widget editor, Donut is called Pie Chart, and Table is called Unique or Intersection).
+          (with Table split into Table (unique) and Table (intersection)).
           These widgets are only on dashboards:
         </p>
         <dl class="dl-horizontal dl-horizontal-wide">
@@ -829,7 +829,7 @@ SPDX-License-Identifier: Apache-2.0
         The SPI Graph page charts the top values of any field. This page is very useful for both at a glance views of activity,
         as well as deep dive analysis. For example, to chart the http.user values seen in the current time window,
         type http.user in the SPI Graph field box.
-        Pick a graph type, and the Connections, Tree, and Circle graph types show who talks to whom.
+        Pick a graph type, and the Connections, Connection tree, and Connection circle graph types show who talks to whom.
       </p>
       <div>
         <h6>
@@ -903,9 +903,9 @@ SPDX-License-Identifier: Apache-2.0
           <dd>The first field's values as columns as wide as their share of the sessions, each split by the second field's values.</dd>
           <dt>Connections</dt>
           <dd>A force graph of source and destination values, see <a href="help#connections">Connections</a>.</dd>
-          <dt>Tree</dt>
+          <dt>Connection tree</dt>
           <dd>Who reached what from one host, hop by hop.</dd>
-          <dt>Circle</dt>
+          <dt>Connection circle</dt>
           <dd>Hosts on a ring with an arc between each pair that talked, colored by protocol or a field you pick.</dd>
         </dl>
         <p>
@@ -939,14 +939,14 @@ SPDX-License-Identifier: Apache-2.0
         </p>
         <h6 id="connections">
           <v-icon icon="mdi-sitemap" />&nbsp;
-          Connections, Tree &amp; Circle
+          Connection Graphs
         </h6>
         <p>
           The Connections graph type (which replaced the old Connections page) draws a graph between source and destination values of your choosing.
           Relationships may be visually determined using this method.
           For example, set Src to ip.src and Dst to ip.dst:port to see which source IPs talk to which destination IP and port combinations.
           Nodes that are only a source, only a destination, or both are colored differently, as the Src, Dst, and "Src &amp; dst" chips show.
-          The Tree and Circle graph types draw the same connections differently.
+          The Connection tree and Connection circle graph types draw the same connections differently.
         </p>
         <p>
           <em>
@@ -955,8 +955,8 @@ SPDX-License-Identifier: Apache-2.0
           </em>
         </p>
         <dl class="dl-horizontal has-icons">
-          <dt>Query size</dt>
-          <dd>How many connections to fetch.</dd>
+          <dt>Sample size</dt>
+          <dd>How many sessions the graph is built from.</dd>
           <dt>Min connections</dt>
           <dd>The minimum number of sessions between two nodes for them to be shown.</dd>
           <dt>Weight</dt>
@@ -967,9 +967,9 @@ SPDX-License-Identifier: Apache-2.0
             and <v-icon icon="mdi-link" /> the fields shown in the link popups.
           </dd>
           <dt>Root &amp; Depth</dt>
-          <dd>Tree only. The host the tree starts from (the busiest source by default), and how many hops to follow. Click a node to make it the root.</dd>
+          <dd>Connection tree only. The host the tree starts from (the busiest source by default), and how many hops to follow. Click a node to make it the root.</dd>
           <dt>Max shown</dt>
-          <dd>Circle only. How many of the busiest hosts are on the ring. Hover a host or a color in the legend to light up only its arcs.</dd>
+          <dd>Connection circle only. How many of the busiest hosts are on the ring. Hover a host or a color in the legend to light up only its arcs.</dd>
         </dl>
         <ul>
           <li>
@@ -1079,10 +1079,11 @@ SPDX-License-Identifier: Apache-2.0
         <dt><v-icon icon="mdi-format-list-bulleted" /> Tracked IPs</dt>
         <dd>
           The devices in the watched subnets, with their IP, MAC, name, classification, and last seen time.
-          Filter by IP, MAC, name, or classification, click a header to sort,
+          Filter by IP, MAC, name, classification, or DHCP vendor, click a header to sort,
           and expand a row to see the device's details and change history.
           Click an IP, MAC, or name for its <a href="help#valueMenu">value menu</a>.
           This list is empty if no subnets are configured.
+          With more than 10,000 devices, only the 10,000 most recently seen are listed, and the page says so.
         </dd>
         <dt><v-icon icon="mdi-magnify" /> Lookup</dt>
         <dd>
@@ -1096,6 +1097,7 @@ SPDX-License-Identifier: Apache-2.0
           Show open, acknowledged, or all alerts, and click an alert's IP to see the device.
           If you are allowed to, Ack ( <v-icon icon="mdi-check" /> ) or Unack ( <v-icon icon="mdi-undo-variant" /> )
           an alert, or all the listed alerts at once. The acknowledgement is shared by everyone.
+          Only the newest 10,000 alerts are listed, but the open count includes them all.
         </dd>
       </dl>
       <p>
@@ -2017,7 +2019,7 @@ const nav = [
       { id: 'spigraphTypes', title: 'Graph Types' },
       { id: 'spigraphSettings', title: 'Graph Settings' },
       { id: 'savedGraphs', title: 'Saved Graphs' },
-      { id: 'connections', title: 'Connections' }
+      { id: 'connections', title: 'Connection Graphs' }
     ]
   },
   { id: 'hunt', title: 'Hunt', icon: 'mdi-eye' },

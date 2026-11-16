@@ -15,28 +15,28 @@ SPDX-License-Identifier: Apache-2.0
 export const SHARK_LAYOUTS = {
   wireshark: {
     dirs: ['col', 'row'],
-    label: 'List on top, Details and Bytes below',
+    labelKey: 'sessions.detail.sharkLayout-wireshark',
     panes: [[2, 2, 20, 8], [2, 12, 9, 10], [13, 12, 9, 10]]
   },
   stacked: {
     dirs: ['col', 'col'],
-    label: 'List, Details, Bytes stacked',
+    labelKey: 'sessions.detail.sharkLayout-stacked',
     panes: [[2, 2, 20, 5.5], [2, 9.25, 20, 5.5], [2, 16.5, 20, 5.5]]
   },
   columns: {
     dirs: ['row', 'row'],
-    label: 'List, Details, Bytes side by side',
+    labelKey: 'sessions.detail.sharkLayout-columns',
     panes: [[2, 2, 5.5, 20], [9.25, 2, 5.5, 20], [16.5, 2, 5.5, 20]]
   },
   sidebar: {
     dirs: ['row', 'col'],
-    label: 'List on the left, Details and Bytes right',
+    labelKey: 'sessions.detail.sharkLayout-sidebar',
     panes: [[2, 2, 9, 20], [13, 2, 9, 9], [13, 13, 9, 9]]
   },
   listbottom: {
     dirs: ['col', 'row'],
     reverse: true,
-    label: 'Details and Bytes on top, List below',
+    labelKey: 'sessions.detail.sharkLayout-listbottom',
     panes: [[2, 14, 20, 8], [2, 2, 9, 10], [13, 2, 9, 10]]
   }
 };

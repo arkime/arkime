@@ -117,7 +117,7 @@ SPDX-License-Identifier: Apache-2.0
                         <v-tooltip
                           :activator="`[id='updateFieldConfig${key}']`"
                           location="end">
-                          Update this field configuration with the currently visible fields
+                          {{ $t('spiview.spiViewFieldConfigUpdateTip') }}
                         </v-tooltip>
                       </v-btn>
                       <v-btn

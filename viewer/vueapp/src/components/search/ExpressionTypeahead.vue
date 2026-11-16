@@ -60,7 +60,7 @@ SPDX-License-Identifier: Apache-2.0
           class="arkime-input-append-btn">
           <v-icon icon="mdi-help-circle" />
           <v-tooltip activator="#longExpression">
-            {{ $t('search.longExpressionTip') }}
+            <span v-html="$t('search.longExpressionTipHtml')" />
           </v-tooltip>
         </v-btn>
       </template>

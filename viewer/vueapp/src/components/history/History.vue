@@ -128,7 +128,7 @@ SPDX-License-Identifier: Apache-2.0
             v-has-role="{user:user,roles:column.role}"
             :class="`cursor-pointer ${column.classes}`">
             <div
-              v-if="column.exists"
+              v-if="column.exists !== undefined"
               :id="`exists-${column.name}`"
               class="me-1 header-div">
               <input

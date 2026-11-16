@@ -78,7 +78,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-list-item
               v-if="basePath !== 'arkime'"
               @click="toggleStickyViz">
-              {{ !stickyViz ? 'Pin' : 'Unpin' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
+              {{ stickyVizLabel }}
             </v-list-item>
             <v-list-item
               id="hideViz"
@@ -122,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
           <v-list-item
             v-if="basePath !== 'arkime'"
             @click="toggleStickyViz">
-            {{ !stickyViz ? 'Pin' : 'Unpin' }} {{ basePath && basePath === 'sessions' ? 'graph, map, and column headers' : 'graph and map' }}
+            {{ stickyVizLabel }}
           </v-list-item>
           <v-list-item
             id="hideViz"
@@ -219,7 +219,7 @@ SPDX-License-Identifier: Apache-2.0
               <v-tooltip
                 activator="parent"
                 location="left">
-                Create a new view
+                {{ $t('search.newViewTip') }}
               </v-tooltip>
             </v-list-item>
             <v-divider />
@@ -657,6 +657,13 @@ export default {
     };
   },
   computed: {
+    stickyVizLabel: function () {
+      // Sessions also pins its column headers
+      if (this.basePath === 'sessions') {
+        return this.$t(this.stickyViz ? 'search.unpinGraphMapHeaders' : 'search.pinGraphMapHeaders');
+      }
+      return this.$t(this.stickyViz ? 'search.unpinGraphMap' : 'search.pinGraphMap');
+    },
     expression: {
       get: function () {
         return this.$store.state.expression;
@@ -834,12 +841,12 @@ export default {
         // remove the view from the view list
         this.views.splice(index, 1);
         // display success message to user
-        this.msg = resolveMessage(response, this.$t);
-        this.msgType = 'success';
+        this.message = resolveMessage(response, this.$t);
+        this.messageType = 'success';
       }).catch((error) => {
         // display error message to user
-        this.msg = resolveMessage(error, this.$t);
-        this.msgType = 'danger';
+        this.message = resolveMessage(error, this.$t);
+        this.messageType = 'danger';
       });
     },
     setView: function (viewId) {

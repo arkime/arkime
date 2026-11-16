@@ -125,7 +125,9 @@ const router = createRouter({
     {
       path: '/roles',
       name: 'Roles',
-      component: Roles
+      component: Roles,
+      // only role assigners see the nav item, so guard the url the same way
+      beforeEnter: async () => await requireRole(u => !!u?.canAssignRoles)
     },
     {
       path: '/history',

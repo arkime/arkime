@@ -307,6 +307,14 @@ SPDX-License-Identifier: Apache-2.0
       <div
         v-if="section === 'alerts'"
         class="ms-2 me-2">
+        <v-alert
+          v-if="alerts.length < alertsTotal"
+          type="info"
+          variant="tonal"
+          density="compact"
+          class="mb-2">
+          {{ $t('featherprint.alertsTruncated', { shown: alerts.length.toLocaleString(), total: alertsTotal.toLocaleString() }) }}
+        </v-alert>
         <arkime-table
           id="featherprintAlertsTable"
           :data="sortedAlerts"
@@ -419,6 +427,14 @@ SPDX-License-Identifier: Apache-2.0
       <div
         v-else
         class="ms-2 me-2">
+        <v-alert
+          v-if="ips.length < ipsTotal"
+          type="info"
+          variant="tonal"
+          density="compact"
+          class="mb-2">
+          {{ $t('featherprint.trackedTruncated', { shown: ips.length.toLocaleString(), total: ipsTotal.toLocaleString() }) }}
+        </v-alert>
         <arkime-paging
           class="mb-1"
           :records-total="ips.length"
@@ -548,6 +564,10 @@ import ToggleBtn from '@common/ToggleBtn.vue';
 import ArkimePaging from '@common/Pagination.vue';
 import FeatherprintDevice from './FeatherprintDevice.vue';
 
+// the most devices or alerts the featherprint apis return in one request;
+// filtering and sorting happen here, so ask for all of them
+const LIST_LIMIT = 10000;
+
 // pull a sortable scalar out of a device/alert record for the given column
 function sortValue (item, field) {
   switch (field) {
@@ -572,6 +592,7 @@ export default {
   data () {
     return {
       ips: [],
+      ipsTotal: 0,           // tracked: every device, more than ips when LIST_LIMIT cut it short
       filter: '',
       detail: null,          // lookup only: one transient result
       lookupNotFound: null,  // lookup: the ip looked up when nothing was observed
@@ -579,6 +600,8 @@ export default {
       expanded: {},          // tracked: ip -> row expanded
       detailHistory: {},     // tracked: ip -> history rows, fetched on expand
       alerts: [],
+      alertsTotal: 0,        // every alert, more than alerts when LIST_LIMIT cut it short
+      unloadedOpenAlerts: 0, // open alerts beyond LIST_LIMIT, so the open count stays exact
       alertFilter: 'open', // 'open' | 'acked' | 'all'
       alertSearch: '',
       error: null,
@@ -684,7 +707,7 @@ export default {
       return this.ips.length ? this.$t('featherprint.noMatches') : this.$t('featherprint.noTrackedIps');
     },
     openAlertCount () {
-      return this.alerts.filter(a => !a.acked).length;
+      return this.alerts.filter(a => !a.acked).length + this.unloadedOpenAlerts;
     },
     // the bulk button acts on what is listed: acking the open ones, except on
     // the Acked filter where the only useful bulk action is undoing them
@@ -826,8 +849,9 @@ export default {
     },
     async loadIps () {
       try {
-        const r = await fetchWrapper({ url: 'api/featherprint/search?limit=500' });
+        const r = await fetchWrapper({ url: `api/featherprint/search?limit=${LIST_LIMIT}` });
         this.ips = r.devices || [];
+        this.ipsTotal = r.total ?? this.ips.length;
         this.error = null;
       } catch (err) {
         this.error = this.$t('featherprint.errorListIps', { reason: resolveMessage(err, this.$t) });
@@ -835,11 +859,14 @@ export default {
     },
     async loadAlerts () {
       try {
-        const r = await fetchWrapper({ url: 'api/featherprint/alerts?limit=500' });
+        const r = await fetchWrapper({ url: `api/featherprint/alerts?limit=${LIST_LIMIT}` });
         // precompute the details string and an `id` here: the search filter and
         // the cell both need details, and arkime-table keys on item.id (alerts
         // carry _id, so without this every row falls back to an index key)
         this.alerts = (r.alerts || []).map(a => ({ ...a, id: a._id, details: describeHistory(a) }));
+        this.alertsTotal = r.total ?? this.alerts.length;
+        const loadedOpen = this.alerts.filter(a => !a.acked).length;
+        this.unloadedOpenAlerts = Math.max(0, (r.openCount ?? loadedOpen) - loadedOpen);
         this.error = null;
       } catch (err) {
         this.error = this.$t('featherprint.errorLoadAlerts', { reason: resolveMessage(err, this.$t) });

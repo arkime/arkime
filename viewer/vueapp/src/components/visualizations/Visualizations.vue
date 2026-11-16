@@ -122,7 +122,7 @@ SPDX-License-Identifier: Apache-2.0
                     icon
                     class="xff-btn"
                     @click="toggleSrcDstXff('xffGeo')"
-                    title="Toggle XFF Countries">
+                    :title="$t('vis.toggleXffCountry')">
                     <small>XFF</small>
                   </v-btn> <!-- /map buttons -->
 
