@@ -48,6 +48,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4462 Parliament no longer follows redirects when polling a cluster, set each cluster's url to its final address
   - #4464 disableParsers now defaults to empty so every parser loads, including arp, set disableParsers=arp.so for the old behavior
   - #4464 saveUnknownPackets now defaults to all;corrupt so unknown ether, unknown ip and corrupt packets are saved as sessions, set saveUnknownPackets= for the old behavior
+  - #4472 DNS, mDNS and LLMNR names that are valid UTF-8 are saved as is instead of cat -v escaped (andy’s macbook pro instead of andym-bm-^@m-^ys macbook pro), so searches for the escaped form won't match new sessions; invalid bytes and control characters are still escaped and plain DNS names with raw UTF-8 get the dns:raw-utf8 tag
 ## All
   - #4460 A role assigner can no longer change the roles of a user with an admin role the assigner doesn't have
   - #4460 Add authHeaderJwtVerify=true to also verify authMode=header-jwt signatures, using authJwtJwksUrl, authJwtIssuer and authJwtAudience

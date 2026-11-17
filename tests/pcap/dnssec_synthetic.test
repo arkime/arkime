@@ -6741,6 +6741,385 @@
      "_index" : "tests_sessions3-25m01"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 83
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "224.0.0.251",
+     "mac" : [
+      "01:00:5e:00:00:fb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 5353
+    },
+    "dns" : [
+     {
+      "host" : [
+       "andy’s macbook pro._airplay._tcp.local"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "PTR",
+      "queryHost" : "andy’s macbook pro._airplay._tcp.local"
+     }
+    ],
+    "dnsCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1737752416000,
+    "ipProtocol" : 17,
+    "lastPacket" : 1737752416000,
+    "length" : 0,
+    "network" : {
+     "bytes" : 125,
+     "community_id" : "1:N6GFx2XSmTg1mdldTt/iXHpuBH4=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     141
+    ],
+    "packetPos" : [
+     46300
+    ],
+    "packetRange" : {
+     "gte" : 1737752416000,
+     "lte" : 1737752416000
+    },
+    "protocol" : [
+     "mdns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 125,
+     "ip" : "10.9.59.1",
+     "mac" : [
+      "02:aa:00:00:3b:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 5353
+    },
+    "srcPayload8" : "0000000000020000",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 83
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m01"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 78
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "224.0.0.251",
+     "mac" : [
+      "01:00:5e:00:00:fb"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 5353
+    },
+    "dns" : [
+     {
+      "answers" : [
+       {
+        "class" : "IN",
+        "name" : "_airplay._tcp.local",
+        "ptr" : "Café Speaker._airplay._tcp.local",
+        "ttl" : 4500,
+        "type" : "PTR"
+       }
+      ],
+      "answersCnt" : 1,
+      "headerFlags" : [
+       "AA"
+      ],
+      "opcode" : "QUERY",
+      "queryHost" : "<root>",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1737752416010,
+    "ipProtocol" : 17,
+    "lastPacket" : 1737752416010,
+    "length" : 0,
+    "network" : {
+     "bytes" : 120,
+     "community_id" : "1:VWp/+ulD64vC9q8VO8gAC5zYKKg=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     136
+    ],
+    "packetPos" : [
+     46441
+    ],
+    "packetRange" : {
+     "gte" : 1737752416010,
+     "lte" : 1737752416010
+    },
+    "protocol" : [
+     "mdns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 120,
+     "ip" : "10.9.59.2",
+     "mac" : [
+      "02:aa:00:00:3b:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 5353
+    },
+    "srcPayload8" : "0000840000000001",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 78
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m01"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 35
+    },
+    "destination" : {
+     "bytes" : 93,
+     "ip" : "10.9.59.4",
+     "mac" : [
+      "02:aa:00:00:3b:04"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "ASN" : [
+       "---"
+      ],
+      "GEO" : [
+       "---"
+      ],
+      "RIR" : [
+       ""
+      ],
+      "answers" : [
+       {
+        "class" : "IN",
+        "ip" : "10.9.59.100",
+        "name" : "café.example.com",
+        "ttl" : 300,
+        "type" : "A"
+       }
+      ],
+      "answersCnt" : 1,
+      "headerFlags" : [
+       "RA",
+       "RD"
+      ],
+      "host" : [
+       "café.example.com"
+      ],
+      "hostCnt" : 1,
+      "ip" : [
+       "10.9.59.100"
+      ],
+      "ipCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "café.example.com",
+      "status" : "NOERROR"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstPayload8" : "5901818000010001",
+    "dstTTL" : [
+     255
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1737752416020,
+    "ipProtocol" : 17,
+    "lastPacket" : 1737752416030,
+    "length" : 10,
+    "network" : {
+     "bytes" : 170,
+     "community_id" : "1:45S/1JF5BStH2MTMaJBASoDVcK8=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     93,
+     109
+    ],
+    "packetPos" : [
+     46577,
+     46670
+    ],
+    "packetRange" : {
+     "gte" : 1737752416020,
+     "lte" : 1737752416030
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 51
+    },
+    "source" : {
+     "bytes" : 77,
+     "ip" : "10.9.59.3",
+     "mac" : [
+      "02:aa:00:00:3b:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49903
+    },
+    "srcPayload8" : "5901010000010000",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "tags" : [
+     "dns:raw-utf8"
+    ],
+    "tagsCnt" : 1,
+    "totDataBytes" : 86
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m01"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 43
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.9.59.4",
+     "mac" : [
+      "02:aa:00:00:3b:04"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "host" : [
+       "badm-^?name.ctl^a.example.com"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "badm-^?name.ctl^a.example.com"
+     }
+    ],
+    "dnsCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1737752416040,
+    "ipProtocol" : 17,
+    "lastPacket" : 1737752416040,
+    "length" : 0,
+    "network" : {
+     "bytes" : 85,
+     "community_id" : "1:kgS0jelqTLMVHSf+t1ySyPoaocI=",
+     "packets" : 1
+    },
+    "node" : "test",
+    "packetLen" : [
+     101
+    ],
+    "packetPos" : [
+     46779
+    ],
+    "packetRange" : {
+     "gte" : 1737752416040,
+     "lte" : 1737752416040
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 85,
+     "ip" : "10.9.59.3",
+     "mac" : [
+      "02:aa:00:00:3b:03"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49904
+    },
+    "srcPayload8" : "5902010000010000",
+    "srcTTL" : [
+     255
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 43
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m01"
+    }
+   }
   }
  ]
 }

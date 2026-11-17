@@ -6,6 +6,7 @@ Layout:
     sessions as section functions below)
   - dns_query_midsave (481 packets)
   - dns_bad_idna (2 packets)
+  - dns_utf8_names (5 packets)
 
 Run from the tests directory:  python3 gen/gen_dnssec_synthetic.py
 Each section function below documents the session(s) it generates.
@@ -134,6 +135,90 @@ def sec_dns_bad_idna():
     return out
 
 
+def sec_dns_utf8_names():
+    # Raw UTF-8 and non-UTF-8 bytes in DNS and mDNS names.
+    # Session 10.9.59.1:5353 -> 224.0.0.251:5353 (mDNS query, 2 questions):
+    #   PTR "Andy’s MacBook Pro._airplay._tcp.local" and PTR "_airplay._tcp.local".
+    #   Expect the UTF-8 name kept (lowercased ASCII) and no dns:raw-utf8 or bad-hostname tag.
+    # Session 10.9.59.2:5353 -> 224.0.0.251:5353 (mDNS response, no questions):
+    #   _airplay._tcp.local PTR "Café Speaker._airplay._tcp.local".
+    #   Expect the UTF-8 PTR name kept and no dns:raw-utf8 or bad-hostname tag.
+    # Session 10.9.59.3:49903 -> 10.9.59.4:53 (DNS):
+    #   A query for café.example.com sent as raw UTF-8, answered 10.9.59.100.
+    #   Expect café.example.com and the dns:raw-utf8 tag.
+    # Session 10.9.59.3:49904 -> 10.9.59.4:53 (DNS):
+    #   A query for a name with an invalid UTF-8 byte (0xff) and a control character (0x01).
+    #   Expect both still escaped cat -v style and no dns:raw-utf8 tag.
+    TS_START = 1700021900.0
+    MAC1 = bytes.fromhex('02aa00003b01')
+    MAC2 = bytes.fromhex('02aa00003b02')
+    MAC3 = bytes.fromhex('02aa00003b03')
+    MAC4 = bytes.fromhex('02aa00003b04')
+    MCAST = bytes.fromhex('01005e0000fb')
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def build_udp(src_str, dst_str, sport, dport, payload, smac, dmac):
+        src = bytes(map(int, src_str.split('.')))
+        dst = bytes(map(int, dst_str.split('.')))
+        udp_len = 8 + len(payload)
+        udp = struct.pack('!HHHH', sport, dport, udp_len, 0)
+        pseudo = src + dst + struct.pack('!BBH', 0, 17, udp_len)
+        udp = udp[:6] + struct.pack('!H', csum(pseudo + udp + payload))
+        ip = struct.pack('!BBHHHBBH4s4s', 0x45, 0, 20 + udp_len, 0x9103, 0, 255, 17, 0, src, dst)
+        ip = ip[:10] + struct.pack('!H', csum(ip)) + ip[12:]
+        return dmac + smac + b'\x08\x00' + ip + udp + payload
+
+    def qname(labels):
+        # labels are str (UTF-8 encoded) or raw bytes
+        out = b''
+        for label in labels:
+            raw = label if isinstance(label, bytes) else label.encode('utf-8')
+            out += bytes([len(raw)]) + raw
+        return out + b'\0'
+
+    PTR, A, IN = 12, 1, 1
+    airplay = ['_airplay', '_tcp', 'local']
+
+    mq = struct.pack('!HHHHHH', 0, 0, 2, 0, 0, 0)
+    mq += qname(['Andy’s MacBook Pro'] + airplay) + struct.pack('!HH', PTR, IN)
+    mq += qname(airplay) + struct.pack('!HH', PTR, IN)
+
+    speaker = qname(['Café Speaker'] + airplay)
+    mr = struct.pack('!HHHHHH', 0, 0x8400, 0, 1, 0, 0)
+    mr += qname(airplay) + struct.pack('!HHIH', PTR, IN, 4500, len(speaker)) + speaker
+
+    cafe = qname(['café', 'example', 'com'])
+    dq = struct.pack('!HHHHHH', 0x5901, 0x0100, 1, 0, 0, 0) + cafe + struct.pack('!HH', A, IN)
+    da = struct.pack('!HHHHHH', 0x5901, 0x8180, 1, 1, 0, 0) + cafe + struct.pack('!HH', A, IN)
+    da += b'\xc0\x0c' + struct.pack('!HHIH', A, IN, 300, 4) + bytes([10, 9, 59, 100])
+
+    bad = qname([b'bad\xffname', b'ctl\x01', 'example', 'com'])
+    bq = struct.pack('!HHHHHH', 0x5902, 0x0100, 1, 0, 0, 0) + bad + struct.pack('!HH', A, IN)
+
+    pkts = [
+        build_udp('10.9.59.1', '224.0.0.251', 5353, 5353, mq, MAC1, MCAST),
+        build_udp('10.9.59.2', '224.0.0.251', 5353, 5353, mr, MAC2, MCAST),
+        build_udp('10.9.59.3', '10.9.59.4', 49903, 53, dq, MAC3, MAC4),
+        build_udp('10.9.59.4', '10.9.59.3', 53, 49903, da, MAC4, MAC3),
+        build_udp('10.9.59.3', '10.9.59.4', 49904, 53, bq, MAC3, MAC4),
+    ]
+    out = b''
+    ts = TS_START
+    for p in pkts:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.01
+    return out
+
+
 def _max_ts(blob):
     # Latest timestamp among the pcap records in blob (header already stripped for sections)
     pos = 24 if blob[:4] in (b'\xd4\xc3\xb2\xa1', b'\xa1\xb2\xc3\xd4') else 0
@@ -174,6 +259,7 @@ def main():
     for blob in [
         sec_dns_query_midsave(),
         sec_dns_bad_idna(),
+        sec_dns_utf8_names(),
     ]:
         blob, tmax = _after(blob, tmax)
         out += blob

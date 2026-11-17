@@ -131,13 +131,45 @@ LOCAL int dns_cmp(const void *keyv, const void *elementv);
 LOCAL char                  *root = "<root>";
 
 /******************************************************************************/
-LOCAL int dns_name_element(BSB *nbsb, BSB *bsb)
+// mDNS (RFC 6762 §16) and LLMNR (RFC 4795 §2.1) names are UTF-8 and DNS-SD instance
+// names are free-form text, so a raw UTF-8 name there isn't a bad hostname
+LOCAL gboolean dns_utf8_names(ArkimeSession_t *session)
+{
+    return arkime_session_has_protocol(session, "mdns") || arkime_session_has_protocol(session, "llmnr");
+}
+/******************************************************************************/
+// Copy a label as is when it is valid UTF-8 without control characters, otherwise
+// escape each byte cat -v style. Sets *rawUtf8 when a kept label isn't plain ASCII.
+LOCAL int dns_name_element(BSB *nbsb, BSB *bsb, int *rawUtf8)
 {
     int nlen = 0;
     BSB_IMPORT_u08(*bsb, nlen);
 
     if (nlen == 0 || nlen > BSB_REMAINING(*bsb)) {
         return 1;
+    }
+
+    const char *label = (const char *)BSB_WORK_PTR(*bsb);
+    // g_utf8_validate also rejects an embedded NUL within nlen
+    if (g_utf8_validate(label, nlen, NULL)) {
+        gboolean keep = TRUE;
+        gboolean ascii = TRUE;
+        for (const char *p = label; p < label + nlen; p = g_utf8_next_char(p)) {
+            gunichar uc = g_utf8_get_char(p);
+            if (g_unichar_iscntrl(uc)) {
+                keep = FALSE;
+                break;
+            }
+            if (uc > 0x7f)
+                ascii = FALSE;
+        }
+        if (keep) {
+            BSB_EXPORT_ptr(*nbsb, label, nlen);
+            BSB_IMPORT_skip(*bsb, nlen);
+            if (!ascii)
+                *rawUtf8 = 1;
+            return 0;
+        }
     }
 
     for (int j = 0; j < nlen; j++) {
@@ -167,6 +199,7 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
     int  wireLen = 1; // RFC 1035 255 limit includes the terminating 0
     BSB  tmpbsb;
     BSB *curbsb;
+    int  rawUtf8 = 0;
 
     BSB_INIT(nbsb, name, *namelen - 1);
 
@@ -215,9 +248,14 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
             BSB_EXPORT_u08(nbsb, '.');
         }
 
-        if (dns_name_element(&nbsb, curbsb) && BSB_LENGTH(nbsb))
+        if (dns_name_element(&nbsb, curbsb, &rawUtf8) && BSB_LENGTH(nbsb))
             BSB_EXPORT_rewind(nbsb, 1); // Remove last .
     }
+
+    // Plain DNS sends international names as punycode, so raw UTF-8 is unusual there
+    if (rawUtf8 && !dns_utf8_names(session))
+        arkime_session_add_tag(session, "dns:raw-utf8");
+
     *namelen = BSB_LENGTH(nbsb);
     // Write null terminator directly since BSB was initialized 1 byte short to guarantee room
     name[*namelen] = 0;
@@ -428,16 +466,17 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
         hostlen = strlen(host);
 
     if (!host || g_utf8_validate(host, hostlen, NULL) == 0) {
+        const gboolean valid = g_utf8_validate(string, len, NULL);
         if (len > 4 && arkime_memstr((const char *)string, len, "xn--", 4)) {
             arkime_session_add_tag(session, "bad-punycode");
-        } else {
+        } else if (!valid || !dns_utf8_names(session)) {
             arkime_session_add_tag(session, "bad-hostname");
         }
         if (host)
             g_free(host);
 
         // Keep the raw name if it can be stored
-        if (g_utf8_validate(string, len, NULL)) {
+        if (valid) {
             host = g_ascii_strdown(string, len);
             hostlen = len;
             if (uniSet)
@@ -706,14 +745,15 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
         } else {
             key.query.hostname = g_hostname_to_unicode(name);
             if (!key.query.hostname) {
+                const gboolean valid = g_utf8_validate(name, namelen, NULL);
                 if (namelen > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
                     arkime_session_add_tag(session, "bad-punycode");
-                } else {
+                } else if (!valid || !dns_utf8_names(session)) {
                     arkime_session_add_tag(session, "bad-hostname");
                 }
 
                 // Keep the raw name if it can be stored
-                if (!g_utf8_validate(name, namelen, NULL))
+                if (!valid)
                     return;
                 key.query.hostname = g_ascii_strdown(name, namelen);
             }
