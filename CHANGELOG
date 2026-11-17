@@ -104,6 +104,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4466 Deleting a saved graph or dashboard asks first, and SPI Graph and the widget editor use the same graph type names
   - #4466 Fix the History page Expression and View exists checkboxes never showing
   - #4469 Add a box plot widget and SPI Graph type, the spread of a numeric field (quartiles, median, min, max and mean) over each top value's sessions, ranked by sessions or by an aggregation of the field
+  - #4471 Non-IP sessions show their ethertype name (arp, lldp, ...) on the Sessions page instead of not-ip, not-ip is clickable, and ip.protocol == not-ip and ethertype == arp (names or 0x hex) can be searched
 ## ESProxy
   - #4462 A sensor can no longer change a pcap file's scheme or S3 location after creating its file record
 ## Multies

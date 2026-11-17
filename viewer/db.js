@@ -414,6 +414,7 @@ const singletonFields = {
   lastPacket: true,
   '@timestamp': true,
   ipProtocol: true,
+  ethertype: true,
   node: true,
   srcNode: true,
   'tcpflags.rst': true,

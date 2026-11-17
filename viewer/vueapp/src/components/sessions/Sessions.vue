@@ -680,9 +680,16 @@ SPDX-License-Identifier: Apache-2.0
                       class="me-1"
                       :opened="session.expanded"
                       @toggle="toggleSessionDetail(session)" />
-                    <span v-if="session.ipProtocol === 0">
-                      not-ip
-                    </span>
+                    <!-- non-ip sessions show their ethertype name (arp, lldp, ...),
+                         except 802.3 frames whose "ethertype" is a length -->
+                    <arkime-session-field
+                      v-if="session.ipProtocol === 0 && session.ethertype > 1500"
+                      :field="{dbField:'ethertype', exp:'ethertype', type:'integer', group:'general', transform:'ethertypeLookup'}"
+                      :session="session"
+                      :expr="'ethertype'"
+                      :value="session.ethertype"
+                      :pull-left="true"
+                      :parse="true" />
                     <arkime-session-field
                       v-else
                       :field="{dbField:'ipProtocol', exp:'ip.protocol', type:'lotermfield', group:'general', transform:'ipProtocolLookup'}"
@@ -1981,7 +1988,7 @@ export default {
         this.mapHeadersToFields();
       }
 
-      this.query.fields = ['ipProtocol']; // minimum required field
+      this.query.fields = ['ipProtocol', 'ethertype']; // minimum required fields
 
       // set the fields to retrieve from the server for each session
       if (this.headers) {

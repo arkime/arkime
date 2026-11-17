@@ -132,7 +132,7 @@ SPDX-License-Identifier: Apache-2.0
                   <strong>{{ session['source.ip'] }}</strong>:{{ session['source.port'] }} <strong>{{ session['source.geo.country_iso_code'] }}</strong> -
                   <strong>{{ session['destination.ip'] }}</strong>:{{ session['destination.port'] }} <strong>{{ session['destination.geo.country_iso_code'] }}</strong>
                   <br>
-                  <strong>{{ protocol(session.ipProtocol) }}</strong> - {{ session.node }}
+                  <strong>{{ session.ipProtocol === 0 && session.ethertype > 1500 ? ethertype(session.ethertype) : protocol(session.ipProtocol) }}</strong> - {{ session.node }}
                 </small>
               </div>
             </a>
@@ -144,7 +144,7 @@ SPDX-License-Identifier: Apache-2.0
 </template>
 
 <script>
-import { timezoneDateString, protocol } from '@common/vueFilters.js';
+import { timezoneDateString, protocol, ethertype } from '@common/vueFilters.js';
 
 export default {
   name: 'ArkimeStickySessions',
@@ -239,6 +239,7 @@ export default {
   },
   methods: {
     protocol,
+    ethertype,
     timezoneDateString,
     /* exposed functions --------------------------------------------------- */
     /* Opens/closes the sticky sessions panel */

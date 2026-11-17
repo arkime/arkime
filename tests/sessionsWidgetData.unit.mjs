@@ -31,6 +31,7 @@ const STUBS = {
     export const humanReadableBytes = String;
     export const timezoneDateString = (ms, tz, showMs) => 'date:' + ms + ':' + tz + ':' + !!showMs;
     export const protocol = (p) => ({ 6: 'tcp', 17: 'udp' })[p] || String(p);
+    export const ethertype = (e) => 'ethertype:' + e;
     export const extractIPv6String = (v) => 'v6:' + v;
     export const buildListExpression = (f, v, op) => f + ' ' + op + ' [' + v.join(',') + ']';`)
 };
@@ -163,6 +164,7 @@ describe('cells', () => {
     assert.equal(formatCellText(field('starttime'), 1700000000000, { timezone: 'gmt', ms: false }), 'date:1700000000000:gmt:false');
     assert.equal(formatCellText(field('ip.protocol'), 6), 'tcp');
     assert.equal(formatCellText(field('port.dst'), 1234), '1234');
+    assert.equal(formatCellText({ type: 'integer', transform: 'ethertypeLookup' }, 2054), 'ethertype:2054');
   });
 
   test('csv', () => {

@@ -9,14 +9,18 @@ goes through the real search parser. Run with `npm run test:unit`.
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { buildExpression, buildListExpression } from '../common/vueapp/vueFilters.js';
+import { buildExpression, buildListExpression, protocol, ethertype } from '../common/vueapp/vueFilters.js';
 
 const cjsRequire = createRequire(import.meta.url);
 const { parser } = cjsRequire('../viewer/arkimeparser.js');
 
 const parse = (expression) => {
   parser.yy = {
-    fieldsMap: { 'host.http': { dbField: 'http.host', exp: 'host.http', type: 'termfield' } },
+    fieldsMap: {
+      'host.http': { dbField: 'http.host', exp: 'host.http', type: 'termfield' },
+      ethertype: { dbField: 'ethertype', exp: 'ethertype', type: 'integer', transform: 'ethertypeLookup' },
+      'ip.protocol': { dbField: 'ipProtocol', exp: 'ip.protocol', type: 'lotermfield', transform: 'ipProtocolLookup' }
+    },
     dbFieldsMap: {},
     prefix: '',
     emailSearch: false,
@@ -100,5 +104,37 @@ describe('shortcuts typed by the user still work', () => {
     const should = parse('host.http == [a,$evil]').bool.should;
     assert.deepEqual(should[0], { terms: { 'http.host': ['a'] } });
     assert.equal(should[1].terms['http.host'].path, 'string');
+  });
+});
+
+describe('protocol and ethertype names', () => {
+  test('ip protocol 0 is not-ip', () => {
+    assert.equal(protocol(0), 'not-ip');
+    assert.equal(protocol(17), 'udp');
+    assert.equal(protocol(250), 250);
+  });
+
+  test('ethertypes show a name or hex', () => {
+    assert.equal(ethertype(2054), 'arp');
+    assert.equal(ethertype(0x88cc), 'lldp');
+    assert.equal(ethertype(0x88b5), '0x88b5');
+  });
+});
+
+describe('searching ip.protocol and ethertype by name', () => {
+  test('not-ip is ip protocol 0', () => {
+    assert.deepEqual(parse('ip.protocol == not-ip'), { term: { ipProtocol: 0 } });
+    assert.deepEqual(parse('ip.protocol == [not-ip,udp]'), { terms: { ipProtocol: [0, 17] } });
+  });
+
+  test('ethertype names, hex and numbers', () => {
+    assert.deepEqual(parse('ethertype == arp'), { term: { ethertype: 2054 } });
+    assert.deepEqual(parse('ethertype == LLDP'), { term: { ethertype: 0x88cc } });
+    assert.deepEqual(parse('ethertype == 0x88b5'), { term: { ethertype: 0x88b5 } });
+    assert.deepEqual(parse('ethertype == 2054'), { term: { ethertype: 2054 } });
+    assert.deepEqual(parse('ethertype == [arp,lldp]'), { terms: { ethertype: [2054, 0x88cc] } });
+    assert.deepEqual(parse('ethertype != arp'), { bool: { must_not: { term: { ethertype: 2054 } } } });
+    assert.deepEqual(parse('ethertype > ipv4'), { range: { ethertype: { gt: 0x0800 } } });
+    assert.throws(() => parse('ethertype == foo'), /foo is not a number/);
   });
 });
