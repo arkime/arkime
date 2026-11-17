@@ -1,6 +1,6 @@
 # Simple writer opens pcap files lazily in its writer thread, make sure exit
 # waits for the final write/files update and bad pcapDirs still fail at startup
-use Test::More tests => 9;
+use Test::More tests => 10;
 use Cwd qw(realpath);
 use File::Path qw(make_path remove_tree);
 use URI::Escape;
@@ -36,11 +36,12 @@ sub filesDocs {
 my ($out, $rc) = runCapture("$tag-a", "--copy", "-r", "pcap/bt-tcp.pcap", "-o", "pcapDir=$dir");
 is($rc, 0, "capture exited cleanly");
 
+# One file per packet thread that saw packets
 my $files = filesDocs($realDir);
-is($files->{hits}->{total}, 1, "one files doc");
-my $doc = $files->{hits}->{hits}->[0]->{_source};
-ok($doc->{filesize} > 0 && $doc->{packets} > 0, "files doc updated before exit");
-is(-s $doc->{name}, $doc->{filesize}, "on disk size matches files doc");
+ok($files->{hits}->{total} >= 1, "files docs created");
+my @docs = map { $_->{_source} } @{$files->{hits}->{hits}};
+is_deeply([grep { !($_->{filesize} > 0 && $_->{packets} > 0) } @docs], [], "files docs updated before exit");
+is_deeply([grep { (-s $_->{name} // -1) != $_->{filesize} } @docs], [], "on disk sizes match files docs");
 
 opendir(my $dh, $dir);
 my @left = grep { !/^\.\.?$/ && ($_ =~ /-probe-/ || -z "$dir/$_") } readdir($dh);
