@@ -1499,6 +1499,7 @@
       "spiViewLayout": "SPI vaate paigutus",
       "themes": "Teemad",
       "password": "Parool",
+      "totp": "Kaheastmeline",
       "views": "Vaated",
       "shortcuts": "Otseteed",
       "dashboards": "Arkime töölauad",

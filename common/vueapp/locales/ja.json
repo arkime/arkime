@@ -1499,6 +1499,7 @@
       "spiViewLayout": "SPI View レイアウト",
       "themes": "テーマ",
       "password": "パスワード",
+      "totp": "二要素認証",
       "views": "ビュー",
       "shortcuts": "ショートカット",
       "dashboards": "Arkime ダッシュボード",

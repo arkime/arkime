@@ -1499,6 +1499,7 @@
       "spiViewLayout": "SPI 视图布局",
       "themes": "主题",
       "password": "密码",
+      "totp": "双因素认证",
       "views": "视图",
       "shortcuts": "快捷方式",
       "dashboards": "Arkime 仪表板",

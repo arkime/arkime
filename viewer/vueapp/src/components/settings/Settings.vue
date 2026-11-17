@@ -125,7 +125,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-icon
               icon="mdi-two-factor-authentication"
               class="me-1" />
-            {{ $t('settings.totp.title') }}
+            {{ $t('settings.nav.totp') }}
           </v-tab>
           <v-divider class="my-1" />
           <v-tab value="views">
@@ -189,7 +189,7 @@ SPDX-License-Identifier: Apache-2.0
           <hr>
 
           <!-- timezone -->
-          <v-row>
+          <v-row align="center">
             <v-col
               tag="label"
               cols="12"
@@ -246,7 +246,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /timezone -->
 
           <!-- start page -->
-          <v-row>
+          <v-row align="center">
             <v-col
               tag="label"
               cols="12"
@@ -277,7 +277,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /start page -->
 
           <!-- session detail tab -->
-          <v-row>
+          <v-row align="center">
             <v-col
               tag="label"
               cols="12"
@@ -314,7 +314,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /session detail tab -->
 
           <!-- session detail format -->
-          <v-row>
+          <v-row align="center">
             <v-col
               tag="label"
               cols="12"
@@ -354,7 +354,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /session detail format -->
 
           <!-- number of packets -->
-          <v-row>
+          <v-row align="center">
             <v-col
               tag="label"
               cols="12"
@@ -397,7 +397,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /number of packets -->
 
           <!-- show packet timestamp -->
-          <v-row>
+          <v-row align="center">
             <v-col
               tag="label"
               cols="12"
@@ -431,7 +431,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /show packet timestamp -->
 
           <!-- issue query on initial page load -->
-          <v-row>
+          <v-row align="center">
             <v-col
               tag="label"
               cols="12"
@@ -462,7 +462,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /issue query on initial page load -->
 
           <!-- session sort -->
-          <v-row>
+          <v-row align="center">
             <v-col
               tag="label"
               cols="12"
@@ -515,6 +515,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- default spi graph -->
           <v-row
+            align="center"
             v-if="fields && settings.spiGraph">
             <v-col
               tag="label"
@@ -538,7 +539,9 @@ SPDX-License-Identifier: Apache-2.0
             <v-col
               cols="12"
               sm="3">
-              <h4 v-if="spiGraphField">
+              <h4
+                v-if="spiGraphField"
+                class="mb-0">
                 <label
                   id="spiGraphFieldSetting"
                   class="arkime-badge arkime-badge--info cursor-help">
@@ -551,6 +554,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- connections src field -->
           <v-row
+            align="center"
             v-if="fields && settings.connSrcField">
             <v-col
               tag="label"
@@ -574,7 +578,9 @@ SPDX-License-Identifier: Apache-2.0
             <v-col
               cols="12"
               sm="3">
-              <h4 v-if="connSrcField">
+              <h4
+                v-if="connSrcField"
+                class="mb-0">
                 <label
                   class="arkime-badge arkime-badge--info cursor-help"
                   id="connSrcFieldSetting">
@@ -587,6 +593,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- connections dst field -->
           <v-row
+            align="center"
             v-if="fields && settings.connDstField">
             <v-col
               tag="label"
@@ -610,7 +617,9 @@ SPDX-License-Identifier: Apache-2.0
             <v-col
               cols="12"
               sm="3">
-              <h4 v-if="connDstField">
+              <h4
+                v-if="connDstField"
+                class="mb-0">
                 <label
                   class="arkime-badge arkime-badge--info cursor-help"
                   id="connDstFieldSetting">
@@ -622,6 +631,7 @@ SPDX-License-Identifier: Apache-2.0
           </v-row> <!-- /connections dst field -->
 
           <v-row
+            align="center"
             v-if="integerFields">
             <v-col
               tag="label"
@@ -646,7 +656,7 @@ SPDX-License-Identifier: Apache-2.0
             <v-col
               cols="12"
               sm="3">
-              <h4 class="d-flex align-center gap-1">
+              <h4 class="d-flex align-center gap-1 mb-0">
                 <template v-if="timelineDataFilters.length > 0">
                   <label
                     class="arkime-badge arkime-badge--info cursor-help arkime-badge--sm"
@@ -678,6 +688,7 @@ SPDX-License-Identifier: Apache-2.0
 
           <!-- hide tags field -->
           <v-row
+            align="center"
             v-if="fields">
             <v-col
               tag="label"
@@ -1251,7 +1262,7 @@ SPDX-License-Identifier: Apache-2.0
               v-if="!totpEnabled && !totpSetupMode"
               variant="flat"
               size="large"
-              color="primary"
+              color="success"
               @click="startTotpSetup">
               {{ $t('settings.totp.enroll') }}
             </v-btn>
@@ -1444,7 +1455,7 @@ import ArkimeError from '../utils/Error.vue';
 import ArkimeLoading from '../utils/Loading.vue';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import ThemePicker from '@common/ThemePicker.vue';
-import { THEMES } from '@common/themes/manifest.js';
+import { THEMES, getTheme } from '@common/themes/manifest.js';
 import { registerVuetifyTheme } from '@common/themes/registerVuetifyTheme.js';
 import Utils from '../utils/utils';
 import PeriodicQueries from './PeriodicQueries.vue';
@@ -1593,7 +1604,13 @@ export default {
       // haven't yet had applySavedTheme() promote their preference.
       const raw = (this.settings && (this.settings.vuetifyTheme || this.settings.theme)) || '';
       if (raw.startsWith('custom1')) { return 'custom1'; }
-      return raw.replace(/-theme$/, '') || 'arkime-light';
+      const id = raw.replace(/-theme$/, '');
+      if (getTheme(id)) { return id; }
+      // nothing usable saved (e.g. the "default-theme" every user starts
+      // with): show the theme App.vue fell back to, which follows the OS
+      const activeName = this.$vuetify.theme.global.name;
+      const active = activeName?.value ?? activeName;
+      return (getTheme(active) || active === 'custom1') ? active : 'arkime-light';
     },
     sortableColumns: function () {
       return this.columns.filter(column => !column.unsortable);
@@ -1902,16 +1919,19 @@ export default {
     },
     /* THEMES ------------------------------------------ */
     setTheme: function () {
-      // Default to the arkime-light theme if the user has not set one.
-      // Prefer the v7 key; if the user only has a legacy `theme` value
-      // (e.g. they've never set anything in v7), seed the v7 key from
-      // it -- normalizing any legacy '...-theme' suffix. We DO NOT
-      // mutate settings.theme so legacy arkime keeps reading it intact.
+      // Seed the v7 key from a legacy `theme` value only when it names a
+      // real theme, normalizing any legacy '...-theme' suffix. The legacy
+      // "default-theme" (every user's default) is left unset so App.vue
+      // keeps following the OS light/dark preference instead of the next
+      // save persisting a bogus "default" id. We DO NOT mutate
+      // settings.theme so legacy arkime keeps reading it intact.
       if (!this.settings.vuetifyTheme) {
         const legacy = typeof this.settings.theme === 'string'
           ? this.settings.theme.replace(/-theme$/, '')
           : '';
-        this.settings.vuetifyTheme = legacy || 'arkime-light';
+        if (getTheme(legacy)) {
+          this.settings.vuetifyTheme = legacy;
+        }
       }
       if (!this.settings.logo) {
         this.settings.logo = 'assets/Arkime_Logo_Mark_White.png';
@@ -2275,6 +2295,22 @@ export default {
 }
 .settings-content .settings-right-panel {
   overflow-x: auto;
+}
+/* the input and button text is smaller than the bold row label, so
+   centering the boxes leaves it reading a little high next to the label */
+.settings-content form#general .arkime-input-group {
+  position: relative;
+  top: 1px;
+}
+.settings-content form#general .v-btn-toggle {
+  position: relative;
+  top: 2px;
+}
+/* line the button text up with the 28px title's baseline; centering the
+   boxes leaves the button text 4px high */
+.settings-content form#totp h3 .v-btn {
+  position: relative;
+  top: 4px;
 }
 
 .settings-page .sub-navbar {

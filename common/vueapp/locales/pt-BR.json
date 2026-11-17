@@ -1499,6 +1499,7 @@
       "spiViewLayout": "Layout de Visualização SPI",
       "themes": "Temas",
       "password": "Senha",
+      "totp": "Dois Fatores",
       "views": "Visualizações",
       "shortcuts": "Atalhos",
       "dashboards": "Painéis do Arkime",
