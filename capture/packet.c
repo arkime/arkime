@@ -2410,6 +2410,7 @@ void arkime_packet_init()
                         "ethertype", "Ethertype", "ethertype",
                         "The ethernet protocol type",
                         0,  ARKIME_FIELD_FLAG_FAKE,
+                        "transform", "ethertypeLookup",
                         (char *)NULL);
 
     arkime_field_define("general", "termfield",

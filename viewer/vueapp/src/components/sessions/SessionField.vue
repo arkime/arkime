@@ -225,7 +225,7 @@ import ConfigService from '../utils/ConfigService';
 import ArkimeSessionInfo from './SessionInfo.vue';
 import Utils from '../utils/utils';
 import {
-  commaString, timezoneDateString, buildExpression, extractIPv6String, protocol
+  commaString, timezoneDateString, buildExpression, extractIPv6String, protocol, ethertype
 } from '@common/vueFilters.js';
 import { fetchWrapper } from '@common/fetchWrapper.js';
 
@@ -344,6 +344,11 @@ export default {
           }
           break;
         case 'integer':
+          if (this.field.transform === 'ethertypeLookup') {
+            val = ethertype(val);
+            qVal = val; // the parser takes the name (or hex) back
+            break;
+          }
           // a dashboard range bucket ('0-9') is shown as is: commaString
           // would turn anything that isn't a number into 0
           if (this.field.category !== 'port' && !noCommas[this.field.exp] && /^-?\d+$/.test(String(val))) {

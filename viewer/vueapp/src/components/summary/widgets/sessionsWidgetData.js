@@ -8,7 +8,7 @@ resolved to field objects; its rows come from /api/sessions, the endpoint and
 params the Sessions page lists with, narrowed to the columns' db fields.
 */
 import { fetchWrapper } from '@common/fetchWrapper.js';
-import { timezoneDateString, protocol, extractIPv6String } from '@common/vueFilters.js';
+import { timezoneDateString, protocol, ethertype, extractIPv6String } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 import { lengthOptions, defaultLength } from './viewModes';
 import { buildWidgetParams, widgetFields, queryInfo } from './widgetData';
@@ -116,6 +116,9 @@ export function formatCellText (field, value, settings = {}) {
   case 'lotermfield':
     if (field.transform === 'ipv6ToHex') { return extractIPv6String(value); }
     if (field.transform === 'ipProtocolLookup') { return protocol(value); }
+    break;
+  case 'integer':
+    if (field.transform === 'ethertypeLookup') { return ethertype(value); }
     break;
   }
   return String(value);

@@ -295,6 +295,9 @@ class Config {
         if (source.exp === 'host' || source.exp.startsWith('host.')) {
           source.transform = 'removeProtocolAndURI';
         }
+        if (source.exp === 'ethertype') {
+          source.transform = 'ethertypeLookup';
+        }
       }
 
       fieldsMap[field._id] = source;

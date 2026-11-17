@@ -577,7 +577,51 @@ export const extractIPv6String = function (ipv6) {
  * @returns {string}          The human understandable protocol string
  */
 export const protocol = function (protocolCode) {
-  const lookup = { 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
+  const lookup = { 0: 'not-ip', 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
 
-  return lookup[protocolCode] || protocolCode;
+  return lookup[protocolCode] ?? protocolCode;
+};
+
+/**
+ * Displays the ethertype name instead of number code, or hex if unknown
+ *
+ * @example
+ * '{{ ethertype(2054) }}'
+ *
+ * @param {int} code  The ethertype code
+ * @returns {string}  The human understandable ethertype string
+ */
+export const ethertype = function (code) {
+  const lookup = {
+    0x0800: 'ipv4',
+    0x0806: 'arp',
+    0x0842: 'wol',
+    0x6558: 'teb',
+    0x8035: 'rarp',
+    0x8100: 'vlan',
+    0x86dd: 'ipv6',
+    0x8808: 'pause',
+    0x8809: 'slow',
+    0x8847: 'mpls',
+    0x8848: 'mpls-mc',
+    0x8863: 'pppoed',
+    0x8864: 'pppoe',
+    0x888e: 'eapol',
+    0x8892: 'profinet',
+    0x88a4: 'ethercat',
+    0x88a8: 'qinq',
+    0x88b8: 'goose',
+    0x88ba: 'sv',
+    0x88cc: 'lldp',
+    0x88e5: 'macsec',
+    0x88f7: 'ptp',
+    0x8906: 'fcoe',
+    0x8914: 'fip',
+    0x894f: 'nsh',
+    0x9000: 'loopback'
+  };
+
+  const num = Number(code);
+  if (!Number.isInteger(num)) { return code; }
+  return lookup[num] ?? `0x${num.toString(16).padStart(4, '0')}`;
 };
