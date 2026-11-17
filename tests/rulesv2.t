@@ -1,64 +1,167 @@
 # Test rules v2 expressions, runs capture in --tests mode so no Elasticsearch is
 # needed. Parse tests read the parsed form capture logs with debug=2, match tests
 # check which rules tagged a known session.
+#
+# Capture starts slowly under the sanitizers, so most checks are queued and run by
+# runQueued() at the end: expressions that load share one capture run, each load
+# error needs a run of its own, and those runs go in parallel, one per cpu.
 use Test::More tests => 185;
 use JSON;
+use POSIX ();
 use strict;
 
-my $file = "/tmp/arkime-rulesv2-$$.yaml";
-END { unlink $file if $file && !$ENV{KEEP}; }
+my $dir = "/tmp/arkime-rulesv2-$$";
+mkdir($dir) or die "can't create $dir";
+my $parent = $$;
+END { system("rm", "-rf", $dir) if $$ == $parent && !$ENV{KEEP}; }
 
+my @runs;     # [rules yaml, pcap, debug, check sub given the output]
+my @shared;   # [when, expression, check sub given that rule's output]
+
+sub ruleYaml {
+    my ($name, $when, $expression, %opt) = @_;
+    my $yaml = "  - name: \"$name\"\n    when: \"$when\"\n" . ($opt{log} ? "    log: true\n" : "");
+    if (defined $opt{fields}) {
+        $yaml .= "    fields:\n$opt{fields}";
+    } else {
+        $expression =~ s/'/''/g;
+        $yaml .= "    expression: '$expression'\n";
+    }
+    return $yaml . "    ops:\n      tags: \"" . ($opt{tag} // "x") . "\"\n";
+}
+
+# The capture command line, stdout and stderr both go to $outFile when given
+sub captureCmd {
+    my ($rulesFile, $pcap, $debug, $outFile) = @_;
+    return "../capture/capture --tests -c config.test.ini -n test -o rulesFiles=$rulesFile" . ($debug ? " -o debug=2" : "") . " -r pcap/" . ($pcap // "empty.pcap") . ($outFile ? " > $outFile" : "") . " 2>&1";
+}
+
+# Queue a capture run of these rules, $check gets its output
+sub queueRun {
+    my ($rules, $pcap, $debug, $check) = @_;
+    push(@runs, ["version: 1\nrules:\n$rules", $pcap, $debug, $check]);
+}
+
+# Queue an expression that loads into the shared run, $check gets only its rule's lines
+sub queueShared {
+    my ($when, $expression, $check) = @_;
+    push(@shared, [$when, $expression, $check]);
+}
+
+# Run capture now with one rule
 sub captureRule {
     my ($when, $expression) = @_;
-    $expression =~ s/'/''/g;
-    open(my $fh, '>', $file) or die "can't write $file";
-    print $fh "version: 1\nrules:\n  - name: \"t\"\n    when: \"$when\"\n    expression: '$expression'\n    ops:\n      tags: \"x\"\n";
+    open(my $fh, '>', "$dir/now.yaml") or die "can't write $dir/now.yaml";
+    print $fh "version: 1\nrules:\n" . ruleYaml("t", $when, $expression);
     close($fh);
-    return `../capture/capture --tests -c config.test.ini -n test -o rulesFiles=$file -o debug=2 -r pcap/empty.pcap 2>&1`;
+    return `@{[captureCmd("$dir/now.yaml", undef, 1)]}`;
 }
 
-sub fieldsRule {
-    my ($when, $fields, $pcap, $log) = @_;
-    open(my $fh, '>', $file) or die "can't write $file";
-    print $fh "version: 1\nrules:\n  - name: \"t\"\n    when: \"$when\"\n" . ($log ? "    log: true\n" : "") . "    fields:\n$fields    ops:\n      tags: \"x\"\n";
-    close($fh);
-    return `../capture/capture --tests -c config.test.ini -n test -o rulesFiles=$file -r pcap/@{[$pcap // "empty.pcap"]} 2>&1`;
-}
-
-sub fieldsError {
-    my ($when, $fields, $expected) = @_;
-    like(fieldsRule($when, $fields), qr/\Q$expected\E/, "fields error: $expected");
+sub ruleResult {
+    my ($out, $want) = @_;
+    return $1 if ($want && $out =~ /^$want: (.*)/m);
+    return $1 if (!$want && $out =~ /rule '\w+' expression (\(.*)/);
+    return "ERROR: $1\n$2" if ($out =~ /expression error: (.*)\n(.*\n.*)/);
+    return "ERROR: $1" if ($out =~ /FATAL CONFIG ERROR - \S+: rule '\w+' (.*)/);
+    return "UNKNOWN: $out";
 }
 
 sub runRule {
     my ($when, $expression, $want) = @_;
     my $out = captureRule($when, $expression);
-    return $1 if ($want && $out =~ /^$want: (.*)/m);
-    return $1 if (!$want && $out =~ /rule 't' expression (\(.*)/);
-    return "ERROR: $1\n$2" if ($out =~ /expression error: (.*)\n(.*\n.*)/);
-    return "ERROR: $1" if ($out =~ /FATAL CONFIG ERROR - \S+: rule 't' (.*)/);
-    return "UNKNOWN: $out";
+    return ruleResult($out, $want);
+}
+
+sub runQueued {
+    # The shared run goes first, it is the longest
+    if (@shared) {
+        my @checks = @shared;
+        unshift(@runs, ["version: 1\nrules:\n" . join("", map { ruleYaml("s$_", $checks[$_][0], $checks[$_][1]) } (0 .. $#checks)), undef, 1, sub {
+            my ($out) = @_;
+            my %lines;
+            my $name = "";
+            for (split(/\n/, $out)) {
+                $name = $1 if (/rule '(s\d+)' expression /);
+                $lines{$name} .= "$_\n";
+            }
+            # A load error stops capture before the rules after it compile
+            my ($fatal) = $out =~ /(FATAL CONFIG ERROR.*)/;
+            $checks[$_][2]->($lines{"s$_"} // "not in the shared run: " . ($fatal // $out)) for (0 .. $#checks);
+        }]);
+        @shared = ();
+    }
+
+    my $max = `getconf _NPROCESSORS_ONLN 2>/dev/null` + 0 || 4;
+    my $running = 0;
+    for (my $i = 0; $i <= $#runs; $i++) {
+        my ($yaml, $pcap, $debug) = @{$runs[$i]};
+        if ($running >= $max) {
+            wait();
+            $running--;
+        }
+        open(my $fh, '>', "$dir/$i.yaml") or die "can't write $dir/$i.yaml";
+        print $fh $yaml;
+        close($fh);
+        my $pid = fork() // die "can't fork: $!";
+        if ($pid == 0) {
+            exec("sh", "-c", captureCmd("$dir/$i.yaml", $pcap, $debug, "$dir/$i.out"));
+            POSIX::_exit(127);
+        }
+        $running++;
+    }
+    1 while (wait() != -1);
+
+    for (my $i = 0; $i <= $#runs; $i++) {
+        open(my $fh, '<', "$dir/$i.out") or die "can't read $dir/$i.out";
+        my $out = do { local $/; <$fh> };
+        close($fh);
+        $runs[$i][3]->($out);
+    }
+    @runs = ();
 }
 
 sub parsed {
     my ($expression, $expected, $when) = @_;
-    is(runRule($when // "afterClassify", $expression), $expected, $expression);
+    queueShared($when // "afterClassify", $expression, sub { is(ruleResult($_[0]), $expected, $expression); });
 }
 
 sub optimized {
     my ($expression, $expected) = @_;
-    is(runRule("afterClassify", $expression, "optimized"), $expected, "optimized: $expression");
+    queueShared("afterClassify", $expression, sub { is(ruleResult($_[0], "optimized"), $expected, "optimized: $expression"); });
 }
 
 sub triggers {
     my ($expression, $expected) = @_;
-    is(runRule("fieldSet", $expression, "triggers"), $expected, "triggers: $expression");
+    queueShared("fieldSet", $expression, sub { is(ruleResult($_[0], "triggers"), $expected, "triggers: $expression"); });
 }
 
 sub error {
     my ($expression, $expected, $when) = @_;
-    my $out = runRule($when // "afterClassify", $expression);
-    like($out, qr/^ERROR: \Q$expected\E/, "error: $expression") or diag($out);
+    queueRun(ruleYaml("t", $when // "afterClassify", $expression), undef, 1, sub {
+        my $out = ruleResult($_[0]);
+        like($out, qr/^ERROR: \Q$expected\E/, "error: $expression") or diag($out);
+    });
+}
+
+sub fieldsError {
+    my ($when, $fields, $expected) = @_;
+    queueRun(ruleYaml("t", $when, undef, fields => $fields), undef, 0, sub { like($_[0], qr/\Q$expected\E/, "fields error: $expected"); });
+}
+
+# Queue a run of these [when, expression, log] rules tagging rv2-r<index>, $check gets the tags seen and the output
+sub pcapTags {
+    my ($pcap, $rules, $check) = @_;
+    my $yaml = "";
+    for (my $i = 0; $i <= $#$rules; $i++) {
+        my ($when, $expression, $log) = @{$rules->[$i]};
+        $yaml .= ruleYaml("r$i", $when, $expression, log => $log, tag => "rv2-r$i");
+    }
+    queueRun($yaml, $pcap, 0, sub {
+        my ($out) = @_;
+        my %tags;
+        $tags{$_} = 1 for map { @{from_json("[$_]")} } ($out =~ /"tags":\[([^\]]*)\]/g);
+        $check->(\%tags, $out);
+    });
 }
 
 # Precedence and grouping
@@ -146,78 +249,70 @@ fieldsError("beforeFinalSave", "      \"!port.dst\": 81\n      port.dst: 80\n", 
 fieldsError("beforeFinalSave", "      \"port.dst,endsWith\": 80\n", "doesn't support modifier endsWith");
 fieldsError("beforeFinalSave", "      port.dst: 90-80\n", "Min 90 > Max 80 not allowed");
 fieldsError("beforeFinalSave", "      \"!ip.src\": 1.2.3.4\n", "Currently only string and integer fields support NOT rules");
-like(fieldsRule("beforeFinalSave", "      host.http: xxxxxxxxxxxxx.xxx.com\n      port.dst: [80, 443]\n      \"!http.method\": POST\n", "http-content-zip.pcap", 1),
-     qr/arkime_rules_match\(\): t - \S+ => \S+ - port\.dst \(80\), host\.http \(xxxxxxxxxxxxx\.xxx\.com\)\n/, "fields log: field (value) for each matched field");
+queueRun(ruleYaml("t", "beforeFinalSave", undef, log => 1, fields => "      host.http: xxxxxxxxxxxxx.xxx.com\n      port.dst: [80, 443]\n      \"!http.method\": POST\n"), "http-content-zip.pcap", 0, sub {
+    like($_[0], qr/arkime_rules_match\(\): t - \S+ => \S+ - port\.dst \(80\), host\.http \(xxxxxxxxxxxxx\.xxx\.com\)\n/, "fields log: field (value) for each matched field");
+});
 
 # fieldSet on internal fields their parser sets, cert.alt is fieldSet before it can be read back
-sub pcapTags {
-    my ($pcap, @rules) = @_;
-    open(my $fh, '>', $file) or die "can't write $file";
-    print $fh "version: 1\nrules:\n";
-    for (my $i = 0; $i <= $#rules; $i++) {
-        my ($when, $expression, $log) = @{$rules[$i]};
-        $expression =~ s/'/''/g;
-        print $fh "  - name: \"r$i\"\n    when: \"$when\"\n" . ($log ? "    log: true\n" : "") . "    expression: '$expression'\n    ops:\n      tags: \"rv2-r$i\"\n";
-    }
-    close($fh);
-    my $out = `../capture/capture --tests -c config.test.ini -n test -o rulesFiles=$file -r pcap/$pcap 2>&1`;
-    my %tags;
-    $tags{$_} = 1 for map { @{from_json("[$_]")} } ($out =~ /"tags":\[([^\]]*)\]/g);
-    return (\%tags, $out);
-}
-{
-    my ($tags) = pcapTags("badcurveball.pcap",
-        ["fieldSet", "cert.alt == *.curveballtest.com"],
-        ["fieldSet", "cert.alt == *.curveballtest.com && port.dst == 443"],
-        ["fieldSet", "cert.alt == *.nomatch.com"],
-        ["fieldSet", "count(cert.alt) >= 1 && ip.dst == 54.226.182.138"]);
+pcapTags("badcurveball.pcap", [
+    ["fieldSet", "cert.alt == *.curveballtest.com"],
+    ["fieldSet", "cert.alt == *.curveballtest.com && port.dst == 443"],
+    ["fieldSet", "cert.alt == *.nomatch.com"],
+    ["fieldSet", "count(cert.alt) >= 1 && ip.dst == 54.226.182.138"]], sub {
+    my ($tags) = @_;
     ok($tags->{"rv2-r0"}, "fieldSet cert.alt expression matches");
     ok($tags->{"rv2-r1"}, "fieldSet cert.alt and port.dst expression matches");
     ok(!$tags->{"rv2-r2"}, "fieldSet cert.alt expression doesn't match other names");
     ok($tags->{"rv2-r3"}, "fieldSet count(cert.alt) sees the value being set");
+});
 
-    # A cert's names are all readable once the cert is added, so count() sees every one
-    ($tags) = pcapTags("https-generalizedtime.pcap",
-        ["fieldSet", "count(cert.alt) >= 12"],
-        ["fieldSet", "count(cert.alt) >= 13"],
-        ["fieldSet", "count(cert.alt) == 12 && cert.alt == mail.yandex.az"]);
+# A cert's names are all readable once the cert is added, so count() sees every one
+pcapTags("https-generalizedtime.pcap", [
+    ["fieldSet", "count(cert.alt) >= 12"],
+    ["fieldSet", "count(cert.alt) >= 13"],
+    ["fieldSet", "count(cert.alt) == 12 && cert.alt == mail.yandex.az"]], sub {
+    my ($tags) = @_;
     ok($tags->{"rv2-r0"}, "fieldSet count(cert.alt) sees all 12 names of a cert");
     ok(!$tags->{"rv2-r1"}, "fieldSet count(cert.alt) doesn't over count");
     ok($tags->{"rv2-r2"}, "fieldSet count(cert.alt) exact with a name");
+});
 
-    ($tags) = pcapTags("dns-udp.pcap",
-        ["fieldSet", "dns.query.host == www.github.com"],
-        ["fieldSet", "dns.query.host == *.github.com && port.dst == 53"],
-        ["fieldSet", "dns.query.host == www.gitlab.com"],
-        ["fieldSet", "count(dns.query.host) == 1"]);
+pcapTags("dns-udp.pcap", [
+    ["fieldSet", "dns.query.host == www.github.com"],
+    ["fieldSet", "dns.query.host == *.github.com && port.dst == 53"],
+    ["fieldSet", "dns.query.host == www.gitlab.com"],
+    ["fieldSet", "count(dns.query.host) == 1"]], sub {
+    my ($tags) = @_;
     ok($tags->{"rv2-r0"}, "fieldSet dns.query.host expression matches");
     ok($tags->{"rv2-r1"}, "fieldSet dns.query.host and port.dst expression matches");
     ok(!$tags->{"rv2-r2"}, "fieldSet dns.query.host expression doesn't match other names");
     ok($tags->{"rv2-r3"}, "fieldSet count() counts the value being set once");
-}
+});
 triggers('dns.query.host == www.github.com', 'dns.query.host:str:www.github.com');
 triggers('cert.alt == *.example.com', 'cert.alt:tail:.example.com');
 
 # More than the 32 rules the seen list holds before using a hash, each indexed under 3 overlapping cidrs
 # that all match 10.0.0.2, ops and logs must run once per rule
-{
-    my ($tags, $out) = pcapTags("http-content-zip.pcap", map { ["fieldSet", "ip.dst == [10.0.0.0/8, 10.0.0.0/16, 10.0.0.2]", 1] } (0 .. 39));
+pcapTags("http-content-zip.pcap", [map { ["fieldSet", "ip.dst == [10.0.0.0/8, 10.0.0.0/16, 10.0.0.2]", 1] } (0 .. 39)], sub {
+    my ($tags, $out) = @_;
     my %logs;
     $logs{$1}++ while ($out =~ /arkime_rules_match\(\): (r\d+) - /g);
     is(scalar(keys %logs), 40, "40 fieldSet rules matched");
     is(scalar(grep { $logs{$_} != 1 } keys %logs), 0, "each rule ran once though 3 index keys matched");
-}
+});
 
 # bpf() accepts filters that compile for any supported link type, like bpf: rules
-is(runRule("sessionSetup", 'bpf("wlan type mgt")', "optimized"), '(bpf "wlan type mgt")', "bpf() 802.11 only filter loads");
+queueShared("sessionSetup", 'bpf("wlan type mgt")', sub { is(ruleResult($_[0], "optimized"), '(bpf "wlan type mgt")', "bpf() 802.11 only filter loads"); });
 
 # Explain past 64KB of source shows the right condition, long conditions are cut short
 {
     my $list = join(", ", map { "h$_.example.net" } (1 .. 20000));
-    my ($tags, $out) = pcapTags("http-content-zip.pcap", ["beforeFinalSave", "host.http == [$list, xxxxxxxxxxxxx.xxx.com] && port.dst == 80 && http.method == GET", 1]);
-    my ($line) = $out =~ /arkime_rules_match\(\): r0 - \S+ => \S+ - (.*)/;
-    like($line, qr/http\.method == GET \(GET\)/, "explain: condition past 64KB of source");
-    like($line, qr/^port\.dst == 80 \(80\), host\.http == \[h1\.example\.net, .{150,}\.\.\. \(xxxxxxxxxxxxx\.xxx\.com\)/, "explain: long condition cut short");
+    pcapTags("http-content-zip.pcap", [["beforeFinalSave", "host.http == [$list, xxxxxxxxxxxxx.xxx.com] && port.dst == 80 && http.method == GET", 1]], sub {
+        my ($tags, $out) = @_;
+        my ($line) = $out =~ /arkime_rules_match\(\): r0 - \S+ => \S+ - (.*)/;
+        like($line, qr/http\.method == GET \(GET\)/, "explain: condition past 64KB of source");
+        like($line, qr/^port\.dst == 80 \(80\), host\.http == \[h1\.example\.net, .{150,}\.\.\. \(xxxxxxxxxxxxx\.xxx\.com\)/, "explain: long condition cut short");
+    });
 }
 
 # Registered functions, tests/plugins/test.c registers the test* ones
@@ -230,11 +325,12 @@ error('testDouble(1, 2) == 1', "testDouble() takes 1 argument, found 2");
 error('testHasDot(port.dst)', "testHasDot() argument 1 must be a string, found a integer");
 error('testSameIp(ip.src, port.dst)', "testSameIp() argument 2 must be an ip, found a integer");
 error('testDouble(port.dst)', "expected a condition but found a integer value");
-like(captureRule("afterClassify", 'testSameIp(ip.src, ip.dst)'), qr/CALL_B +testSameIp\(r\d+, r\d+\)/, "call: disassembly");
+queueShared("afterClassify", 'testSameIp(ip.src, ip.dst)', sub { like($_[0], qr/CALL_B +testSameIp\(r\d+, r\d+\)/, "call: disassembly"); });
 
 # Common subexpressions are computed once per condition
-my $cse = captureRule("afterClassify", 'databytes.src * databytes.src > databytes.src + 1');
-is(scalar(() = $cse =~ /LOAD_INT +r\d+ = databytes\.src/g), 1, "cse: databytes.src loaded once");
+queueShared("afterClassify", 'databytes.src * databytes.src > databytes.src + 1', sub {
+    is(scalar(() = $_[0] =~ /LOAD_INT +r\d+ = databytes\.src/g), 1, "cse: databytes.src loaded once");
+});
 
 # fieldSet triggers, only fields used without ! and that capture sets
 triggers('host.http == [a, *.b, c*, *d*] && port.dst == [80, 1000-2000] && ip.dst == [10.0.0.0/8, ipv6]',
@@ -329,24 +425,17 @@ my @matches = (
     ['testHasDot(host.http)', 1, 'fieldSet'],
 );
 
-open(my $fh, '>', $file) or die "can't write $file";
-print $fh "version: 1\nrules:\n";
-for (my $i = 0; $i <= $#matches; $i++) {
-    my ($expression, $expected, $when) = @{$matches[$i]};
-    $expression =~ s/'/''/g;
-    print $fh "  - name: \"m$i\"\n    when: \"" . ($when // "beforeFinalSave") . "\"\n    expression: '$expression'\n    ops:\n      tags: \"rv2-m$i\"\n";
-}
 # v1 fieldSet rule indexed alongside the expression rules
-print $fh "  - name: \"v1\"\n    when: \"fieldSet\"\n    fields:\n      host.http:\n        - xxxxxxxxxxxxx.xxx.com\n    ops:\n      tags: \"rv2-v1\"\n";
-close($fh);
-
-my $out = `../capture/capture --tests -c config.test.ini -n test -o rulesFiles=$file -r pcap/http-content-zip.pcap 2>&1`;
-my %tags = map { $_ => 1 } ($out =~ /"tags":\[([^\]]*)\]/ ? @{from_json("[$1]")} : ());
-for (my $i = 0; $i <= $#matches; $i++) {
-    my ($expression, $expected) = @{$matches[$i]};
-    is($tags{"rv2-m$i"} ? 1 : 0, $expected, ($expected ? "match: " : "no match: ") . $expression);
-}
-ok($tags{"rv2-v1"}, "v1 fieldSet rule still matches");
+queueRun(join("", map { ruleYaml("m$_", $matches[$_][2] // "beforeFinalSave", $matches[$_][0], tag => "rv2-m$_") } (0 .. $#matches)) .
+         ruleYaml("v1", "fieldSet", undef, fields => "      host.http:\n        - xxxxxxxxxxxxx.xxx.com\n", tag => "rv2-v1"), "http-content-zip.pcap", 0, sub {
+    my ($out) = @_;
+    my %tags = map { $_ => 1 } ($out =~ /"tags":\[([^\]]*)\]/ ? @{from_json("[$1]")} : ());
+    for (my $i = 0; $i <= $#matches; $i++) {
+        my ($expression, $expected) = @{$matches[$i]};
+        is($tags{"rv2-m$i"} ? 1 : 0, $expected, ($expected ? "match: " : "no match: ") . $expression);
+    }
+    ok($tags{"rv2-v1"}, "v1 fieldSet rule still matches");
+});
 
 # Explain, log: true logs each condition that matched and the value
 my @explains = (
@@ -359,16 +448,12 @@ my @explains = (
     ['port.dst != [443, 8443] && http.method != POST && !(host.http == a) && !(http.statuscode != 200)',
      'port.dst != [443, 8443], !(http.statuscode != 200) (200), http.method != POST, !(host.http == a)'],
 );
-open($fh, '>', $file) or die "can't write $file";
-print $fh "version: 1\nrules:\n";
-for (my $i = 0; $i <= $#explains; $i++) {
-    my $expression = $explains[$i]->[0];
-    $expression =~ s/'/''/g;
-    print $fh "  - name: \"e$i\"\n    when: \"beforeFinalSave\"\n    log: true\n    expression: '$expression'\n    ops:\n      tags: \"rv2-e$i\"\n";
-}
-close($fh);
-$out = `../capture/capture --tests -c config.test.ini -n test -o rulesFiles=$file -r pcap/http-content-zip.pcap 2>&1`;
-for (my $i = 0; $i <= $#explains; $i++) {
-    my ($line) = $out =~ /e$i - [^\n]* - (.*)/;
-    is($line, $explains[$i]->[1], "explain: $explains[$i]->[0]");
-}
+queueRun(join("", map { ruleYaml("e$_", "beforeFinalSave", $explains[$_][0], log => 1, tag => "rv2-e$_") } (0 .. $#explains)), "http-content-zip.pcap", 0, sub {
+    my ($out) = @_;
+    for (my $i = 0; $i <= $#explains; $i++) {
+        my ($line) = $out =~ /e$i - [^\n]* - (.*)/;
+        is($line, $explains[$i]->[1], "explain: $explains[$i]->[0]");
+    }
+});
+
+runQueued();
