@@ -818,13 +818,19 @@ LOCAL gboolean arkime_http_send_timer_callback(gpointer UNUSED(unused))
 #ifdef ARKIME_HTTP_DEBUG
         LOG("HTTPDEBUG DO %p %d %s", request, request->server->outstanding, request->url);
 #endif
-        curl_multi_add_handle(request->server->multi, request->easy);
+        // check_multi_info can free request
+        ArkimeHttpServer_t *server = request->server;
+        curl_multi_add_handle(server->multi, request->easy);
 
         /* Kick-start the transfer immediately after adding the handle.
          * This is the recommended libcurl pattern for event-driven
          * curl_multi_socket usage - ensures the transfer begins without
          * waiting for the next timer or socket event. */
-        curl_multi_socket_action(request->server->multi, CURL_SOCKET_TIMEOUT, 0, &request->server->multiRunning);
+        curl_multi_socket_action(server->multi, CURL_SOCKET_TIMEOUT, 0, &server->multiRunning);
+
+        /* A transfer can finish inside the kick-start, and then no socket or
+         * timer event is left to report it. */
+        arkime_http_curlm_check_multi_info(server);
     }
 
     return G_SOURCE_REMOVE;
