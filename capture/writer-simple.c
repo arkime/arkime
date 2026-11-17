@@ -59,7 +59,8 @@ typedef struct {
     uint32_t             id;
     uint32_t             sessionsStarted;
     uint32_t             sessionsPresent;
-    int                  fd;
+    int                  fd;      // -1 until the writer thread opens it
+    char                *name;
     uint8_t              dek[256];
     z_stream             z_strm;
     uint8_t              thread;
@@ -90,6 +91,7 @@ typedef struct {
 LOCAL  ArkimeSimpleHead_t simpleQ;
 LOCAL  ARKIME_LOCK_DEFINE(simpleQ);
 LOCAL  ARKIME_COND_DEFINE(simpleQ);
+LOCAL  int                simpleInFlight; // Popped from simpleQ but not finished, protected by simpleQ lock
 
 enum ArkimeSimpleMode { ARKIME_SIMPLE_NORMAL, ARKIME_SIMPLE_XOR2048, ARKIME_SIMPLE_AES256CTR};
 enum ArkimeDEKMode { ARKIME_DEK_AES192CBC, ARKIME_DEK_AES256GCM };
@@ -138,7 +140,10 @@ LOCAL uint32_t simpleCompressionBlockSize; // Max data that we try and compress,
 /******************************************************************************/
 LOCAL uint32_t writer_simple_queue_length()
 {
-    return DLL_COUNT(simple_, &simpleQ);
+    ARKIME_LOCK(simpleQ);
+    uint32_t len = DLL_COUNT(simple_, &simpleQ) + simpleInFlight;
+    ARKIME_UNLOCK(simpleQ);
+    return len;
 }
 /******************************************************************************/
 /*
@@ -194,6 +199,7 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
         default:
             break;
         }
+        g_free(info->file->name);
         ARKIME_TYPE_FREE(ArkimeSimpleFile_t, info->file);
     }
     info->file = 0;
@@ -544,6 +550,7 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         info = simpleThreadData[thread].currentInfo = writer_simple_alloc(NULL);
         info->file = ARKIME_TYPE_ALLOC0(ArkimeSimpleFile_t);
         info->file->thread = thread;
+        info->file->fd = -1;
 
         switch (compressionMode) {
         case ARKIME_COMPRESSION_GZIP:
@@ -649,16 +656,8 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
             CONFIGEXIT("Unknown simpleMode %d", simpleMode);
         }
 
-        /* If offline pcap honor umask, otherwise disable other RW */
-        unlink(name);
-        if (config.pcapReadOffline) {
-            simpleThreadData[thread].currentInfo->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
-        } else {
-            simpleThreadData[thread].currentInfo->file->fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
-        }
-        if (simpleThreadData[thread].currentInfo->file->fd < 0) {
-            LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
-        }
+        // The writer thread opens the file on first write, so a crash before then doesn't leave an empty file
+        info->file->name = name;
 
         if (simpleShortHeader) {
             simpleThreadData[thread].firstPacket = packet->ts.tv_sec - 60; // Allow slightly out of sync clocks
@@ -673,9 +672,6 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
 
         uint32_t linktype = arkime_packet_dlt_to_linktype(pcapFileHeader.dlt);
         writer_simple_write_output(thread, (uint8_t *)&linktype, 4);
-        if (config.debug)
-            LOG("opened %d %s %d", thread, name, info->file->fd);
-        g_free(name);
 
         // Make a new block for start of packets
         if (compressionMode == ARKIME_COMPRESSION_GZIP)
@@ -747,20 +743,72 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
     }
 }
 /******************************************************************************/
+LOCAL int writer_simple_open(const char *name)
+{
+    /* If offline pcap honor umask, otherwise disable other RW */
+    unlink(name);
+    int fd;
+    if (config.pcapReadOffline) {
+        fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+    } else {
+        fd = open(name, openOptions, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP);
+    }
+    if (fd < 0) {
+        LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
+    }
+    return fd;
+}
+/******************************************************************************/
+// Files are opened lazily by the writer thread, so check each pcapDir is writable at startup
+LOCAL void writer_simple_probe_dirs()
+{
+    uint8_t *buf = mmap(0, pageSize, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+    if (buf == MAP_FAILED) {
+        LOGEXIT("ERROR - MMap failure in writer_simple_probe_dirs, %d: %s", errno, strerror(errno));
+    }
+
+    for (int i = 0; config.pcapDir[i]; i++) {
+        struct stat sb;
+        if (stat(config.pcapDir[i], &sb) != 0 && errno == ENOENT)
+            continue; // Created on first file
+
+        char name[1024];
+        snprintf(name, sizeof(name), "%s/.%s-probe-%d", config.pcapDir[i], config.nodeName, (int)getpid());
+        int fd = writer_simple_open(name);
+        int len = write(fd, buf, pageSize);
+        int err = errno;
+        close(fd);
+        unlink(name);
+        if (len != (int)pageSize) {
+            LOGEXIT("ERROR - pcap write failed - Couldn't write file: '%s' with %s (%d) -- You may need to set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(err), err);
+        }
+    }
+    munmap(buf, pageSize);
+}
+/******************************************************************************/
 LOCAL void *writer_simple_thread(void *UNUSED(arg))
 {
-    ArkimeSimple_t *info;
+    ArkimeSimple_t *info = NULL;
 
     if (config.debug)
         LOG("THREAD %p", (gpointer)pthread_self());
 
     while (1) {
         ARKIME_LOCK(simpleQ);
+        if (info)
+            simpleInFlight--;
         while (DLL_COUNT(simple_, &simpleQ) == 0) {
             ARKIME_COND_WAIT(simpleQ);
         }
         DLL_POP_HEAD(simple_, &simpleQ, info);
+        simpleInFlight++;
         ARKIME_UNLOCK(simpleQ);
+
+        if (info->file->fd < 0) {
+            info->file->fd = writer_simple_open(info->file->name);
+            if (config.debug)
+                LOG("opened %d %s %d", info->file->thread, info->file->name, info->file->fd);
+        }
 
         uint32_t pos = 0;
         uint32_t total = info->bufpos;
@@ -1105,6 +1153,7 @@ void writer_simple_init(const char *name)
     } else {
         LOG("Not using O_DIRECT by config");
     }
+    writer_simple_probe_dirs();
 
     config.gapPacketPos = arkime_config_boolean(NULL, "gapPacketPos", TRUE);
 
