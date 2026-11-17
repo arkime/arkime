@@ -1,4 +1,4 @@
-use Test::More tests => 265;
+use Test::More tests => 266;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -471,6 +471,9 @@ ok($info->{success}, "create spigraphConfig with a scatter succeeds");
 viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph scatter bad metrics","type":"spigraphConfig","data":{"field":"source.ip","viewMode":"scatter","metrics":["sessions",5]}}', $token);
 is($info->{i18n}, "api.shareables.invalidGraph", "create spigraphConfig with a non-string scatter metric fails");
+$info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph boxplot","type":"spigraphConfig","data":{"field":"protocols","viewMode":"boxplot","metricType":"session.length","metrics":["session.length"],"sortMetric":"session.length","metricAgg":"p50","yScale":"log","orientation":"horizontal"}}', $token);
+ok($info->{success}, "create spigraphConfig with a box plot succeeds");
+viewerDeleteToken("/api/shareable/$info->{id}?arkimeRegressionUser=sac-test1", $token);
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph bad depth","type":"spigraphConfig","data":{"field":"source.ip","viewMode":"tree","treeDepth":"3"}}', $token);
 is($info->{i18n}, "api.shareables.invalidGraph", "create spigraphConfig with a non-integer treeDepth fails");
 $info = viewerPostToken("/api/shareable?arkimeRegressionUser=sac-test1", '{"name":"graph bad root","type":"spigraphConfig","data":{"field":"source.ip","viewMode":"tree","treeRoot":5}}', $token);

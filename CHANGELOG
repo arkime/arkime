@@ -103,6 +103,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4466 Featherprint lists up to 10000 tracked IPs and alerts instead of 500, says when a list is cut short, and counts every open alert
   - #4466 Deleting a saved graph or dashboard asks first, and SPI Graph and the widget editor use the same graph type names
   - #4466 Fix the History page Expression and View exists checkboxes never showing
+  - #4469 Add a box plot widget and SPI Graph type, the spread of a numeric field (quartiles, median, min, max and mean) over each top value's sessions, ranked by sessions or by an aggregation of the field
 ## ESProxy
   - #4462 A sensor can no longer change a pcap file's scheme or S3 location after creating its file record
 ## Multies

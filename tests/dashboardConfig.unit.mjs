@@ -47,7 +47,8 @@ globalThis.testFields = [
   { exp: 'port.dst', dbField: 'destination.port' },
   { exp: 'protocols', dbField: 'protocol' },
   { exp: 'bytes', dbField: 'totBytes' },
-  { exp: 'packets', dbField: 'totPackets' }
+  { exp: 'packets', dbField: 'totPackets' },
+  { exp: 'session.length', dbField: 'length' }
 ];
 const fieldsArr = globalThis.testFields;
 
@@ -56,7 +57,7 @@ const {
   graphFromSpigraphQuery, spigraphQueryFromGraph, graphOnSpigraph, graphDrawnAsWidget, graphIsHierarchyFed, sameSpigraphGraph,
   migrateDashboard, DASHBOARD_VERSION
 } = await import('../viewer/vueapp/src/components/summary/dashboardConfig.js');
-const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor, allowsCompare, hasLevels } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
+const { viewModeLabelKey, fieldCountLimits, MAX_FIELDS, metricAggsFor, allowsCompare, hasLevels, boxMetric, boxRank } = await import('../viewer/vueapp/src/components/summary/widgets/viewModes.js');
 const { widgetFullPageLink, widgetFields, hierarchyFields, defaultWidgetTitle, pageExpression, combinedExpression, metricHistoKey, compareOffset, widgetThresholds, thresholdColor, summaryRequestWidget, circleColorFieldUsable, circleColorDbField } = await import('../viewer/vueapp/src/components/summary/widgets/widgetData.js');
 const { findTreeRoot, buildConnectionTree, MAX_TREE_CHILDREN, MAX_TREE_NODES } = await import('../viewer/vueapp/src/components/summary/widgets/connectionTree.js');
 const { showsOwnLayout, defaultDashboardId, FALLBACK_DEFAULT_ID } = await import('../viewer/vueapp/src/components/summary/systemDashboards.js');
@@ -346,7 +347,11 @@ describe('spigraphQueryFromGraph', () => {
       graph({ viewMode: 'timeline', splitField: 'protocols', splitLength: 5, seriesType: 'lines', yScale: 'log', gaugeCrit: 50 }),
       graph({ viewMode: 'timeline', splitField: 'protocols', splitLength: 5, barMode: 'grouped', seriesType: 'lines' }),
       graph({ viewMode: 'area', splitField: 'protocols', splitLength: 5, yScale: 'log' }),
-      graph({ viewMode: 'combo', field: 'ip.src', metrics: ['sessions', 'bytes'], metricAgg: 'max', order: 'asc' })
+      graph({ viewMode: 'combo', field: 'ip.src', metrics: ['sessions', 'bytes'], metricAgg: 'max', order: 'asc' }),
+      // a box plot by its sessions, or by an aggregation of its metric
+      graph({ viewMode: 'boxplot', field: 'protocols', metricType: 'session.length', metrics: ['session.length'], sortMetric: 'sessions' }),
+      graph({ viewMode: 'boxplot', field: 'ip.dst', metricType: 'bytes', metrics: ['bytes'], sortMetric: 'bytes', metricAgg: 'p95', yScale: 'log', orientation: 'horizontal', order: 'asc', length: 10 }),
+      graph({ viewMode: 'boxplot', field: 'port.dst', metricType: 'packets', metrics: ['packets'], sortMetric: 'sessions', orderBy: 'key', view: 'v1' })
     ];
     for (const g of graphs) {
       const query = spigraphQueryFromGraph(g);
@@ -399,6 +404,32 @@ describe('spigraphQueryFromGraph', () => {
     assert.equal(q.yScale, 'log');
     // a slot left unset gets its default: a combo's line is bytes
     assert.equal(spigraphQueryFromGraph(graph({ viewMode: 'combo', field: 'ip.src' })).lineMetric, 'totBytesHisto');
+  });
+
+  test('a box plot names its metric and what ranks its values', () => {
+    const box = (o) => graph({ viewMode: 'boxplot', field: 'ip.src', ...o });
+    // the session count ranks it unless an aggregation of the metric does
+    const bySessions = spigraphQueryFromGraph(box({ metricType: 'bytes', metrics: ['bytes'], sortMetric: 'sessions', metricAgg: 'avg' }));
+    assert.equal(bySessions.spiGraphType, 'boxplot');
+    assert.equal(bySessions.graphType, 'totBytesHisto');
+    assert.equal(bySessions.rankBy, undefined);
+    assert.equal(bySessions.metricAgg, undefined);
+    const byMedian = spigraphQueryFromGraph(box({ metricType: 'bytes', metrics: ['bytes'], sortMetric: 'bytes', metricAgg: 'p50' }));
+    assert.equal(byMedian.rankBy, 'p50');
+    assert.equal(byMedian.metricAgg, undefined);
+    // the session count has no spread: without a metric it draws the session length
+    assert.equal(boxMetric(box({})), 'session.length');
+    assert.equal(spigraphQueryFromGraph(box({})).graphType, 'lengthHisto');
+    const fromUrl = (q) => graphFromSpigraphQuery({ spiGraphType: 'boxplot', exp: 'ip.src', ...q }, { fieldsArr });
+    assert.equal(fromUrl({}).metricType, 'session.length');
+    assert.equal(fromUrl({ graphType: 'sessionsHisto' }).metricType, 'session.length');
+    const ranked = fromUrl({ graphType: 'totPacketsHisto', rankBy: 'max' });
+    assert.deepEqual([ranked.metricType, ranked.metrics, ranked.sortMetric, ranked.metricAgg], ['packets', ['packets'], 'packets', 'max']);
+    assert.equal(boxRank(ranked), 'max');
+    // a unique count isn't a ranking of a numeric metric's spread
+    assert.deepEqual([fromUrl({ rankBy: 'cardinality' }).sortMetric, fromUrl({ rankBy: 'cardinality' }).metricAgg], ['sessions', 'sum']);
+    assert.equal(boxRank(box({ metricType: 'bytes', sortMetric: 'bytes', metricAgg: 'cardinality' })), 'sessions');
+    assert.equal(graphDrawnAsWidget(box({})), true);
   });
 
   test('an area opens SPI Graph\'s Area, stacked unless percent or overlaid', () => {
@@ -919,6 +950,8 @@ describe('percentiles', () => {
     assert.deepEqual(metricAggsFor('area'), ['sum']);
     assert.deepEqual(metricAggsFor('treemap'), ['sum']);
     assert.ok(!metricAggsFor('table', true).includes('p95'));
+    assert.deepEqual(metricAggsFor('boxplot'), ['sum', 'avg', 'min', 'max', 'p50', 'p90', 'p95', 'p99']);
+    assert.deepEqual(metricAggsFor('boxplot', true), ['sum', 'avg', 'min', 'max']);
   });
 
   test('a timeline or heatmap percentile draws its own series, others the sum', () => {

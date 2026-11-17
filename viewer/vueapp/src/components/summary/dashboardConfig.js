@@ -2,7 +2,7 @@
 Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 */
-import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, isPercentileAgg, metricAggsFor, hasOrder, hasLevels, allowsBucketInterval, COMPARES, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, MAX_FIELDS, TREE_DEPTHS, DEFAULT_TREE_DEPTH, slotMetrics } from './widgets/viewModes';
+import { isFieldMode, DEFAULT_VIEW_MODES, defaultLength, METRIC_AGGS, isPercentileAgg, metricAggsFor, hasOrder, hasLevels, allowsBucketInterval, COMPARES, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, MAX_FIELDS, TREE_DEPTHS, DEFAULT_TREE_DEPTH, slotMetrics, boxMetric, boxRank, BOX_RANK_AGGS } from './widgets/viewModes';
 import { CIRCLE_MAX_NODES, DEFAULT_CIRCLE_MAX_NODES } from './widgets/connectionCircle';
 import FieldService from '../search/FieldService';
 import { VARIABLE_NAME_RE, CONTROL_TYPES } from './widgets/dashboardVariables';
@@ -231,7 +231,7 @@ export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics
 // view modes a graph can have: the field-bound dashboard types SPI Graph
 // draws, and a timeline, area or time of day grid split by a field (SPI
 // Graph's Timeline, Area and Time of day)
-export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'circle', 'timeline', 'area', 'timeofday', 'combo', 'scatter'];
+export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'circle', 'timeline', 'area', 'timeofday', 'combo', 'scatter', 'boxplot'];
 
 // the session-wide types that are a graph once split by a field
 const SPLIT_GRAPH_VIEW_MODES = ['timeline', 'area', 'timeofday'];
@@ -279,6 +279,9 @@ export const graphDrawnAsWidget = (graph) => {
   case 'combo':
   case 'scatter':
     return ordered || g.metricAgg !== 'sum';
+  // SPI Graph's own charts have no spread of a metric
+  case 'boxplot':
+    return true;
   default:
     return false;
   }
@@ -297,7 +300,7 @@ export const widgetFromGraph = (graph, overrides = {}) => normalizeWidget({ ...(
 
 // SPI Graph's types and the graph each is (its Timeline, one histogram per
 // value, is a timeline split by the field)
-const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', area: 'area', timeofday: 'timeofday', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', matrix: 'matrix', mosaic: 'mosaic', waffle: 'waffle', connections: 'connections', tree: 'tree', circle: 'circle', table: 'table', combo: 'combo', scatter: 'scatter' };
+const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', area: 'area', timeofday: 'timeofday', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', matrix: 'matrix', mosaic: 'mosaic', waffle: 'waffle', connections: 'connections', tree: 'tree', circle: 'circle', table: 'table', combo: 'combo', scatter: 'scatter', boxplot: 'boxplot' };
 
 /**
  * The graph the SPI Graph page is showing, from its url query and the current
@@ -420,6 +423,21 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     if (type === 'scatter') { metrics.push(str(query.sizeMetric) ? (histoMetric(query.sizeMetric) || 'sessions') : ''); }
     overrides = { metrics, metricType: first, sortMetric: first, metricAgg: aggOf(viewMode, metrics) };
     if (type === 'scatter' && query.yScale === 'log') { overrides.yScale = 'log'; }
+  } else if (type === 'boxplot') {
+    // one field; its metric (the spread drawn) is a <dbField>Histo key, never
+    // the session count. rankBy, when set, is the aggregation of it the
+    // values are ranked by, else their session count ranks them
+    fields = exp ? [exp] : [];
+    const metric = histoMetric(query.graphType) || boxMetric({});
+    const rank = BOX_RANK_AGGS.includes(query.rankBy) ? query.rankBy : '';
+    overrides = {
+      metricType: metric,
+      metrics: [metric],
+      sortMetric: rank ? metric : 'sessions',
+      metricAgg: rank || 'sum',
+      yScale: query.yScale === 'log' ? 'log' : 'linear',
+      orientation: query.barOrientation === 'horizontal' ? 'horizontal' : 'vertical'
+    };
   }
   if (!fields.length || !fields[0]) { return null; }
   const mode = overrides.viewMode || viewMode;
@@ -557,6 +575,20 @@ export const spigraphQueryFromGraph = (graph) => {
     }
     return q;
   }
+  case 'boxplot': {
+    // the metric is always named: left out, SPI Graph would draw whichever
+    // one it showed last
+    const rank = boxRank(g);
+    return {
+      ...base,
+      spiGraphType: 'boxplot',
+      graphType: histoKey(boxMetric(g)),
+      metricAgg: undefined,
+      rankBy: rank !== 'sessions' ? rank : undefined,
+      yScale: g.yScale === 'log' ? 'log' : undefined,
+      barOrientation: g.orientation === 'horizontal' ? 'horizontal' : undefined
+    };
+  }
   case 'connections':
   case 'tree':
   case 'circle': {
@@ -609,7 +641,7 @@ export const graphOnSpigraph = (saved, page) => {
 
 // map v7-only field view modes to the closest mode a v6 viewer can render
 // (v6 knows only bar/pie/table) for the dual-written legacy fields[] shape
-const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar', sankey: 'table', connections: 'table', tagcloud: 'bar', matrix: 'table', combo: 'bar', scatter: 'table' };
+const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar', sankey: 'table', connections: 'table', tagcloud: 'bar', matrix: 'table', combo: 'bar', scatter: 'table', boxplot: 'bar' };
 
 /**
  * Projects a widget list onto the v6 summaryConfig shape that is dual-written

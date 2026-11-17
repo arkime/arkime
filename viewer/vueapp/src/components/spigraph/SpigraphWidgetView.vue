@@ -45,6 +45,11 @@ with the page's search, view and time, and reloads with the page.
       :widget="widget"
       :reload-nonce="reloadNonce"
       @show-tooltip="showTooltip" />
+    <BoxPlotWidget
+      v-else-if="graph.viewMode === 'boxplot'"
+      :widget="widget"
+      :reload-nonce="reloadNonce"
+      @show-tooltip="showTooltip" />
     <MetricsChartWidget
       v-else-if="graph.viewMode === 'combo' || graph.viewMode === 'scatter'"
       :widget="widget"
@@ -94,6 +99,7 @@ import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 import MultiFieldTableWidget from '../summary/widgets/MultiFieldTableWidget.vue';
 import TreemapWidget from '../summary/widgets/TreemapWidget.vue';
 import MetricsChartWidget from '../summary/widgets/MetricsChartWidget.vue';
+import BoxPlotWidget from '../summary/widgets/BoxPlotWidget.vue';
 import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import DragList from '../utils/DragList.vue';
 import FieldService from '../search/FieldService';

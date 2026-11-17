@@ -38,6 +38,7 @@ export const VIEW_MODE_LABEL_KEYS = {
   area: 'sessions.summary.areaView',
   combo: 'sessions.summary.comboView',
   scatter: 'sessions.summary.scatterView',
+  boxplot: 'sessions.summary.boxplotView',
   timeofday: 'sessions.summary.timeofdayView',
   matrix: 'sessions.summary.matrixView',
   mosaic: 'sessions.summary.mosaicView',
@@ -57,7 +58,7 @@ export const VIEW_MODE_LABEL_KEYS = {
 export const viewModeLabelKey = (viewMode) => (Object.hasOwn(VIEW_MODE_LABEL_KEYS, viewMode) ? VIEW_MODE_LABEL_KEYS[viewMode] : undefined);
 
 // Field-bound types: aggregate one field's top-N values (require a field).
-export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'tagcloud', 'waffle', 'combo', 'scatter', 'control'];
+export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
 
 // Session-wide types: describe the whole result set (no field, fed by the host's
 // global stats chunk). (map is field-bound — it plots a chosen geo field.)
@@ -96,7 +97,7 @@ export const LIST_VIEW_MODES = ['sessions'];
 // Types that visualize a single selectable metric (Sessions or a numeric field).
 // timeline plots the metric's <dbField>Histo series over time; map shades each
 // country by it.
-export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline', 'area', 'timeofday', 'metric', 'gauge', 'tagcloud', 'waffle', 'map'];
+export const METRIC_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'timeline', 'area', 'timeofday', 'metric', 'gauge', 'tagcloud', 'waffle', 'map', 'boxplot'];
 
 // Types that chart several metrics of each top value, one per named slot
 // (metrics[i]): a combo's bars and line (on its own right axis), a scatter's
@@ -117,6 +118,24 @@ export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'gauge', 
 // p50 (the median), p90, p95 and p99 are percentiles of the field's values.
 export const PERCENTILE_AGGS = ['p50', 'p90', 'p95', 'p99'];
 export const METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality', ...PERCENTILE_AGGS];
+
+// A box plot: a field's top values, each drawn as the spread of a numeric
+// metric over its sessions (the middle half of the values as a box, the
+// median across it, whiskers out to the smallest and largest, a diamond at
+// the mean). Its metric is never the session count (one number per value has no
+// spread), so a widget without one draws the session length. The values are
+// ranked by their sessions (sortMetric 'sessions') or by an aggregation of
+// the metric (sortMetric the metric, metricAgg the aggregation).
+export const BOX_VIEW_MODES = ['boxplot'];
+export const BOX_RANK_AGGS = ['sum', 'avg', 'min', 'max', ...PERCENTILE_AGGS];
+export const DEFAULT_BOX_METRIC = 'session.length';
+/** True for the box plot. */
+export const isBoxMode = (viewMode) => BOX_VIEW_MODES.includes(viewMode);
+/** A box plot's metric: its metricType, the session length for none. */
+export const boxMetric = (w) => (w?.metricType && w.metricType !== 'sessions' ? w.metricType : DEFAULT_BOX_METRIC);
+/** The aggregation of its metric a box plot ranks its values by, or
+ *  'sessions' when it ranks them by their session count. */
+export const boxRank = (w) => (w?.sortMetric && w.sortMetric !== 'sessions' && BOX_RANK_AGGS.includes(w.metricAgg) ? w.metricAgg : 'sessions');
 
 // The spigraph-backed types that can draw a percentile of their metric in
 // place of its sum (its own <dbField>:p<N>Histo series): a timeline draws a
@@ -146,12 +165,14 @@ export const isPercentileAgg = (agg) => PERCENTILE_AGGS.includes(agg);
 /**
  * The aggregations a type's metric can use: all of them on the summary
  * endpoint types, a sum or a percentile on the spigraph types that draw one,
- * just a sum elsewhere. A multi viewer can't combine the clusters'
+ * any but a unique count to rank a box plot's values, just a sum elsewhere. A multi viewer can't combine the clusters'
  * percentiles, so it offers none.
  */
 export const metricAggsFor = (viewMode, multiViewer = false) => {
   let aggs = ['sum'];
-  if (METRIC_AGG_VIEW_MODES.includes(viewMode)) {
+  if (isBoxMode(viewMode)) {
+    aggs = BOX_RANK_AGGS;
+  } else if (METRIC_AGG_VIEW_MODES.includes(viewMode)) {
     aggs = METRIC_AGGS;
   } else if (PERCENTILE_VIEW_MODES.includes(viewMode)) {
     aggs = ['sum', ...PERCENTILE_AGGS];
@@ -167,27 +188,28 @@ export const SPLIT_VIEW_MODES = ['bar', 'pie', 'waffle', 'timeline', 'area', 'ti
 export const BAR_MODES = ['stacked', 'grouped'];
 export const SPLIT_LENGTHS = [3, 5, 10];
 
-// bar: value bars standing up from the axis, or lying along it (room for long
-// labels like hostnames and user agents)
+// bar and box plot: value bars (or boxes) standing up from the axis, or lying
+// along it (room for long labels like hostnames and user agents)
 export const BAR_ORIENTATIONS = ['vertical', 'horizontal'];
 
 // timeline: bars or lines, on a linear or log y axis, or (a stacked split)
 // each series as its share of the bucket, 0-100%. An overlaid split (barMode
 // grouped) is always lines, bars would hide each other. An area is always
-// filled lines, stacked or overlaid; a scatter's log scale is both axes'.
+// filled lines, stacked or overlaid; a scatter's log scale is both axes', a
+// box plot's its metric's.
 export const SERIES_TYPES = ['bars', 'lines'];
 export const Y_SCALES = ['linear', 'log', 'percent'];
 
 // Types that honor a result limit. bar/pie/table/heatmap/treemap/sankey/
 // intersection cap their top-N values; connections uses it as a session sample
 // size (see SAMPLE_SIZE_VIEW_MODES).
-export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'control'];
+export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
 
 // Types that also honor an order (direction). Only the /api/sessions/summary
 // paths pass one through; /api/spigraph, /api/spigraphhierarchy and
 // /api/connections have no order parameter, so offering the control for those
 // modes would silently do nothing.
-export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter'];
+export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot'];
 
 // Types that can show an "Other" share for what falls outside the top N (a
 // share only means something where the parts add up to a whole).
@@ -228,7 +250,7 @@ export const BUCKET_INTERVAL_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'tag
 // Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
 // table self-fetches (one summary sub-widget per field) so it can carry multiple
 // fields and multiple metric columns.
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'map', 'table', 'metric', 'combo', 'scatter', 'control'];
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'map', 'table', 'metric', 'combo', 'scatter', 'boxplot', 'control'];
 
 // [min, max] fields each view mode accepts — nested combinations (pie/treemap/
 // sankey/intersection via spigraphhierarchy), side-by-side columns (table via

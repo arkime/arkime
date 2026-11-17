@@ -1,4 +1,4 @@
-use Test::More tests => 204;
+use Test::More tests => 214;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -440,6 +440,59 @@ cmp_ok(getChunk($chunks, 'wPTotal')->{data}->[0]->{value}, '>', 0, "the median b
 my $mchunks = multiPost("/api/sessions/summary?date=-1", $pctBody);
 is(getChunk($mchunks, 'wP95')->{error}, 'Percentiles are not supported across clusters', "multi viewer refuses a percentile widget");
 ok(!getChunk($mchunks, 'wPMax')->{error}, "multi viewer still answers the max widget beside it");
+
+# box - the spread of the metric over each value's sessions: in order, out to
+# the min and max widgets' extremes, a single session's all its bytes; ranked
+# by sessions or by an aggregation of the metric, only for a numeric metric
+my $boxBody = to_json({
+    widgets => [
+        { id => 'wBox', field => 'ip.src', length => 5, metricType => 'bytes', metrics => ['bytes'], sortMetric => 'sessions', box => JSON::true },
+        { id => 'wBoxFew', field => 'ip.src', length => 5, order => 'asc', metricType => 'bytes', metrics => ['bytes'], sortMetric => 'sessions', box => JSON::true },
+        { id => 'wBoxMed', field => 'ip.src', length => 5, metricType => 'bytes', metrics => ['bytes'], sortMetric => 'bytes', metricAgg => 'p50', box => JSON::true },
+        { id => 'wBoxMin', field => 'ip.src', length => 1000, metricType => 'bytes', metricAgg => 'min' },
+        { id => 'wBoxText', field => 'ip.src', length => 5, metricType => 'ip.dst', metrics => ['ip.dst'], metricAgg => 'cardinality', box => JSON::true },
+        { id => 'wNoBox', field => 'ip.src', length => 5, metricType => 'bytes' }
+    ]
+});
+$chunks = viewerPost("/api/sessions/summary?date=-1", $boxBody);
+my $boxChunk = getChunk($chunks, 'wBox');
+my %minByIp = map { $_->{item} => $_->{value} } @{getChunk($chunks, 'wBoxMin')->{data}};
+ok(!$boxChunk->{error} && @{$boxChunk->{data}} == 5, "box widget has 5 values");
+my ($boxInOrder, $boxExtremes, $boxCount, $boxSingle) = (1, 1, 1, 1);
+($sorted, $prev) = (1, undef);
+foreach my $item (@{$boxChunk->{data}}) {
+    my $b = $item->{box};
+    $sorted = 0 if defined $prev && $item->{sessions} > $prev;
+    $prev = $item->{sessions};
+    $boxInOrder = 0 if $b->{min} > $b->{q1} + 0.5 || $b->{q1} > $b->{median} + 0.5 || $b->{median} > $b->{q3} + 0.5 || $b->{q3} > $b->{max} + 0.5 ||
+                       $b->{mean} < $b->{min} - 0.5 || $b->{mean} > $b->{max} + 0.5;
+    $boxExtremes = 0 if $b->{min} != $minByIp{$item->{item}} || $b->{max} != $maxByIp{$item->{item}};
+    $boxCount = 0 if $b->{count} != $item->{sessions};
+}
+# the values with the fewest sessions, so some have just the one
+my $boxSingles = 0;
+foreach my $item (@{getChunk($chunks, 'wBoxFew')->{data}}) {
+    next if $item->{sessions} != 1;
+    my $b = $item->{box};
+    $boxSingles++;
+    $boxSingle = 0 if $b->{count} != 1 || $b->{min} != $b->{max} || $b->{q1} != $b->{max} || $b->{median} != $b->{max} || $b->{q3} != $b->{max} || $b->{mean} != $b->{max};
+}
+ok($sorted, "box widget is ranked by sessions descending");
+ok($boxInOrder, "each box runs min <= q1 <= median <= q3 <= max with the mean inside");
+ok($boxExtremes, "each box's extremes are its value's min and max bytes");
+ok($boxCount, "each box counts one bytes value per session");
+ok($boxSingles > 0 && $boxSingle, "a single session's box is all its bytes");
+my ($medSorted, $medIsBox) = (1, 1);
+$prev = undef;
+foreach my $item (@{getChunk($chunks, 'wBoxMed')->{data}}) {
+    $medSorted = 0 if defined $prev && $item->{value} > $prev;
+    $prev = $item->{value};
+    $medIsBox = 0 if abs($item->{box}->{median} - $item->{value}) > $item->{value} * 0.000001 + 0.5;
+}
+ok($medSorted && $medIsBox, "a box widget ranked by its median sorts by the box's median");
+ok(!exists getChunk($chunks, 'wBoxText')->{data}->[0]->{box}, "a box of a unique count has no spread");
+ok(!exists getChunk($chunks, 'wNoBox')->{data}->[0]->{box}, "no box without box");
+is(getChunk(multiPost("/api/sessions/summary?date=-1", $boxBody), 'wBox')->{error}, 'Percentiles are not supported across clusters', "multi viewer refuses a box widget");
 
 # splitField - each value carries its top sub-values with the same metric
 $chunks = postSummary("/api/sessions/summary?date=-1", {

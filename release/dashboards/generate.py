@@ -69,6 +69,21 @@ def scatter(field, x='sessions', y='bytes', size=None, length=50, w=2, h=3, titl
     if title: d['title'] = title
     if expression: d['expression'] = expression
     return d
+# a field's top values, each a box of a numeric metric's spread over its
+# sessions (quartiles, median, min to max, mean), ranked by their sessions or
+# by rank, an aggregation of the metric (log scaled by default: session
+# lengths and byte counts span orders of magnitude)
+def boxplot(field, metric='session.length', length=15, w=2, h=3, title=None, expression=None, rank=None, log=True, horizontal=False):
+    d = {'field': field, 'viewMode': 'boxplot', 'width': w, 'height': h, 'length': length,
+         'metricType': metric, 'metrics': [metric], 'sortMetric': metric if rank else 'sessions'}
+    if rank:
+        assert rank != 'cardinality', 'a box plot ranks by an aggregation of its numeric metric'
+        metric_agg(d, rank)
+    if log: d['yScale'] = 'log'
+    if horizontal: d['orientation'] = 'horizontal'
+    if title: d['title'] = title
+    if expression: d['expression'] = expression
+    return d
 # a week of hours colored by the metric, or one small week per top value of split
 def timeofday(title, split=None, length=5, w=2, h=3, expression=None, metricType=None):
     d = {'viewMode': 'timeofday', 'width': w, 'height': h, 'title': title}
@@ -244,7 +259,7 @@ D['connections'] = plain('Connections', 'Sessions by endpoint, port, protocol an
     combo('port.dst', title='Top destination ports: sessions and bytes'),
     bar('packets', length=20, bucketInterval=10, title='Sessions by packet count (ranges of 10)'),
     pie('ip.protocol', h=3, title='IP protocols'),
-    bar('protocols', length=15, metricType='session.length', agg='p95', title='p95 session length by protocol (ms)'),
+    boxplot('protocols', rank='p95', title='Session length by protocol (ms), ranked by p95'),
     timeline_plain('p95 session length over time (ms)', w=2, h=3, metricType='session.length', agg='p95', lines=True),
     table('ip.dst', length=20, metrics=['sessions', 'session.length'], sortMetric='session.length', agg='p95',
           title='Longest destinations: p95 session length (ms)'),

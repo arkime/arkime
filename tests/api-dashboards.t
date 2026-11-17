@@ -2,7 +2,7 @@
 # directories (config.test.ini lists release/dashboards, then tests/dashboards,
 # then capture/plugins, whose plugin dashboards stay hidden until the plugin's
 # fields exist)
-use Test::More tests => 66;
+use Test::More tests => 67;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -81,6 +81,7 @@ ok((grep { $_->{viewMode} eq "bar" && ($_->{orientation} // "") eq "horizontal" 
 ok((grep { $_->{viewMode} eq "area" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has an area");
 ok((grep { $_->{viewMode} eq "combo" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has a combo");
 ok((grep { $_->{viewMode} eq "scatter" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has a scatter");
+ok((grep { $_->{viewMode} eq "boxplot" } @{$byId{"system-connections"}->{data}->{widgets}}) == 1, "connections has a box plot");
 my @connWidgets = @{$byId{"system-connections"}->{data}->{widgets}};
 is((grep { $_->{viewMode} eq "control" } @connWidgets), 4, "connections has its four filter controls");
 ok((grep { ($_->{metricAgg} // '') eq "p95" && ($_->{metricType} // '') eq "session.length" } @connWidgets) >= 2, "connections has p95 session length widgets");
