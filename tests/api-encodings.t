@@ -5,8 +5,10 @@ use ArkimeTest;
 use Data::Dumper;
 use JSON;
 use Test::Differences;
+use POSIX ();
 use strict;
 my $json;
+my @captures;
 
 my $prefix = int(rand()*100000);
 my $token = getTokenCookie();
@@ -31,8 +33,7 @@ sub doTest {
     if (defined $shortheader) {
         $cmd .= " -o simpleShortHeader=$shortheader";
     }
-    #diag "$cmd\n";
-    system("$cmd &");
+    push(@captures, $cmd);
 
   ###### socks-http-pass.pcap - run
     $cmd = "../capture/capture --norefresh $ArkimeTest::es $ENV{SCHEME} -c config.test.ini -n test --copy -r pcap/socks-http-pass.pcap --tag $stag -o simpleCompression=$compression";
@@ -48,18 +49,29 @@ sub doTest {
     if (defined $shortheader) {
         $cmd .= " -o simpleShortHeader=$shortheader";
     }
-    #diag "$cmd\n";
+    push(@captures, $cmd);
+}
 
-    # Run some captures in foreground, most in background
-    if ($blocksize == 64000 && $shortheader eq "false") {
-        # diag "$stag - WAIT";
-        system("$cmd");
-        esGet("/_flush");
-        esGet("/_refresh");
-    } else {
-        # diag "$stag";
-        system("$cmd &");
+# Run the captures four per cpu, starting the next as each one finishes, they
+# mostly wait on the db so more than one per cpu keeps the cpus busy
+sub runCaptures {
+    my $max = 4 * (`getconf _NPROCESSORS_ONLN 2>/dev/null` + 0 || 4);
+    my %running;
+    my $wait = sub {
+        my $pid = wait();
+        diag("capture failed ($?): $running{$pid}") if ($? != 0);
+        delete $running{$pid};
+    };
+    foreach my $cmd (@captures) {
+        $wait->() if (keys %running >= $max);
+        my $pid = fork() // die "can't fork: $!";
+        if ($pid == 0) {
+            exec("sh", "-c", $cmd);
+            POSIX::_exit(127);
+        }
+        $running{$pid} = $cmd;
     }
+    $wait->() while (%running);
 }
 
 sub doCheck {
@@ -108,7 +120,7 @@ sub doCheck {
 ### MAIN ###
 system("rm -f /tmp/test-161019* /tmp/test-131203-*");
 
-# Load all the pcap, running some in background
+# Load all the pcap
 foreach my $e (undef, "xor-2048", "aes-256-ctr") {
     foreach my $c ("none", "gzip", "zstd") {
         foreach my $b (8000, 64000) {
@@ -119,8 +131,7 @@ foreach my $e (undef, "xor-2048", "aes-256-ctr") {
     }
 }
 
-# Wait for everything to complete
-sleep(3);
+runCaptures();
 esGet("/_flush");
 esGet("/_refresh");
 
