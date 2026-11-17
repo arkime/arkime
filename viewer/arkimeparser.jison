@@ -5,8 +5,8 @@
 %%
 
 \s+                        /* skip whitespace */
-\"(?:\\?.)*?\"             return 'QUOTEDSTR'
-\/(?:\\?.)*?\/             return 'REGEXSTR'
+\"(?:\\.|[^"\\\n])*(?:\"|\\\") return 'QUOTEDSTR'
+\/(?:\\.|[^/\\\n])*(?:\/|\\\/) return 'REGEXSTR'
 [-+a-zA-Z0-9_.@:*?/$\u0080-\uFFFF]+ return 'STR'
 \[[^\]\\]*(?:\\.[^\]\\]*)*\] return 'LIST'
 \][^\[\\]*(?:\\.[^\[\\]*)*\[ return 'LIST'
@@ -693,7 +693,7 @@ function formatNormalQuery (yy, field, op, value, completed) {
 
 function checkRegex (str) {
   let m;
-  if ((m = str.match(/^\/(?:\\?.)*?\//)) && m[0].length !== str.length) {
+  if ((m = str.match(/^\/(?:\\.|[^/\\\n])*(?:\/|\\\/)/)) && m[0].length !== str.length) {
     throw 'Must back slash any forward slashes in regexp query - ' + m[0];
   }
 }
