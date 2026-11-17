@@ -577,7 +577,9 @@
         "mean": "Mittelwert",
         "count": "Werte",
         "none": "Keine dieser Sitzungen hat ihn",
-        "legend": "Box: die mittlere Hälfte der Werte, Linie: der Median, Whisker: vom kleinsten bis zum größten Wert, Punkt: der Mittelwert"
+        "legend": "Box: die mittlere Hälfte der Werte, Linie: der Median, Whisker: vom kleinsten bis zum größten Wert, Raute: der Mittelwert",
+        "keyBox": "25.–75. Perzentil",
+        "keyWhiskers": "Min–Max"
       },
       "navigation": {
         "system": "System",

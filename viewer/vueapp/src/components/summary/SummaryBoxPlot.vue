@@ -5,10 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 Box plot: one box per top value of a field, drawn from the spread of a
 numeric metric over the value's sessions. The box is the middle half of the
 values (25th to 75th percentile), the line across it the median, the whiskers
-run out to the smallest and largest value and the dot is the mean. Which
-values carry long sessions or big transfers, and which only a few odd ones,
-reads off it at a glance. The metric axis can be log scaled, which byte counts
-usually need. Shared by the dashboard box plot widget and SPI Graph's Box plot.
+run out to the smallest and largest value (not Tukey's 1.5 box heights) and
+the diamond is the mean (a diamond, as a circle reads as an outlier). A key in
+the top corner says so. Which values carry long sessions or big transfers, and
+which only a few odd ones, reads off it at a glance. The metric axis can be log
+scaled, which byte counts usually need. Shared by the dashboard box plot widget
+and SPI Graph's Box plot.
 -->
 <template>
   <div class="chart-wrapper">
@@ -53,6 +55,11 @@ const TICK_GAP = 10; // between the metric axis and its tick labels
 const TITLE_SPACE = 18; // the metric axis' title, beside its tick labels
 const MAX_BOX = 48;
 const MAX_LABEL = 24;
+// the key: a row of mark and label pairs over the plot, right aligned
+const KEY_HEIGHT = 18;
+const KEY_GLYPH = 14; // each mark's width, then KEY_GAP to its label
+const KEY_GAP = 4;
+const KEY_SPACE = 12; // between the pairs
 const shortLabel = (v) => {
   const s = String(v);
   return s.length > MAX_LABEL ? `${s.slice(0, MAX_LABEL - 1)}…` : s;
@@ -81,6 +88,30 @@ const showTooltip = (d, evt) => {
     position: { x: evt.clientX + 1, y: evt.clientY + 1 },
     fieldConfig: props.fieldConfig
   });
+};
+
+// the mean's mark, a hollow diamond about as big as the box is wide
+const meanDiamond = (boxW) => {
+  const s = Math.max(3, Math.min(5, boxW / 5));
+  return d3.symbol(d3.symbolDiamond, s * s * 4)();
+};
+
+// draws one of the key's marks centered on (cx, cy): the box, the median
+// line, a whisker with its caps, the mean's diamond
+const keyGlyph = (g, kind, cx, cy) => {
+  const mark = g.append('g').attr('transform', `translate(${cx},${cy})`).attr('stroke', 'currentColor').attr('fill', 'none');
+  if (kind === 'box') {
+    mark.append('rect').attr('x', -6).attr('y', -4).attr('width', 12).attr('height', 8)
+      .attr('fill', 'currentColor').attr('fill-opacity', 0.2).attr('stroke-width', 1.2);
+  } else if (kind === 'median') {
+    mark.append('line').attr('x1', -6).attr('x2', 6).attr('stroke-width', 2.5);
+  } else if (kind === 'whiskers') {
+    mark.append('line').attr('x1', -6).attr('x2', 6).attr('stroke-width', 1);
+    mark.append('line').attr('x1', -6).attr('x2', -6).attr('y1', -3).attr('y2', 3).attr('stroke-width', 1.5);
+    mark.append('line').attr('x1', 6).attr('x2', 6).attr('y1', -3).attr('y2', 3).attr('stroke-width', 1.5);
+  } else {
+    mark.append('path').attr('d', meanDiamond(20)).attr('stroke-width', 1.5);
+  }
 };
 
 // a log axis ticks at the powers of ten it spans (symlog's own ticks are
@@ -130,9 +161,26 @@ const renderChart = async () => {
   // down the left, each beside its box, and the metric's ticks are spaced
   // by their width
   const widest = widestOf(props.data.map(d => shortLabel(d.item)));
+
+  // the key, what each mark means: the least needed pairs are left out when
+  // the chart is too narrow for all of them (drop is the order they go in),
+  // the mean's last as its diamond is the mark nobody would guess
+  let keyItems = [
+    { kind: 'box', label: t('sessions.summary.box.keyBox'), drop: 2 },
+    { kind: 'median', label: t('sessions.summary.box.median'), drop: 0 },
+    { kind: 'whiskers', label: t('sessions.summary.box.keyWhiskers'), drop: 1 },
+    { kind: 'mean', label: t('sessions.summary.box.mean'), drop: 3 }
+  ].map(k => ({ ...k, w: KEY_GLYPH + KEY_GAP + widestOf([k.label]) }));
+  const keyWidth = (pairs) => pairs.reduce((w, k) => w + k.w, 0) + KEY_SPACE * Math.max(0, pairs.length - 1);
+  while (keyItems.length && keyWidth(keyItems) > svgWidth - 2 * PAD) {
+    const first = Math.min(...keyItems.map(k => k.drop));
+    keyItems = keyItems.filter(k => k.drop !== first);
+  }
+
   const margin = horizontal
     ? { top: PAD, right: PAD + 8, bottom: 44, left: Math.min(Math.ceil(widest) + 12, svgWidth / 2) }
     : { top: PAD, right: PAD, bottom: Math.min(Math.ceil(widest * 0.72) + 16, svgHeight * 0.45), left: 0 };
+  if (keyItems.length) { margin.top += KEY_HEIGHT; }
   const valueSpan = horizontal ? svgWidth - margin.left - margin.right : svgHeight - margin.top - margin.bottom;
   const tickSpacing = horizontal ? Math.max(80, widestOf([props.formatValue(value.domain()[1])]) + 24) : 40;
   const tickRoom = Math.max(2, Math.floor(valueSpan / tickSpacing));
@@ -159,6 +207,25 @@ const renderChart = async () => {
     .padding(0.4);
   const boxW = band.bandwidth();
   const colors = d3.scaleOrdinal(colorRange(d3, props.colorScheme, props.data.length));
+
+  if (keyItems.length) {
+    const key = root.append('g')
+      .attr('class', 'box-key')
+      .attr('fill', 'currentColor')
+      .attr('opacity', 0.8)
+      .style('font-size', '10px');
+    const cy = PAD / 2 + KEY_HEIGHT / 2;
+    let x = svgWidth - PAD - keyWidth(keyItems);
+    for (const k of keyItems) {
+      keyGlyph(key, k.kind, x + KEY_GLYPH / 2, cy);
+      key.append('text')
+        .attr('x', x + KEY_GLYPH + KEY_GAP)
+        .attr('y', cy)
+        .attr('dy', '0.35em')
+        .text(k.label);
+      x += k.w + KEY_SPACE;
+    }
+  }
 
   const svg = root.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
@@ -231,10 +298,10 @@ const renderChart = async () => {
       .attr('stroke-width', 1.5);
     line(g, p0, v(b.median), p0 + boxW, v(b.median)).attr('stroke', color).attr('stroke-width', 2.5);
     const [mx, my] = xy(mid, v(b.mean));
-    g.append('circle')
-      .attr('cx', mx)
-      .attr('cy', my)
-      .attr('r', Math.max(2, Math.min(4, boxW / 6)))
+    g.append('path')
+      .attr('class', 'box-mean')
+      .attr('d', meanDiamond(boxW))
+      .attr('transform', `translate(${mx},${my})`)
       .attr('fill', 'none')
       .attr('stroke', 'currentColor')
       .attr('stroke-width', 1.5);

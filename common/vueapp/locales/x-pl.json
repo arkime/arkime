@@ -578,7 +578,9 @@
         "mean": "Eanmay",
         "count": "Aluesvay",
         "none": "Onenay ofay esethay essionssay ashay itay",
-        "legend": "Oxbay: ethay iddlemay alfhay ofay ethay aluesvay, inelay: ethay edianmay, iskerswhay: ethay allestsmay otay ethay argestlay, otday: ethay eanmay"
+        "legend": "Oxbay: ethay iddlemay alfhay ofay ethay aluesvay, inelay: ethay edianmay, iskerswhay: ethay allestsmay otay ethay argestlay, iamondday: ethay eanmay",
+        "keyBox": "25thay–75thay ercentilepay",
+        "keyWhiskers": "Inmay–axmay"
       },
       "navigation": {
         "system": "Ystemsay",

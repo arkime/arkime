@@ -121,8 +121,8 @@ export const METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality', ...PERCEN
 
 // A box plot: a field's top values, each drawn as the spread of a numeric
 // metric over its sessions (the middle half of the values as a box, the
-// median across it, whiskers out to the smallest and largest, a dot at the
-// mean). Its metric is never the session count (one number per value has no
+// median across it, whiskers out to the smallest and largest, a diamond at
+// the mean). Its metric is never the session count (one number per value has no
 // spread), so a widget without one draws the session length. The values are
 // ranked by their sessions (sortMetric 'sessions') or by an aggregation of
 // the metric (sortMetric the metric, metricAgg the aggregation).

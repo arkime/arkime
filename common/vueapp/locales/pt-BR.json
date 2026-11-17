@@ -577,7 +577,9 @@
         "mean": "Média",
         "count": "Valores",
         "none": "Nenhuma destas sessões o tem",
-        "legend": "Caixa: a metade central dos valores, linha: a mediana, bigodes: do menor ao maior, ponto: a média"
+        "legend": "Caixa: a metade central dos valores, linha: a mediana, bigodes: do menor ao maior, losango: a média",
+        "keyBox": "Percentil 25–75",
+        "keyWhiskers": "Mín–máx"
       },
       "navigation": {
         "system": "Sistema",

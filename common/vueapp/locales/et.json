@@ -577,7 +577,9 @@
         "mean": "Keskmine",
         "count": "Väärtusi",
         "none": "Ühelgi neist seanssidest seda pole",
-        "legend": "Karp: väärtuste keskmine pool, joon: mediaan, vurrud: väikseimast suurimani, punkt: keskmine"
+        "legend": "Karp: väärtuste keskmine pool, joon: mediaan, vurrud: väikseimast suurimani, romb: keskmine",
+        "keyBox": "25.–75. protsentiil",
+        "keyWhiskers": "Min–maks"
       },
       "navigation": {
         "system": "Süsteem",

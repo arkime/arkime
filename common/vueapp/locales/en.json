@@ -577,7 +577,9 @@
         "mean": "Mean",
         "count": "Values",
         "none": "None of these sessions has it",
-        "legend": "Box: the middle half of the values, line: the median, whiskers: the smallest to the largest, dot: the mean"
+        "legend": "Box: the middle half of the values, line: the median, whiskers: the smallest to the largest, diamond: the mean",
+        "keyBox": "25th–75th percentile",
+        "keyWhiskers": "Min–max"
       },
       "navigation": {
         "system": "System",
