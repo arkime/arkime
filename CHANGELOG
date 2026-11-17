@@ -48,7 +48,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4462 Parliament no longer follows redirects when polling a cluster, set each cluster's url to its final address
   - #4464 disableParsers now defaults to empty so every parser loads, including arp, set disableParsers=arp.so for the old behavior
   - #4464 saveUnknownPackets now defaults to all;corrupt so unknown ether, unknown ip and corrupt packets are saved as sessions, set saveUnknownPackets= for the old behavior
-  - #4472 DNS, mDNS and LLMNR names that are valid UTF-8 are saved as is instead of cat -v escaped (andy’s macbook pro instead of andym-bm-^@m-^ys macbook pro), so searches for the escaped form won't match new sessions; invalid bytes and control characters are still escaped and plain DNS names with raw UTF-8 get the dns:raw-utf8 tag
+  - #4472 DNS, mDNS and LLMNR names that are valid UTF-8 are saved as is instead of cat -v escaped (andy’s macbook pro instead of andym-bm-^@m-^ys macbook pro), so searches for the escaped form won't match new sessions; the name is saved as sent, only lowercased; invalid bytes, control characters and invisible characters such as bidi overrides and zero width spaces are still escaped and plain DNS names with raw UTF-8 get the dns:raw-utf8 tag
 ## All
   - #4460 A role assigner can no longer change the roles of a user with an admin role the assigner doesn't have
   - #4460 Add authHeaderJwtVerify=true to also verify authMode=header-jwt signatures, using authJwtJwksUrl, authJwtIssuer and authJwtAudience
@@ -83,6 +83,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4459 When exiting takes over 30s, capture logs what it is waiting on, without --debug
   - #4459 S3 and SQS requests that get no data for 60s are logged and retried instead of waiting forever
   - #4459 TCP sessions with no SYN now have all their data parsed, not just one packet, starting from the lowest sequence number after waiting up to maxTcpOutOfOrderPackets/8 packets for a SYN
+  - #4472 Fix DNS names from punycode with uppercase letters being saved with the uppercase letters, which lowercased searches couldn't match
+  - #4472 dns.answer.name, dns.answer.cname, dns.answer.ns, dns.answer.mx, dns.answer.ptr and dns.answer.srv are now lotermfield, so searches on them ignore case
+  - #4472 Capture now updates a field's type in the db on startup when it only changed between termfield, lotermfield and uptermfield, other type changes still just warn
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type, hosts on a ring with an arc between each talking pair, colored by protocol or a chosen field
   - #4456 Fix the settings editor resetting a connections widget or graph sample size to 100 when opened
@@ -106,6 +109,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4466 Fix the History page Expression and View exists checkboxes never showing
   - #4469 Add a box plot widget and SPI Graph type, the spread of a numeric field (quartiles, median, min, max and mean) over each top value's sessions, ranked by sessions or by an aggregation of the field
   - #4471 Non-IP sessions show their ethertype name (arp, lldp, ...) on the Sessions page instead of not-ip, not-ip is clickable, and ip.protocol == not-ip and ethertype == arp (names or 0x hex) can be searched
+  - #4472 Search expressions accept non ASCII characters in unquoted values, host.dns==café.example.com no longer needs quotes
 ## ESProxy
   - #4462 A sensor can no longer change a pcap file's scheme or S3 location after creating its file record
 ## Multies

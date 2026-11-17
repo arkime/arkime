@@ -138,8 +138,38 @@ LOCAL gboolean dns_utf8_names(ArkimeSession_t *session)
     return arkime_session_has_protocol(session, "mdns") || arkime_session_has_protocol(session, "llmnr");
 }
 /******************************************************************************/
-// Copy a label as is when it is valid UTF-8 without control characters, otherwise
-// escape each byte cat -v style. Sets *rawUtf8 when a kept label isn't plain ASCII.
+// Is the label valid UTF-8 made only of characters an analyst can see. Control, format
+// (bidi overrides, zero width space, BOM), private use, unassigned and line/paragraph
+// separator characters are not, except the zero width joiners emoji and some scripts need.
+LOCAL gboolean dns_label_utf8_visible(const char *label, int nlen)
+{
+    // g_utf8_validate also rejects an embedded NUL within nlen
+    if (!g_utf8_validate(label, nlen, NULL))
+        return FALSE;
+
+    for (const char *p = label; p < label + nlen; p = g_utf8_next_char(p)) {
+        const gunichar uc = g_utf8_get_char(p);
+        switch (g_unichar_type(uc)) {
+        case G_UNICODE_FORMAT:
+            if (uc == 0x200c || uc == 0x200d) // ZWNJ, ZWJ
+                break;
+            return FALSE;
+        case G_UNICODE_CONTROL:
+        case G_UNICODE_UNASSIGNED:
+        case G_UNICODE_PRIVATE_USE:
+        case G_UNICODE_SURROGATE:
+        case G_UNICODE_LINE_SEPARATOR:
+        case G_UNICODE_PARAGRAPH_SEPARATOR:
+            return FALSE;
+        default:
+            break;
+        }
+    }
+    return TRUE;
+}
+/******************************************************************************/
+// Copy a label as is when it is printable ASCII or visible UTF-8, otherwise escape
+// each byte cat -v style. Sets *rawUtf8 when a kept label isn't plain ASCII.
 LOCAL int dns_name_element(BSB *nbsb, BSB *bsb, int *rawUtf8)
 {
     int nlen = 0;
@@ -149,27 +179,27 @@ LOCAL int dns_name_element(BSB *nbsb, BSB *bsb, int *rawUtf8)
         return 1;
     }
 
-    const char *label = (const char *)BSB_WORK_PTR(*bsb);
-    // g_utf8_validate also rejects an embedded NUL within nlen
-    if (g_utf8_validate(label, nlen, NULL)) {
-        gboolean keep = TRUE;
-        gboolean ascii = TRUE;
-        for (const char *p = label; p < label + nlen; p = g_utf8_next_char(p)) {
-            gunichar uc = g_utf8_get_char(p);
-            if (g_unichar_iscntrl(uc)) {
-                keep = FALSE;
-                break;
-            }
-            if (uc > 0x7f)
-                ascii = FALSE;
+    const uint8_t *label = BSB_WORK_PTR(*bsb);
+    gboolean highBit = FALSE;
+    gboolean keep = TRUE;
+    for (int j = 0; j < nlen; j++) {
+        if (label[j] >= 0x80) {
+            highBit = TRUE;
+        } else if (label[j] < 0x20 || label[j] == 0x7f) {
+            keep = FALSE;
+            break;
         }
-        if (keep) {
-            BSB_EXPORT_ptr(*nbsb, label, nlen);
-            BSB_IMPORT_skip(*bsb, nlen);
-            if (!ascii)
-                *rawUtf8 = 1;
-            return 0;
-        }
+    }
+
+    if (keep && highBit)
+        keep = dns_label_utf8_visible((const char *)label, nlen);
+
+    if (keep) {
+        BSB_EXPORT_ptr(*nbsb, label, nlen);
+        BSB_IMPORT_skip(*bsb, nlen);
+        if (highBit)
+            *rawUtf8 = 1;
+        return 0;
     }
 
     for (int j = 0; j < nlen; j++) {
@@ -262,6 +292,44 @@ LOCAL char *dns_name(ArkimeSession_t *session, const uint8_t *full, int fulllen,
     return name;
 }
 /******************************************************************************/
+// g_hostname_to_unicode for a dns_name result, NULL when it isn't a valid hostname.
+// A name with raw UTF-8 is returned as sent, only lowercased: the IDNA mapping would
+// fold fullwidth letters to ASCII, turn ideographic full stops into label dots and
+// drop zero width characters, so what is saved wouldn't be the name on the wire.
+// Decoded punycode is lowercased too, the lowercase host fields are searched that way.
+LOCAL char *dns_hostname(const char *name, int namelen)
+{
+    char *host = g_hostname_to_unicode(name);
+    if (!host)
+        return NULL;
+
+    gboolean rawUtf8 = FALSE;
+    for (int i = 0; i < namelen; i++) {
+        if ((uint8_t)name[i] >= 0x80) {
+            rawUtf8 = TRUE;
+            break;
+        }
+    }
+
+    char *lower = NULL;
+    if (rawUtf8) {
+        lower = g_utf8_strdown(name, namelen);
+    } else {
+        for (const char *p = host; *p; p++) {
+            if ((uint8_t)*p >= 0x80) {
+                lower = g_utf8_strdown(host, -1);
+                break;
+            }
+        }
+    }
+
+    if (lower) {
+        g_free(host);
+        host = lower;
+    }
+    return host;
+}
+/******************************************************************************/
 // Real HTTPS records have a few params and alpn/hint values
 #define DNS_SVCB_MAX 16
 /******************************************************************************/
@@ -316,7 +384,7 @@ LOCAL DNSSVCBRData_t *dns_parser_rr_svcb(ArkimeSession_t *session, const uint8_t
         svcbData->dname = g_strdup(".");
         namelen = 1;
     } else {
-        svcbData->dname = g_hostname_to_unicode(name);
+        svcbData->dname = dns_hostname(name, namelen);
         if (!svcbData->dname) {
             // Keep the raw name if it can be stored
             if (!g_utf8_validate(name, namelen, NULL)) {
@@ -455,7 +523,7 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
     if (len == -1)
         len = strlen(string);
 
-    char *host = g_hostname_to_unicode(string);
+    char *host = dns_hostname(string, len);
 
     if (uniSet)
         *uniSet = host;
@@ -466,19 +534,18 @@ LOCAL int dns_add_host(ArkimeSession_t *session, DNS_t *dns, ArkimeStringHashStd
         hostlen = strlen(host);
 
     if (!host || g_utf8_validate(host, hostlen, NULL) == 0) {
-        const gboolean valid = g_utf8_validate(string, len, NULL);
         if (len > 4 && arkime_memstr((const char *)string, len, "xn--", 4)) {
             arkime_session_add_tag(session, "bad-punycode");
-        } else if (!valid || !dns_utf8_names(session)) {
+        } else if (!dns_utf8_names(session)) {
             arkime_session_add_tag(session, "bad-hostname");
         }
         if (host)
             g_free(host);
 
         // Keep the raw name if it can be stored
-        if (valid) {
-            host = g_ascii_strdown(string, len);
-            hostlen = len;
+        if (g_utf8_validate(string, len, NULL)) {
+            host = g_utf8_strdown(string, len);
+            hostlen = strlen(host);
             if (uniSet)
                 *uniSet = host;
         } else {
@@ -743,19 +810,18 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
             key.query.hostname = root;
             namelen = 6;
         } else {
-            key.query.hostname = g_hostname_to_unicode(name);
+            key.query.hostname = dns_hostname(name, namelen);
             if (!key.query.hostname) {
-                const gboolean valid = g_utf8_validate(name, namelen, NULL);
                 if (namelen > 4 && arkime_memstr((const char *)name, namelen, "xn--", 4)) {
                     arkime_session_add_tag(session, "bad-punycode");
-                } else if (!valid || !dns_utf8_names(session)) {
+                } else if (!dns_utf8_names(session)) {
                     arkime_session_add_tag(session, "bad-hostname");
                 }
 
                 // Keep the raw name if it can be stored
-                if (!valid)
+                if (!g_utf8_validate(name, namelen, NULL))
                     return;
-                key.query.hostname = g_ascii_strdown(name, namelen);
+                key.query.hostname = g_utf8_strdown(name, namelen);
             }
         }
 
@@ -926,9 +992,9 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 answer->name = root;
                 namelen = 6;
             } else {
-                answer->name = g_hostname_to_unicode(name);
+                answer->name = dns_hostname(name, namelen);
                 if (!answer->name)
-                    answer->name = g_strndup(name, namelen);
+                    answer->name = g_utf8_strdown(name, namelen);
                 if (arkime_memstr((const char *)name, namelen, "xn--", 4)) {
                     ArkimeString_t *hstring;
                     HASH_FIND(s_, *(dns->punyHosts), name, hstring);
@@ -1050,12 +1116,12 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                         goto continueerr;
                     }
                 } else {
-                    answer->nsdname = g_hostname_to_unicode(name);
+                    answer->nsdname = dns_hostname(name, namelen);
                     if (!answer->nsdname) {
                         // Keep the raw name if it can be stored
                         if (!g_utf8_validate(name, namelen, NULL))
                             goto continueerr;
-                        answer->nsdname = g_strndup(name, namelen);
+                        answer->nsdname = g_utf8_strdown(name, namelen);
                     }
                 }
                 break;
@@ -1090,10 +1156,10 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
 #endif
                 // mDNS/DNS-SD PTR rdata is a service instance, not a host --
                 // keep it out of the host tables, just record it on the answer.
-                answer->ptrdname = g_hostname_to_unicode(name);
+                answer->ptrdname = dns_hostname(name, namelen);
                 if (!answer->ptrdname)
-                    answer->ptrdname = g_strndup(name, namelen);
-                jsonLen += namelen + 16;
+                    answer->ptrdname = g_utf8_strdown(name, namelen);
+                jsonLen += strlen(answer->ptrdname) + 16;
                 break;
             }
             case DNS_RR_MX: {
@@ -1187,10 +1253,10 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 answer->srv->priority = srv_priority;
                 answer->srv->weight = srv_weight;
                 answer->srv->port = srv_port;
-                answer->srv->target = g_hostname_to_unicode(name);
+                answer->srv->target = dns_hostname(name, namelen);
                 if (!answer->srv->target)
-                    answer->srv->target = g_strndup(name, namelen);
-                jsonLen += namelen + 64;
+                    answer->srv->target = g_utf8_strdown(name, namelen);
+                jsonLen += strlen(answer->srv->target) + 64;
                 break;
             }
             case DNS_RR_HTTPS: {
@@ -1308,7 +1374,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 answer->rrsig->expiration = expiration;
                 answer->rrsig->inception = inception;
                 answer->rrsig->keyTag = keyTag;
-                answer->rrsig->signerName = g_hostname_to_unicode(name);
+                answer->rrsig->signerName = dns_hostname(name, namelen);
                 if (!answer->rrsig->signerName) {
                     answer->rrsig->signerName = g_strndup(name, namelen);
                 }
@@ -1330,7 +1396,7 @@ LOCAL void dns_parser(ArkimeSession_t *session, int kind, const uint8_t *data, i
                 }
 
                 answer->nsec = ARKIME_TYPE_ALLOC0(DNSNSECRData_t);
-                answer->nsec->nextDomainName = g_hostname_to_unicode(name);
+                answer->nsec->nextDomainName = dns_hostname(name, namelen);
                 if (!answer->nsec->nextDomainName) {
                     answer->nsec->nextDomainName = g_strndup(name, namelen);
                 }
@@ -2399,19 +2465,19 @@ void arkime_parser_init()
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
-    arkime_field_define("dns", "termfield",
+    arkime_field_define("dns", "lotermfield",
                         "dns.answer.cname", "DNS Answer CNAME", "dns.answers.cname",
                         "DNS Answer CNAME",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
-    arkime_field_define("dns", "termfield",
+    arkime_field_define("dns", "lotermfield",
                         "dns.answer.ns", "DNS Answer NS", "dns.answers.nameserver",
                         "DNS Answer NS",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
-    arkime_field_define("dns", "termfield",
+    arkime_field_define("dns", "lotermfield",
                         "dns.answer.mx", "DNS Answer MX", "dns.answers.mx",
                         "DNS Answer MX",
                         0, ARKIME_FIELD_FLAG_FAKE,
@@ -2423,13 +2489,13 @@ void arkime_parser_init()
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
-    arkime_field_define("dns", "termfield",
+    arkime_field_define("dns", "lotermfield",
                         "dns.answer.ptr", "DNS Answer PTR", "dns.answers.ptr",
                         "DNS Answer PTR",
                         0, ARKIME_FIELD_FLAG_FAKE,
                         (char *)NULL);
 
-    arkime_field_define("dns", "termfield",
+    arkime_field_define("dns", "lotermfield",
                         "dns.answer.srv", "DNS Answer SRV", "dns.answers.srv",
                         "DNS Answer SRV Target",
                         0, ARKIME_FIELD_FLAG_FAKE,
@@ -2489,7 +2555,7 @@ void arkime_parser_init()
                         0, ARKIME_FIELD_FLAG_FAKE | ARKIME_FIELD_FLAG_CNT,
                         (char *)NULL);
 
-    arkime_field_define("dns", "termfield",
+    arkime_field_define("dns", "lotermfield",
                         "dns.answer.name", "DNS Name", "dns.answers.name",
                         "DNS Answer Name",
                         0, ARKIME_FIELD_FLAG_FAKE,
