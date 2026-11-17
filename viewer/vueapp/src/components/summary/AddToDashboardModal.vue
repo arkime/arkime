@@ -261,6 +261,5 @@ const add = async () => {
 <style scoped>
 .arkime-input-group {
   background-color: rgb(var(--v-theme-input-bg));
-  border: 1px solid rgb(var(--v-theme-input-border));
 }
 </style>

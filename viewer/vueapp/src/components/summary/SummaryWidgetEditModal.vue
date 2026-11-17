@@ -1416,11 +1416,9 @@ const save = () => {
   pointer-events: none;
 }
 
-/* the plain inputs are flat and vanish against the card (background === surface
-   in light themes); give them the themed input bg + border so they read as fields */
+/* give the plain inputs the themed input bg so they read as fields on the card */
 .arkime-input-group {
   background-color: rgb(var(--v-theme-input-bg));
-  border: 1px solid rgb(var(--v-theme-input-border));
 }
 
 /* the fields picker's chips wrap onto more lines (7 table fields, 20 session
