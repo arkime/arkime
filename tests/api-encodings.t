@@ -52,9 +52,10 @@ sub doTest {
     push(@captures, $cmd);
 }
 
-# Run the captures one per cpu, starting the next as each one finishes
+# Run the captures four per cpu, starting the next as each one finishes, they
+# mostly wait on the db so more than one per cpu keeps the cpus busy
 sub runCaptures {
-    my $max = `getconf _NPROCESSORS_ONLN 2>/dev/null` + 0 || 4;
+    my $max = 4 * (`getconf _NPROCESSORS_ONLN 2>/dev/null` + 0 || 4);
     my %running;
     my $wait = sub {
         my $pid = wait();

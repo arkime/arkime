@@ -392,6 +392,9 @@ jobs:
           (cd tests; ./tests.pl)
           head /tmp/arkimedb.log
           export PATH=/opt/arkime/bin:$PATH
+          # The viewer tests start capture many times, a slow unwind on every malloc made each start take seconds
+          export ASAN_OPTIONS="fast_unwind_on_malloc=true"
+          export LSAN_OPTIONS="fast_unwind_on_malloc=true:suppressions=./arkime.supp:print_suppressions=0"
           (cd tests ; G_SLICE=always-malloc ./tests.pl --viewer)
 
       - name: sanitize build deb
