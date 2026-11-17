@@ -1499,6 +1499,7 @@
       "spiViewLayout": "SPI-Ansicht-Layout",
       "themes": "Themen",
       "password": "Passwort",
+      "totp": "Zwei-Faktor",
       "views": "Ansichten",
       "shortcuts": "Verknüpfungen",
       "dashboards": "Arkime-Dashboards",

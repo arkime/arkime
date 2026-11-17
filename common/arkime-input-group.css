@@ -101,8 +101,11 @@
    already reserves its own caret inset, so keep this small). It sizes to
    the chosen value rather than the longest option, so a short value isn't
    followed by a wide gap before the caret (browsers without field-sizing
-   keep the old width). */
+   keep the old width). The menulist look also insets the text ~4px, so
+   trim the left padding to line the value up with input text above and
+   below it. */
 select.arkime-input-control {
+  padding-left: 4px;
   padding-right: 6px;
   -webkit-appearance: menulist;
   cursor: pointer;

@@ -1499,6 +1499,7 @@
       "spiViewLayout": "Disposition de la vue SPI",
       "themes": "Thèmes",
       "password": "Mot de passe",
+      "totp": "Deux facteurs",
       "views": "Vues",
       "shortcuts": "Raccourcis",
       "dashboards": "Tableaux de bord Arkime",

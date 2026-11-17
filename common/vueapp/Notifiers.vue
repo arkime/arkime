@@ -12,12 +12,13 @@ SPDX-License-Identifier: Apache-2.0
         <template #activator="{ props: activatorProps }">
           <v-btn
             v-bind="activatorProps"
-            color="primary"
+            color="success"
             variant="flat"
+            size="large"
             class="float-right">
             <v-icon
               icon="mdi-plus-circle"
-              start />
+              class="me-1" />
             {{ $t('settings.notifiers.newGeneric', 'New Notifier') }}
             <v-icon
               icon="mdi-menu-down"
