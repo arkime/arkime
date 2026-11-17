@@ -3755,12 +3755,12 @@ class SessionAPIs {
    * followed by one chunk per requested widget, terminated by an empty object.
    * @name /sessions/summary
    * @param {SessionsQuery} See_List - This API supports a common set of parameters documented in the SessionsQuery section
-   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), orderBy ('value' default: the Top/Bottom N by the sort metric or session count; 'key': by the field's own value, so asc is the N smallest values or names), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max', 'cardinality', or a percentile 'p50' (the median), 'p90', 'p95' or 'p99'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound, and a percentile is refused), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), bucketInterval (numeric fields only: bucket the field's values into ranges of this width instead of one bucket per value; each data[] item is then a range, item '<start>-<end>' with range: [start, end]), other (when true and the metric is the session count or a sum, also return what falls outside the top N), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response. At most 100 widgets.
+   * @param {object[]} widgets - Per-widget aggregation specs. Each: { id (stable widget id), field (Arkime field exp; may be omitted with total:true), total (when true, aggregate the metrics over the whole result set instead of per field value — a single data item), length (top/bottom N, clamped 1-1000), order ('asc'|'desc'), orderBy ('value' default: the Top/Bottom N by the sort metric or session count; 'key': by the field's own value, so asc is the N smallest values or names), metricType ('sessions' or a numeric field exp aggregated per value), metrics (array of field exps, each aggregated per value — the multi-metric table's columns; falls back to [metricType]), metricAgg ('sum' default, 'avg', 'min', 'max', 'cardinality', or a percentile 'p50' (the median), 'p90', 'p95' or 'p99'; cardinality accepts any field, the others numeric fields only; in a multi viewer a cardinality is the largest cluster's count, a lower bound, and a percentile is refused), sortMetric (which of metrics orders the Top/Bottom N; 'sessions' or unset orders by session count), splitField (optional second field exp; each value's top splitLength sub-values are returned in data[].split for stacked/grouped bars), splitLength (sub-values per value, clamped 1-50, default 5), bucketInterval (numeric fields only: bucket the field's values into ranges of this width instead of one bucket per value; each data[] item is then a range, item '<start>-<end>' with range: [start, end]), other (when true and the metric is the session count or a sum, also return what falls outside the top N), box (when true, also return the spread of the first numeric metric over each value's sessions, for a box plot; refused by a multi viewer), expression (local filter ANDed with the global search) }. An empty array yields a stats-only response. At most 100 widgets.
    * @param {string} fields - Legacy alternative to widgets: a comma-separated string of field exps (each becomes a default widget), at most 100. One of widgets or fields is required.
    * @param {boolean} noStats - When true, skip the top-level stats/map/graph chunk (incremental single-widget fetches that don't change the dashboard totals).
    * @param {number} length - Default top/bottom N for widgets that don't set their own. Default: 20
    * @param {string} order - Default sort order ('asc'|'desc') for widgets that don't set their own. Default: desc
-   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, metricAgg, length, order, orderBy, expression, data[] } or { id, field, error } on per-widget failure; a widget asking for other also carries other: { sessions, value } for the sessions outside its top N. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's aggregate, or session count), metricValues (each requested metric's aggregate keyed by exp, + 'sessions'), split (only with splitField: [{ item, sessions, value, metricValues }] for the value's top sub-values) }.
+   * @returns {array} summary - A streamed JSON array: [ {stats/map/graph}, {widget}, ..., {} ]. Each widget chunk carries { id, field, viewMode, metricType, metricAgg, length, order, orderBy, expression, data[] } or { id, field, error } on per-widget failure; a widget asking for other also carries other: { sessions, value } for the sessions outside its top N. Each data[] item carries { item, sessions, bytes, packets, value (the sort metric's aggregate, or session count), metricValues (each requested metric's aggregate keyed by exp, + 'sessions'), split (only with splitField: [{ item, sessions, value, metricValues }] for the value's top sub-values), box (only with box: { count (how many values of the metric, one per session that has a single valued one), min, q1, median, q3, max, mean } of the metric over the value's sessions, just { count: 0 } when none has it) }.
    *
    */
   static summary (req, res) {
@@ -3915,8 +3915,14 @@ class SessionAPIs {
       } else {
         spec.orderAggKey = spec.sortAggKey;
       }
+      // a box plot: the spread of the first metric (a numeric field) over
+      // each value's sessions, its quartiles are percentiles too
+      if ((w.box === true || w.box === 'true') && !total && spec.metrics.length) {
+        const boxDbField = ViewerUtils.metricDbField(spec.metrics[0].exp, 'sum');
+        if (boxDbField) { spec.boxDbField = boxDbField; }
+      }
       // a multi viewer can't combine the clusters' percentiles into one
-      if (spec.percent && spec.metrics.length && Config.getBool('multiES', false)) {
+      if ((spec.percent || spec.boxDbField) && spec.metrics.length && Config.getBool('multiES', false)) {
         spec.unsupported = 'Percentiles are not supported across clusters';
       }
       // "Other" only adds up for a count (whatever metricAgg a saved widget
@@ -3941,6 +3947,38 @@ class SessionAPIs {
         }
       }
       return metricValues;
+    }
+
+    // a box plot's aggregations per bucket: the metric's extremes, mean and
+    // count, and its quartiles one percentile each (as every backend asks)
+    function boxAggsFor (spec) {
+      if (!spec.boxDbField) { return {}; }
+      const field = spec.boxDbField;
+      return {
+        bxmin: { min: { field } },
+        bxmax: { max: { field } },
+        bxavg: { avg: { field } },
+        bxcnt: { value_count: { field } },
+        bxq1: ViewerUtils.percentileAgg(field, 25),
+        bxq2: ViewerUtils.percentileAgg(field, 50),
+        bxq3: ViewerUtils.percentileAgg(field, 75)
+      };
+    }
+
+    // a bucket's box: { count: 0 } when none of its sessions has the metric
+    function bucketBox (bucket) {
+      const count = bucket.bxcnt?.value ?? 0;
+      if (!count) { return { count: 0 }; }
+      const num = (r) => (typeof r?.value === 'number' && Number.isFinite(r.value) ? r.value : 0);
+      return {
+        count,
+        min: num(bucket.bxmin),
+        q1: ViewerUtils.percentileValue(bucket.bxq1),
+        median: ViewerUtils.percentileValue(bucket.bxq2),
+        q3: ViewerUtils.percentileValue(bucket.bxq3),
+        max: num(bucket.bxmax),
+        mean: num(bucket.bxavg)
+      };
     }
 
     // the aggregations one bucket needs for a widget's metrics (per metricAgg)
@@ -3985,7 +4023,8 @@ class SessionAPIs {
           packets: bucket.packets.value,
           value: spec.sortExp ? metricValues[spec.sortExp] : bucket.doc_count,
           metricValues,
-          ...(split ? { split } : {})
+          ...(split ? { split } : {}),
+          ...(spec.boxDbField ? { box: bucketBox(bucket) } : {})
         });
       }
       return results;
@@ -4174,7 +4213,7 @@ class SessionAPIs {
             ? { _key: spec.order }
             : (spec.orderAggKey ? { [spec.orderAggKey]: spec.order } : { _count: spec.order });
 
-          const widgetAggs = { ...extraAggs, ...metricAggs };
+          const widgetAggs = { ...extraAggs, ...metricAggs, ...boxAggsFor(spec) };
           if (spec.splitDbField) {
             // a bar is always split by its top sub-values, whichever end of
             // the ranking the bars themselves come from

@@ -11,7 +11,7 @@ import { fetchWrapper } from '@common/fetchWrapper.js';
 import { startQuery, finishQuery } from '@common/queryTimes.js';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
-import { defaultLength, fieldCountLimits, slotMetrics, isPercentileAgg, PERCENTILE_VIEW_MODES, allowsSplit, allowsOther, allowsBucketInterval } from './viewModes';
+import { defaultLength, fieldCountLimits, slotMetrics, isPercentileAgg, PERCENTILE_VIEW_MODES, allowsSplit, allowsOther, allowsBucketInterval, boxMetric, boxRank } from './viewModes';
 import { spigraphQueryFromGraph } from '../dashboardConfig';
 import { DEFAULT_CIRCLE_COLOR_FIELD } from './connectionCircle';
 import { controlFilters, substituteExpression, withoutPicks } from './dashboardVariables';
@@ -607,6 +607,39 @@ export async function fetchMetricsChart (route, store, widget, { signal } = {}) 
   }, { signal });
   if (res?.error) { throw new Error(res.error); }
   return res?.data || [];
+}
+
+/**
+ * Fetch a box plot's rows: its field's top values, each with the spread of
+ * its metric over the value's sessions (box: { count, min, q1, median, q3,
+ * max, mean }), ranked by their sessions or by an aggregation of the metric.
+ * Returns the [{ item, sessions, box, ... }] rows.
+ */
+export async function fetchBoxPlot (route, store, widget, { signal } = {}) {
+  const localExp = widgetLocalExpression(widget, store.state.views, store.state.dashboardVariables);
+  const metric = boxMetric(widget);
+  const rank = boxRank(widget);
+  const body = {
+    facets: 1,
+    noStats: true,
+    widgets: [{
+      id: 'b',
+      field: widgetFields(widget)[0],
+      length: widget.length,
+      order: widget.order,
+      ...(widget.orderBy === 'key' ? { orderBy: 'key' } : {}),
+      metricType: metric,
+      metrics: [metric],
+      metricAgg: rank === 'sessions' ? 'sum' : rank,
+      sortMetric: rank === 'sessions' ? 'sessions' : metric,
+      box: true,
+      ...(localExp ? { expression: localExp } : {})
+    }]
+  };
+  const res = await postSummary(route, store, body, signal, undefined, undefined, widget);
+  const chunk = (Array.isArray(res) ? res : []).find(c => c && c.id === 'b');
+  if (chunk?.error) { throw new Error(chunk.error); }
+  return chunk?.data || [];
 }
 
 /**

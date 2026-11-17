@@ -161,13 +161,18 @@
       {
         "id": "w15",
         "field": "protocols",
-        "viewMode": "bar",
+        "viewMode": "boxplot",
         "width": 2,
         "height": 3,
         "length": 15,
         "metricType": "session.length",
+        "metrics": [
+          "session.length"
+        ],
+        "sortMetric": "session.length",
         "metricAgg": "p95",
-        "title": "p95 session length by protocol (ms)"
+        "yScale": "log",
+        "title": "Session length by protocol (ms), ranked by p95"
       },
       {
         "id": "w16",

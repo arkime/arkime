@@ -484,6 +484,7 @@
       "areaView": "面积图",
       "comboView": "组合图",
       "scatterView": "散点图",
+      "boxplotView": "箱线图",
       "timeofdayView": "时段",
       "matrixView": "矩阵",
       "mosaicView": "马赛克图",
@@ -566,6 +567,17 @@
         "p90": "P90",
         "p95": "P95",
         "p99": "P99"
+      },
+      "box": {
+        "min": "最小值",
+        "q1": "第 25 百分位数",
+        "median": "中位数",
+        "q3": "第 75 百分位数",
+        "max": "最大值",
+        "mean": "平均值",
+        "count": "值的数量",
+        "none": "这些会话都没有该值",
+        "legend": "箱体：中间一半的值，线：中位数，须：从最小值到最大值，点：平均值"
       },
       "navigation": {
         "system": "系统",
@@ -665,6 +677,8 @@
         "metricSlot-y": "Y 轴",
         "metricSlot-size": "点大小",
         "metricSlotNone": "无",
+        "rankBy": "排名依据",
+        "rankByTip": "显示哪些值：会话最多（或最少）的值，或按指标的聚合（例如最高的中位数）",
         "variable": "变量",
         "variableTip": "所选的值即为此变量：其他部件的标题或筛选条件中，以及仪表板筛选条件中的 {ref} 会被替换为这些值。未选择时，标题显示“全部”，筛选条件中使用它的部分会被省略。",
         "variableInvalid": "变量名由字母、数字和 _ 组成，且不能以数字开头",
@@ -1950,6 +1964,7 @@
     "graphType-area": "面积图",
     "graphType-combo": "组合图",
     "graphType-scatter": "散点图",
+    "graphType-boxplot": "箱线图",
     "timelineMode": "布局",
     "timelineMode-separate": "每个值一个",
     "timelineMode-stacked": "堆叠",

@@ -485,6 +485,7 @@
       "areaView": "Areaway",
       "comboView": "Ombocay",
       "scatterView": "Atterscay",
+      "boxplotView": "Oxbay otplay",
       "timeofdayView": "Imetay ofway ayday",
       "matrixView": "Atrixmay",
       "mosaicView": "Osaicmay",
@@ -567,6 +568,17 @@
         "p90": "P90",
         "p95": "P95",
         "p99": "P99"
+      },
+      "box": {
+        "min": "Inmay",
+        "q1": "25thay ercentilepay",
+        "median": "Edianmay",
+        "q3": "75thay ercentilepay",
+        "max": "Axmay",
+        "mean": "Eanmay",
+        "count": "Aluesvay",
+        "none": "Onenay ofay esethay essionssay ashay itay",
+        "legend": "Oxbay: ethay iddlemay alfhay ofay ethay aluesvay, inelay: ethay edianmay, iskerswhay: ethay allestsmay otay ethay argestlay, otday: ethay eanmay"
       },
       "navigation": {
         "system": "Ystemsay",
@@ -666,6 +678,8 @@
         "metricSlot-y": "Y axisway",
         "metricSlot-size": "Ointpay izesay",
         "metricSlotNone": "Onenay",
+        "rankBy": "Ankray ybay",
+        "rankByTip": "Ichwhay aluesvay areway ownshay: osethay ithway ethay ostmay (orway ewestfay) essionssay, orway ybay anway aggregationway ofway ethay etricmay, uchsay asway ethay ighesthay edianmay",
         "variable": "Ariablevay",
         "variableTip": "Ethay ickedpay aluesvay areway isthay ariablevay: {ref} inway anotherway idgetway's itletay orway ilterfay, orway inway ethay ashboardday ilterfay, isway eplacedray ybay emthay. Ithway othingnay ickedpay away itletay owsshay Allway, andway ethay artpay ofway away ilterfay atthay usesway itway isway eftlay outway.",
         "variableInvalid": "Away ariablevay amenay isway etterslay, igitsday andway _, andway oesnday't artstay ithway away igitday",
@@ -1951,6 +1965,7 @@
     "graphType-area": "Areaway",
     "graphType-combo": "Ombocay",
     "graphType-scatter": "Atterscay",
+    "graphType-boxplot": "Oxbay otplay",
     "timelineMode": "Ayoutlay",
     "timelineMode-separate": "Oneway erpay aluevay",
     "timelineMode-stacked": "Ackedstay",

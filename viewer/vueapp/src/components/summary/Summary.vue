@@ -191,6 +191,18 @@ SPDX-License-Identifier: Apache-2.0
             @show-tooltip="showTooltip"
             @edit="openEdit(w.id)"
             @remove="removeWidgetLocal(w)" />
+          <!-- each top value's spread of a metric over its sessions -->
+          <BoxPlotWidget
+            v-else-if="isBoxMode(w.viewMode)"
+            :widget="w"
+            :reload-nonce="reloadNonce"
+            :color-scheme="colorScheme"
+            :info-items="widgetInfo(w)"
+            :link="widgetLinks[w.id]"
+            :graph-def="widgetGraphs[w.id]"
+            @show-tooltip="showTooltip"
+            @edit="openEdit(w.id)"
+            @remove="removeWidgetLocal(w)" />
           <!-- each top value's bars and line, or its point placed by two metrics -->
           <MetricsChartWidget
             v-else-if="metricSlots(w.viewMode)"
@@ -371,6 +383,7 @@ import ArkimeError from '../utils/Error.vue';
 import SummaryWidget from './SummaryWidget.vue';
 import MatrixWidget from './widgets/MatrixWidget.vue';
 import MetricsChartWidget from './widgets/MetricsChartWidget.vue';
+import BoxPlotWidget from './widgets/BoxPlotWidget.vue';
 import TimeOfDayWidget from './widgets/TimeOfDayWidget.vue';
 import SummaryWidgetEditModal from './SummaryWidgetEditModal.vue';
 import SummaryConfigSaveModal from './SummaryConfigSaveModal.vue';
@@ -395,7 +408,7 @@ import NavigationWidget from './widgets/NavigationWidget.vue';
 import ControlWidget from './widgets/ControlWidget.vue';
 import { controlVariable, substituteExpression, withoutVariableParams } from './widgets/dashboardVariables';
 import SummaryChartTooltip from './SummaryChartTooltip.vue';
-import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare } from './widgets/viewModes';
+import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare, isBoxMode, boxMetric, boxRank } from './widgets/viewModes';
 import { summaryRequestWidget, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle, dashboardPageQuery, circleColorDbField } from './widgets/widgetData';
 import { DEFAULT_CIRCLE_MAX_NODES } from './widgets/connectionCircle';
 import FieldService from '../search/FieldService';
@@ -628,8 +641,16 @@ const widgetInfo = (w) => {
     rows.push({ label: t(exps.length > 1 ? 'sessions.summary.widget.fields' : 'sessions.summary.widget.field'), value: names });
   }
 
-  // metric only applies to the metric-driven charts / tables
-  if (hasMetric(w.viewMode)) {
+  // a box plot's metric is the spread it draws, its values ranked by their
+  // sessions or by an aggregation of it
+  if (isBoxMode(w.viewMode)) {
+    const metric = boxMetric(w);
+    const rank = boxRank(w);
+    rows.push({ label: t('sessions.summary.widget.metric'), value: metricLabel(metric, 'sum', t) });
+    rows.push({ label: t('sessions.summary.widget.rankBy'), value: rank === 'sessions' ? t('sessions.summary.sessions') : `${t(`sessions.summary.agg.${rank}`)} ${metricLabel(metric, 'sum', t)}` });
+    rows.push({ label: t('sessions.summary.boxplotView'), value: t('sessions.summary.box.legend') });
+  } else if (hasMetric(w.viewMode)) {
+    // metric only applies to the metric-driven charts / tables
     const agg = hasMetricAgg(w.viewMode) ? w.metricAgg : 'sum';
     const metricName = (m) => metricLabel(m, agg, t);
     const metricExps = (Array.isArray(w.metrics) && w.metrics.length) ? w.metrics : [w.metricType || 'sessions'];
@@ -661,14 +682,14 @@ const widgetInfo = (w) => {
     rows.push({ label: t('sessions.summary.widget.splitField'), value: `${fieldName} (${layout}${w.splitLength || 5})` });
   }
 
-  if (w.viewMode === 'bar' && w.orientation === 'horizontal') {
+  if ((w.viewMode === 'bar' || isBoxMode(w.viewMode)) && w.orientation === 'horizontal') {
     rows.push({ label: t('sessions.summary.widget.orientation'), value: t('sessions.summary.widget.orientation-horizontal') });
   }
   // a split timeline's bars or lines are already in its split row
   if (w.viewMode === 'timeline' && !w.splitField && w.seriesType === 'lines') {
     rows.push({ label: t('sessions.summary.widget.seriesMode'), value: t('sessions.summary.widget.seriesType-lines') });
   }
-  if ((isTimelineMode(w.viewMode) || w.viewMode === 'scatter') && w.yScale && w.yScale !== 'linear') {
+  if ((isTimelineMode(w.viewMode) || w.viewMode === 'scatter' || isBoxMode(w.viewMode)) && w.yScale && w.yScale !== 'linear') {
     rows.push({ label: t('sessions.summary.widget.yScale'), value: t(`sessions.summary.widget.yScale-${w.yScale}`) });
   }
   if (w.viewMode === 'metric' && w.sparkline && !w.field) {

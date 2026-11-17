@@ -484,6 +484,7 @@
       "areaView": "面グラフ",
       "comboView": "複合グラフ",
       "scatterView": "散布図",
+      "boxplotView": "箱ひげ図",
       "timeofdayView": "時間帯",
       "matrixView": "マトリックス",
       "mosaicView": "モザイク",
@@ -566,6 +567,17 @@
         "p90": "P90",
         "p95": "P95",
         "p99": "P99"
+      },
+      "box": {
+        "min": "最小",
+        "q1": "25パーセンタイル",
+        "median": "中央値",
+        "q3": "75パーセンタイル",
+        "max": "最大",
+        "mean": "平均",
+        "count": "値の数",
+        "none": "これらのセッションにはありません",
+        "legend": "箱：値の中央の半分、線：中央値、ひげ：最小値から最大値、点：平均値"
       },
       "navigation": {
         "system": "システム",
@@ -665,6 +677,8 @@
         "metricSlot-y": "Y軸",
         "metricSlot-size": "点のサイズ",
         "metricSlotNone": "なし",
+        "rankBy": "順位付けの基準",
+        "rankByTip": "表示する値：セッション数が最も多い（または少ない）もの、または最も高い中央値などメトリックの集計による",
         "variable": "変数",
         "variableTip": "選択した値がこの変数になります：他のウィジェットのタイトルやフィルター、ダッシュボードのフィルター内の {ref} がこれらの値に置き換えられます。何も選択していない場合、タイトルには「すべて」と表示され、フィルターのうちこの変数を使う部分は省かれます。",
         "variableInvalid": "変数名は英字、数字、_ で構成し、数字で始めることはできません",
@@ -1950,6 +1964,7 @@
     "graphType-area": "面グラフ",
     "graphType-combo": "複合グラフ",
     "graphType-scatter": "散布図",
+    "graphType-boxplot": "箱ひげ図",
     "timelineMode": "レイアウト",
     "timelineMode-separate": "値ごとに1つ",
     "timelineMode-stacked": "積み上げ",

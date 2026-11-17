@@ -61,13 +61,14 @@ aggregated per value and the first one ranking the Top/Bottom N.
 </template>
 
 <script setup>
-import { ref, computed, nextTick, onBeforeUnmount } from 'vue';
+import { ref, computed } from 'vue';
 import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
 import SummaryComboChart from '../SummaryComboChart.vue';
 import SummaryScatterChart from '../SummaryScatterChart.vue';
 import FieldService from '../../search/FieldService';
 import { useSpigraphWidget } from './useSpigraphWidget';
+import { useContainerSize } from './useContainerSize';
 import { fetchMetricsChart, formatMetricValue, metricLabel, metricRowValue } from './widgetData';
 import { slotMetrics } from './viewModes';
 
@@ -84,15 +85,13 @@ const props = defineProps({
 
 defineEmits(['edit', 'remove', 'show-tooltip', 'hide-tooltip']);
 
-const container = ref(null);
-const width = ref(0);
-const height = ref(0);
+const { container, width, height, observe } = useContainerSize();
 const rows = ref([]);
 
 const { loading, error, fetchData } = useSpigraphWidget(
   () => props.widget,
   () => props.reloadNonce,
-  (res) => { rows.value = res; setupObserver(); },
+  (res) => { rows.value = res; observe(); },
   fetchMetricsChart
 );
 
@@ -118,27 +117,6 @@ const typeLabel = computed(() => t(props.widget.viewMode === 'combo' ? 'sessions
 const title = computed(() => props.widget.title ||
   `${fieldObj.value?.friendlyName || props.widget.field} ${typeLabel.value}`);
 const hasData = computed(() => rows.value.length > 0 && !!fieldObj.value);
-
-const measure = () => {
-  if (!container.value) { return; }
-  width.value = container.value.clientWidth;
-  height.value = container.value.clientHeight;
-};
-// the card only renders its content once the data is in, so the container
-// to measure (and watch) exists after each result, not at mount
-let ro;
-const setupObserver = () => {
-  nextTick(() => {
-    if (!container.value) { return; }
-    if (ro) { ro.disconnect(); }
-    if (typeof ResizeObserver !== 'undefined') {
-      ro = new ResizeObserver(measure);
-      ro.observe(container.value);
-    }
-    measure();
-  });
-};
-onBeforeUnmount(() => { if (ro) { ro.disconnect(); } });
 </script>
 
 <style scoped>

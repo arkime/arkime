@@ -484,6 +484,7 @@
       "areaView": "Área",
       "comboView": "Combinado",
       "scatterView": "Dispersión",
+      "boxplotView": "Diagrama de caja",
       "timeofdayView": "Hora del día",
       "matrixView": "Matriz",
       "mosaicView": "Mosaico",
@@ -566,6 +567,17 @@
         "p90": "P90",
         "p95": "P95",
         "p99": "P99"
+      },
+      "box": {
+        "min": "Mín",
+        "q1": "Percentil 25",
+        "median": "Mediana",
+        "q3": "Percentil 75",
+        "max": "Máx",
+        "mean": "Media",
+        "count": "Valores",
+        "none": "Ninguna de estas sesiones lo tiene",
+        "legend": "Caja: la mitad central de los valores, línea: la mediana, bigotes: del menor al mayor, punto: la media"
       },
       "navigation": {
         "system": "Sistema",
@@ -665,6 +677,8 @@
         "metricSlot-y": "Eje Y",
         "metricSlot-size": "Tamaño del punto",
         "metricSlotNone": "Ninguna",
+        "rankBy": "Clasificar por",
+        "rankByTip": "Qué valores se muestran: los que tienen más (o menos) sesiones, o según una agregación de la métrica, como la mediana más alta",
         "variable": "Variable",
         "variableTip": "Los valores elegidos son esta variable: {ref} en el título o filtro de otro widget, o en el filtro del panel, se reemplaza por ellos. Sin selección, un título muestra Todos y se omite la parte de un filtro que la usa.",
         "variableInvalid": "Un nombre de variable tiene letras, dígitos y _, y no empieza por un dígito",
@@ -1950,6 +1964,7 @@
     "graphType-area": "Área",
     "graphType-combo": "Combinado",
     "graphType-scatter": "Dispersión",
+    "graphType-boxplot": "Diagrama de caja",
     "timelineMode": "Diseño",
     "timelineMode-separate": "Una por valor",
     "timelineMode-stacked": "Apilado",

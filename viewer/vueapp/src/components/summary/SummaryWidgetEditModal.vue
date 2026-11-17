@@ -253,6 +253,35 @@ SPDX-License-Identifier: Apache-2.0
               style="min-width: 180px"
               @update:model-value="(v) => setSlot(i, v)" />
           </template>
+          <!-- box plot: the numeric metric whose spread is drawn, and what
+               ranks the values (their sessions, or an aggregation of it) -->
+          <template v-else-if="boxMode">
+            <v-autocomplete
+              v-model="boxMetricValue"
+              :items="metricFields"
+              :label="$t('sessions.summary.widget.metric')"
+              density="compact"
+              variant="outlined"
+              hide-details
+              auto-select-first
+              style="min-width: 200px" />
+            <span
+              id="widgetBoxRank"
+              style="min-width: 200px">
+              <v-select
+                v-model="boxRankValue"
+                :items="boxRankItems"
+                :label="$t('sessions.summary.widget.rankBy')"
+                density="compact"
+                variant="outlined"
+                hide-details />
+              <v-tooltip
+                activator="#widgetBoxRank"
+                max-width="360">
+                {{ $t('sessions.summary.widget.rankByTip') }}
+              </v-tooltip>
+            </span>
+          </template>
           <v-autocomplete
             v-else
             v-model="form.metricType"
@@ -419,12 +448,12 @@ SPDX-License-Identifier: Apache-2.0
             style="min-width: 140px" />
         </div>
 
-        <!-- how a bar chart, timeline or scatter is drawn -->
+        <!-- how a bar chart, timeline, scatter or box plot is drawn -->
         <div
-          v-if="barSplit || timelineSplit || scatterMode"
+          v-if="barSplit || timelineSplit || scatterMode || boxMode"
           class="d-flex flex-wrap gap-3 mb-3">
           <v-select
-            v-if="barSplit"
+            v-if="barSplit || boxMode"
             v-model="form.orientation"
             :items="orientationItems"
             :label="$t('sessions.summary.widget.orientation')"
@@ -442,10 +471,10 @@ SPDX-License-Identifier: Apache-2.0
             hide-details
             style="min-width: 140px" />
           <v-select
-            v-if="timelineSplit || scatterMode"
+            v-if="timelineSplit || scatterMode || boxMode"
             v-model="form.yScale"
             :items="yScaleItems"
-            :label="$t(scatterMode ? 'sessions.summary.widget.scale' : 'sessions.summary.widget.yScale')"
+            :label="$t(scatterMode || boxMode ? 'sessions.summary.widget.scale' : 'sessions.summary.widget.yScale')"
             density="compact"
             variant="outlined"
             hide-details
@@ -710,8 +739,8 @@ import ArkimeFieldTypeahead from '../utils/FieldTypeahead.vue';
 import { CIRCLE_MAX_NODES, DEFAULT_CIRCLE_MAX_NODES } from './widgets/connectionCircle';
 import FieldService from '../search/FieldService';
 import { createShareableService } from '../users/ShareableService';
-import { metricIsAdditive, fieldIsAggregatable, circleColorFieldUsable, circleColorDbField } from './widgets/widgetData';
-import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH, isTimelineMode, metricSlots, slotMetrics, metricAggsFor, isControlMode, allowsCompare, hasLevels, COMPARES } from './widgets/viewModes';
+import { metricIsAdditive, fieldIsAggregatable, circleColorFieldUsable, circleColorDbField, metricLabel } from './widgets/widgetData';
+import { hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, lengthOptions, defaultLength, fieldCountLimits, fieldUsableBy, isFieldPair, isFieldMode, isGeoFieldMode, isOptionalFieldMode, isStaticMode, isNavMode, isGaugeMode, allowsBucketInterval, allowsMultiField, allowsMultiMetric, allowsSplit, allowsOther, isListMode, hasLocalFilter, METRIC_AGGS, SPLIT_LENGTHS, BAR_MODES, BAR_ORIENTATIONS, SERIES_TYPES, Y_SCALES, VIEW_MODE_LABEL_KEYS, isTreeMode, TREE_DEPTHS, DEFAULT_TREE_DEPTH, isTimelineMode, metricSlots, slotMetrics, metricAggsFor, isControlMode, allowsCompare, hasLevels, COMPARES, isBoxMode, boxMetric, boxRank, DEFAULT_BOX_METRIC } from './widgets/viewModes';
 import { defaultVariableName, VARIABLE_NAME_RE, CONTROL_TYPES } from './widgets/dashboardVariables';
 import { GRAPH_VIEW_MODES, graphFromWidget, nonNeg } from './dashboardConfig';
 import { columnSortDbField, fieldHasColumn } from './widgets/sessionsWidgetData';
@@ -917,6 +946,30 @@ const setSlot = (i, value) => {
   form.value.metrics = next;
 };
 const scatterMode = computed(() => form.value.viewMode === 'scatter');
+// box plot: a numeric metric (never the session count, one number per value
+// has no spread) and the values ranked by their sessions or an aggregation of
+// it. metrics[] and sortMetric follow the metric, so the metric column
+// watcher below doesn't send the ranking back to the session count
+const boxMode = computed(() => isBoxMode(form.value.viewMode));
+const boxMetricValue = computed({
+  get: () => boxMetric(form.value),
+  set: (v) => {
+    const metric = v || DEFAULT_BOX_METRIC;
+    form.value.metricType = metric;
+    form.value.metrics = [metric];
+    if (form.value.sortMetric !== 'sessions') { form.value.sortMetric = metric; }
+  }
+});
+const boxRankValue = computed({
+  get: () => boxRank(form.value),
+  set: (v) => {
+    const metric = boxMetric(form.value);
+    form.value.metrics = [metric];
+    if (v === 'sessions') { form.value.sortMetric = 'sessions'; return; }
+    form.value.sortMetric = metric;
+    form.value.metricAgg = v;
+  }
+});
 // a multi viewer can't combine its clusters' percentiles, so it offers none
 const multiViewer = typeof MULTIVIEWER !== 'undefined' && !!MULTIVIEWER;
 // the aggregations the type takes: a spigraph-backed one a sum or a percentile
@@ -958,9 +1011,9 @@ const areaDrawAsItems = computed(() => [
 ]);
 const seriesTypeItems = computed(() => SERIES_TYPES.map(m => ({ title: t(`sessions.summary.widget.seriesType-${m}`), value: m })));
 // percent is each series' share of the bucket, so it takes a stacked split
-// (and a scatter has no buckets to share)
+// (and a scatter or box plot has no buckets to share)
 const yScaleItems = computed(() => Y_SCALES
-  .filter(m => m !== 'percent' || (!scatterMode.value && form.value.splitField && form.value.barMode !== 'grouped'))
+  .filter(m => m !== 'percent' || (!scatterMode.value && !boxMode.value && form.value.splitField && form.value.barMode !== 'grouped'))
   .map(m => ({ title: t(`sessions.summary.widget.yScale-${m}`), value: m })));
 watch(yScaleItems, (items) => {
   if (!items.some(i => i.value === form.value.yScale)) { form.value.yScale = 'linear'; }
@@ -1004,7 +1057,9 @@ function viewModeLabel (vm) {
 }
 
 const viewModeItems = computed(() => allViewModeItems.value.filter(i => !props.graphOnly || GRAPH_VIEW_MODES.includes(i.value)));
+// a multi viewer can't combine its clusters' percentiles, so it has no box plot
 const allViewModeItems = computed(() => Object.entries(VIEW_MODE_LABEL_KEYS)
+  .filter(([value]) => !(multiViewer && isBoxMode(value)))
   .map(([value, key]) => ({ title: t(key), value }))
   .sort((a, b) => a.title.localeCompare(b.title, locale.value)));
 
@@ -1022,6 +1077,15 @@ const metricItems = computed(() => [
   { title: t('sessions.summary.sessions'), value: 'sessions' },
   ...metricFields.value
 ]);
+// a box plot ranks its values by their sessions or by any aggregation of its
+// metric but a unique count
+const boxRankItems = computed(() => {
+  const metricName = metricLabel(boxMetric(form.value), 'sum', t);
+  return [
+    { title: t('sessions.summary.sessions'), value: 'sessions' },
+    ...aggChoices.value.map(a => ({ title: `${t(`sessions.summary.agg.${a}`)} ${metricName}`, value: a }))
+  ];
+});
 // a slot that may be left unset (a scatter's bubble size)
 const optionalMetricItems = computed(() => [
   { title: t('sessions.summary.widget.metricSlotNone'), value: '' },
@@ -1202,6 +1266,9 @@ watch([() => form.value, () => form.value.viewMode], ([f, mode], [prevForm, prev
   if (isSampleSize(mode) !== isSampleSize(prev)) {
     form.value.length = defaultLength(mode);
   }
+  // a widget made a box plot starts ranked by its sessions, not by whatever
+  // metric and aggregation the type it was sorted its values by
+  if (isBoxMode(mode) && !isBoxMode(prev)) { form.value.sortMetric = 'sessions'; }
 });
 
 // cap metric columns at 4 and keep the sort-by pointed at a chosen metric (or Sessions)
@@ -1274,7 +1341,7 @@ const save = () => {
   // a count has no aggregation: an agg picked for an earlier metric field
   // must not stick to it (the select is hidden, so the user can't see it)
   const wanted = aggEnabled.value && aggApplies.value ? (form.value.metricAgg || 'sum') : 'sum';
-  const metricAgg = aggChoices.value.includes(wanted) ? wanted : 'sum';
+  let metricAgg = aggChoices.value.includes(wanted) ? wanted : 'sum';
   if (metricAgg !== 'cardinality') {
     const numeric = (exp) => exp === 'sessions' || FieldService.getField(exp, true)?.type === 'integer';
     if (!numeric(metricType)) { metricType = 'sessions'; }
@@ -1288,6 +1355,16 @@ const save = () => {
     metricType = metrics[0] || 'sessions';
     sortMetric = metricType;
   }
+  // a box plot keeps its numeric metric, ranked by its sessions or by an
+  // aggregation of the metric
+  if (boxMode.value) {
+    const metric = boxMetric(form.value);
+    metricType = FieldService.getField(metric, true)?.type === 'integer' ? metric : DEFAULT_BOX_METRIC;
+    metrics = [metricType];
+    const rank = boxRank(form.value);
+    sortMetric = rank === 'sessions' ? 'sessions' : metricType;
+    metricAgg = rank === 'sessions' ? 'sum' : rank;
+  }
   emit('save', {
     ...props.widget,
     field: fieldList[0] || '',
@@ -1297,13 +1374,13 @@ const save = () => {
     metricType,
     metrics,
     metricAgg,
-    sortMetric: multiMetric.value || slots.value ? sortMetric : metricType,
+    sortMetric: multiMetric.value || slots.value || boxMode.value ? sortMetric : metricType,
     splitField: splitEnabled.value ? (form.value.splitField || '') : '',
     splitLength: form.value.splitLength || 5,
     barMode: additiveMetric.value ? (form.value.barMode || 'stacked') : 'grouped',
-    orientation: barSplit.value && form.value.orientation === 'horizontal' ? 'horizontal' : 'vertical',
+    orientation: (barSplit.value || boxMode.value) && form.value.orientation === 'horizontal' ? 'horizontal' : 'vertical',
     seriesType: timelineSplit.value && form.value.seriesType === 'lines' ? 'lines' : 'bars',
-    yScale: (timelineSplit.value || scatterMode.value) && yScaleItems.value.some(i => i.value === form.value.yScale) ? form.value.yScale : 'linear',
+    yScale: (timelineSplit.value || scatterMode.value || boxMode.value) && yScaleItems.value.some(i => i.value === form.value.yScale) ? form.value.yScale : 'linear',
     sparkline: sparklineEnabled.value && !!form.value.sparkline,
     other: otherEnabled.value && additiveMetric.value && !!form.value.other,
     bucketInterval: bucketEnabled.value ? nonNeg(form.value.bucketInterval) : 0,

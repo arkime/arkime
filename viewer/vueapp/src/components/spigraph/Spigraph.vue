@@ -240,6 +240,42 @@ SPDX-License-Identifier: Apache-2.0
                 </div>
               </template> <!-- /combo and scatter metrics -->
 
+              <!-- box plot: the metric whose spread is drawn (any numeric
+                   field, the url's graphType) and what ranks the values -->
+              <template v-if="spiGraphType === 'boxplot' && boxMetricFields.length">
+                <div class="arkime-input-group">
+                  <span class="arkime-input-label">
+                    {{ $t('sessions.summary.widget.metric') }}:
+                  </span>
+                  <arkime-field-typeahead
+                    :fields="boxMetricFields"
+                    query-param="graphType"
+                    :initial-value="boxMetricName"
+                    @field-selected="changeBoxMetric" />
+                </div>
+                <div class="arkime-input-group">
+                  <span
+                    id="boxRankBy"
+                    class="arkime-input-label cursor-help">
+                    {{ $t('sessions.summary.widget.rankBy') }}:
+                  </span>
+                  <v-tooltip activator="#boxRankBy">
+                    {{ $t('sessions.summary.widget.rankByTip') }}
+                  </v-tooltip>
+                  <select
+                    class="arkime-input-control"
+                    :value="boxRankValue"
+                    @change="changeBoxRank($event.target.value)">
+                    <option
+                      v-for="opt in boxRankOptions"
+                      :key="opt.value"
+                      :value="opt.value">
+                      {{ opt.label }}
+                    </option>
+                  </select>
+                </div>
+              </template> <!-- /box plot metric -->
+
               <!-- page info -->
               <div
                 class="records-display align-self-center"
@@ -588,8 +624,8 @@ import SpigraphMetricsChart from './SpigraphMetricsChart.vue';
 import SpigraphWidgetView from './SpigraphWidgetView.vue';
 import SummaryWidgetEditModal from '../summary/SummaryWidgetEditModal.vue';
 import { graphFromSpigraphQuery, spigraphQueryFromGraph, graphFromWidget, graphDrawnAsWidget, graphIsHierarchyFed } from '../summary/dashboardConfig';
-import { SPLIT_LENGTHS, METRIC_SLOTS, PERCENTILE_AGGS, slotMetrics, fieldCountLimits } from '../summary/widgets/viewModes';
-import { widgetThresholds } from '../summary/widgets/widgetData';
+import { SPLIT_LENGTHS, METRIC_SLOTS, PERCENTILE_AGGS, BOX_RANK_AGGS, slotMetrics, fieldCountLimits, boxMetric } from '../summary/widgets/viewModes';
+import { widgetThresholds, fieldIsAggregatable } from '../summary/widgets/widgetData';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import { resolveMessage } from '@common/resolveI18nMessage';
 // import utils
@@ -605,7 +641,7 @@ const CONNECTIONS_TYPES = ['connections', 'tree', 'circle'];
 
 // the url params a graph sets: showing another graph clears the ones it leaves out
 const GRAPH_PARAMS = ['subFields', 'timelineMode', 'seriesType', 'barMode', 'barOrientation', 'splitLength', 'pieMode', 'pieCount', 'other', 'tableMode',
-  'lineMetric', 'yMetric', 'sizeMetric', 'yScale', 'srcField', 'dstField', 'graphType', 'metricAgg', 'metrics', 'sortMetric', 'order', 'orderBy',
+  'lineMetric', 'yMetric', 'sizeMetric', 'yScale', 'srcField', 'dstField', 'graphType', 'metricAgg', 'metrics', 'sortMetric', 'rankBy', 'order', 'orderBy',
   'bucketInterval', 'warn', 'crit', 'connectionsLength', 'treeRoot', 'treeDepth', 'colorField', 'maxNodes', 'view'];
 
 export default {
@@ -655,7 +691,7 @@ export default {
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
       snackbar: { show: false, text: '', color: 'success', link: '' },
-      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'pie', 'tagcloud', 'waffle', 'table', 'treemap', 'sankey', 'matrix', 'mosaic', 'connections', 'tree', 'circle'],
+      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'boxplot', 'pie', 'tagcloud', 'waffle', 'table', 'treemap', 'sankey', 'matrix', 'mosaic', 'connections', 'tree', 'circle'],
       timelineModes: ['separate', 'stacked', 'percent', 'overlaid'],
       showSettings: false,
       settingsDraft: { sortBy: 'graph', refresh: 0 }, // the dialog's page settings, until applied
@@ -674,10 +710,13 @@ export default {
       const filters = this.user.settings.timelineDataFilters;
       return filters.map(i => FieldService.getField(i));
     },
-    // the graph types in alphabetical order of their translated labels
+    // the graph types in alphabetical order of their translated labels; a
+    // multi viewer can't combine its clusters' percentiles, so it has no box plot
     sortedGraphTypeOptions: function () {
       const label = (t) => this.$t(`spigraph.graphType-${t}`);
-      return [...this.graphTypeOptions].sort((a, b) => label(a).localeCompare(label(b)));
+      return this.graphTypeOptions
+        .filter(t => !(this.$constants.MULTIVIEWER && t === 'boxplot'))
+        .sort((a, b) => label(a).localeCompare(label(b)));
     },
     // the page's metric: one of the timeline's is the store's (shared with
     // the Sessions timeline), any other a graph names stays in the url
@@ -801,6 +840,27 @@ export default {
     },
     scatterLog: function () {
       return this.spiGraphType === 'scatter' && this.$route.query.yScale === 'log';
+    },
+    // box plot: its metric is any numeric field (one number per value has no
+    // spread, so never the session count), named by the url's graphType
+    boxMetricFields: function () {
+      return (this.$store.state.fieldsArr || []).filter(f => f.dbField && f.type === 'integer' && fieldIsAggregatable(f));
+    },
+    boxMetricName: function () {
+      const exp = boxMetric(this.currentGraph || {});
+      return FieldService.getField(exp, true)?.friendlyName || exp;
+    },
+    // the values ranked by their sessions, or by an aggregation of the metric
+    boxRankValue: function () {
+      return BOX_RANK_AGGS.includes(this.$route.query.rankBy) ? this.$route.query.rankBy : 'sessions';
+    },
+    boxRankOptions: function () {
+      return [
+        { value: 'sessions', label: this.$t('spigraph.sessions') },
+        ...BOX_RANK_AGGS
+          .filter(a => !(this.$constants.MULTIVIEWER && PERCENTILE_AGGS.includes(a)))
+          .map(a => ({ value: a, label: `${this.$t(`sessions.summary.agg.${a}`)} ${this.boxMetricName}` }))
+      ];
     },
     // the stacked timeline: the page's graph for the bounds, one series per
     // value of its metric (the heatmap does the same fold)
@@ -1160,9 +1220,9 @@ export default {
       }
       const { refresh } = this.settingsDraft;
       let { sortBy } = this.settingsDraft;
-      // the widget sorts a combo or scatter it draws by its own Order by, so
-      // the page's sort by name becomes that and the page's is cleared
-      if (this.widgetDraws(graphFromWidget(edited)) && (edited.viewMode === 'combo' || edited.viewMode === 'scatter')) {
+      // the widget sorts a combo, scatter or box plot it draws by its own
+      // Order by, so the page's sort by name becomes that and the page's is cleared
+      if (this.widgetDraws(graphFromWidget(edited)) && ['combo', 'scatter', 'boxplot'].includes(edited.viewMode)) {
         if (sortBy === 'name' && edited.orderBy !== 'key') { edited.orderBy = 'key'; edited.order = 'asc'; }
         sortBy = 'graph';
       }
@@ -1215,6 +1275,14 @@ export default {
         return;
       }
       this.$router.push({ query: { ...this.$route.query, [this.slotParams[i - 1]]: key || undefined } });
+    },
+    // a box plot's metric, a <dbField>Histo key like the other types'
+    changeBoxMetric: function (field) {
+      if (!field?.dbField) { return; }
+      this.$router.push({ query: { ...this.$route.query, graphType: `${field.dbField}Histo` } });
+    },
+    changeBoxRank: function (rank) {
+      this.$router.push({ query: { ...this.$route.query, rankBy: rank === 'sessions' ? undefined : rank } });
     },
     changeBarMode: function (barMode) {
       this.$router.push({

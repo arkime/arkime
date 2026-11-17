@@ -484,6 +484,7 @@
       "areaView": "Area",
       "comboView": "Combo",
       "scatterView": "Scatter",
+      "boxplotView": "Box plot",
       "timeofdayView": "Time of day",
       "matrixView": "Matrix",
       "mosaicView": "Mosaic",
@@ -566,6 +567,17 @@
         "p90": "P90",
         "p95": "P95",
         "p99": "P99"
+      },
+      "box": {
+        "min": "Min",
+        "q1": "25th percentile",
+        "median": "Median",
+        "q3": "75th percentile",
+        "max": "Max",
+        "mean": "Mean",
+        "count": "Values",
+        "none": "None of these sessions has it",
+        "legend": "Box: the middle half of the values, line: the median, whiskers: the smallest to the largest, dot: the mean"
       },
       "navigation": {
         "system": "System",
@@ -665,6 +677,8 @@
         "metricSlot-y": "Y axis",
         "metricSlot-size": "Point size",
         "metricSlotNone": "None",
+        "rankBy": "Rank by",
+        "rankByTip": "Which values are shown: those with the most (or fewest) sessions, or by an aggregation of the metric, such as the highest median",
         "variable": "Variable",
         "variableTip": "The picked values are this variable: {ref} in another widget's title or filter, or in the dashboard filter, is replaced by them. With nothing picked a title shows All, and the part of a filter that uses it is left out.",
         "variableInvalid": "A variable name is letters, digits and _, and doesn't start with a digit",
@@ -1950,6 +1964,7 @@
     "graphType-area": "Area",
     "graphType-combo": "Combo",
     "graphType-scatter": "Scatter",
+    "graphType-boxplot": "Box plot",
     "timelineMode": "Layout",
     "timelineMode-separate": "One per value",
     "timelineMode-stacked": "Stacked",

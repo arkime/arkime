@@ -484,6 +484,7 @@
       "areaView": "Pindala",
       "comboView": "Kombineeritud",
       "scatterView": "Hajuvus",
+      "boxplotView": "Karpdiagramm",
       "timeofdayView": "Kellaaeg",
       "matrixView": "Maatriks",
       "mosaicView": "Mosaiik",
@@ -566,6 +567,17 @@
         "p90": "P90",
         "p95": "P95",
         "p99": "P99"
+      },
+      "box": {
+        "min": "Min",
+        "q1": "25. protsentiil",
+        "median": "Mediaan",
+        "q3": "75. protsentiil",
+        "max": "Maks",
+        "mean": "Keskmine",
+        "count": "Väärtusi",
+        "none": "Ühelgi neist seanssidest seda pole",
+        "legend": "Karp: väärtuste keskmine pool, joon: mediaan, vurrud: väikseimast suurimani, punkt: keskmine"
       },
       "navigation": {
         "system": "Süsteem",
@@ -665,6 +677,8 @@
         "metricSlot-y": "Y-telg",
         "metricSlot-size": "Punkti suurus",
         "metricSlotNone": "Puudub",
+        "rankBy": "Järjesta",
+        "rankByTip": "Milliseid väärtusi näidatakse: kõige rohkemate (või vähemate) seanssidega või mõõdiku koondväärtuse järgi, näiteks suurima mediaaniga",
         "variable": "Muutuja",
         "variableTip": "Valitud väärtused on see muutuja: {ref} teise vidina pealkirjas või filtris või töölaua filtris asendatakse nendega. Kui midagi pole valitud, näitab pealkiri „Kõik“ ja filtri seda kasutav osa jäetakse välja.",
         "variableInvalid": "Muutuja nimi koosneb tähtedest, numbritest ja _ ning ei alga numbriga",
@@ -1950,6 +1964,7 @@
     "graphType-area": "Pindala",
     "graphType-combo": "Kombineeritud",
     "graphType-scatter": "Hajuvus",
+    "graphType-boxplot": "Karpdiagramm",
     "timelineMode": "Paigutus",
     "timelineMode-separate": "Üks väärtuse kohta",
     "timelineMode-stacked": "Virnastatud",
