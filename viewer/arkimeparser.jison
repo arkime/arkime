@@ -7,7 +7,7 @@
 \s+                        /* skip whitespace */
 \"(?:\\?.)*?\"             return 'QUOTEDSTR'
 \/(?:\\?.)*?\/             return 'REGEXSTR'
-[-+a-zA-Z0-9_.@:*?/$]+      return 'STR'
+[-+a-zA-Z0-9_.@:*?/$\u0080-\uFFFF]+ return 'STR'
 \[[^\]\\]*(?:\\.[^\]\\]*)*\] return 'LIST'
 \][^\[\\]*(?:\\.[^\[\\]*)*\[ return 'LIST'
 "EXISTS!"                  return "EXISTS"

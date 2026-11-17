@@ -488,7 +488,23 @@ int arkime_field_define(const char *group, const char *kind, const char *express
         }
 
         if (strcmp(kind, minfo->kind) != 0) {
-            LOG("WARNING - Field kind in db '%s' doesn't match field kind '%s' in capture for field '%s'", minfo->kind, kind, expression);
+            // termfield, lotermfield and uptermfield only differ in how the search value is cased,
+            // the stored mapping is the same, so that switch is safe to make
+            if (g_str_has_suffix(kind, "termfield") && g_str_has_suffix(minfo->kind, "termfield")) {
+                LOG("UPDATING - Field type to '%s' from '%s' for field '%s'", kind, minfo->kind, expression);
+                arkime_db_update_field(expression, "type", kind);
+                g_free(minfo->kind);
+                minfo->kind = g_strdup(kind);
+                if (strncmp(kind, "lo", 2) == 0) {
+                    minfo->strKind = ARKIME_FIELD_STRKIND_LOWER;
+                } else if (strncmp(kind, "up", 2) == 0) {
+                    minfo->strKind = ARKIME_FIELD_STRKIND_UPPER;
+                } else {
+                    minfo->strKind = ARKIME_FIELD_STRKIND_NORMAL;
+                }
+            } else {
+                LOG("WARNING - Field kind in db '%s' doesn't match field kind '%s' in capture for field '%s'", minfo->kind, kind, expression);
+            }
         }
         if (category && (!minfo->category || !arkime_field_json_same(category, minfo->category))) {
             LOG("UPDATING - Field category to '%s' from '%s' for field '%s'", category, minfo->category, expression);
