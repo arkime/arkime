@@ -36,6 +36,9 @@ NOTICE: Cross-cluster Shortcuts require you to not restart all your viewers at o
 NOTICE: Create a parliament config file before upgrading (see https://arkime.com/settings#parliament and https://arkime.com/faq#how_do_i_upgrade_to_arkime_5)
 
 6.9.3 2026/12/xx
+## Capture
+  - #4476 Fix capture sometimes exiting before the last pcap file was finished, leaving it not truncated and without its final size and packet count in the files index
+  - #4476 Remove pcap files that are still empty when a pcap write fails, usually from a full disk, so restart loops don't leave empty files behind
 
 6.9.2 2026/11/12
 ## Breaking
