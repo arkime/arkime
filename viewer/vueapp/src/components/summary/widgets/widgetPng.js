@@ -51,12 +51,8 @@ const svgImage = async (svg, rect) => {
   clone.setAttribute('width', rect.width * SCALE);
   clone.setAttribute('height', rect.height * SCALE);
   clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  const url = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(clone)], { type: 'image/svg+xml' }));
-  try {
-    return await loadImage(url);
-  } finally {
-    URL.revokeObjectURL(url);
-  }
+  // a data: url, not a blob: one, which the viewer's CSP img-src doesn't allow
+  return loadImage(`data:image/svg+xml;charset=utf-8,${encodeURIComponent(new XMLSerializer().serializeToString(clone))}`);
 };
 
 const drawBox = (ctx, el, rect, style) => {
