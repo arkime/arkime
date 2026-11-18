@@ -4694,7 +4694,7 @@ class SessionAPIs {
               preq.params.nodeName = nodeName;
               preq.params.id = sessionID;
               preq.params.hash = hash;
-              preq.url = `api/session/${nodeName}/${sessionID}/bodyhash/${encodeURIComponent(hash)}`;
+              preq.url = `/api/session/${nodeName}/${sessionID}/bodyhash/${encodeURIComponent(hash)}`;
               return ViewerUtils.proxyRequest(preq, res);
             }
           } else {
