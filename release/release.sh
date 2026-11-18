@@ -12,6 +12,7 @@ REPO=arkime/arkime
 WORKFLOW=release.yml
 RELEASE_FILES="CHANGELOG configure.ac capture/arkime.h"
 HOMEBREW_DIR=${HOMEBREW_ARKIME:-$HOME/homebrew-arkime}
+WEB_DIR=${ARKIMEWEB:-$HOME/arkimeweb}
 POLL_SECS=30
 
 die() { echo "ERROR - $*" >&2; exit 1; }
@@ -434,6 +435,23 @@ $dirty"
 }
 
 ######################################################################
+# Only reports, the arkime.com install examples are updated by hand
+check_website() {
+  local f="$WEB_DIR/_wiki/install.md" old
+  if [ ! -f "$f" ]; then
+    info "$f not found, check the arkime.com install examples use $TAG"
+    return 0
+  fi
+
+  old=$(grep -oE 'releases/download/v[0-9]+\.[0-9]+\.[0-9]+/' "$f" | sed -e 's#releases/download/##' -e 's#/$##' | grep -vxF "$TAG" | sort -u | tr '\n' ' ' || true)
+  if [ -n "$old" ]; then
+    info "arkime.com install examples download ${old% }, update $f to $TAG"
+  else
+    info "arkime.com install examples already use $TAG"
+  fi
+}
+
+######################################################################
 main() {
   if [ $# -lt 1 ] || [ $# -gt 2 ]; then
     echo "Usage: $0 <version> [iteration]"
@@ -464,6 +482,7 @@ main() {
     info "Prerelease, leaving homebrew-arkime alone"
   else
     update_homebrew
+    check_website
   fi
 
   echo
