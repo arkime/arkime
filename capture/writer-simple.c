@@ -48,7 +48,8 @@ LOCAL  int                   simpleFreeOutputBuffers;
 #define ARKIME_SIMPLE_BUFSIZE (config.pcapWriteSize + ARKIME_PACKET_MAX_LEN + 64)
 
 // Information about the current file being written to, all items that are constant per file should be here
-typedef struct {
+typedef struct arkimesimplefile {
+    struct arkimesimplefile *sfile_next, *sfile_prev;
     EVP_CIPHER_CTX      *cipher_ctx;
     uint64_t             pos;
     uint64_t             blockStart;
@@ -60,6 +61,7 @@ typedef struct {
     uint32_t             sessionsStarted;
     uint32_t             sessionsPresent;
     int                  fd;
+    char                *name;
     uint8_t              dek[256];
     z_stream             z_strm;
     uint8_t              thread;
@@ -93,6 +95,15 @@ typedef struct {
 LOCAL  ArkimeSimpleHead_t simpleQ;
 LOCAL  ARKIME_LOCK_DEFINE(simpleQ);
 LOCAL  ARKIME_COND_DEFINE(simpleQ);
+
+typedef struct {
+    struct arkimesimplefile *sfile_next, *sfile_prev;
+    int                      sfile_count;
+} ArkimeSimpleFileHead_t;
+
+// Every pcap file currently open, so the empty ones can be removed if a write fails
+LOCAL  ArkimeSimpleFileHead_t openFiles;
+LOCAL  ARKIME_LOCK_DEFINE(openFiles);
 
 enum ArkimeSimpleMode { ARKIME_SIMPLE_NORMAL, ARKIME_SIMPLE_XOR2048, ARKIME_SIMPLE_AES256CTR};
 
@@ -203,6 +214,10 @@ LOCAL void writer_simple_free(ArkimeSimple_t *info)
         default:
             break;
         }
+        ARKIME_LOCK(openFiles);
+        DLL_REMOVE(sfile_, &openFiles, info->file);
+        ARKIME_UNLOCK(openFiles);
+        g_free(info->file->name);
         ARKIME_TYPE_FREE(ArkimeSimpleFile_t, info->file);
     }
     info->file = 0;
@@ -688,6 +703,10 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         if (simpleThreadData[thread].currentInfo[kind]->file->fd < 0) {
             LOGEXIT("ERROR - pcap open failed - Couldn't open file: '%s' with %s (%d) -- You may need to check directory permissions or set pcapWriteMethod=simple-nodirect in config.ini file.  See https://arkime.com/settings#pcapwritemethod", name, strerror(errno), errno);
         }
+        info->file->name = name; // Freed with the file
+        ARKIME_LOCK(openFiles);
+        DLL_PUSH_TAIL(sfile_, &openFiles, info->file);
+        ARKIME_UNLOCK(openFiles);
 
         const ArkimeInterfaceInfo_t *iface = &fileInfo[packet->readerPos].interfaces[packet->interfaceIndex];
         ArkimePcapFileHdr_t   pcapHeader;
@@ -742,7 +761,6 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         }
         if (config.debug)
             LOG("opened %d %s %d", thread, name, info->file->fd);
-        g_free(name);
 
         // Make a new block for start of packets
         if (compressionMode == ARKIME_COMPRESSION_GZIP)
@@ -837,6 +855,23 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
     }
 }
 /******************************************************************************/
+/* A write failed, usually a full disk, and capture is about to exit. Remove
+ * every pcap file that never had anything written to it, each packet thread
+ * can have one.
+ */
+LOCAL void writer_simple_unlink_empty()
+{
+    ArkimeSimpleFile_t *file;
+
+    ARKIME_LOCK(openFiles);
+    DLL_FOREACH(sfile_, &openFiles, file) {
+        struct stat sb;
+        if (fstat(file->fd, &sb) == 0 && sb.st_size == 0)
+            unlink(file->name);
+    }
+    ARKIME_UNLOCK(openFiles);
+}
+/******************************************************************************/
 LOCAL void *writer_simple_thread(void *UNUSED(arg))
 {
     ArkimeSimple_t *info;
@@ -849,7 +884,8 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
         while (DLL_COUNT(simple_, &simpleQ) == 0) {
             ARKIME_COND_WAIT(simpleQ);
         }
-        DLL_POP_HEAD(simple_, &simpleQ, info);
+        // Stays on the queue until finished, so writer_simple_queue_length counts the buffer being written
+        info = DLL_PEEK_HEAD(simple_, &simpleQ);
         ARKIME_UNLOCK(simpleQ);
 
         uint32_t pos = 0;
@@ -883,7 +919,9 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             if (len >= 0) {
                 pos += len;
             } else {
-                LOGEXIT("ERROR - writing %d %s", len, strerror(errno));
+                const int err = errno;
+                writer_simple_unlink_empty();
+                LOGEXIT("ERROR - writing '%s' %d %s", info->file->name, len, strerror(err));
             }
         }
         if (info->closing) {
@@ -892,6 +930,10 @@ LOCAL void *writer_simple_thread(void *UNUSED(arg))
             close(info->file->fd);
             arkime_db_update_file(info->file->id, info->file->pos, info->file->packetBytesWritten, info->file->packets, &info->file->lastPacketTime, info->file->sessionsStarted, info->file->sessionsPresent);
         }
+
+        ARKIME_LOCK(simpleQ);
+        DLL_REMOVE(simple_, &simpleQ, info);
+        ARKIME_UNLOCK(simpleQ);
 
         writer_simple_free(info);
     }
@@ -1229,6 +1271,7 @@ void writer_simple_init(const char *name)
 
     DLL_INIT(simple_, &simpleQ);
     DLL_INIT(simple_, &freeList);
+    DLL_INIT(sfile_, &openFiles);
 
     struct timeval now;
     gettimeofday(&now, NULL);
