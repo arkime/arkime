@@ -65,6 +65,7 @@ class SystemDashboards {
    * Turns a parsed file into a dashboard list entry, or returns an error
    * string. The name and data are held to the API's own rules for a saved
    * dashboard (ShareableAPIs.validateName / validateData).
+   * @ignore
    */
   static #fromFile (key, parsed) {
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) { return 'not a JSON object'; }
@@ -102,6 +103,7 @@ class SystemDashboards {
    * The file's contents, checked and read through one descriptor so a file
    * swapped after the stat can't be a FIFO, a device or larger than
    * MAX_FILE_BYTES. Throws when it is.
+   * @ignore
    */
   static #readBounded (file) {
     // non blocking so a FIFO swapped in doesn't hang the open
@@ -121,7 +123,10 @@ class SystemDashboards {
   }
 
   // --------------------------------------------------------------------------
-  /** The dashboard in this file, parsed again only when the file changed. */
+  /**
+   * The dashboard in this file, parsed again only when the file changed.
+   * @ignore
+   */
   static #load (file) {
     let st;
     try {
@@ -165,7 +170,8 @@ class SystemDashboards {
    * The dashboards in the dashboardsDir directories, by directory order then
    * file name, a later directory's file with the same name as an earlier one
    * ignored. One scan serves SCAN_TTL_MS of calls.
-   * @returns {{ file: string, dashboard: object }[]}
+   * @returns {Array<{file: string, dashboard: object}>}
+   * @ignore
    */
   static #scanDirs () {
     const now = Date.now();

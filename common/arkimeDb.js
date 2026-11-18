@@ -358,6 +358,7 @@ class ArkimeDb {
    * Load the dbPlugins setting's modules once, before the first scheme lookup, so every app and tool gets them.
    * Each name is found in pluginsDir like viewerPlugins, see loadDbPlugin. Waits for the config to load,
    * before that only the built in schemes are known.
+   * @ignore
    */
   static #loadPlugins () {
     if (ArkimeDb.#pluginsLoaded) { return; }
@@ -640,6 +641,7 @@ class ArkimeDb {
 
 /**
  * Thrown by put with createOnly when the id already exists
+ * @ignore
  */
 class ArkimeDbConflictError extends Error {
   constructor (id, message = `Document '${id}' already exists`) {
@@ -679,6 +681,7 @@ class ArkimeDbConflictError extends Error {
  *   es: { index, dbpl, checkMapping, create: { settings, mappings } } - the index is created from fields and
  *     create, unless dbpl is set, which means db.pl owns it. checkMapping makes check() verify indexed keyword fields
  *   sqlite: { table, idColumn, legacyMeta }, pg: { table } - per backend names/layout, only needed for older layouts
+ * @ignore
  */
 class ArkimeDbCollection {
   name;

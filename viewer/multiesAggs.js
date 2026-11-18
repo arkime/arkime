@@ -32,6 +32,7 @@ const METRIC_OPS = ['sum', 'min', 'max', 'value_count', 'cardinality', 'avg'];
  * assuming they are all sums. apiSessions writes sub-aggs under `aggs`, while
  * apiStats and buildQuery use `aggregations`.
  * @returns {object|undefined} operator by sub-agg name (undefined if none)
+ * @ignore
  */
 function subAggOps (aggConfig) {
   const subs = aggConfig?.aggs ?? aggConfig?.aggregations;
@@ -49,6 +50,7 @@ function subAggOps (aggConfig) {
  * count can't be recombined from per-cluster counts, so the larger one is kept
  * (a lower bound). An average is weighted by the bucket doc counts when the
  * caller has them, else summed as before.
+ * @ignore
  */
 function mergeMetric (op, v1, v2, c1, c2) {
   if (op === 'min') { return Math.min(v1, v2); }
@@ -63,6 +65,7 @@ function mergeMetric (op, v1, v2, c1, c2) {
  * across clusters needs: the order, size, each metric sub-agg's operator and
  * the same again for their own terms sub-aggregations.
  * @returns {object|undefined} info by sub-agg name (undefined if none)
+ * @ignore
  */
 function nestedTermsInfo (aggConfig) {
   const subs = aggConfig?.aggs ?? aggConfig?.aggregations;
@@ -90,6 +93,7 @@ function nestedTermsInfo (aggConfig) {
  * Add one cluster's bucket into the merged bucket with the same key: the doc
  * counts, each metric sub-agg per its declared operator (defaulting to sum),
  * and each declared terms sub-agg bucket by bucket.
+ * @ignore
  */
 function mergeBucket (b1, b2, subOps, nested) {
   const c1 = b1.doc_count;
@@ -122,6 +126,7 @@ function mergeBucket (b1, b2, subOps, nested) {
  * the "Other" a pie or table can show.
  * @param {object} agg - a terms aggregation result with a buckets array
  * @param {number} size - how many buckets to keep; unset or 0 keeps them all
+ * @ignore
  */
 function cutToSize (agg, size) {
   if (!size || !Array.isArray(agg?.buckets) || agg.buckets.length <= size) { return; }
@@ -135,6 +140,7 @@ function cutToSize (agg, size) {
  * Merge one cluster's nested terms buckets (an array, as ES returns them) into
  * the merged bucket's array: same keys merge, new keys append, then re-rank
  * by the declared order and cut back to the declared size.
+ * @ignore
  */
 function mergeNestedBuckets (agg1, agg2, info) {
   const byKey = new Map(agg1.buckets.map(b => [b.key, b]));
@@ -203,6 +209,7 @@ function agg2Arr (agg, type, order) {
 /**
  * The empty merged aggregations for a search's aggregations, each carrying
  * what aggAdd needs to combine the clusters (operators, order, nested terms).
+ * @ignore
  */
 function newAggregations (aggregations) {
   const result = {};

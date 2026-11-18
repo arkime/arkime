@@ -103,6 +103,7 @@ function checkNode (n) {
  *
  * @param {string} view - The pug, indented as it will be in the session detail template
  * @returns {string|undefined} Why the view isn't safe, or undefined if it is
+ * @ignore
  */
 function checkView (view) {
   let err;

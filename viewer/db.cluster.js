@@ -91,6 +91,7 @@ class DbClusterImpl {
    * @param esConn the sessions ES connection
    * @param prefix, fixIndex build the sessions ES index names
    * @param multiES conn goes through multies, which only answers the calls it routes
+   * @ignore
    */
   constructor ({ conn, esConn, prefix, fixIndex, multiES }) {
     this.#multiES = !!multiES;

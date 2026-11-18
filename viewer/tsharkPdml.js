@@ -22,6 +22,7 @@ const MAX_TREE_DEPTH = 32;
  * Only one packet is ever buffered.
  * @param {boolean} includeHidden - keep fields tshark marks hide="yes"
  * @param {function} onPacket - called with each finished packet
+ * @ignore
  */
 function pdmlTreeBuilder (includeHidden, onPacket) {
   let packet = null; // { layers: [...] } currently being built

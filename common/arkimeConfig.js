@@ -328,16 +328,16 @@ class ArkimeConfig {
   // ----------------------------------------------------------------------------
   // Where each group of indices lives, every setting falls back to the older or broader ones
   // ----------------------------------------------------------------------------
-  /**
-   * The db urls for everything without its own setting: dbUrl or else elasticsearch. Exits when neither is set
-   * but sessionsDbUrl is, since only the sessions db follows sessionsDbUrl.
-   */
   // The elasticsearch urls, undefined when it isn't set or is empty
   static #elasticsearchUrls () {
     const urls = ArkimeConfig.getArray('elasticsearch');
     return urls?.length ? urls : undefined;
   }
 
+  /**
+   * The db urls for everything without its own setting: dbUrl or else elasticsearch. Exits when neither is set
+   * but sessionsDbUrl is, since only the sessions db follows sessionsDbUrl.
+   */
   static dbUrls () {
     const urls = ArkimeConfig.getArray('dbUrl', undefined, ',') ?? ArkimeConfig.#elasticsearchUrls();
     if (!urls && ArkimeConfig.get('sessionsDbUrl')) {

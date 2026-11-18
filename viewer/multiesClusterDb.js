@@ -20,6 +20,7 @@ const INDEX_RE = /^MULTIPREFIX_(?:(files|stats|dstats|fields|sequence|hunts|quer
  * The cluster db collection a multi viewer request is for
  * @param {string} path - the request path, like /MULTIPREFIX_files/_search
  * @returns {string|undefined} the collection name
+ * @ignore
  */
 function collectionName (path) {
   const match = path.split('/')[1]?.match(INDEX_RE);
@@ -105,6 +106,7 @@ function updateFields (body) {
  * @param {string} [id] - the route's :id param
  * @param {object} query - the request query parameters
  * @param {string} bodyStr - the request body
+ * @ignore
  */
 async function answer (coll, op, id, query, bodyStr) {
   // The index names the ES cluster dbs use

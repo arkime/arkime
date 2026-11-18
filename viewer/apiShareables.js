@@ -204,6 +204,7 @@ class ShareableAPIs {
    * store throws for a missing id: a 404 from Elasticsearch, 'not found' from
    * sqlite). Any other failure is rethrown. With versioned it is
    * { shareable, version } for a write that must not race another.
+   * @ignore
    */
   static async #find (id, versioned = false) {
     try {

@@ -26,6 +26,7 @@ function wordSplit (str) {
 
 /**
  * The *Tokens dbFields, the defaults included, as the { segs, key } addTokens takes
+ * @ignore
  */
 function tokenFields (dbFields = []) {
   return [...new Set([...DEFAULT_TOKENS, ...dbFields])].filter(dbField => dbField.endsWith('Tokens') && dbField.length <= MAX_TOKENS_LEN).map(dbField => {
@@ -64,6 +65,7 @@ function addTokens (doc, segs, tokensKey, work) {
 
 /**
  * Add every one of the tokenFields to doc, throws when the doc's arrays would take too long
+ * @ignore
  */
 function addAllTokens (doc, fields) {
   const work = { left: MAX_TOKENS_WORK };
