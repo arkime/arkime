@@ -1,5 +1,6 @@
-use Test::More tests => 201;
+use Test::More tests => 203;
 use Cwd;
+use IO::Socket::INET;
 use URI::Escape;
 use ArkimeTest;
 use JSON;
@@ -322,6 +323,23 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8124/api/session/test/x/pcap/$dots/api/session/test/abc/send?saveId=id&remoteCluster=nope");
     is($response->code, 400, "proxy refuses dot segments");
     unlike($response->content, qr/Unknown cluster/, "proxy dot segments don't reach s2s only send");
+
+# an absolute-form request target must not replace the remote node's host, LWP would normalize it
+    {
+        my $sock = IO::Socket::INET->new(PeerAddr => $ArkimeTest::host, PeerPort => 8124, Proto => 'tcp', Timeout => 10);
+        print $sock "GET http://$ArkimeTest::host:8125/api/session/test/x/pcap HTTP/1.1\r\nHost: $ArkimeTest::host:8124\r\nConnection: close\r\n\r\n";
+        my $resp = '';
+        eval {
+            local $SIG{ALRM} = sub { die "timeout\n" };
+            alarm 10;
+            local $/;
+            $resp = <$sock> // '';
+            alarm 0;
+        };
+        close $sock;
+        like($resp, qr{^HTTP/\S+ 400}, "proxy refuses absolute-form target");
+        like($resp, qr/Bad path/, "proxy absolute-form target not proxied");
+    }
 
 # bodyhash builds the proxied path from the hash, a / in it must not become a path separator
     (my $bodyHashId = $id) =~ s/^\w\@(?:[^:]*:)?//; # session id to es _id

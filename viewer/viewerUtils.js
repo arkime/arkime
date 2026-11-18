@@ -429,6 +429,12 @@ class ViewerUtils {
         url = new URL(req.url, viewUrl);
       }
 
+      // an absolute-form request target would replace the node's host
+      if (url.origin !== new URL(viewUrl).origin) {
+        console.log('ERROR - proxyRequest bad url', ArkimeUtil.sanitizeStr(req.url));
+        return res.status(400).send('Bad path');
+      }
+
       const urlPath = url.pathname + (url.search ?? '');
       Auth.addS2SAuth(options, req.user, req.params.nodeName, urlPath, ViewerUtils.getClusterSecret(req.query.cluster));
       if (!portal) { ViewerUtils.addCaTrust(options, req.params.nodeName); }
