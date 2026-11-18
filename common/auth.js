@@ -1304,6 +1304,9 @@ class Auth {
       } else {
         // Redirect to / if this is a login url
         if (req.route?.path === '/api/login' || req._parsedUrl.pathname === '/auth/login/callback') {
+          // express-session sends the redirect before its own save finishes, so without saving
+          // first the next request can load the session from before id_token was added
+          const redirect = (url) => req.session ? req.session.save(() => res.redirect(url)) : res.redirect(url);
           const ogurlEncoded = req.body?.ogurl || req.session?.ogurl || savedOgurl;
           if (ogurlEncoded) {
             try {
@@ -1311,14 +1314,14 @@ class Auth {
               // Only redirect to a local same-origin path; reject absolute, protocol-relative
               // ('//') and backslash ('/\') targets to prevent an open redirect.
               if (typeof ogurl === 'string' && ogurl[0] === '/' && ogurl[1] !== '/' && ogurl[1] !== '\\') {
-                return res.redirect(ogurl);
+                return redirect(ogurl);
               }
             } catch (e) {
               console.log('Error', e);
               // Fall through to redirect below
             }
           }
-          return res.redirect(Auth.#basePath);
+          return redirect(Auth.#basePath);
         } else if (req._parsedUrl.pathname === '/auth/logout/callback') {
           if (ArkimeConfig.debug > 0) {
             console.log('AUTH - logout callback from', req.user?.userId, req.ip);
