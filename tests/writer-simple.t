@@ -58,7 +58,8 @@ isnt($rc, 0, "capture failed when it couldn't write");
 like($out, qr/ERROR - writing '\Q$dir2\E\//, "reported the write failure");
 is_deeply([dirFiles($dir2)], [], "no pcap files left behind");
 
-# Cleanup
+# Cleanup, the failed run still saved its sessions so refresh first or the delete misses them
+esGet("/_refresh");
 esPost("/tests_sessions3-*/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {tags => $tag}}}));
 esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {name => $dir}}}));
 esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {name => $dir2}}}));
