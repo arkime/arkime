@@ -342,12 +342,17 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // URL for path on the node, or null unless path is origin-form, has no dot
+  // segments and stays on the node's origin (absolute-form, /// or /\\ won't)
+  static #nodeUrl (path, viewUrl) {
+    if (!path.startsWith('/') || ViewerUtils.#hasDotSegment(path)) { return null; }
+    const url = new URL(path.substring(1), viewUrl);
+    return url.origin === new URL(viewUrl).origin ? url : null;
+  }
+
+  // ----------------------------------------------------------------------------
   static async makeRequest (node, path, user, cb, cluster) {
     try {
-      if (ViewerUtils.#hasDotSegment(path)) {
-        throw new Error(`Bad path ${path}`);
-      }
-
       let viewUrl, client, options;
       const portal = await ViewerUtils.portalRequest(node);
       if (portal) {
@@ -360,12 +365,9 @@ class ViewerUtils {
         };
       }
 
-      const nodePath = encodeURI(path);
-      let url;
-      if (nodePath.startsWith('/')) {
-        url = new URL(nodePath.substring(1), viewUrl);
-      } else {
-        url = new URL(nodePath, viewUrl);
+      const url = ViewerUtils.#nodeUrl(encodeURI(path), viewUrl);
+      if (!url) {
+        throw new Error(`Bad path ${path}`);
       }
 
       // Sign the path exactly as the remote node will see it in req.url, query
@@ -404,11 +406,6 @@ class ViewerUtils {
   static async proxyRequest (req, res) {
     ArkimeUtil.noCache(req, res);
 
-    if (ViewerUtils.#hasDotSegment(req.url)) {
-      console.log('ERROR - proxyRequest bad path', ArkimeUtil.sanitizeStr(req.url));
-      return res.status(400).send('Bad path');
-    }
-
     try {
       let viewUrl, client, options;
       const portal = await ViewerUtils.portalRequest(req.params.nodeName);
@@ -422,16 +419,9 @@ class ViewerUtils {
         };
       }
 
-      let url;
-      if (req.url.startsWith('/')) {
-        url = new URL(req.url.substring(1), viewUrl);
-      } else {
-        url = new URL(req.url, viewUrl);
-      }
-
-      // an absolute-form request target would replace the node's host
-      if (url.origin !== new URL(viewUrl).origin) {
-        console.log('ERROR - proxyRequest bad url', ArkimeUtil.sanitizeStr(req.url));
+      const url = ViewerUtils.#nodeUrl(req.url, viewUrl);
+      if (!url) {
+        console.log('ERROR - proxyRequest bad path', ArkimeUtil.sanitizeStr(req.url));
         return res.status(400).send('Bad path');
       }
 

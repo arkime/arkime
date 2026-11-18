@@ -1,4 +1,4 @@
-use Test::More tests => 203;
+use Test::More tests => 206;
 use Cwd;
 use IO::Socket::INET;
 use URI::Escape;
@@ -324,21 +324,31 @@ tcp,1386004309468,1386004309478,10.180.156.185,53533,US,10.180.156.249,1080,US,2
     is($response->code, 400, "proxy refuses dot segments");
     unlike($response->content, qr/Unknown cluster/, "proxy dot segments don't reach s2s only send");
 
-# an absolute-form request target must not replace the remote node's host, LWP would normalize it
+# only origin-form targets are proxied (raw socket, LWP would normalize these). Absolute-form can
+# replace the node's host, or even on its origin (test is localhost:8123) send a different path
     {
-        my $sock = IO::Socket::INET->new(PeerAddr => $ArkimeTest::host, PeerPort => 8124, Proto => 'tcp', Timeout => 10);
-        print $sock "GET http://$ArkimeTest::host:8125/api/session/test/x/pcap HTTP/1.1\r\nHost: $ArkimeTest::host:8124\r\nConnection: close\r\n\r\n";
-        my $resp = '';
-        eval {
-            local $SIG{ALRM} = sub { die "timeout\n" };
-            alarm 10;
-            local $/;
-            $resp = <$sock> // '';
-            alarm 0;
+        my $raw = sub {
+            my ($target) = @_;
+            my $sock = IO::Socket::INET->new(PeerAddr => $ArkimeTest::host, PeerPort => 8124, Proto => 'tcp', Timeout => 10) or return '';
+            print $sock "GET $target HTTP/1.1\r\nHost: $ArkimeTest::host:8124\r\nConnection: close\r\n\r\n";
+            my $resp = '';
+            eval {
+                local $SIG{ALRM} = sub { die "timeout\n" };
+                alarm 10;
+                local $/;
+                $resp = <$sock> // '';
+                alarm 0;
+            };
+            close $sock;
+            return $resp;
         };
-        close $sock;
+
+        my $resp = $raw->("http://$ArkimeTest::host:8125/api/session/test/x/pcap");
         like($resp, qr{^HTTP/\S+ 400}, "proxy refuses absolute-form target");
         like($resp, qr/Bad path/, "proxy absolute-form target not proxied");
+        like($raw->("http://localhost:8123/api/session/test/$id/pcap"), qr{^HTTP/\S+ 400}, "proxy refuses absolute-form target on the node's origin");
+        like($raw->("http://user:pass\@localhost:8123/api/session/test/$id/pcap"), qr{^HTTP/\S+ 400}, "proxy refuses absolute-form target with userinfo");
+        like($raw->("http:///api/session/test/x/pcap"), qr{^HTTP/\S+ 400}, "proxy refuses absolute-form target with an empty host");
     }
 
 # bodyhash builds the proxied path from the hash, a / in it must not become a path separator
