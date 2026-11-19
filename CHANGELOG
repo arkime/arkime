@@ -450,6 +450,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
           and caTrustFile are only used for the configured url's origin, a redirect elsewhere gets the system CAs
 
 6.9.3 2026/12/xx
+## All
+  - #4481 Fix oidc logout not returning to Arkime from the provider, leaving the Arkime session logged in
 ## Capture
   - #4476 Fix capture sometimes exiting before the last pcap file was finished, leaving it not truncated and without its final size and packet count in the files index
   - #4476 Remove pcap files that are still empty when a pcap write fails, usually from a full disk, so restart loops don't leave empty files behind
