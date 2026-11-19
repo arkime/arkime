@@ -431,6 +431,7 @@ SPDX-License-Identifier: Apache-2.0
             </v-list-item>
             <v-list-item
               v-if="!multiviewer"
+              v-has-permission="'!disableCron'"
               @click="periodicQuery">
               <v-icon icon="mdi-magnify" />&nbsp;
               {{ $t('search.createPeriodicQuery') }}

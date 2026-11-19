@@ -86,6 +86,7 @@
 # 87 - added dismissedHelpNotes field to users
 # 88 - added interfaceOffsets to files
 # 89 - added featherprint, featherprint_history, featherprint_alerts indices
+# 90 - added disableCron field to users
 
 use HTTP::Request::Common;
 use LWP::UserAgent;
@@ -99,7 +100,7 @@ use URI;
 use strict;
 use warnings;
 
-my $VERSION = 89;
+my $VERSION = 90;
 my $verbose = 0;
 my $PREFIX = $ENV{ARKIME_default__prefix} || $ENV{ARKIME__prefix};
 my $OLDPREFIX = "";
@@ -8289,6 +8290,9 @@ sub usersUpdate
     "disablePcapDownload": {
       "type": "boolean"
     },
+    "disableCron": {
+      "type": "boolean"
+    },
     "passStore": {
       "type": "keyword"
     },
@@ -9270,7 +9274,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     # The users mapping is dynamic:strict, so a typo'd field name would be
     # rejected by OpenSearch/Elasticsearch. Fail here with a useful message instead.
     my %settable = map { $_ => 1 } qw(enabled webEnabled headerAuthEnabled emailSearch removeEnabled
-                                      packetSearch hideStats hideFiles hidePcap disablePcapDownload
+                                      packetSearch hideStats hideFiles hidePcap disablePcapDownload disableCron
                                       expression timeLimit userName welcomeMsgNum);
     my %systemRoles = map { $_ => 1 } qw(superAdmin usersAdmin arkimeAdmin arkimeUser parliamentAdmin
                                          parliamentUser wiseAdmin wiseUser cont3xtAdmin cont3xtUser
@@ -11202,6 +11206,8 @@ if ($ARGV[1] =~ /^(init|wipe|clean)/) {
         featherprintCreateAll();
         usersUpdate();
         filesUpdate();
+    } elsif ($main::versionNumber <= 89) {
+        usersUpdate();
     } else {
         logmsg "db.pl is hosed\n";
     }

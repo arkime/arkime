@@ -187,7 +187,7 @@ class Auth {
       const allowedUserFields = new Set([
         'userId', 'userName', 'passStore', 'enabled', 'webEnabled', 'headerAuthEnabled',
         'emailSearch', 'createEnabled', 'removeEnabled', 'packetSearch',
-        'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload',
+        'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'disableCron',
         'expression', 'settings', 'views', 'columnConfigs', 'spiviewFieldConfigs',
         'tableStates', 'timeLimit', 'roles', 'roleAssigners', 'cont3xt'
       ]);

@@ -619,7 +619,7 @@ class ArkimeDb {
   }
 
   // The db.pl schema version a backend that makes its own tables matches
-  static SCHEMA_VERSION = 89;
+  static SCHEMA_VERSION = 90;
 
   // An update field set to this is removed, an undefined one is left alone
   static UNSET = Symbol('ArkimeDb.UNSET');

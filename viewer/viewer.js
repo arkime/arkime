@@ -1774,25 +1774,25 @@ app.get( // list the system dashboards (the *.dashboard.json files in dashboards
 // cron apis ------------------------------------------------------------------
 app.get( // get cron queries endpoint
   ['/api/crons'],
-  [ArkimeUtil.noCacheJson, getSettingUserCache],
+  [ArkimeUtil.noCacheJson, User.checkPermissions(['disableCron']), getSettingUserCache],
   CronAPIs.getCrons
 );
 
 app.post( // create cron query endpoint
   ['/api/cron'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), User.checkPermissions(['disableCron']), Auth.getSettingUserDb],
   CronAPIs.createCron
 );
 
 app.delete( // delete cron endpoint
   ['/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getQuery, 'creator')],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), User.checkPermissions(['disableCron']), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getQuery, 'creator')],
   CronAPIs.deleteCron
 );
 
 app.post( // update cron endpoint
   ['/api/cron/:key'],
-  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getQuery, 'creator')],
+  [ArkimeUtil.noCacheJson, checkCookieToken, logAction(), User.checkPermissions(['disableCron']), Auth.getSettingUserDb, Auth.checkResourceAccess(Db.getQuery, 'creator')],
   CronAPIs.updateCron
 );
 

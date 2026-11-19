@@ -143,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('settings.nav.shortcuts') }}
           </v-tab>
           <v-tab
-            v-if="!multiviewer"
+            v-if="!multiviewer && !cronDisabled"
             value="cron">
             <v-icon
               icon="mdi-magnify"
@@ -1437,7 +1437,7 @@ SPDX-License-Identifier: Apache-2.0
           id="cron"
           :user-id="userId"
           @display-message="displayMessage"
-          v-if="visibleTab === 'cron' && !multiviewer" />
+          v-if="visibleTab === 'cron' && !multiviewer && !cronDisabled" />
       </v-col>
     </v-row> <!-- /content -->
   </div> <!-- /settings content -->
@@ -1591,6 +1591,9 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
+    cronDisabled: function () {
+      return !!this.user?.disableCron;
+    },
     // Vuetify v-alert accepts: success | info | warning | error.
     // Map Bootstrap-flavored"danger" → Vuetify"error".
     vuetifyMsgType: function () {
@@ -1653,6 +1656,10 @@ export default {
 
     UserService.getCurrent().then((response) => {
       this.displayName = response.userId;
+      // the user is only known now, so a #cron link can land here first
+      if (this.visibleTab === 'cron' && response.disableCron) {
+        this.openView('general');
+      }
       // only admins can edit other users' settings
       if (response.roles.includes('arkimeAdmin') && this.$route.query.userId) {
         if (response.userId === this.$route.query.userId) {

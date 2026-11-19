@@ -1446,6 +1446,7 @@
     "hideFilesPage": "Masquer la page de fichiers Arkime",
     "hidePcap": "Masquer PCAP Arkime",
     "disablePcapDownload": "Désactiver le téléchargement de PCAP Arkime",
+    "disableCron": "Désactiver les requêtes périodiques Arkime",
     "superAdminNoInherit": "Les superAdmins n'héritent de rien de leurs rôles. Tout ce qui reste sur Hériter utilise la valeur par défaut : chasse autorisée, recherche d'e-mails et suppression de données désactivées, rien de masqué.",
     "forcedExpression": "Expression forcée",
     "forcedExpressionTip": "Une expression de recherche Arkime qui est silencieusement ajoutée à toutes les requêtes. Utile pour limiter les données accessibles (par exemple, quels nœuds ou IP)",

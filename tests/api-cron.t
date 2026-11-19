@@ -1,4 +1,4 @@
-use Test::More tests => 66;
+use Test::More tests => 82;
 use Cwd;
 use ArkimeTest;
 use JSON;
@@ -192,6 +192,56 @@ countTest(1, "date=-1&expression=" . uri_escape("tags==emailtest$suffix"));
 $json = viewerDeleteToken("/api/cron/$key3?arkimeRegressionUser=sac-cronemailuser", $emailUserToken);
 $json = viewerDeleteToken("/api/user/sac-cronemailuser", $token);
 $json = viewerDeleteToken("/api/user/role:sac-cronemail", $token);
+
+# disableCron blocks the periodic query apis and the owner's queries don't run
+$json = viewerPostToken("/api/user", '{"userId": "sac-nocron", "userName": "No Cron", "enabled":true, "webEnabled":true, "password":"password", "roles":["arkimeUser"]}', $token);
+ok($json->{success}, "sac-nocron created");
+my $noCronToken = getTokenCookie("sac-nocron");
+
+$json = viewerPostToken("/api/cron?arkimeRegressionUser=sac-nocron", qq({"name":"nocron","since":-1,"query":"protocols == tls && $files","action":"tag","tags":"nocron$suffix"}), $noCronToken);
+ok($json->{success}, "query created before disableCron is set");
+my $key4 = $json->{query}->{key};
+
+$json = viewerPostToken("/api/user/sac-nocron", '{"userName":"No Cron", "enabled":true, "webEnabled":true, "roles":["arkimeUser"], "disableCron":true}', $token);
+ok($json->{success}, "disableCron set on sac-nocron");
+
+$json = viewerGetToken("/api/user?arkimeRegressionUser=sac-nocron", $noCronToken);
+is($json->{disableCron}, 1, "api/user returns disableCron");
+
+$json = viewerGetToken("/api/crons?arkimeRegressionUser=sac-nocron", $noCronToken);
+ok(ref $json eq "HASH" && !$json->{success}, "disableCron user cannot list queries");
+$json = viewerPostToken("/api/cron?arkimeRegressionUser=sac-nocron", '{"name":"nocron2","query":"protocols == tls","action":"tag","tags":"tls"}', $noCronToken);
+ok(!$json->{success}, "disableCron user cannot create a query");
+$json = viewerPostToken("/api/cron/$key4?arkimeRegressionUser=sac-nocron", '{"name":"nocron","query":"protocols == tls","action":"tag","tags":"tls"}', $noCronToken);
+ok(!$json->{success}, "disableCron user cannot update their query");
+$json = viewerDeleteToken("/api/cron/$key4?arkimeRegressionUser=sac-nocron", $noCronToken);
+ok(!$json->{success}, "disableCron user cannot delete their query");
+
+viewerGet("/regressionTests/processCronQueries");
+viewerGet("/regressionTests/processCronQueries");
+countTest(0, "date=-1&expression=" . uri_escape("tags==nocron$suffix"));
+
+# clearing disableCron lets the query run, catching up from where it stopped
+$json = viewerPostToken("/api/user/sac-nocron", '{"userName":"No Cron", "enabled":true, "webEnabled":true, "roles":["arkimeUser"]}', $token);
+ok($json->{success}, "disableCron cleared on sac-nocron");
+
+viewerGet("/regressionTests/processCronQueries");
+viewerGet("/regressionTests/processCronQueries");
+countTest(4, "date=-1&expression=" . uri_escape("tags==nocron$suffix"));
+
+# disableCron is inherited from a role
+$json = viewerPostToken("/api/user", '{"userId": "role:sac-nocron", "userName": "No Cron Role", "enabled":true, "disableCron":true}', $token);
+ok($json->{success}, "role:sac-nocron created");
+$json = viewerPostToken("/api/user", '{"userId": "sac-nocronrole", "userName": "No Cron Role User", "enabled":true, "webEnabled":true, "password":"password", "roles":["role:sac-nocron", "arkimeUser"]}', $token);
+ok($json->{success}, "sac-nocronrole created");
+my $noCronRoleToken = getTokenCookie("sac-nocronrole");
+$json = viewerGetToken("/api/crons?arkimeRegressionUser=sac-nocronrole", $noCronRoleToken);
+ok(ref $json eq "HASH" && !$json->{success}, "disableCron from a role blocks listing queries");
+
+$json = viewerDeleteToken("/api/cron/$key4?arkimeRegressionUser=sac-nocron", $noCronToken);
+$json = viewerDeleteToken("/api/user/sac-nocron", $token);
+$json = viewerDeleteToken("/api/user/sac-nocronrole", $token);
+$json = viewerDeleteToken("/api/user/role:sac-nocron", $token);
 
 # cleanup
 $json = viewerDeleteToken("/api/cron/$key2?arkimeRegressionUser=sac-test1", $test1Token);
