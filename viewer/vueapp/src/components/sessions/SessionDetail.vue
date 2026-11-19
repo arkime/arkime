@@ -2084,6 +2084,11 @@ onUnmounted(() => {
   margin-left: 165px;
 }
 
+/* inline-block so Firefox can wrap between adjacent no-wrap groups (TCP Flags, etc) */
+.session-detail dd .no-wrap {
+  display: inline-block;
+}
+
 /* more items link */
 .session-detail .show-more-items {
   margin-left: 6px;
