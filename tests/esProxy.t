@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 390;
+use Test::More tests => 423;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -59,7 +59,7 @@ $response = $ArkimeTest::userAgent->get("http://test:test\@$ArkimeTest::host:720
 is ($response->code, 200);
 
 # Bulk - valid index with correct prefix
-my $bulk_valid = qq({"index":{"_index":"tests_sessions3-2024","_id":"1"}}\n{"field":"value"}\n);
+my $bulk_valid = qq({"index":{"_index":"tests_sessions3-2024","_id":"1"}}\n{"node":"test","field":"value"}\n);
 my $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
 $req->header('Content-Type' => 'application/x-ndjson');
 $req->content($bulk_valid);
@@ -115,7 +115,7 @@ $response = $ArkimeTest::userAgent->request($req);
 is ($response->code, 200, "bulk delete to fields index succeeds");
 
 # Bulk - delete followed by index (validates delete doesn't skip next action)
-my $bulk_delete_then_index = qq({"delete":{"_index":"tests_fields","_id":"1"}}\n{"index":{"_index":"tests_sessions3-2024","_id":"2"}}\n{"field":"value"}\n);
+my $bulk_delete_then_index = qq({"delete":{"_index":"tests_fields","_id":"1"}}\n{"index":{"_index":"tests_sessions3-2024","_id":"2"}}\n{"node":"test","field":"value"}\n);
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
 $req->header('Content-Type' => 'application/x-ndjson');
 $req->content($bulk_delete_then_index);
@@ -132,7 +132,7 @@ is ($response->code, 400, "bulk delete to bad index rejected");
 is ($response->content, "Not authorized for API");
 
 # Bulk - create to valid sessions index
-my $bulk_create = qq({"create":{"_index":"tests_sessions3-2024","_id":"3"}}\n{"field":"value"}\n);
+my $bulk_create = qq({"create":{"_index":"tests_sessions3-2024","_id":"3"}}\n{"node":"test","field":"value"}\n);
 $req = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk");
 $req->header('Content-Type' => 'application/x-ndjson');
 $req->content($bulk_create);
@@ -266,6 +266,56 @@ is ($response->code, 400, "POST fields doc rejected");
 # A small gzip body that inflates past the limit is refused instead of blocking esProxy
 $response = bulkPost("test", "\n" x (40 * 1024 * 1024), 1);
 is ($response->code, 400, "bulk gzip bomb rejected");
+
+# Bulk - a sensor may only write its own node's sessions, with just _index and _id in the action line.
+# Remove any left by an earlier run without the check, or the not written tests fail.
+my @midIds = ("esproxy-mid1", "esproxy-mid2", "esproxy-mid3");
+esDelete("/tests_sessions3-2024/_doc/$_?refresh=true") foreach ("esproxy-node", "esproxy-node2", @midIds);
+esDelete("/tests_fields/_doc/esproxy.midfield?refresh=true");
+foreach my $test (
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\n{"node":"test2"}\n), "index for another node"],
+    [qq({"create":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\n{"node":"test2"}\n), "create for another node"],
+    [qq({"index":{"_index":"partial-tests_sessions3-2024","_id":"esproxy-node"}}\n{"node":"test2"}\n), "partial index for another node"],
+    [qq({"index":{"_index":"tests_sessions3-2024"}}\n{"node":"test2"}\n), "index without _id for another node"],
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\n{"field":"value"}\n), "index without node"],
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\n{"node":["test"]}\n), "index with node array"],
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\nnull\n), "index with null body"],
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\n), "index without body"],
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\nnot json\n), "index with invalid JSON body"],
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\n{"node":"test"}\n{"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node2"}}\n{"node":"test2"}\n), "own then another node's session"],
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node","version_type":"external","version":9999999999}}\n{"node":"test"}\n), "index with version_type"],
+    [qq({"create":{"_index":"tests_sessions3-2024","_id":"esproxy-node","pipeline":"x"}}\n{"node":"test"}\n), "create with pipeline"],
+    [qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node","routing":"x"}}\n{"node":"test"}\n), "index with routing"],
+) {
+    is (bulkPost("test", $test->[0])->code, 400, "bulk session $test->[1] rejected");
+}
+is (bulkPost("test", qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\n{"node":"test2"}\n), 1)->code, 400, "bulk gzip session for another node rejected");
+ok (!esGet("/tests_sessions3-2024/_doc/esproxy-node")->{found}, "rejected session not written");
+ok (!esGet("/tests_sessions3-2024/_doc/esproxy-node2")->{found}, "rejected session in mixed bulk not written");
+is (bulkPost("test2", qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-node"}}\n{"node":"test2"}\n))->code, 200, "bulk session for own node allowed");
+is (esGet("/tests_sessions3-2024/_doc/esproxy-node")->{_source}->{node}, "test2", "own node session written");
+esDelete("/tests_sessions3-2024/_doc/esproxy-node?refresh=true");
+
+# Bulk - a bad session after good ones rejects the whole bulk, nothing in it is written
+my $midField = qq({"index":{"_index":"tests_fields","_id":"esproxy.midfield"}}\n{"friendlyName":"x","group":"general","help":"x","type":"termfield","dbField2":"esproxymid"}\n);
+my $mid1 = qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-mid1"}}\n{"node":"test"}\n);
+my $mid2 = qq({"create":{"_index":"tests_sessions3-2024","_id":"esproxy-mid2"}}\n{"node":"test"}\n);
+my $mid3 = qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-mid3"}}\n{"node":"test"}\n);
+foreach my $test (
+    [$mid1 . qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-mid2"}}\n{"node":"test2"}\n) . $mid3, "another node's session between own sessions"],
+    [$mid1 . $mid2 . qq({"index":{"_index":"tests_sessions3-2024","_id":"esproxy-mid3","version_type":"external","version":9999999999}}\n{"node":"test"}\n), "version_type on the last session"],
+    [$midField . $mid1 . $mid2 . qq({"index":{"_index":"partial-tests_sessions3-2024","_id":"esproxy-mid3"}}\n{"field":"value"}\n), "session without node after a new field"],
+) {
+    is (bulkPost("test", $test->[0])->code, 400, "bulk $test->[1] rejected");
+    is (bulkPost("test", $test->[0], 1)->code, 400, "bulk gzip $test->[1] rejected");
+}
+ok (!esGet("/tests_sessions3-2024/_doc/$_")->{found}, "$_ from a rejected bulk not written") foreach (@midIds);
+ok (!esGet("/tests_fields/_doc/esproxy.midfield")->{found}, "field from a rejected bulk not created");
+is (bulkPost("test", $midField . $mid1 . $mid2 . $mid3)->code, 200, "bulk of a new field and own sessions allowed");
+is (esGet("/tests_sessions3-2024/_doc/$_")->{_source}->{node}, "test", "$_ from an allowed bulk written") foreach (@midIds);
+ok (esGet("/tests_fields/_doc/esproxy.midfield")->{found}, "field from an allowed bulk created");
+esDelete("/tests_sessions3-2024/_doc/$_?refresh=true") foreach (@midIds);
+esDelete("/tests_fields/_doc/esproxy.midfield?refresh=true");
 
 # Bulk - sessions index without dash should be rejected
 my $bulk_no_dash = qq({"index":{"_index":"tests_sessions3evil","_id":"1"}}\n{"field":"value"}\n);
