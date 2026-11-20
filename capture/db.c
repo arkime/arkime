@@ -61,6 +61,7 @@ LOCAL ArkimeStringHashStd_t    clusterDbSchemes;
 LOCAL const ArkimeClusterDb_t *clusterDb;
 void arkime_db_es_init(void);
 void arkime_db_pg_init(void);
+void arkime_db_tests_init(void); // db.tests.c, what a dryRun uses
 
 LOCAL patricia_tree_t  *ipTree4 = 0;
 LOCAL patricia_tree_t  *ipTree6 = 0;
@@ -435,11 +436,16 @@ LOCAL uint16_t sendMaxDocs = 0xffff;
 /******************************************************************************/
 void arkime_db_set_send_bulk(ArkimeDbSendBulkFunc func)
 {
+    // A dryRun never writes, a plugin can't replace its sessions db
+    if (config.dryRun && sessionsDb)
+        return;
     sendBulkFunc = func;
 }
 /******************************************************************************/
 void arkime_db_set_send_bulk2(ArkimeDbSendBulkFunc func, gboolean bulkHeader, gboolean indexInDoc, uint16_t maxDocs)
 {
+    if (config.dryRun && sessionsDb)
+        return;
     sendBulkFunc = func;
     sendBulkHeader = bulkHeader;
     sendIndexInDoc = indexInDoc;
@@ -590,8 +596,6 @@ typedef struct {
 LOCAL DbInfo_t dbInfo[ARKIME_MAX_PACKET_THREADS];
 
 #define MAX_IPS 2000
-
-LOCAL ARKIME_LOCK_DEFINE(outputted);
 
 #define SAVE_FIELD_STR_HASH(POS, FLAGS) \
 do { \
@@ -1596,23 +1600,6 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
 
     ARKIME_THREAD_INCR_NUM(arkimeCounters.totalSessionBytes, (int)(BSB_WORK_PTR(jbsb) - dataPtr));
 
-    if (config.dryRun) {
-        if (config.tests) {
-            static int outputted;
-
-            ARKIME_LOCK(outputted);
-            outputted++;
-            const int hlen = dataPtr - startPtr;
-            fprintf(stderr, "  %s{\"header\":%.*s,\n  \"body\":%.*s}\n", (outputted == 1 ? "" : ","), hlen - 1, dbInfo[thread].json, (int)(BSB_LENGTH(jbsb) - hlen - 1), dbInfo[thread].json + hlen);
-            fflush(stderr);
-            ARKIME_UNLOCK(outputted);
-        } else if (config.debug) {
-            LOG("%.*s\n", (int)BSB_LENGTH(jbsb), dbInfo[thread].json);
-        }
-        BSB_INIT(jbsb, dbInfo[thread].json, BSB_SIZE(jbsb));
-        goto cleanup;
-    }
-
     if (config.noSPI) {
         BSB_INIT(jbsb, dbInfo[thread].json, BSB_SIZE(jbsb));
         goto cleanup;
@@ -2545,9 +2532,6 @@ LOCAL void arkime_db_field_kv(BSB *bsb, const char *key, const char *value)
 /******************************************************************************/
 void arkime_db_add_field(const char *group, const char *kind, const char *expression, const char *friendlyName, const char *dbField, const char *help, int haveap, va_list ap)
 {
-    if (config.dryRun)
-        return;
-
     BSB  docBSB;
     BSB *bsb = &docBSB;
     BSB_INIT(docBSB, arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE), ARKIME_HTTP_BUFFER_SIZE);
@@ -2585,17 +2569,11 @@ void arkime_db_add_field(const char *group, const char *kind, const char *expres
 /******************************************************************************/
 void arkime_db_delete_field(const char *expression)
 {
-    if (config.dryRun)
-        return;
-
     clusterDb->del("fields", expression);
 }
 /******************************************************************************/
 void arkime_db_update_field(const char *expression, const char *name, const char *value)
 {
-    if (config.dryRun)
-        return;
-
     char json[ARKIME_HTTP_BUFFER_SIZE];
     BSB  bsb;
     BSB_INIT(bsb, json, sizeof(json));
@@ -2608,10 +2586,6 @@ void arkime_db_update_field(const char *expression, const char *name, const char
 void arkime_db_update_file(uint32_t fileid, uint64_t filesize, uint64_t packetsSize, uint32_t packets, const struct timeval *lastPacket, uint32_t sessionsStarted, uint32_t sessionsPresent)
 {
     BSB                    jbsb;
-
-    if (config.dryRun)
-        return;
-
     char                  *json = arkime_http_get_buffer(ARKIME_HTTP_BUFFER_SIZE);
 
     BSB_INIT(jbsb, json, ARKIME_HTTP_BUFFER_SIZE);
@@ -2777,9 +2751,16 @@ LOCAL char *arkime_db_url_scheme(const char *url)
 }
 /******************************************************************************/
 // dbUrl or else elasticsearch, it holds everything sessionsDbUrl doesn't
+// A dryRun never writes, so tests:// that prints the sessions is the only dbUrl it uses
 LOCAL char *arkime_db_url()
 {
     char *url = arkime_config_str(NULL, "dbUrl", NULL);
+    if (config.dryRun) {
+        if (url && g_ascii_strncasecmp(url, "tests://", 8) == 0)
+            return url;
+        g_free(url);
+        return g_strdup("dryrun://");
+    }
     if (!url)
         url = arkime_config_str(NULL, "elasticsearch", NULL);
     if (!url) {
@@ -2794,7 +2775,7 @@ LOCAL char *arkime_db_url()
 // sessionsDbUrl or else dbUrl, the first url's scheme picks it
 LOCAL void arkime_db_sessions_init()
 {
-    char *url = arkime_config_str(NULL, "sessionsDbUrl", NULL);
+    char *url = config.dryRun ? NULL : arkime_config_str(NULL, "sessionsDbUrl", NULL);
     const char *key = url ? "sessionsDbUrl" : "dbUrl";
     if (!url)
         url = arkime_db_url();
@@ -2833,11 +2814,10 @@ LOCAL gboolean arkime_db_health_check(gpointer UNUSED(user_data))
 // dbUrl, the first url's scheme picks it
 LOCAL void arkime_db_cluster_init()
 {
-    // A dryRun never writes, so it gets the default one without a url
-    char *url = config.dryRun ? NULL : arkime_db_url();
-    char *scheme = url ? arkime_db_url_scheme(url) : g_strdup("http");
+    char *url = arkime_db_url();
+    char *scheme = arkime_db_url_scheme(url);
 
-    const char *colon = url ? strstr(url, "://") : NULL;
+    const char *colon = strstr(url, "://");
     if (colon && colon - url == (long)strlen(scheme))
         memcpy(url, scheme, colon - url);
 
@@ -2853,22 +2833,15 @@ LOCAL void arkime_db_cluster_init()
 LOCAL  guint timers[10];
 void arkime_db_init()
 {
-    if (config.tests) {
-        ARKIME_LOCK(outputted);
-        fprintf(stderr, "{\"sessions3\": [\n");
-        fflush(stderr);
-        ARKIME_UNLOCK(outputted);
-    }
     // A rootPlugins plugin may have registered schemes already
     arkime_db_es_init();
     arkime_db_pg_init();
     arkime_db_ch_init();
+    arkime_db_tests_init();
 
-    if (!config.dryRun) {
-        arkime_db_sessions_init();
-        if (sessionsDb->health)
-            sessionsDb->health(TRUE);
-    }
+    arkime_db_sessions_init();
+    if (sessionsDb->health)
+        sessionsDb->health(TRUE);
     arkime_db_cluster_init();
     myPid = getpid() & 0xffff;
     gettimeofday(&startTime, NULL);
@@ -2914,15 +2887,13 @@ void arkime_db_init()
     if (config.rirFile)
         arkime_config_monitor_file_msg("rir", config.rirFile, arkime_db_load_rir, "- FIX by running " CONFIG_PREFIX "/bin/" PACKAGE "_update_geo.sh OR updating the rirFile setting");
 
-    if (!config.dryRun) {
-        int t = 0;
-        if (!config.noStats) {
-            statsThread = g_thread_new("arkime-stats", &arkime_db_stats_thread, NULL);
-        }
-        timers[t++] = g_timeout_add_seconds(1, arkime_db_flush_gfunc, 0);
-        if (sessionsDb->health && arkime_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {
-            timers[t++] = g_timeout_add_seconds(30, arkime_db_health_check, 0);
-        }
+    int t = 0;
+    if (!config.dryRun && !config.noStats) {
+        statsThread = g_thread_new("arkime-stats", &arkime_db_stats_thread, NULL);
+    }
+    timers[t++] = g_timeout_add_seconds(1, arkime_db_flush_gfunc, 0);
+    if (sessionsDb->health && arkime_config_boolean(NULL, "dbEsHealthCheck", TRUE)) {
+        timers[t++] = g_timeout_add_seconds(30, arkime_db_health_check, 0);
     }
 
     ecsEventProvider = arkime_config_str(NULL, "ecsEventProvider", NULL);
@@ -2948,33 +2919,23 @@ void arkime_db_init()
 /******************************************************************************/
 void arkime_db_exit()
 {
-    if (!config.dryRun) {
-        for (int i = 0; timers[i]; i++) {
-            g_source_remove(timers[i]);
-        }
-
-        arkime_db_flush_gfunc(GINT_TO_POINTER(1));
-        dbExit = 1;
-        // The stats thread can be mid write, it must be done before the cluster db closes
-        if (statsThread) {
-            g_thread_join(statsThread);
-            statsThread = NULL;
-        }
-        if (!config.noStats) {
-            arkime_db_update_stats(0, 1);
-        }
-        clusterDb->exit();
-        if (sessionsDb->exit)
-            sessionsDb->exit();
+    for (int i = 0; timers[i]; i++) {
+        g_source_remove(timers[i]);
     }
 
-    if (config.tests) {
-        usleep(10000);
-        ARKIME_LOCK(outputted);
-        fprintf(stderr, "]}\n");
-        fflush(stderr);
-        ARKIME_UNLOCK(outputted);
+    arkime_db_flush_gfunc(GINT_TO_POINTER(1));
+    dbExit = 1;
+    // The stats thread can be mid write, it must be done before the cluster db closes
+    if (statsThread) {
+        g_thread_join(statsThread);
+        statsThread = NULL;
     }
+    if (!config.dryRun && !config.noStats) {
+        arkime_db_update_stats(0, 1);
+    }
+    clusterDb->exit();
+    if (sessionsDb->exit)
+        sessionsDb->exit();
 
     if (ipTree4) {
         arkime_db_free_override_ips(ipTree4);

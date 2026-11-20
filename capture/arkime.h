@@ -400,7 +400,6 @@ typedef struct arkime_config {
     gboolean  copyPcap;
     gboolean  pcapRecursive;
     gboolean  noStats;
-    gboolean  tests;
     gboolean  pcapMonitor;
     gboolean  pcapDelete;
     gboolean  pcapSkip;
