@@ -1,0 +1,16 @@
+// Vuetify SCSS overrides for the viewer.
+// Pattern lifted from cont3xt/vueapp/src/vuetify-settings.scss — Arkime is a dense
+// analyst UI, so we shrink default heights and paddings.
+//
+// NOTE: Vuetify SCSS overrides have a build-time cost (see
+// https://vuetifyjs.com/en/features/sass-variables/#build-performance). Keep
+// this file minimal; prefer per-component class overrides for one-off tweaks.
+
+@use 'vuetify/settings' with (
+  $table-density: ('default': -2, 'comfortable': -4, 'compact': -8),
+  $table-column-padding: 0 8px,
+  $table-line-height: 1.25,
+  $table-row-height: 32px,
+  $pagination-item-margin: 0px 4px,
+  $button-height: 32px,
+);

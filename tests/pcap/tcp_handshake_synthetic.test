@@ -815,6 +815,10 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "serverVersion" : [
+      "ssh-2.0-openssh_9.6"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-2.0-openssh_9.6"
      ],
@@ -891,6 +895,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],

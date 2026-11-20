@@ -1,0 +1,8 @@
+# Entries the viewer must skip instead of failing to start on, which would fail every viewer test
+macSourceRank: not-a-mapping
+classify:
+  - just-a-string
+  -
+  - class: bad_anyof
+    anyOf:
+      - not-a-mapping

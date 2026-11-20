@@ -75,6 +75,11 @@
      "requestBody" : [
       "------WebKitFormBoundaryAe47vGj7ybAe6RwO\r\nContent-Disposition: form-data; name=\"username\"\r\n\r\n\r\n------WebKitFormBoundaryAe47vGj7ybAe6RwO\r\nContent-Disposition: form-data; name=\"file1\"; filename=\"123.doc(5).exe\"\r\nContent-Type: application/x-msdownload\r\n\r\n123456\r\n------WebKitFormBoundaryAe47vGj7ybAe6RwO\r\nContent-Disposition: form-data; name=\"file2\"; filename=\"\"\r\nContent-Type: application/octet-stream\r\n\r\n\r\n------WebKitFormBoundaryAe47vGj7ybAe6RwO--\r\n"
      ],
+     "requestBodyLen" : [
+      "0",
+      "449"
+     ],
+     "requestBodyLenCnt" : 2,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -133,6 +138,11 @@
       "zh-cn,zh;q=0.8"
      ],
      "requestHeaderValueCnt" : 19,
+     "responseBodyLen" : [
+      "144",
+      "468"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "content-length",
       "content-type",

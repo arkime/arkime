@@ -1,0 +1,137 @@
+{
+  "name": "EtherNet/IP",
+  "description": "EtherNet/IP sessions: protocols == enip",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == enip",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "enip.command",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "EtherNet/IP sessions by enip.command"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "EtherNet/IP sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "EtherNet/IP bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "enip.product",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Products"
+      },
+      {
+        "id": "w5",
+        "field": "enip.status",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Statuses"
+      },
+      {
+        "id": "w6",
+        "field": "enip.vendor",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Vendors"
+      },
+      {
+        "id": "w7",
+        "field": "enip.device-type",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Device types"
+      },
+      {
+        "id": "w8",
+        "field": "enip.service",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Services"
+      },
+      {
+        "id": "w9",
+        "field": "enip.class",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Classes"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "enip.command",
+          "enip.product",
+          "enip.vendor"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

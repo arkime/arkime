@@ -1,7 +1,7 @@
 /* Cubism stuff -------------------- */
 .axis path, .axis line {
   fill            : none;
-  stroke          : var(--color-foreground);
+  stroke          : rgb(var(--v-theme-foreground));
   shape-rendering : crispEdges;
 }
 
@@ -11,7 +11,7 @@
 
 .axis text {
   -webkit-transition: fill-opacity 250ms linear;
-  fill: var(--color-foreground);
+  fill: rgb(var(--v-theme-foreground));
 }
 
 .axis path {
@@ -19,12 +19,12 @@
 }
 
 .axis line {
-  stroke          : var(--color-foreground);
+  stroke          : rgb(var(--v-theme-foreground));
   shape-rendering : crispEdges;
 }
 
 .horizon {
-  border-bottom : solid 1px var(--color-black);
+  border-bottom : solid 1px rgb(var(--v-theme-black));
   overflow      : hidden;
   position      : relative;
 }
@@ -42,8 +42,8 @@
   line-height : 30px;
   margin      : 0 6px;
   position    : absolute;
-  text-shadow : 0 1px 0 var(--color-white);
-  color       : var(--color-black);
+  text-shadow : 0 1px 0 rgb(var(--v-theme-white));
+  color       : rgb(var(--v-theme-black));
   white-space : nowrap;
   font-weight : 600;
 }
@@ -64,7 +64,7 @@
 }
 
 .line {
-  background: var(--color-black);
+  background: rgb(var(--v-theme-black));
   position  : absolute;
   opacity   : .4;
 }

@@ -9,6 +9,8 @@
  */
 
 'use strict';
+// stdout is the pcap, so every log line goes to stderr
+console.log = console.error;
 const Config = require('./config.js');
 const Db = require('./db.js');
 const cryptoLib = require('crypto');
@@ -17,14 +19,13 @@ const ArkimeConfig = require('../common/arkimeConfig');
 const ArkimeUtil = require('../common/arkimeUtil');
 
 async function main () {
-  const query = { size: 100, query: { term: { name: process.argv[2] } }, sort: [{ num: { order: 'desc' } }] };
   try {
-    const data = await Db.search('files', query);
-    if (data.hits.hits.length === 0) {
+    const { data } = await Db.searchFiles({ where: { name: process.argv[2] }, sort: { num: 'desc' }, size: 100 });
+    if (data.length === 0) {
       console.error('No matches');
       process.exit(1);
     }
-    const info = data.hits.hits[0]._source;
+    const info = data[0].doc;
     if (!info.encoding || info.encoding === 'normal') {
       console.error('Not encrypted');
       process.exit(1);
@@ -91,17 +92,19 @@ if (process.argv.length < 3) {
 async function premain () {
   await Config.initialize();
 
-  const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
+  const escInfo = ArkimeConfig.sessionsEsUrls();
   await Db.initialize({
     host: escInfo,
-    prefix: Config.get('prefix', 'arkime_'),
+    prefix: ArkimeConfig.sessionsDbPrefix(),
+    clusterPrefix: ArkimeConfig.dbPrefix(),
     queryExtraIndices: Config.getArray('queryExtraIndices', ''),
     esClientKey: Config.get('esClientKey', null),
     esClientCert: Config.get('esClientCert', null),
     esClientKeyPass: Config.get('esClientKeyPass', null),
     insecure: ArkimeConfig.insecure,
-    usersHost: Config.getArray('usersElasticsearch'),
-    usersPrefix: Config.get('usersPrefix'),
+    usersHost: ArkimeConfig.usersDbUrls(),
+    usersFallbackHost: ArkimeConfig.dbUrls(),
+    usersPrefix: ArkimeConfig.usersPrefix(),
     esApiKey: Config.get('elasticsearchAPIKey', null),
     usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
     esBasicAuth: Config.get('elasticsearchBasicAuth', null),

@@ -5,6 +5,7 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "a0:31:c4:67:82:e6:e6:c6:62:c2:c8:7c:76:da:9a:a6:2c:ca:bd:8e",
       "issuerCN" : [
        "digicert high assurance ev root ca"
@@ -15,12 +16,16 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1855828800000,
       "notBefore" : 1382443200000,
+      "pathLen" : 0,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3337,
       "remainingSeconds" : 288378187,
       "serial" : "04e1e7a4dc5cf2f36dc02b42b85d159f",
+      "sha256" : "19400be5b7a31fb733917700789d2f0a2471c0c9d506c0e504c06c16d7cb17c0",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "digicert sha2 high assurance server ca"
       ],
@@ -31,7 +36,8 @@
        "www.digicert.com"
       ],
       "validDays" : 5479,
-      "validSeconds" : 473385600
+      "validSeconds" : 473385600,
+      "version" : 3
      },
      {
       "alt" : [
@@ -41,6 +47,7 @@
        "lfodown01-b.cloudsink.net"
       ],
       "altCnt" : 4,
+      "exponent" : 65537,
       "hash" : "1c:8a:39:c5:f7:18:dd:cb:6c:e0:da:9c:53:f9:c1:36:d2:37:15:07",
       "issuerCN" : [
        "digicert sha2 high assurance server ca"
@@ -51,12 +58,15 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 4096,
       "notAfter" : 1590753600000,
       "notBefore" : 1495670400000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 269,
       "remainingSeconds" : 23302987,
       "serial" : "048d398cbd9d68c87e1ba3ec99c2b07d",
+      "sha256" : "ccbf65109477ca7e3c984a72b764ee75a4af86089a0b45b39cb5186666b6d0b8",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "lfoup01-b.cloudsink.net"
       ],
@@ -64,7 +74,8 @@
        "CrowdStrike, Inc."
       ],
       "validDays" : 1100,
-      "validSeconds" : 95083200
+      "validSeconds" : 95083200,
+      "version" : 3
      }
     ],
     "certCnt" : 2,
@@ -107,10 +118,18 @@
       "ts01-b.cloudsink.net:443"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "user-agent"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "date",
       "server",
@@ -258,6 +277,10 @@
       "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
      ],
      "cipherCnt" : 1,
+     "group" : [
+      "secp256r1"
+     ],
+     "groupCnt" : 1,
      "ja3" : [
       "b288289af2999820648eb3ca4d8304c5"
      ],

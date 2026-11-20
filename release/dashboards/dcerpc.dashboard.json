@@ -1,0 +1,133 @@
+{
+  "name": "DCE/RPC",
+  "description": "DCE/RPC sessions: protocols == dcerpc",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == dcerpc",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "dcerpc.msgType",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "DCE/RPC sessions by dcerpc.msgType"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "DCE/RPC sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "DCE/RPC bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "dcerpc.interface",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Interfaces"
+      },
+      {
+        "id": "w5",
+        "field": "dcerpc.msgType",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Message types"
+      },
+      {
+        "id": "w6",
+        "field": "dcerpc.uuid",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Interface UUIDs"
+      },
+      {
+        "id": "w7",
+        "field": "dcerpc.opnum",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Operation numbers"
+      },
+      {
+        "id": "w8",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "DCE/RPC tree: who reached what (click a host to re-root)"
+      },
+      {
+        "id": "w11",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "dcerpc.interface",
+          "dcerpc.opnum",
+          "dcerpc.msgType"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

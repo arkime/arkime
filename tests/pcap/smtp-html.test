@@ -4,7 +4,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 169
     },
     "destination" : {
      "bytes" : 0,
@@ -47,6 +47,7 @@
      "packets" : 1,
      "port" : 51009
     },
+    "srcPayload8" : "48454c4f0a444154",
     "srcTTL" : [
      64
     ],
@@ -65,7 +66,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 169
    },
    "header" : {
     "index" : {

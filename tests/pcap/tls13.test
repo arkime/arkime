@@ -140,6 +140,15 @@
       "TLS_AES_128_GCM_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "h2",
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 2,
+     "group" : [
+      "x25519"
+     ],
+     "groupCnt" : 1,
      "ja3" : [
       "4826a90ec2daf4f7b4b64cc1c8bd343b"
      ],

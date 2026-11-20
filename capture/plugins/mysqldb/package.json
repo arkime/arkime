@@ -1,0 +1,11 @@
+{
+  "name": "arkime-mysqldb",
+  "version": "1.0.0",
+  "description": "MySQL users, cont3xt and cluster db plugin for Arkime",
+  "private": true,
+  "license": "Apache-2.0",
+  "main": "mysqldb.js",
+  "dependencies": {
+    "mysql2": "3.24.6"
+  }
+}

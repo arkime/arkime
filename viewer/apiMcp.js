@@ -228,7 +228,7 @@ class MCPViewerAPIs {
         annotations: { readOnlyHint: true },
         inputSchema: sessionQuerySchema({
           exp: { type: 'string', description: "Field expression name to aggregate on, eg 'ip.dst' or 'http.host'." },
-          size: { type: 'number', description: 'How many distinct values to return, default 20.' }
+          size: { type: 'integer', minimum: 1, description: 'How many distinct values to return, default 20.' }
         }, ['exp']),
         handler: async (args, req) => MCPServer.callApiOrThrow(req, {
           url: '/api/spigraph',

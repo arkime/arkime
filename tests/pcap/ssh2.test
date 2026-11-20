@@ -142,6 +142,18 @@
     ],
     "srcTTLCnt" : 1,
     "ssh" : {
+     "cipher" : [
+      "aes128-ctr"
+     ],
+     "cipherCnt" : 1,
+     "clientVersion" : [
+      "ssh-2.0-openssh_5.3"
+     ],
+     "clientVersionCnt" : 1,
+     "compression" : [
+      "none"
+     ],
+     "compressionCnt" : 1,
      "hassh" : [
       "21b457a327ce7a2d4fce5ef2c42400bd"
      ],
@@ -150,10 +162,26 @@
       "f430cd6761697a6a658ee1d45ed22e49"
      ],
      "hasshServerCnt" : 1,
+     "hostKeyAlg" : [
+      "ssh-rsa"
+     ],
+     "hostKeyAlgCnt" : 1,
+     "kex" : [
+      "diffie-hellman-group-exchange-sha1"
+     ],
+     "kexCnt" : 1,
      "key" : [
       "AAAAB3NzaC1yc2EAAAABeHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHg="
      ],
      "keyCnt" : 1,
+     "mac" : [
+      "hmac-md5"
+     ],
+     "macCnt" : 1,
+     "serverVersion" : [
+      "ssh-1.99-openssh_3.9p1"
+     ],
+     "serverVersionCnt" : 1,
      "version" : [
       "ssh-1.99-openssh_3.9p1",
       "ssh-2.0-openssh_5.3"

@@ -8,6 +8,8 @@ all:
 install:
 	$(MKDIR_P) "$(DBDIR)"
 	$(INSTALL) db.pl $(DBDIR)
+	$(INSTALL) ch.pl $(DBDIR)
+	$(INSTALL) -m 644 fields.json $(DBDIR)
 
 check:
 

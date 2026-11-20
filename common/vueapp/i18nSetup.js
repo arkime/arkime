@@ -63,6 +63,7 @@ export async function createI18nInstance(apiUrl) {
     // Params are NOT escaped: escapeParameterHtml is ignored with legacy:false, and
     // escapeParameter would double escape every {{ $t() }}. Any user data passed to a
     // $t() rendered with v-html (the ...Html keys) must go through escapeHtml() first.
+    warnHtmlMessage: false, // allow hardcoded HTML in *Html-suffixed message keys (e.g. expressionTipHtml)
     messages: {
       en: { loading: 'Loading...' } // temporary placeholder
     }

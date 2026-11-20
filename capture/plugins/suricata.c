@@ -38,7 +38,7 @@ struct suricataitem_t {
     uint16_t        action_len;
     uint16_t        signature_len;
     uint16_t        category_len;
-    SessionTypes    ses;
+    int             mProtocol;
 };
 
 #define SURICATA_HASH_SIZE 7919
@@ -70,6 +70,9 @@ LOCAL int                    severityField;
 
 LOCAL int                    suricataExpireSeconds;
 
+extern int                   mProtocolIcmp;
+extern int                   mProtocolIcmpv6;
+
 SuricataHead_t alerts;
 
 /******************************************************************************/
@@ -89,11 +92,11 @@ LOCAL int suricata_alerts_add(SuricataItem_t *item)
     int h = item->hash % alerts.num;
     ARKIME_LOCK(alerts.lock);
 
-    // Dup is same hash, signature_id, timestamp, ses, and sessionId
+    // Dup is same hash, signature_id, timestamp, mProtocol, and sessionId
     for (check = alerts.items[h]; check; check = check->items_next) {
         if (check->hash == item->hash &&
             check->timestamp == item->timestamp &&
-            check->ses == item->ses &&
+            check->mProtocol == item->mProtocol &&
             check->signature_id == item->signature_id &&
             memcmp(check->sessionId, item->sessionId, item->sessionId[0]) == 0) {
 
@@ -149,7 +152,7 @@ LOCAL void suricata_plugin_save(ArkimeSession_t *session, int UNUSED(final))
         }
 
         if (item->hash != session->ses_hash ||
-            item->ses != session->ses ||
+            item->mProtocol != session->mProtocol ||
             session->firstPacket.tv_sec - 30 > item->timestamp ||
             session->lastPacket.tv_sec + 30 < item->timestamp ||
             memcmp(session->sessionId, item->sessionId, item->sessionId[0]) != 0) {
@@ -360,11 +363,11 @@ LOCAL void suricata_process()
             // Match on protocol by name or by
             // IANA number: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
             if (strncmp("TCP", line + out[i + 2], 3) == 0 || strncmp("006", line + out[i + 2], 3) == 0)
-                item->ses = SESSION_TCP;
+                item->mProtocol = mProtocolTcp;
             else if (strncmp("UDP", line + out[i + 2], 3) == 0 || strncmp("017", line + out[i + 2], 3) == 0)
-                item->ses = SESSION_UDP;
+                item->mProtocol = mProtocolUdp;
             else if (strncmp("ICMP", line + out[i + 2], 4) == 0 || strncmp("001", line + out[i + 2], 3) == 0)
-                item->ses = SESSION_ICMP;
+                item->mProtocol = mProtocolIcmp;
             else {
                 suricata_item_free(item);
                 return;
@@ -393,6 +396,8 @@ LOCAL void suricata_process()
         arkime_session_id(item->sessionId, ARKIME_V6_TO_V4(srcIp), htons(srcPort), ARKIME_V6_TO_V4(dstIp), htons(dstPort), vlan, 0);
     } else {
         arkime_session_id6(item->sessionId, srcIp.s6_addr, htons(srcPort), dstIp.s6_addr, htons(dstPort), vlan, 0);
+        if (item->mProtocol == mProtocolIcmp)
+            item->mProtocol = mProtocolIcmpv6;
     }
 #pragma GCC diagnostic pop
 

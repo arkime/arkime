@@ -1,0 +1,147 @@
+{
+  "name": "Tunnels",
+  "description": "Encapsulated sessions: GRE, VXLAN, Geneve, ERSPAN, GTP, IPsec ESP/AH, OpenVPN, WireGuard, MPLS and PPP",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "protocols == [gre, vxlan, vxlan-gpe, geneve, erspan, gtp, esp, ah, openvpn, wireguard, mpls, pppoe, ppp]",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 10,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Tunnel sessions by protocol"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Tunnel sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Tunnel bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "protocols",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 12,
+        "other": true,
+        "title": "Tunnel types"
+      },
+      {
+        "id": "w5",
+        "field": "vni",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "VNIs"
+      },
+      {
+        "id": "w6",
+        "field": "outerip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Outer sources"
+      },
+      {
+        "id": "w7",
+        "field": "outerip.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Outer destinations"
+      },
+      {
+        "id": "w8",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Inner sources"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Inner destinations"
+      },
+      {
+        "id": "w10",
+        "field": "outerip.src",
+        "fields": [
+          "outerip.src",
+          "outerip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "Tunnel endpoint tree (outer IPs, click a host to re-root)"
+      },
+      {
+        "id": "w11",
+        "field": "outerip.src",
+        "fields": [
+          "outerip.src",
+          "outerip.dst",
+          "ip.src",
+          "ip.dst",
+          "protocols",
+          "vni",
+          "bytes"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

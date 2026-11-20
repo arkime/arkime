@@ -168,6 +168,10 @@ LOCAL int sccp_parser(ArkimeSession_t *session, void *UNUSED(uw), const uint8_t 
 
     arkime_session_add_protocol(session, "sccp");
 
+    // Unidirectional, Begin, End, Continue, Abort
+    if (tcapData[0] == 0x61 || tcapData[0] == 0x62 || tcapData[0] == 0x64 || tcapData[0] == 0x65 || tcapData[0] == 0x67)
+        arkime_session_add_protocol(session, "tcap");
+
     // Try to extract application context OID from TCAP
     char appCtx[64];
     if (tcap_get_app_context(tcapData, tcapLen, appCtx, sizeof(appCtx)) > 0) {
