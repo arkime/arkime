@@ -1,5 +1,5 @@
 # ESProxy
-use Test::More tests => 423;
+use Test::More tests => 424;
 use ArkimeTest;
 use Cwd;
 use URI::Escape;
@@ -1222,7 +1222,7 @@ foreach my $test (
 
 # [tee] sessionsDbUrl, tests.pl points it at the teech_ prefix of the ClickHouse or dbPlugins sessions db
 SKIP: {
-    skip "sessions tee only with ClickHouse or dbPlugins sessions", 7 if (!$ArkimeTest::sessionsDbNonES);
+    skip "sessions tee only with ClickHouse or dbPlugins sessions", 8 if (!$ArkimeTest::sessionsDbNonES);
     # The teed docs whose _id is in ids, or with a tag, sorted by _id
     my $teeDocs;
     if ($ArkimeTest::sessionsDbCH) {
@@ -1248,9 +1248,13 @@ SKIP: {
     my $r = HTTP::Request->new('POST', "http://test:test\@$ArkimeTest::host:7200/_bulk?refresh=true");
     $r->header('Content-Type' => 'application/x-ndjson');
     $r->content(join("\n", '{"index":{"_index":"tests_sessions3-240101","_id":"tee-own"}}', to_json($own),
-                           '{"index":{"_index":"tests_sessions3-240101","_id":"tee-other"}}', to_json($other),
                            '{"index":{"_index":"tests_sessions3-240101"}}', to_json($noid)) . "\n");
     is ($ArkimeTest::userAgent->request($r)->code, 200, "bulk sessions with the sessions tee");
+    # A sensor can only bulk its own node's sessions, so the other host's sensor writes its own
+    $r = HTTP::Request->new('POST', "http://esproxyhost:esproxyhost\@$ArkimeTest::host:7200/_bulk?refresh=true");
+    $r->header('Content-Type' => 'application/x-ndjson');
+    $r->content(join("\n", '{"index":{"_index":"tests_sessions3-240101","_id":"tee-other"}}', to_json($other)) . "\n");
+    is ($ArkimeTest::userAgent->request($r)->code, 200, "bulk session from the other host's sensor with the sessions tee");
 
     my $docs;
     waitUntil(sub { $docs = $teeDocs->(["tee-own"]); @$docs == 1; });
