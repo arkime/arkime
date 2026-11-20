@@ -29,6 +29,8 @@ function help (msg) {
   console.log('  --admin                   Has admin privileges');
   console.log('  --apionly                 Can only use api, not web pages');
   console.log('  --createOnly              Only create the user if it doesn\'t exist');
+  console.log('  --disableCron             Cannot use periodic queries, the ones they own do not run');
+  console.log('  --no-disableCron          Can use periodic queries');
   console.log('  --disablePcapDownload     The user can see the pcap but not download it');
   console.log('  --no-disablePcapDownload  The user can download the pcap');
   console.log('  --email                   Can do email searches');
@@ -182,6 +184,14 @@ function mainWithPassword (password) {
 
     case '--no-disablePcapDownload':
       nuser.disablePcapDownload = false;
+      break;
+
+    case '--disableCron':
+      nuser.disableCron = true;
+      break;
+
+    case '--no-disableCron':
+      nuser.disableCron = false;
       break;
 
     case '--timeLimit':

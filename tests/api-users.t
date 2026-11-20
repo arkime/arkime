@@ -32,8 +32,8 @@ my $json;
 # csv
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit
-anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
+    eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,disableCron,expression,timeLimit
+anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,,
 ', "CSV Users");
 
 # csv formula injection - userName/expression starting with a trigger char must be neutralized with a leading '
@@ -770,16 +770,16 @@ SKIP: {
 # csv
     my $csv = $ArkimeTest::userAgent->post("http://$ArkimeTest::host:8123/api/users.csv", Content => "")->content;
     $csv =~ s/\r//g;
-    eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit
-anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,
-notadmin,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
-role:sac-test1,UserName,true,false,false,"",,,,,,,,,
-role:sac-test2,UserName,true,false,false,"role:sac-test1",,,,,,,,,
-sac-test1,UserNameUpdated,false,true,true,"usersAdmin, arkimeUser",true,true,false,,,,,foo,
-sac-test2,UserNameUpdated3,false,false,false,"arkimeUser",,,,,,,,,72
-superAdmin,,true,true,false,"superAdmin",true,true,true,,,,,,
-test100,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
-test101,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,
+    eq_or_diff ($csv, 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,disableCron,expression,timeLimit
+anonymous,,true,true,false,"arkimeAdmin, cont3xtUser, dbAdmin, parliamentUser, usersAdmin, wiseUser",true,true,true,,,,,,,
+notadmin,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,,
+role:sac-test1,UserName,true,false,false,"",,,,,,,,,,
+role:sac-test2,UserName,true,false,false,"role:sac-test1",,,,,,,,,,
+sac-test1,UserNameUpdated,false,true,true,"usersAdmin, arkimeUser",true,true,false,,,,,,foo,
+sac-test2,UserNameUpdated3,false,false,false,"arkimeUser",,,,,,,,,,72
+superAdmin,,true,true,false,"superAdmin",true,true,true,,,,,,,
+test100,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,,
+test101,,true,true,false,"arkimeUser, cont3xtUser, parliamentUser, wiseUser",true,true,true,,,,,,,
 ', "CSV Users 2");
 
 # Filter by !role works for user-defined roles (stored with role: prefix), with or without the prefix

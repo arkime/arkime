@@ -28,7 +28,8 @@ export default {
    * @param {string} priv The privilege in question. Values include:
    *                      'emailSearch', 'enabled', 'packetSearch',
    *                      'headerAuthEnabled', 'removeEnabled', 'webEnabled',
-   *                      '!hideStats', '!hideFiles', '!hidePcap', '!disablePcapDownload'
+   *                      '!hideStats', '!hideFiles', '!hidePcap', '!disablePcapDownload',
+   *                      '!disableCron'
    * @returns {boolean}   true if all permissions are included.
    */
   hasPermission (priv) {

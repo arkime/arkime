@@ -1446,6 +1446,7 @@
     "hideFilesPage": "隐藏 Arkime 文件页面",
     "hidePcap": "隐藏 Arkime PCAP",
     "disablePcapDownload": "禁用 Arkime PCAP 下载",
+    "disableCron": "禁用 Arkime 周期性查询",
     "superAdminNoInherit": "superAdmin 不会从其角色继承任何内容。保持为“继承”的项目使用默认值：允许捕获任务，禁用电子邮件搜索和数据移除，不隐藏任何内容。",
     "forcedExpression": "强制表达式",
     "forcedExpressionTip": "一个 Arkime 搜索表达式，会静默添加到所有查询中。可用于限制可以访问的数据（例如哪些节点或 IP）",

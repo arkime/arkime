@@ -279,6 +279,11 @@ SPDX-License-Identifier: Apache-2.0
                     :model-value="item.disablePcapDownload"
                     :label="$t('users.disablePcapDownload')"
                     @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
+                  <TriStateToggle
+                    class="toggle-group rounded p-1"
+                    :model-value="item.disableCron"
+                    :label="$t('users.disableCron')"
+                    @update:model-value="setRoleField(item, 'disableCron', $event)" />
                 </div>
                 <v-alert
                   v-if="isUser(item) && item.roles?.includes('superAdmin')"
@@ -403,6 +408,11 @@ SPDX-License-Identifier: Apache-2.0
                       :model-value="item.disablePcapDownload"
                       :label="$t('users.disablePcapDownload')"
                       @update:model-value="setRoleField(item, 'disablePcapDownload', $event)" />
+                    <TriStateToggle
+                      class="toggle-group rounded p-1"
+                      :model-value="item.disableCron"
+                      :label="$t('users.disableCron')"
+                      @update:model-value="setRoleField(item, 'disableCron', $event)" />
                   </div>
                   <UserDropdown
                     class="mt-2"
@@ -685,7 +695,7 @@ export default {
     hasRestrictions (item) {
       return !item.emailSearch || !item.removeEnabled || !item.packetSearch ||
         item.hideStats || item.hideFiles || item.hidePcap ||
-        item.disablePcapDownload || item.timeLimit || item.expression;
+        item.disablePcapDownload || item.disableCron || item.timeLimit || item.expression;
     },
     userHasChanged (user) {
       this.changed[user.userId] = true;

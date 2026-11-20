@@ -110,6 +110,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4469 Add a box plot widget and SPI Graph type, the spread of a numeric field (quartiles, median, min, max and mean) over each top value's sessions, ranked by sessions or by an aggregation of the field
   - #4471 Non-IP sessions show their ethertype name (arp, lldp, ...) on the Sessions page instead of not-ip, not-ip is clickable, and ip.protocol == not-ip and ethertype == arp (names or 0x hex) can be searched
   - #4472 Search expressions accept non ASCII characters in unquoted values, host.dns==café.example.com no longer needs quotes
+  - #4483 Add a disableCron user permission, the user can't see or change Periodic Queries and the ones they own don't run, needs db.pl upgrade
 ## ESProxy
   - #4462 A sensor can no longer change a pcap file's scheme or S3 location after creating its file record
 ## Multies

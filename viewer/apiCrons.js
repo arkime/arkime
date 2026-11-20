@@ -693,6 +693,12 @@ class CronAPIs {
             console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
             continue;
           }
+          if (user.getPermission('disableCron') === true) {
+            if (Config.debug) {
+              console.log(`CRON - User '${cq.creator}' has disableCron set, skipping '${cq.name}', either transfer their cron jobs or clear disableCron`);
+            }
+            continue;
+          }
 
           const options = {
             user,

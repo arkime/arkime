@@ -201,6 +201,11 @@ SPDX-License-Identifier: Apache-2.0
               :model-value="newUser.disablePcapDownload"
               :label="$t('users.disablePcapDownload')"
               @update:model-value="setRoleField('disablePcapDownload', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.disableCron"
+              :label="$t('users.disableCron')"
+              @update:model-value="setRoleField('disableCron', $event)" />
           </div>
           <v-alert
             v-if="createMode === 'user' && newUser.roles?.includes('superAdmin')"
@@ -253,6 +258,11 @@ SPDX-License-Identifier: Apache-2.0
               :model-value="newUser.disablePcapDownload"
               :label="$t('users.disablePcapDownload')"
               @update:model-value="setRoleField('disablePcapDownload', $event)" />
+            <TriStateToggle
+              class="toggle-group rounded p-1"
+              :model-value="newUser.disableCron"
+              :label="$t('users.disableCron')"
+              @update:model-value="setRoleField('disableCron', $event)" />
           </div>
         </form> <!-- /create form -->
         <!-- create form error -->

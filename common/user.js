@@ -34,11 +34,11 @@ const adminRolesWithSuper = ['superAdmin', 'usersAdmin', 'arkimeAdmin', 'parliam
 const searchColumns = [
   'userId', 'userName', 'expression', 'enabled',
   'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-  'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
+  'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'disableCron', 'welcomeMsgNum',
   'lastUsed', 'timeLimit', 'roles', 'roleAssigners'
 ];
 
-const allSettingColumns = [ 'emailSearch', 'removeEnabled', 'packetSearch', 'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
+const allSettingColumns = [ 'emailSearch', 'removeEnabled', 'packetSearch', 'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'disableCron'];
 
 // What the Users page gives a new user, and what a superAdmin gets for anything its own record leaves unset
 const DEFAULT_PERMISSIONS = Object.freeze({
@@ -48,7 +48,8 @@ const DEFAULT_PERMISSIONS = Object.freeze({
   hideStats: false,
   hideFiles: false,
   hidePcap: false,
-  disablePcapDownload: false
+  disablePcapDownload: false,
+  disableCron: false
 });
 
 let readOnly = false;
@@ -599,6 +600,7 @@ class User {
    * @param {boolean} hideFiles=false - Hide the Files page from this user.
    * @param {boolean} hidePcap=false - Hide PCAP (and only show metadata/session detail) for this user when they open a Session.
    * @param {boolean} disablePcapDownload=false - Do not allow this user to download PCAP files.
+   * @param {boolean} disableCron=false - Do not allow this user to see, create, or edit periodic queries, and do not run the ones they own.
    * @param {string} expression - An Arkime search expression that is silently added to all queries. Useful to limit what data a user can access (e.g. which nodes or IPs).
    * @param {ArkimeSettings} settings - The Arkime application settings.
    * @param {object} columnConfigs - A list of sessions table column configurations that a user has created.
@@ -718,7 +720,7 @@ class User {
       User.numberOfUsers()
     ]).then(([users, total]) => {
       if (users.error) { throw users.error; }
-      const columns = 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,expression,timeLimit'.split(',');
+      const columns = 'userId,userName,enabled,webEnabled,headerAuthEnabled,roles,emailSearch,removeEnabled,packetSearch,hideStats,hideFiles,hidePcap,disablePcapDownload,disableCron,expression,timeLimit'.split(',');
       res.write(columns.join(','));
       res.write('\r\n');
       users = users.users;
@@ -938,6 +940,7 @@ class User {
         hideFiles: req.body.hideFiles,
         hidePcap: req.body.hidePcap,
         disablePcapDownload: req.body.disablePcapDownload,
+        disableCron: req.body.disableCron,
 
         roles: req.body.roles,
         welcomeMsgNum: 0,
@@ -1098,6 +1101,7 @@ class User {
         hideFiles: req.body.hideFiles ?? User.UNSET_FIELD,
         hidePcap: req.body.hidePcap ?? User.UNSET_FIELD,
         disablePcapDownload: req.body.disablePcapDownload ?? User.UNSET_FIELD,
+        disableCron: req.body.disableCron ?? User.UNSET_FIELD,
 
         roles: req.body.roles,
         roleAssigners: req.body.roleAssigners ?? []
@@ -1880,7 +1884,8 @@ class User {
       hidePcap: true,
       hideFiles: true,
       hideStats: true,
-      disablePcapDownload: true
+      disablePcapDownload: true,
+      disableCron: true
     };
 
     return (req, res, next) => {

@@ -143,7 +143,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ $t('settings.nav.shortcuts') }}
           </v-tab>
           <v-tab
-            v-if="!multiviewer"
+            v-if="!multiviewer && !cronDisabled"
             value="cron">
             <v-icon
               icon="mdi-magnify"
@@ -1437,7 +1437,7 @@ SPDX-License-Identifier: Apache-2.0
           id="cron"
           :user-id="userId"
           @display-message="displayMessage"
-          v-if="visibleTab === 'cron' && !multiviewer" />
+          v-if="visibleTab === 'cron' && !multiviewer && !cronDisabled" />
       </v-col>
     </v-row> <!-- /content -->
   </div> <!-- /settings content -->
@@ -1591,6 +1591,9 @@ export default {
     user: function () {
       return this.$store.state.user;
     },
+    cronDisabled: function () {
+      return !!this.user?.disableCron;
+    },
     // Vuetify v-alert accepts: success | info | warning | error.
     // Map Bootstrap-flavored"danger" → Vuetify"error".
     vuetifyMsgType: function () {
@@ -1644,9 +1647,9 @@ export default {
         this.visibleTab = tab;
       }
 
-      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && this.multiviewer) ||
+      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && (this.multiviewer || this.cronDisabled)) ||
         (tab === 'totp' && this.multiviewer && !this.hasUsersES)) {
-        // multiviewer user can't change password or configure periodic queries
+        // multiviewer user can't change password or configure periodic queries, nor can a disableCron user
         this.openView('general');
       }
     }

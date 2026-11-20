@@ -1446,6 +1446,7 @@
     "hideFilesPage": "Arkime 파일 페이지 숨기기",
     "hidePcap": "Arkime PCAP 숨기기",
     "disablePcapDownload": "Arkime PCAP 다운로드 비활성화",
+    "disableCron": "Arkime 주기적 쿼리 비활성화",
     "superAdminNoInherit": "superAdmin은 역할에서 아무것도 상속받지 않습니다. 상속으로 남겨 둔 항목은 기본값을 사용합니다: 사냥(Hunting) 허용, 이메일 검색 및 데이터 제거 비활성화, 숨김 없음.",
     "forcedExpression": "강제 식",
     "forcedExpressionTip": "모든 쿼리에 자동으로 추가되는 Arkime 검색 식입니다. 접근 가능한 데이터(예: 특정 노드나 IP)를 제한하는 데 유용합니다.",
