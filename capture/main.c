@@ -52,6 +52,7 @@ LOCAL  gboolean showVersion    = FALSE;
 LOCAL  gboolean useScheme      = TRUE;
 
 #define FREE_LATER_AND 0x7FFF
+LOCAL gboolean tests; // --tests
 LOCAL int freeLaterFront;
 LOCAL int freeLaterBack;
 typedef struct {
@@ -137,7 +138,7 @@ LOCAL  GOptionEntry entries[] = {
     { "dryrun",      0,                    0, G_OPTION_ARG_NONE,           &config.dryRun,        "dry run, nothing written to databases or filesystem", NULL },
     { "flush",       0,                    0, G_OPTION_ARG_NONE,           &config.flushBetween,  "In offline mode flush streams between files", NULL },
     { "nospi",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noSPI,         "no SPI data written to ES", NULL },
-    { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.tests,         "Output test suite information", NULL },
+    { "tests",       0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &tests,                "Output test suite information", NULL },
     { "nostats",     0, G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE,           &config.noStats,       "Don't send node stats", NULL },
     { "insecure",    0,                    0, G_OPTION_ARG_NONE,           &config.insecure,      "Disable certificate verification for https calls", NULL },
     { "nolockpcap",  0,                    0, G_OPTION_ARG_NONE,           &config.noLockPcap,    "Don't lock offline pcap files (ie., allow deletion)", NULL },
@@ -401,8 +402,12 @@ LOCAL void parse_args(int argc, char **argv)
         LOG("hostName = %s", config.hostName);
     }
 
-    if (config.tests) {
+    if (tests) {
+        // The same as --dryrun -o dbUrl=tests://, the tests db prints every session
         config.dryRun = 1;
+        if (!config.override)
+            config.override = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
+        g_hash_table_insert(config.override, g_strdup("dbUrl"), g_strdup("tests://"));
         // Same session to packet thread assignment every run so output is reproducible
         memset(hashKey, 0, sizeof(hashKey));
     }
@@ -1044,8 +1049,8 @@ void arkime_quit()
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     quitStart = now.tv_sec;
-    // --tests runs capture over and over, don't sit idle at each exit
-    g_timeout_add(config.tests ? 10 : 100, arkime_quit_gfunc, 0);
+    // Offline runs are often run over and over, don't sit idle at each exit
+    g_timeout_add(config.pcapReadOffline ? 10 : 100, arkime_quit_gfunc, 0);
 }
 /******************************************************************************/
 /*

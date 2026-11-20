@@ -2239,9 +2239,9 @@ void arkime_config_init()
         CONFIGEXIT("You must set a non empty pcapDir= in the config file (%s) to save files to. You need to fix this before Arkime can continue.", config.configFile);
     }
 
-    // A long running dry run still picks up changed files
+    // A long running dry run still picks up changed files, and sooner since nothing is waiting on a db
     if (!config.dryRun || config.commandWait || config.pcapMonitor) {
-        g_timeout_add_seconds(config.tests ? 1 : 10, arkime_config_reload_files, 0);
+        g_timeout_add_seconds(config.dryRun ? 1 : 10, arkime_config_reload_files, 0);
     }
 
     arkime_command_register("set", arkime_config_cmd_set, "Set/Get a config value - set [<name> [<value>]]");
