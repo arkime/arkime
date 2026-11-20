@@ -1,4 +1,4 @@
-use Test::More tests => 82;
+use Test::More tests => 88;
 use Cwd;
 use ArkimeTest;
 use JSON;
@@ -214,8 +214,31 @@ $json = viewerPostToken("/api/cron?arkimeRegressionUser=sac-nocron", '{"name":"n
 ok(!$json->{success}, "disableCron user cannot create a query");
 $json = viewerPostToken("/api/cron/$key4?arkimeRegressionUser=sac-nocron", '{"name":"nocron","query":"protocols == tls","action":"tag","tags":"tls"}', $noCronToken);
 ok(!$json->{success}, "disableCron user cannot update their query");
+# addUser.js --disableCron and --no-disableCron
+addUser("-n testuser sac-nocronadd sac-nocronadd sac-nocronadd --disableCron --roles arkimeUser");
+$json = viewerGet("/api/crons?arkimeRegressionUser=sac-nocronadd");
+ok(ref $json eq "HASH" && !$json->{success}, "addUser --disableCron blocks listing queries");
+esGet("/_refresh");
+$json = viewerPost("/api/users", '{"filter":"sac-nocronadd"}');
+ok($json->{data}->[0]->{disableCron}, "addUser --disableCron sets disableCron");
+addUser("-n testuser sac-nocronadd sac-nocronadd sac-nocronadd --no-disableCron --roles arkimeUser");
+esGet("/_refresh");
+$json = viewerPost("/api/users", '{"filter":"sac-nocronadd"}');
+ok(defined $json->{data}->[0]->{disableCron} && !$json->{data}->[0]->{disableCron}, "addUser --no-disableCron clears disableCron");
+$json = viewerDeleteToken("/api/user/sac-nocronadd", $token);
+
 $json = viewerDeleteToken("/api/cron/$key4?arkimeRegressionUser=sac-nocron", $noCronToken);
 ok(!$json->{success}, "disableCron user cannot delete their query");
+
+viewerGet("/regressionTests/processCronQueries");
+viewerGet("/regressionTests/processCronQueries");
+countTest(0, "date=-1&expression=" . uri_escape("tags==nocron$suffix"));
+
+# disableCron inherited from a role also stops the owner's queries
+$json = viewerPostToken("/api/user", '{"userId": "role:sac-nocron", "userName": "No Cron Role", "enabled":true, "disableCron":true}', $token);
+ok($json->{success}, "role:sac-nocron created");
+$json = viewerPostToken("/api/user/sac-nocron", '{"userName":"No Cron", "enabled":true, "webEnabled":true, "roles":["role:sac-nocron", "arkimeUser"]}', $token);
+ok($json->{success}, "disableCron on sac-nocron now only from its role");
 
 viewerGet("/regressionTests/processCronQueries");
 viewerGet("/regressionTests/processCronQueries");
@@ -229,9 +252,7 @@ viewerGet("/regressionTests/processCronQueries");
 viewerGet("/regressionTests/processCronQueries");
 countTest(4, "date=-1&expression=" . uri_escape("tags==nocron$suffix"));
 
-# disableCron is inherited from a role
-$json = viewerPostToken("/api/user", '{"userId": "role:sac-nocron", "userName": "No Cron Role", "enabled":true, "disableCron":true}', $token);
-ok($json->{success}, "role:sac-nocron created");
+# disableCron inherited from a role blocks the apis
 $json = viewerPostToken("/api/user", '{"userId": "sac-nocronrole", "userName": "No Cron Role User", "enabled":true, "webEnabled":true, "password":"password", "roles":["role:sac-nocron", "arkimeUser"]}', $token);
 ok($json->{success}, "sac-nocronrole created");
 my $noCronRoleToken = getTokenCookie("sac-nocronrole");

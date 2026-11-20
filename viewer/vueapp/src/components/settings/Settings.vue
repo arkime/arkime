@@ -1647,19 +1647,15 @@ export default {
         this.visibleTab = tab;
       }
 
-      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && this.multiviewer) ||
+      if ((tab === 'password' && this.multiviewer) || (tab === 'cron' && (this.multiviewer || this.cronDisabled)) ||
         (tab === 'totp' && this.multiviewer && !this.hasUsersES)) {
-        // multiviewer user can't change password or configure periodic queries
+        // multiviewer user can't change password or configure periodic queries, nor can a disableCron user
         this.openView('general');
       }
     }
 
     UserService.getCurrent().then((response) => {
       this.displayName = response.userId;
-      // the user is only known now, so a #cron link can land here first
-      if (this.visibleTab === 'cron' && response.disableCron) {
-        this.openView('general');
-      }
       // only admins can edit other users' settings
       if (response.roles.includes('arkimeAdmin') && this.$route.query.userId) {
         if (response.userId === this.$route.query.userId) {
