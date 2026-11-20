@@ -48,11 +48,12 @@ const usersMissing = {
 const searchColumns = [
   'userId', 'userName', 'expression', 'enabled',
   'webEnabled', 'headerAuthEnabled', 'emailSearch', 'removeEnabled', 'packetSearch',
-  'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'welcomeMsgNum',
+  'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'disableCron', 'welcomeMsgNum',
   'lastUsed', 'timeLimit', 'roles', 'roleAssigners'
 ];
 
-const allSettingColumns = [ 'emailSearch', 'removeEnabled', 'packetSearch', 'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload'];
+// disableCron is only enforced by 7.x, carried here so a mixed 6.x/7.x cluster doesn't drop it
+const allSettingColumns = [ 'emailSearch', 'removeEnabled', 'packetSearch', 'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'disableCron'];
 
 let readOnly = false;
 let getCurrentUserCB;
@@ -886,6 +887,7 @@ class User {
         hideFiles: req.body.hideFiles,
         hidePcap: req.body.hidePcap,
         disablePcapDownload: req.body.disablePcapDownload,
+        disableCron: req.body.disableCron,
 
         roles: req.body.roles,
         welcomeMsgNum: 0,
@@ -1052,6 +1054,7 @@ class User {
       user.hideFiles = req.body.hideFiles;
       user.hidePcap = req.body.hidePcap;
       user.disablePcapDownload = req.body.disablePcapDownload;
+      user.disableCron = req.body.disableCron;
 
       if (req.body.timeLimit !== undefined && req.body.timeLimit !== null && req.body.timeLimit !== '') {
         const tl = parseInt(req.body.timeLimit, 10);

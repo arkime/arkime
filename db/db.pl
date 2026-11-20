@@ -7967,6 +7967,9 @@ sub usersUpdate
     "disablePcapDownload": {
       "type": "boolean"
     },
+    "disableCron": {
+      "type": "boolean"
+    },
     "passStore": {
       "type": "keyword"
     },
@@ -8944,7 +8947,7 @@ if ($ARGV[1] =~ /^(users-?import|import)$/) {
     # The users mapping is dynamic:strict, so a typo'd field name would be
     # rejected by OpenSearch/Elasticsearch. Fail here with a useful message instead.
     my %settable = map { $_ => 1 } qw(enabled webEnabled headerAuthEnabled emailSearch removeEnabled
-                                      packetSearch hideStats hideFiles hidePcap disablePcapDownload
+                                      packetSearch hideStats hideFiles hidePcap disablePcapDownload disableCron
                                       expression timeLimit userName welcomeMsgNum);
     my %systemRoles = map { $_ => 1 } qw(superAdmin usersAdmin arkimeAdmin arkimeUser parliamentAdmin
                                          parliamentUser wiseAdmin wiseUser cont3xtAdmin cont3xtUser
