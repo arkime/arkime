@@ -41,6 +41,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Capture
   - #4476 Fix capture sometimes exiting before the last pcap file was finished, leaving it not truncated and without its final size and packet count in the files index
   - #4476 Remove pcap files that are still empty when a pcap write fails, usually from a full disk, so restart loops don't leave empty files behind
+## ESProxy
+  - #4487 Fix a capture node being able to write sessions for other nodes through esProxy
 ## Viewer
   - #4478 Fix the remote node proxy sending some crafted requests to a different host
 
