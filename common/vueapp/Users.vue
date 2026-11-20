@@ -180,7 +180,7 @@ SPDX-License-Identifier: Apache-2.0
             {{ item.lastUsed ? (tzDateStr(item.lastUsed, currentUser.settings.timezone || 'local', currentUser.settings.ms)) : $t('common.never') }}
           </div>
         </template>
-        <template #[`item.action`]="{ item, index }">
+        <template #[`item.action`]="{ item }">
           <div class="float-right">
             <v-btn
               v-if="parentApp === 'Arkime' && isUser(item)"
@@ -217,7 +217,7 @@ SPDX-License-Identifier: Apache-2.0
                 class="ms-1"
                 icon="mdi:mdi-check"
                 :title="$t('common.areYouSure')"
-                @click="deleteUser(item, index)" />
+                @click="deleteUser(item)" />
             </transition>
             <transition name="buttons">
               <v-btn
@@ -618,6 +618,7 @@ export default {
     }
   },
   created () {
+    this.sortFromUrl();
     this.loadUsers();
   },
   watch: {
@@ -631,7 +632,15 @@ export default {
     tzDateStr (date, tz, ms) {
       return timezoneDateString(date, tz, ms);
     },
-    sortChanged () {
+    sortChanged (sortBy) {
+      // keep the sort in the url, leaving it off for the default userId asc
+      const { key, order } = sortBy?.[0] ?? {};
+      const query = this.queryWithoutSort();
+      if (key && (key !== 'userId' || order === 'desc')) {
+        query.sortField = key;
+        if (order === 'desc') { query.desc = 'true'; }
+      }
+      this.$router.replace({ query });
       this.loadUsers();
     },
     negativeToggle (user, field, existing) {
@@ -727,9 +736,13 @@ export default {
     toggleConfirmDeleteUser (id) {
       this.confirmDelete[id] = !this.confirmDelete[id];
     },
-    deleteUser (user, index) {
+    deleteUser (user) {
       UserService.deleteUser(user).then((response) => {
-        this.users.splice(index, 1);
+        // remove by userId, the table's row index is from its own sorted view
+        this.users = this.users.filter(u => u.userId !== user.userId);
+        delete this.confirmDelete[user.userId];
+        this.recordsTotal--;
+        this.recordsFiltered--;
         this.showMessage({ variant: 'success', message: resolveMessage(response, this.$t) });
         if (user.roleAssigners?.includes(this.currentUser.userId)) {
           this.emitCurrentUserUpdate(); // update current user if one of their assignable roles is deleted
@@ -742,7 +755,7 @@ export default {
       this.$router.push({
         path: '/settings',
         query: {
-          ...this.$route.query,
+          ...this.queryWithoutSort(),
           userId
         }
       });
@@ -751,7 +764,7 @@ export default {
       this.$router.push({
         path: '/history',
         query: {
-          ...this.$route.query,
+          ...this.queryWithoutSort(),
           userId
         }
       });
@@ -802,7 +815,7 @@ export default {
       });
     },
     userCreated (message, user) {
-      this.reloadUsers();
+      this.loadUsers();
       this.$emit('update-roles');
       if (user.roleAssigners?.includes(this.currentUser.userId)) {
         this.emitCurrentUserUpdate(); // update current user if they were made an assigner
@@ -822,6 +835,18 @@ export default {
       });
     },
     /* helper functions ---------------------------------------------------- */
+    sortFromUrl () {
+      const { sortField, desc } = this.$route.query;
+      if (this.tableHeaders.some(h => h.key === sortField && h.sortable)) {
+        this.sortBy = [{ key: sortField, order: desc === 'true' ? 'desc' : 'asc' }];
+      }
+    },
+    queryWithoutSort () {
+      const query = { ...this.$route.query };
+      delete query.sortField;
+      delete query.desc;
+      return query;
+    },
     emitCurrentUserUpdate () {
       this.$emit('update-current-user');
     },
@@ -848,28 +873,6 @@ export default {
     },
     loadUsers () {
       const query = this.getUsersQuery();
-
-      UserService.searchUsers(query).then((response) => {
-        this.error = '';
-        this.loading = false;
-        this.recordsTotal = response.recordsTotal;
-        this.recordsFiltered = response.recordsFiltered;
-        this.users = JSON.parse(JSON.stringify(response.data));
-        // don't modify original list - used for comparing
-        this.dbUserList = JSON.parse(JSON.stringify(response.data));
-      }).catch((error) => {
-        this.loading = false;
-        this.error = resolveMessage(error, this.$t) || this.$t('users.unknownErr');
-      });
-    },
-    reloadUsers () {
-      const query = {
-        desc: this.sortBy[0]?.order === 'desc',
-        length: this.perPage,
-        filter: this.searchTerm,
-        sortField: this.sortBy[0]?.key,
-        start: (this.currentPage - 1) * this.perPage
-      };
 
       UserService.searchUsers(query).then((response) => {
         this.error = '';
