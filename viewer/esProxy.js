@@ -571,6 +571,12 @@ function isSessionsDocPath (path, action) {
 // index becomes create, and an update may only change these display keys.
 const fieldsUpdateKeys = ['category', 'friendlyName', 'help', 'aliases'];
 
+// Capture's session action lines only have _index and _id, others like version,
+// version_type, pipeline or routing could pin a session or change it in es
+function isSessionMeta (meta) {
+  return Object.keys(meta).every(key => key === '_index' || key === '_id');
+}
+
 // Viewers look fields up by these too, a new field can't claim an existing field's
 // db name or it changes how that db field is typed, displayed and compiled with db:.
 // db.pl defines the fields that legitimately share one and writes to es directly.
@@ -661,9 +667,11 @@ async function validateBulk (req) {
           continue;
         }
         if (!isSessionsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        if (!isSessionMeta(json.index)) { throw new Error('Bad session metadata'); }
       } else if (typeof json.create === 'object') {
         const _index = json.create._index;
         if (!isSessionsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
+        if (!isSessionMeta(json.create)) { throw new Error('Bad session metadata'); }
       } else if (typeof json.update === 'object') {
         const _index = json.update._index;
         if (!isFieldsIndex(_index)) { throw new Error(`Bad index ${_index}`); }
@@ -698,6 +706,12 @@ async function validateBulk (req) {
       } else {
         throw new Error('Missing create, update, delete or index operation');
       }
+      // Only a sessions index or create gets here. Like its files, stats and dstats docs a
+      // sensor may only write its own node's sessions, or it could forge sessions for
+      // another node and viewers would ask that node for their packets.
+      if (lines[i + 1] === undefined) { throw new Error('Missing session body'); }
+      errLine = i + 1;
+      if (JSON.parse(lines[i + 1])?.node !== req.sensor.node) { throw new Error('Session node is not the sensor'); }
     } catch (err) {
       // Only the failing command's operation, _index and _id, the POST failed debug log has the full body
       let command = 'unparsable';
