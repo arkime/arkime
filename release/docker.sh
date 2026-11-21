@@ -166,6 +166,7 @@ ILM_PARAM=""
 DB_COMMANDS=()
 CH_COMMANDS=()
 WAIT_DB_URLS=()
+WAIT_CH_URLS=()
 
 if [ -n "$ARKIME__insecure" ]; then
     echo "ERROR: ARKIME__insecure environment variable is no longer supported." >&2
@@ -248,17 +249,7 @@ while [ $# -gt 0 ]; do
             ;;
         --wait-for-ch)
             shift
-            WAIT_CH_URL=$1
-            echo "Waiting for ClickHouse to be ready..."
-            CURL_OPTS="-sf"
-            if [ $INSECURE -eq 1 ]; then
-                CURL_OPTS="$CURL_OPTS -k"
-            fi
-            until curl $CURL_OPTS "$WAIT_CH_URL/ping" > /dev/null; do
-                echo "Waiting for ClickHouse..."
-                sleep 2
-            done
-            echo "ClickHouse is ready"
+            WAIT_CH_URLS+=("$1")
             shift
             ;;
         --wait-for-db)
@@ -300,8 +291,8 @@ fi
 
 # Wait once the whole command line has been read, so --insecure and
 # --insecure-all work wherever they appear rather than only before
-# --wait-for-db. Still ahead of the db.pl commands below, which need the
-# database up.
+# --wait-for-db or --wait-for-ch. Still ahead of the db.pl and ch.pl
+# commands below, which need their databases up.
 for wait_url in "${WAIT_DB_URLS[@]}"; do
     echo "Waiting for Elasticsearch/OpenSearch to be ready..."
     CURL_OPTS="-sf"
@@ -316,6 +307,19 @@ for wait_url in "${WAIT_DB_URLS[@]}"; do
         sleep 2
     done
     echo "Elasticsearch/OpenSearch is ready"
+done
+
+for wait_url in "${WAIT_CH_URLS[@]}"; do
+    echo "Waiting for ClickHouse to be ready..."
+    CURL_OPTS="-sf"
+    if [ $INSECURE -eq 1 ]; then
+        CURL_OPTS="$CURL_OPTS -k"
+    fi
+    until curl $CURL_OPTS "$wait_url/ping" > /dev/null; do
+        echo "Waiting for ClickHouse..."
+        sleep 2
+    done
+    echo "ClickHouse is ready"
 done
 
 # Handle legacy --init/--upgrade with --ilm/--ism flags
