@@ -117,10 +117,8 @@ show_help() {
     echo "  --ch <args>            Run ch.pl with args, can be specified multiple times"
     echo "  --db <args>            Run db.pl with args, can be specified multiple times"
     echo "  --forever              Run the tools forever, default is just once"
-    echo "  --insecure             Disable TLS certificate verification for ES/OS and ClickHouse"
-    echo "                         connections (applies to --wait-for-db, --wait-for-ch, --db,"
-    echo "                         --ch, and --add-admin). INSECURE, use only with self-signed"
-    echo "                         certs in trusted networks."
+    echo "  --insecure             Skip TLS cert verification for the setup steps, INSECURE"
+    echo "  --insecure-all         Skip TLS cert verification for the setup steps and the command, INSECURE"
     echo "  --update-geo           Run /opt/arkime/bin/arkime_update_geo.sh"
     echo "  --wait-for-ch <churl>  Wait for ClickHouse to be ready before running command"
     echo "  --wait-for-db <dburl>  Wait for Elasticsearch/OpenSearch to be ready before running command"
@@ -159,6 +157,7 @@ shift
 DOINIT=0
 DOUPGRADE=0
 INSECURE=0
+INSECURE_ALL=0
 ADD_ADMIN=0
 ISM_OPTION=""
 ISM_PARAM=""
@@ -166,6 +165,7 @@ ILM_OPTION=""
 ILM_PARAM=""
 DB_COMMANDS=()
 CH_COMMANDS=()
+WAIT_DB_URLS=()
 
 if [ -n "$ARKIME__insecure" ]; then
     echo "ERROR: ARKIME__insecure environment variable is no longer supported." >&2
@@ -200,6 +200,11 @@ while [ $# -gt 0 ]; do
             ;;
         --insecure)
             INSECURE=1
+            shift
+            ;;
+        --insecure-all)
+            INSECURE=1
+            INSECURE_ALL=1
             shift
             ;;
         --ilm)
@@ -258,20 +263,7 @@ while [ $# -gt 0 ]; do
             ;;
         --wait-for-db)
             shift
-            WAIT_DB_URL=$1
-            echo "Waiting for Elasticsearch/OpenSearch to be ready..."
-            CURL_OPTS="-sf"
-            if [ -n "$ARKIME__elasticsearchBasicAuth" ]; then
-                CURL_OPTS="$CURL_OPTS --user $ARKIME__elasticsearchBasicAuth"
-            fi
-            if [ $INSECURE -eq 1 ]; then
-                CURL_OPTS="$CURL_OPTS -k"
-            fi
-            until curl $CURL_OPTS "$WAIT_DB_URL/_cluster/health?wait_for_status=yellow&timeout=30s"; do
-                echo "Waiting for Elasticsearch/OpenSearch..."
-                sleep 2
-            done
-            echo "Elasticsearch/OpenSearch is ready"
+            WAIT_DB_URLS+=("$1")
             shift
             ;;
         --)
@@ -287,9 +279,44 @@ done
 # Compute the --insecure pass-through for db.pl / addUser.js
 INSECURE_OPT=""
 if [ $INSECURE -eq 1 ]; then
-    echo "WARNING: --insecure specified; TLS certificate verification is DISABLED for ES/OS connections." >&2
+    echo "WARNING: TLS certificate verification is DISABLED for the ES/OS setup steps." >&2
     INSECURE_OPT="--insecure"
 fi
+
+# The setup steps are short lived, but the command runs for the life of the
+# container and opens its own ES/OS connections, so --insecure-all gives it the
+# option too, otherwise it rejects the same certificate moments later. Every
+# command takes it: capture as a command line flag, the node tools in their
+# argv scan, db.pl as an option, and all of them ignore a second one if the
+# caller already passed it after the --.
+# Plain --insecure deliberately stops at the setup steps: for an https cluster
+# on localhost or 127.0.0.1 every Arkime tool already skips the check itself,
+# so curl is the only thing that needs help and there is no reason to loosen
+# the long running process as well.
+if [ $INSECURE_ALL -eq 1 ]; then
+    echo "WARNING: --insecure-all specified; the command will skip TLS certificate verification too." >&2
+    set -- --insecure "$@"
+fi
+
+# Wait once the whole command line has been read, so --insecure and
+# --insecure-all work wherever they appear rather than only before
+# --wait-for-db. Still ahead of the db.pl commands below, which need the
+# database up.
+for wait_url in "${WAIT_DB_URLS[@]}"; do
+    echo "Waiting for Elasticsearch/OpenSearch to be ready..."
+    CURL_OPTS="-sf"
+    if [ -n "$ARKIME__elasticsearchBasicAuth" ]; then
+        CURL_OPTS="$CURL_OPTS --user $ARKIME__elasticsearchBasicAuth"
+    fi
+    if [ $INSECURE -eq 1 ]; then
+        CURL_OPTS="$CURL_OPTS -k"
+    fi
+    until curl $CURL_OPTS "$wait_url/_cluster/health?wait_for_status=yellow&timeout=30s"; do
+        echo "Waiting for Elasticsearch/OpenSearch..."
+        sleep 2
+    done
+    echo "Elasticsearch/OpenSearch is ready"
+done
 
 # Handle legacy --init/--upgrade with --ilm/--ism flags
 if [ $DOINIT -eq 1 ]; then
