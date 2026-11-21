@@ -32,10 +32,12 @@ const internals = {
   pluginEmitter: new EventEmitter(),
   writers: new Map(),
   uploadLimits: {},
-  // Minimum supported tshark version (4.6.4), encoded as major*10000 + minor*100 + patch.
+  // Minimum supported tshark version, encoded as major*10000 + minor*100 + patch.
+  // What we actually want is 4.6.4, but Debian 13 is on the 4.4 line, so the bar
+  // is the 4.4 Debian ships (4.4.19 as of 2026-11), one patch back so an image
+  // built against the previous point release still works.
   //TSHARKMINVERSION: 40604,
-  // For now support debian 13
-  TSHARKMINVERSION: 40415,
+  TSHARKMINVERSION: 40418,
 
   // http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
@@ -194,10 +196,11 @@ internals.initTshark = () => {
     };
   };
 
+  const tsharkMinStr = `${Math.floor(internals.TSHARKMINVERSION / 10000)}.${Math.floor(internals.TSHARKMINVERSION / 100) % 100}.${internals.TSHARKMINVERSION % 100}`;
   const tsharkCandidates = Config.getArray('tsharkPath', '/opt/arkime/bin/tshark;/usr/bin/tshark;/usr/local/bin/tshark;/opt/homebrew/bin/tshark;/Applications/Wireshark.app/Contents/MacOS/tshark');
   const probeNext = (i) => {
     if (i >= tsharkCandidates.length) {
-      console.log('tshark: no tshark binary >= 4.6.4 found in', tsharkCandidates.join(', '));
+      console.log(`tshark: no tshark binary >= ${tsharkMinStr} found in`, tsharkCandidates.join(', '));
       return;
     }
     const cand = tsharkCandidates[i].trim();
@@ -227,7 +230,7 @@ internals.initTshark = () => {
       }
       const versionNum = parseInt(m[2]) * 10000 + parseInt(m[3]) * 100 + parseInt(m[4] || '0');
       if (versionNum < internals.TSHARKMINVERSION) {
-        console.log('tshark:', cand, 'version', m[1], 'is older than required 4.6.4, skipping');
+        console.log('tshark:', cand, 'version', m[1], `is older than required ${tsharkMinStr}, skipping`);
         return advance();
       }
       advanced = true;

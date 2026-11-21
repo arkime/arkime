@@ -53,7 +53,7 @@ sub showHelp
     print "\n";
     print "Options:\n";
     print "  -v, --verbose              - Verbose, multiple increases level\n";
-    print "  --insecure                 - Disable certificate verification for https calls\n";
+    print "  --insecure                 - Disable certificate verification, not needed for loopback\n";
     print "  --cabundle FILE            - CA bundle to use for https certificate verification\n";
     print "  --partition STR            - Sessions partition granularity: monthly (default), daily, none.\n";
     print "                               Every query pays a per-part cost, so fewer partitions = faster\n";
@@ -149,6 +149,24 @@ sub validateOptions
 }
 
 ################################################################################
+# Like ArkimeConfig.isLoopbackHost and arkime_is_loopback_host in capture:
+# localhost, 127.x.x.x or ::1, with or without the [] an IPv6 url carries.
+sub isLoopbackHost
+{
+    my ($host) = @_;
+
+    return 0 if (!defined $host || $host eq "");
+
+    $host =~ s/^\[(.*)\]$/$1/;
+
+    return 1 if (lc($host) eq "localhost");
+    return 1 if ($host =~ /^127\.\d+\.\d+\.\d+$/);
+    return 1 if ($host eq "::1");
+
+    return 0;
+}
+
+################################################################################
 sub parseEndpoint
 {
     my ($url) = @_;
@@ -179,6 +197,18 @@ sub parseEndpoint
     }
 
     $endpoint = "$scheme://$authority";
+
+    # Same rule as db.pl and the rest of Arkime: a self-signed cert on loopback
+    # is the normal single host setup, so don't make people pass --insecure for it.
+    if ($SECURE && $scheme eq "https") {
+        my $host = $authority;
+        if ($host =~ /^\[([^\]]*)\]/) {
+            $host = $1;
+        } else {
+            $host =~ s/:\d+$//;
+        }
+        $SECURE = 0 if (isLoopbackHost($host));
+    }
 }
 
 ################################################################################
