@@ -199,7 +199,7 @@ sub showHelp($)
     print "  --prefix <prefix>            - Prefix for OpenSearch/Elasticsearch index names\n";
     print "  --clientkey <keypath>        - Path to key for client authentication.  Must not have a passphrase.\n";
     print "  --clientcert <certpath>      - Path to cert for client authentication\n";
-    print "  --insecure                   - Disable certificate verification for https calls\n";
+    print "  --insecure                   - Disable certificate verification, not needed for loopback\n";
     print "  -n                           - Make no db changes\n";
     print "  --timeout <timeout>          - Timeout in seconds for ES, default 60\n";
     print "  --esuser <user>[:<password>] - ES User and Password\n";
@@ -8896,6 +8896,24 @@ if ($ESAPIKEY ne "") {
     $main::userAgent->default_header('Authorization' => "Basic $USERPASS");
 }
 
+################################################################################
+# Like ArkimeConfig.isLoopbackHost and arkime_is_loopback_host in capture:
+# localhost, 127.x.x.x or ::1, with or without the [] an IPv6 url carries.
+sub isLoopbackHost
+{
+    my ($host) = @_;
+
+    return 0 if (!defined $host || $host eq "");
+
+    $host =~ s/^\[(.*)\]$/$1/;
+
+    return 1 if (lc($host) eq "localhost");
+    return 1 if ($host =~ /^127\.\d+\.\d+\.\d+$/);
+    return 1 if ($host eq "::1");
+
+    return 0;
+}
+
 sub verify {
   my ($ok) = @_;
 
@@ -8919,8 +8937,7 @@ if ($ARGV[0] =~ /^urlinfile:\/\//) {
 
 if ($SECURE && $main::elasticsearch =~ /^https:\/\//) {
     my $uri = URI->new($main::elasticsearch);
-    my $hostname = $uri->host;
-    if ($hostname eq "localhost" || $hostname eq "127.0.0.1") {
+    if (isLoopbackHost($uri->host)) {
         $SECURE=0;
     }
 }

@@ -32,10 +32,23 @@ const internals = {
   pluginEmitter: new EventEmitter(),
   writers: new Map(),
   uploadLimits: {},
-  // Minimum supported tshark version (4.6.4), encoded as major*10000 + minor*100 + patch.
-  //TSHARKMINVERSION: 40604,
-  // For now support debian 13
-  TSHARKMINVERSION: 40415,
+  // Minimum tshark version per release series, ascending, each encoded as
+  // major*10000 + minor*100 + patch. Per series because the lines are released
+  // in parallel: a 4.6.0 is numerically above the 4.4 floor but came out before
+  // it, so a single floor would wave through a tshark older than the one it is
+  // meant to require.
+  //   4.4.19 - what Debian 13 ships, the oldest platform we want the tab on
+  //   4.6.4  - the version this feature originally asked for, and what Ubuntu
+  //            26.04 ships
+  // A newer series needs no entry, it is measured against the last floor below
+  // it, so a future 4.8 is accepted as it is.
+  //
+  // tshark dissects hostile packet data for the Shark tab, so these track the
+  // security releases: 4.4.19 alone closed 16 CVEs, one of them possible code
+  // execution rather than a crash. Being version numbers they cannot see a
+  // distribution's backported fixes, so this is a guard against running
+  // something ancient, not proof that a tshark is patched.
+  TSHARKMINVERSIONS: [40419, 40604],
 
   // http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
@@ -144,6 +157,20 @@ ArkimeConfig.loaded(() => {
 });
 
 // ----------------------------------------------------------------------------
+// "4.4.19" for 40419, so a message never hardcodes a number that can drift
+internals.tsharkVersionStr = (v) => `${Math.floor(v / 10000)}.${Math.floor(v / 100) % 100}.${v % 100}`;
+
+// The floor a version is judged against: the highest listed one whose series
+// isn't newer than the version's own. A 4.6.0 is measured against the 4.6
+// floor rather than squeaking past the 4.4 one.
+internals.tsharkMinFor = (version) => {
+  let min = internals.TSHARKMINVERSIONS[0];
+  for (const floor of internals.TSHARKMINVERSIONS) {
+    if (Math.floor(floor / 100) <= Math.floor(version / 100)) { min = floor; }
+  }
+  return min;
+};
+
 internals.initTshark = () => {
   // Scratch dir for tshark. mkdtemp so another user can't pre-create it: the
   // fifos we hand tshark live here, and the empty/ subdir is where every
@@ -195,9 +222,10 @@ internals.initTshark = () => {
   };
 
   const tsharkCandidates = Config.getArray('tsharkPath', '/opt/arkime/bin/tshark;/usr/bin/tshark;/usr/local/bin/tshark;/opt/homebrew/bin/tshark;/Applications/Wireshark.app/Contents/MacOS/tshark');
+  const tsharkMinStr = internals.tsharkVersionStr(internals.TSHARKMINVERSIONS[0]);
   const probeNext = (i) => {
     if (i >= tsharkCandidates.length) {
-      console.log('tshark: no tshark binary >= 4.6.4 found in', tsharkCandidates.join(', '));
+      console.log(`tshark: no tshark binary >= ${tsharkMinStr} found in`, tsharkCandidates.join(', '));
       return;
     }
     const cand = tsharkCandidates[i].trim();
@@ -226,8 +254,9 @@ internals.initTshark = () => {
         return advance();
       }
       const versionNum = parseInt(m[2]) * 10000 + parseInt(m[3]) * 100 + parseInt(m[4] || '0');
-      if (versionNum < internals.TSHARKMINVERSION) {
-        console.log('tshark:', cand, 'version', m[1], 'is older than required 4.6.4, skipping');
+      const versionMin = internals.tsharkMinFor(versionNum);
+      if (versionNum < versionMin) {
+        console.log('tshark:', cand, 'version', m[1], `is older than required ${internals.tsharkVersionStr(versionMin)}, skipping`);
         return advance();
       }
       advanced = true;

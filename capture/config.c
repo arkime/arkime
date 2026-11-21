@@ -281,6 +281,44 @@ LOCAL int config_ethertype_lookup(const char *str)
 }
 
 /******************************************************************************/
+/* Find a -o override for key. A bare "-o key=value" applies wherever key is
+ * read, the same as putting it in every section. A "-o section.key=value" only
+ * applies to the section it names. Sections are walked in the node, nodeClass,
+ * default order the config file itself uses, taking the override or the file
+ * entry, whichever that section has, so the most specific setting wins however
+ * it was set.
+ */
+LOCAL const char *arkime_config_override(GKeyFile *keyfile, const char *key)
+{
+    const char *result;
+
+    if (!config.override)
+        return NULL;
+
+    if ((result = g_hash_table_lookup(config.override, key)))
+        return result;
+
+    const char *sections[] = {config.nodeName, config.nodeClass, "default"};
+    for (int s = 0; s < ARRAY_LEN(sections); s++) {
+        if (!sections[s])
+            continue;
+
+        char *full = g_strdup_printf("%s.%s", sections[s], key);
+        result = g_hash_table_lookup(config.override, full);
+        g_free(full);
+        if (result)
+            return result;
+
+        // The config file sets key in this section, which is more specific
+        // than any section still to check, so stop before a broader override
+        // such as default.key can beat it. Same order the node tools use.
+        if (g_key_file_has_key(keyfile, sections[s], key, NULL))
+            return NULL;
+    }
+
+    return NULL;
+}
+/******************************************************************************/
 gchar **arkime_config_section_raw_str_list(GKeyFile *keyfile, const char *section, const char *key, const char *d)
 {
     gchar **result;
@@ -352,6 +390,7 @@ gchar **arkime_config_section_str_list(GKeyFile *keyfile, const char *section, c
 gchar *arkime_config_section_str(GKeyFile *keyfile, const char *section, const char *key, const char *d)
 {
     char *result;
+
     if (!keyfile)
         keyfile = arkimeKeyFile;
 
@@ -398,11 +437,13 @@ gchar *arkime_config_str(GKeyFile *keyfile, const char *key, const char *d)
     if (!keyfile)
         keyfile = arkimeKeyFile;
 
-    if (config.override && keyfile == arkimeKeyFile && (result = g_hash_table_lookup(config.override, key))) {
-        if (result[0] == 0)
+    const char *ovalue;
+
+    if (keyfile == arkimeKeyFile && (ovalue = arkime_config_override(keyfile, key))) {
+        if (ovalue[0] == 0)
             result = NULL;
         else
-            result = g_strdup(result);
+            result = g_strdup(ovalue);
     } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         result = g_key_file_get_string(keyfile, config.nodeName, key, NULL);
     } else if (config.nodeClass && g_key_file_has_key(keyfile, config.nodeClass, key, NULL)) {
@@ -434,7 +475,7 @@ gchar **arkime_config_raw_str_list(GKeyFile *keyfile, const char *key, const cha
     if (!keyfile)
         keyfile = arkimeKeyFile;
 
-    if (config.override && keyfile == arkimeKeyFile && (hvalue = g_hash_table_lookup(config.override, key))) {
+    if (keyfile == arkimeKeyFile && (hvalue = arkime_config_override(keyfile, key))) {
         result = g_strsplit(hvalue, ";", 0);
     } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         result = g_key_file_get_string_list(keyfile, config.nodeName, key, NULL, NULL);
@@ -509,7 +550,7 @@ uint32_t arkime_config_int(GKeyFile *keyfile, const char *key, uint32_t d, uint3
     if (!keyfile)
         keyfile = arkimeKeyFile;
 
-    if (config.override && keyfile == arkimeKeyFile && (result = g_hash_table_lookup(config.override, key))) {
+    if (keyfile == arkimeKeyFile && (result = arkime_config_override(keyfile, key))) {
         value = atol(result);
     } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         value = g_key_file_get_integer(keyfile, config.nodeName, key, NULL);
@@ -544,7 +585,7 @@ double arkime_config_double(GKeyFile *keyfile, const char *key, double d, double
     if (!keyfile)
         keyfile = arkimeKeyFile;
 
-    if (config.override && keyfile == arkimeKeyFile && (result = g_hash_table_lookup(config.override, key))) {
+    if (keyfile == arkimeKeyFile && (result = arkime_config_override(keyfile, key))) {
         value = atof(result);
     } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         value = g_key_file_get_double(keyfile, config.nodeName, key, NULL);
@@ -575,7 +616,7 @@ char arkime_config_boolean(GKeyFile *keyfile, const char *key, char d)
     if (!keyfile)
         keyfile = arkimeKeyFile;
 
-    if (config.override && keyfile == arkimeKeyFile && (result = g_hash_table_lookup(config.override, key))) {
+    if (keyfile == arkimeKeyFile && (result = arkime_config_override(keyfile, key))) {
         value = strcmp(result, "true") == 0 || strcmp(result, "1") == 0;
     } else if (g_key_file_has_key(keyfile, config.nodeName, key, NULL)) {
         value = g_key_file_get_boolean(keyfile, config.nodeName, key, NULL);
@@ -1161,6 +1202,29 @@ LOCAL void arkime_config_load()
             g_key_file_set_string(keyfile, "default", key->str, equal + 1);
         }
         g_string_free(key, TRUE);
+    }
+
+    // Put -o section.key=value into the keyfile the same way the environment
+    // variables above are, so it reaches everything a config file entry does:
+    // the sections read key by key, the ones enumerated with
+    // arkime_config_section_keys, and the ones read straight out of the
+    // GKeyFile like [headers-*] and [override-ips]. After the environment so
+    // the command line wins. A bare -o key=value stays out of the keyfile, it
+    // has to beat every section rather than live in one.
+    if (config.override) {
+        GHashTableIter iter;
+        gpointer       okey, ovalue;
+
+        g_hash_table_iter_init(&iter, config.override);
+        while (g_hash_table_iter_next(&iter, &okey, &ovalue)) {
+            const char *dot = strchr((char *)okey, '.');
+            if (!dot || dot == (char *)okey || !dot[1])
+                continue;
+
+            char *osection = g_strndup((char *)okey, dot - (char *)okey);
+            g_key_file_set_string(keyfile, osection, dot + 1, (char *)ovalue);
+            g_free(osection);
+        }
     }
 
     if (config.dumpConfig) {
