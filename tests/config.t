@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 56;
+use Test::More tests => 58;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -132,6 +132,31 @@ var=2
 [override-ips]
 10.1.0.0/16=tag:ny-office;country:USA;asn:AS0000 This is neat
 ");
+
+#### capture -o section.key
+# Lands in the named section, creating it if needed
+$out = `../capture/capture -c testconfig.ini -o node.var=3 -o custom-fields.new=x -n test --regressionTests --dumpConfig 2>&1 1>/dev/null`;
+$out =~ s/^OVERRIDE:.*^CONFIG:/CONFIG:/ms;
+eq_or_diff($out, "CONFIG:
+[custom-fields]
+new=x
+
+[default]
+var=1
+
+[node]
+var=3
+");
+
+# node beats nodeClass beats default, whether set with -o or in the file
+$out = `../capture/capture --tests --debug -c config.test.ini -n test -r pcap/empty.pcap -o test.nodeClass=cls -o cls.maxFileSizeG=9 -o default.maxFileSizeG=11 -o test.maxFileTimeM=7 -o default.maxFileTimeM=9 -o default.gapPacketPos=true -o 'test.dontSaveBPFs=port 54321' 2>/dev/null`;
+my %got = $out =~ /arkime_config_\w+\(\): (maxFileSizeG|maxFileTimeM|gapPacketPos|dontSaveBPFs)=(.*)$/mg;
+eq_or_diff(\%got, {
+    maxFileSizeG => "9.000000",    # class -o over default -o
+    maxFileTimeM => "7",           # node -o over default -o
+    gapPacketPos => "false",       # node file entry over default -o
+    dontSaveBPFs => "port 54321"   # node -o over node file entry
+});
 
 #### No config, don't set anything in default
 $testenv='ARKIME_foo__bar=foobar';
