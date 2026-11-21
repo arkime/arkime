@@ -51,7 +51,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4472 DNS, mDNS and LLMNR names that are valid UTF-8 are saved as is instead of cat -v escaped (andy’s macbook pro instead of andym-bm-^@m-^ys macbook pro), so searches for the escaped form won't match new sessions; the name is saved as sent, only lowercased; invalid bytes, control characters and invisible characters such as bidi overrides and zero width spaces are still escaped and plain DNS names with raw UTF-8 get the dns:raw-utf8 tag
 ## All
   - #4490 db.pl and ch.pl now skip the cert check for localhost, 127.x.x.x or ::1, matching capture and the node tools. ch.pl didn't skip it at all and db.pl only matched localhost and 127.0.0.1
-  - #4490 Shark tab now requires tshark 4.4.19 or later, up from 4.4.15, the current Debian 13 security update. 4.4.16 through 4.4.19 were all CVE fixes in dissectors
+  - #4490 Shark tab tshark minimum is now per release series, 4.4.19 on the 4.4 line and 4.6.4 on 4.6, up from a flat 4.4.15. Per series because a 4.6.0 is numerically above the 4.4 floor but was released before it
   - #4490 Fix docker.sh --insecure after --wait-for-ch not reaching its check, leaving the container waiting forever on a self-signed cert
   - #4460 A role assigner can no longer change the roles of a user with an admin role the assigner doesn't have
   - #4460 Add authHeaderJwtVerify=true to also verify authMode=header-jwt signatures, using authJwtJwksUrl, authJwtIssuer and authJwtAudience
