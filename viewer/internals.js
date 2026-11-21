@@ -34,10 +34,12 @@ const internals = {
   uploadLimits: {},
   // Minimum supported tshark version, encoded as major*10000 + minor*100 + patch.
   // What we actually want is 4.6.4, but Debian 13 is on the 4.4 line, so the bar
-  // is the 4.4 Debian ships (4.4.19 as of 2026-11), one patch back so an image
-  // built against the previous point release still works.
+  // is the 4.4 Debian currently ships. tshark dissects hostile packet data for
+  // the Shark tab and every 4.4 point release so far has been a Debian security
+  // upload, so don't sit below the current one: 4.4.19 closed 16 CVEs, including
+  // one that is possible code execution rather than just a crash.
   //TSHARKMINVERSION: 40604,
-  TSHARKMINVERSION: 40418,
+  TSHARKMINVERSION: 40419,
 
   // http://garethrees.org/2007/11/14/pngcrush/
   emptyPNG: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAACklEQVR4nGMAAQAABQABDQottAAAAABJRU5ErkJggg==', 'base64'),
