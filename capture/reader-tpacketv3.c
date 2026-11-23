@@ -198,7 +198,7 @@ LOCAL void reader_tpacketv3_exit()
 /******************************************************************************/
 void reader_tpacketv3_init(const char *UNUSED(name))
 {
-    arkime_config_check("tpacketv3", "tpacketv3BlockSize", "tpacketv3NumThreads", "tpacketv3ClusterId", NULL);
+    arkime_config_check("tpacketv3", "tpacketv3BlockSize", "tpacketv3NumThreads", "tpacketv3ClusterId", "tpacketv3ClusterIdUnique", NULL);
 
     int blocksize = arkime_config_int(NULL, "tpacketv3BlockSize", 1 << 21, 1 << 16, 1U << 31);
     numThreads = arkime_config_int(NULL, "tpacketv3NumThreads", 2, 1, MAX_THREADS_PER_INTERFACE);
@@ -218,6 +218,7 @@ void reader_tpacketv3_init(const char *UNUSED(name))
     }
 
     int fanout_group_id = arkime_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
+    gboolean fanout_group_unique = arkime_config_boolean(NULL, "tpacketv3ClusterIdUnique", FALSE);
 
     tpacketv3OldVlan = arkime_config_boolean(NULL, "tpacketv3OldVlan", FALSE);
 
@@ -283,15 +284,33 @@ void reader_tpacketv3_init(const char *UNUSED(name))
             if (bind(infos[i][t].fd, (struct sockaddr *) &ll, sizeof(ll)) < 0)
                 CONFIGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
 
+            gboolean allocate_unique_group_id = fanout_group_unique && t == 0;
             int fanout_type = PACKET_FANOUT_HASH;
-            if (fanout_group_id > 0xffff)
+
+            if (allocate_unique_group_id) {
+                fanout_group_id = 0;
+                fanout_type |= PACKET_FANOUT_FLAG_UNIQUEID;
+            } else if (fanout_group_id > 0xffff) {
                 CONFIGEXIT("Fanout group id %d is too large, you must use a lower tpacketv3ClusterId", fanout_group_id);
+            }
+
             int fanout_arg = (fanout_group_id | (fanout_type << 16));
-            if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
+            if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0) {
+                if (fanout_group_unique)
+                    CONFIGEXIT("Error setting packet fanout unique id (%s)", strerror(errno));
                 CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
+            }
+
+            if (allocate_unique_group_id) {
+                socklen_t len = sizeof(fanout_arg);
+                if (getsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, &len) < 0)
+                    CONFIGEXIT("Error getting packet fanout parameters (%s)", strerror(errno));
+                fanout_group_id = fanout_arg & 0xffff;
+            }
         }
 
-        fanout_group_id++;
+        if (!fanout_group_unique)
+            fanout_group_id++;
     }
 
     arkime_reader_start         = reader_tpacketv3_start;
