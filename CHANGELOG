@@ -114,7 +114,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4471 Non-IP sessions show their ethertype name (arp, lldp, ...) on the Sessions page instead of not-ip, not-ip is clickable, and ip.protocol == not-ip and ethertype == arp (names or 0x hex) can be searched
   - #4472 Search expressions accept non ASCII characters in unquoted values, host.dns==café.example.com no longer needs quotes
   - #4483 Add a disableCron user permission, the user can't see or change Periodic Queries and the ones they own don't run, needs db.pl upgrade
-  - #XXXX Unique values return an error when the search fails on some shards and the rest find no values, instead of an empty list
+  - #4495 Unique values return an error when the search fails on some shards and the rest find no values, instead of an empty list
 ## Cont3xt
   - #4488 New VPNDetection integration for IPs, shows VPN, Tor exit, privacy relay and proxy flags (thanks @UmanShahzad)
 ## ch.pl
