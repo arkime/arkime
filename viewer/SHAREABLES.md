@@ -89,8 +89,8 @@ capture stats / time fit a single ~160px row).
 | `data.expression` | string | Optional. The dashboard's own filter: a search expression ANDed with the global search for every widget on it. A widget's local filter is applied on top |
 | `data.widgets[].id` | string | Stable per-widget id (allows two widgets on one field) |
 | `data.widgets[].field` | string | Primary Arkime field expression (e.g. `source.ip`, `protocols`) = `fields[0]`. For `map` it is a geo field (e.g. `country.src`). Empty (`""`) for session-wide types (`timeline`, `stats`, `time`), which describe the whole result set rather than one field. |
-| `data.widgets[].fields` | string[] | 1–3 field exps. `pie`/`treemap`/`intersection`/`table` accept up to 3 (nested combinations for pie/treemap/intersection; side-by-side per-field columns for table). Other types use a single field (`= [field]`). |
-| `data.widgets[].viewMode` | string | Visualization type. Field-bound: `bar`, `pie`, `table`, `intersection` (spigraph unique-values table), `heatmap`, `treemap`, `map` (world choropleth of a geo field). Session-wide: `timeline`, `stats` (capture statistics), `time` (time information). Default: `bar` |
+| `data.widgets[].fields` | string[] | 1–3 field exps. `pie`/`treemap`/`icicle`/`intersection`/`table` accept up to 3 (nested combinations for pie/treemap/icicle/intersection; side-by-side per-field columns for table). Other types use a single field (`= [field]`). |
+| `data.widgets[].viewMode` | string | Visualization type. Field-bound: `bar`, `pie`, `table`, `intersection` (spigraph unique-values table), `heatmap`, `treemap`, `icicle` (a row per nested field, each value as wide as its share of its parent), `map` (world choropleth of a geo field). Session-wide: `timeline`, `stats` (capture statistics), `time` (time information). Default: `bar` |
 | `data.widgets[].metricType` | string | Quantity the widget visualizes (bar height, pie slice, table column, heatmap intensity, treemap size, or the `timeline` series plotted over time): `sessions` (session count) or any numeric (integer) field exp (e.g. `bytes`, `packets`, `databytes`, `dns.query.cnt`), summed per value. Top/Bottom N is ordered by this metric. Not used by `intersection` (count), `map`, `stats`, or `time`. Default: `sessions` |
 | `data.widgets[].length` | number | Max results for this widget (10, 20, 50, 100). Default: `20` |
 | `data.widgets[].order` | string | Sort order: `asc` (Bottom) or `desc` (Top). Default: `desc` |
@@ -158,7 +158,7 @@ one. A widget never references a saved graph, so a dashboard stays self-containe
 Every key has the meaning of the same `summaryConfig` widget key. `viewMode` and
 a non-empty `fields` or `field` are required (`api.shareables.missingGraph`).
 `viewMode` must be one of `bar`, `pie`, `table`, `intersection`, `treemap`,
-`sankey`, `heatmap` or `connections`; `fields` and `metrics` must be arrays of
+`icicle`, `sankey`, `heatmap` or `connections`; `fields` and `metrics` must be arrays of
 non-empty strings, `length` and `splitLength` integers, and the other keys
 strings (`api.shareables.invalidGraph`).
 Readers still normalize the data (`graphFromWidget` in `dashboardConfig.js`),

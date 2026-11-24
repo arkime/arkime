@@ -88,9 +88,9 @@ SPDX-License-Identifier: Apache-2.0
             class="widget-resize widget-resize--se"
             :title="$t('sessions.summary.dragToResize')"
             @mousedown.stop.prevent="startResize(w, $event, 'both')" />
-          <!-- multi-field nested pie/treemap, split pie, and sankey (any field count) -->
+          <!-- multi-field nested pie/treemap, split pie, and icicle and sankey (any field count) -->
           <HierarchyWidget
-            v-if="w.viewMode === 'sankey' || isSplitPie(w) || (isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap'))"
+            v-if="w.viewMode === 'sankey' || w.viewMode === 'icicle' || isSplitPie(w) || (isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap'))"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"

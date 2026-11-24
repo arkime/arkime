@@ -30,6 +30,7 @@ export const VIEW_MODE_LABEL_KEYS = {
   intersection: 'sessions.summary.intersectionView',
   heatmap: 'sessions.summary.heatmapView',
   treemap: 'sessions.summary.treemapView',
+  icicle: 'sessions.summary.icicleView',
   sankey: 'sessions.summary.sankeyView',
   connections: 'sessions.summary.connectionsView',
   tree: 'sessions.summary.treeView',
@@ -58,7 +59,7 @@ export const VIEW_MODE_LABEL_KEYS = {
 export const viewModeLabelKey = (viewMode) => (Object.hasOwn(VIEW_MODE_LABEL_KEYS, viewMode) ? VIEW_MODE_LABEL_KEYS[viewMode] : undefined);
 
 // Field-bound types: aggregate one field's top-N values (require a field).
-export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
+export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'icicle', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
 
 // Session-wide types: describe the whole result set (no field, fed by the host's
 // global stats chunk). (map is field-bound — it plots a chosen geo field.)
@@ -203,7 +204,7 @@ export const Y_SCALES = ['linear', 'log', 'percent'];
 // Types that honor a result limit. bar/pie/table/heatmap/treemap/sankey/
 // intersection cap their top-N values; connections uses it as a session sample
 // size (see SAMPLE_SIZE_VIEW_MODES).
-export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
+export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'icicle', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
 
 // Types that also honor an order (direction). Only the /api/sessions/summary
 // paths pass one through; /api/spigraph, /api/spigraphhierarchy and
@@ -213,7 +214,7 @@ export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 't
 
 // Types that can show an "Other" share for what falls outside the top N (a
 // share only means something where the parts add up to a whole).
-export const OTHER_VIEW_MODES = ['pie', 'waffle'];
+export const OTHER_VIEW_MODES = ['pie', 'waffle', 'icicle'];
 
 // Types whose limit is a session sample size rather than a top-N cut, so they
 // get their own (much larger) scale.
@@ -250,10 +251,10 @@ export const BUCKET_INTERVAL_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'tag
 // Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
 // table self-fetches (one summary sub-widget per field) so it can carry multiple
 // fields and multiple metric columns.
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'map', 'table', 'metric', 'combo', 'scatter', 'boxplot', 'control'];
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'icicle', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'map', 'table', 'metric', 'combo', 'scatter', 'boxplot', 'control'];
 
 // [min, max] fields each view mode accepts — nested combinations (pie/treemap/
-// sankey/intersection via spigraphhierarchy), side-by-side columns (table via
+// icicle/sankey/intersection via spigraphhierarchy), side-by-side columns (table via
 // summary), or a source + destination pair (connections). bar is
 // single-dimension; heatmap has no combination-over-time data path. Modes not
 // listed take a single field (or none, for the session-wide ones).
@@ -263,6 +264,7 @@ export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connectio
 export const FIELD_COUNT_LIMITS = {
   pie: [1, 7],
   treemap: [1, 7],
+  icicle: [1, 7],
   sankey: [1, 7],
   table: [1, 7],
   intersection: [1, 7],
