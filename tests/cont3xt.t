@@ -1,5 +1,5 @@
 # Test cont3xt.js
-use Test::More tests => 351;
+use Test::More tests => 361;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -1079,6 +1079,23 @@ $json = cont3xtPost('/api/integration/ip/misp:test/search', to_json({
 }));
 ok(!exists $json->{data}->{attributes});
 
+# sourceip tests - served by the mock in mini-wise-source.js
+$json = cont3xtPost('/api/integration/ip/SourceIP.io/search', to_json({
+  query => "3.5.140.1"
+}));
+is($json->{data}->{_cont3xt}->{count}, 1, "sourceip provider count");
+is($json->{data}->{providers}->[0]->{name}, "Amazon EC2");
+is($json->{data}->{providers}->[0]->{cloudRegion}, "ap-northeast-2");
+is($json->{data}->{providers}->[0]->{region}, "Seoul-teukbyeolsi");
+eq_or_diff($json->{data}->{origins}, from_json('[{"asn": 16509, "name": "AMAZON-02 - Amazon.com, Inc.", "prefix": "3.5.0.0/16", "country": "US", "source": "rpki, irr", "rpki": "valid"}]'), "sourceip merges an origin listed per source");
+is($json->{data}->{allocation}->[0]->{rir}, "arin");
+is($json->{data}->{lastUpdated}, "2026-11-01T00:00:00Z");
+
+$json = cont3xtPost('/api/integration/ip/SourceIP.io/search', to_json({
+  query => "3.5.140.4"
+}));
+ok(!exists $json->{data}->{providers}, "sourceip with nothing published is no result");
+
 ################################################################################
 ### HISTORY
 # History entries a search finds, the db is refreshed first so recent writes show up
@@ -1089,8 +1106,8 @@ sub auditCount {
 }
 
 # the single integration searches above are audited after their response is
-# sent, wait for all 13 to land
-waitUntil(sub { auditCount('') >= 13 });
+# sent, wait for all 15 to land
+waitUntil(sub { auditCount('') >= 15 });
 
 $json = cont3xtGet('/api/audits?searchTerm=goodtag');
 is($json->{success}, 1);
@@ -1110,7 +1127,7 @@ is ($json->{audits}->[0]->{iType}, "domain", "single search audit records the it
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 13, "4 bulk searches + 9 single integration searches audited");
+is (scalar @{$json->{audits}}, 15, "4 bulk searches + 11 single integration searches audited");
 $id = $json->{audits}->[0]->{_id};
 
 $json = cont3xtDelete("/api/audit/$id", '{}');
@@ -1124,7 +1141,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "History log not found"}
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 12);
+is (scalar @{$json->{audits}}, 14);
 
 # use actual issuedAt from results to build reliable date ranges
 my @timestamps = sort map { $_->{issuedAt} } @{$json->{audits}};
@@ -1134,7 +1151,7 @@ my $maxTime = $timestamps[-1];
 # date range covering all audits
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1));
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 12, "all audits in range");
+is (scalar @{$json->{audits}}, 14, "all audits in range");
 
 # date range before all audits
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 2000) . "&stopMs=" . ($minTime - 1000));
@@ -1165,7 +1182,7 @@ ok($json->{audits}->[0]->{issuedAt} >= $json->{audits}->[-1]->{issuedAt}, "defau
 $json = cont3xtGet('/api/audits?page=1&itemsPerPage=2');
 is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 2, "page 1 has 2 items");
-is ($json->{total}, 12, "total is still 12");
+is ($json->{total}, 14, "total is still 14");
 
 $json = cont3xtGet('/api/audits?page=2&itemsPerPage=2');
 is($json->{success}, 1);
@@ -1174,7 +1191,7 @@ is (scalar @{$json->{audits}}, 2, "page 2 has 2 items");
 # itemsPerPage=-1 returns all audits
 $json = cont3xtGet('/api/audits?itemsPerPage=-1');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 12, "itemsPerPage=-1 returns all items");
+is (scalar @{$json->{audits}}, 14, "itemsPerPage=-1 returns all items");
 
 # combined date range + search
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1) . "&searchTerm=goodtag");
@@ -1185,21 +1202,21 @@ is (scalar @{$json->{audits}}, 1, "date range + searchTerm combined");
 # than reaching the backend, and paging values are clamped
 $json = cont3xtGet('/api/audits?sortBy=userId');
 is($json->{success}, 1, "unknown sortBy ignored");
-is (scalar @{$json->{audits}}, 12, "unknown sortBy still returns audits");
+is (scalar @{$json->{audits}}, 14, "unknown sortBy still returns audits");
 
 $json = cont3xtGet('/api/audits?sortBy[]=issuedAt&sortOrder[]=asc');
 is($json->{success}, 1, "array sortBy/sortOrder ignored");
 
 $json = cont3xtGet('/api/audits?itemsPerPage=99999999999');
 is($json->{success}, 1, "huge itemsPerPage clamped");
-is (scalar @{$json->{audits}}, 12, "huge itemsPerPage still returns audits");
+is (scalar @{$json->{audits}}, 14, "huge itemsPerPage still returns audits");
 
 $json = cont3xtGet('/api/audits?page=-5&itemsPerPage=-20');
 is($json->{success}, 1, "negative paging clamped");
 
 $json = cont3xtGet('/api/audits?page=notanumber&itemsPerPage=notanumber');
 is($json->{success}, 1, "non numeric paging defaulted");
-is (scalar @{$json->{audits}}, 12, "non numeric paging returns defaults");
+is (scalar @{$json->{audits}}, 14, "non numeric paging returns defaults");
 
 $json = cont3xtGet('/api/audits?searchTerm[]=goodtag');
 is($json->{success}, 1, "non string searchTerm ignored");
@@ -1362,6 +1379,15 @@ eq_or_diff($json, from_json('{"success": false, "text": "settings.Twilio must be
 
 $json = cont3xtPutToken('/api/integration/settings', '{"settings": {"Twilio": {"disabled": true}}}', $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "valid integration settings saved");
+
+# a user's own SourceIP.io endpoint is only used with the user's own key, so
+# the configured key isn't sent to a host the user picked
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": {"SourceIP.io": {"endpoint": "https://127.0.0.1:1"}}}', $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "sourceip user endpoint saved");
+$json = cont3xtPost('/api/integration/ip/SourceIP.io/search', to_json({
+  query => "3.5.140.2"
+}));
+is($json->{data}->{_cont3xt}->{count}, 3, "sourceip user endpoint without a user key uses the configured endpoint");
 
 $json = cont3xtPutToken('/api/integration/settings', '{"settings": {}}', $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "integration settings cleared");

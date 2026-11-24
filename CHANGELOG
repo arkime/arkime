@@ -116,6 +116,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4483 Add a disableCron user permission, the user can't see or change Periodic Queries and the ones they own don't run, needs db.pl upgrade
 ## Cont3xt
   - #4488 New VPNDetection integration for IPs, shows VPN, Tor exit, privacy relay and proxy flags (thanks @UmanShahzad)
+  - #4494 New SourceIP.io integration for IPs, shows the operators that publish an IP and how they use it, plus its ASN origins with RPKI status and registry allocation; works without a key at 100 lookups a day (thanks @AlanKK)
 ## ch.pl
   - #4493 Schema version 3 gives only the 256 most used session fields their own subcolumns instead of 4096, so parts have far fewer files and inserts and merges keep up on busy sites; upgrade changes an existing table in place, then ClickHouse rewrites the whole sessions table once in the background; --max-dynamic-paths picks a different number
 ## ESProxy
@@ -131,6 +132,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4462 Fix one bad request being able to stop Parliament
 ## WISE
   - #4459 Built in source views label values by field name, OpenDNS Security Cat/Content Cat are now Security/Content and VirusTotal Links is now Link
+  - #4494 New sourceip source fills sourceip.provider with the operators of public IPs from sourceip.io; it sends every public IP it is asked about to sourceip.io, so it only loads with a [sourceip] section (thanks @AlanKK)
 
 7.0.0-rc1 2026/11/12
 ## Breaking

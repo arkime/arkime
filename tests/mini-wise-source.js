@@ -32,6 +32,9 @@
  *
  * MISP - attributes/restSearch for the cont3xt misp integration.
  *
+ * SourceIP.io - GET /v1/lookup?ip= and POST /v1/lookup/batch for the cont3xt
+ *           sourceip integration and WISE source, x-api-key sourceip-test-key.
+ *
  * Usage: node mini-wise-source.js [--debug] <port>
  *
  * To add fake data, edit SPLUNK_ROWS / DATABRICKS_ROWS below. Each row is a
@@ -42,6 +45,7 @@
 
 const fs = require('fs');
 const https = require('https');
+const net = require('net');
 const path = require('path');
 const thrift = require('thrift');
 
@@ -291,6 +295,87 @@ function handleMisp (req, res, body) {
 }
 
 // ----------------------------------------------------------------------------
+// SourceIP.io emulation (cont3xt sourceip integration and WISE sourceip source)
+// ----------------------------------------------------------------------------
+const SOURCEIP_KEY = 'sourceip-test-key';
+const SOURCEIP_PROVIDERS = {
+  '3.5.140.1': [{
+    name: 'Amazon EC2',
+    category: 'cloud',
+    attribution: 'general_use',
+    ip_cidr: '3.5.140.0/22',
+    location: { country: 'KR', region: 'KR-11', region_name: 'Seoul-teukbyeolsi', city: null, cloud_region: 'ap-northeast-2' }
+  }],
+  // a narrower match first, and the same provider twice
+  '3.5.140.2': [
+    { name: 'Mini CDN', category: 'cdn', attribution: 'shared_platform', ip_cidr: '3.5.140.2/32', location: null },
+    { name: 'Amazon EC2', category: 'cloud', attribution: 'general_use', ip_cidr: '3.5.140.0/24', location: null },
+    { name: 'Amazon EC2', category: 'cloud', attribution: 'general_use', ip_cidr: '3.5.140.0/22', location: null }
+  ],
+  '2600:1f18:7a00::1': [
+    { name: 'Amazon EC2', category: 'cloud', attribution: 'general_use', ip_cidr: '2600:1f18:7a00::/40', location: null }
+  ],
+  // never asked for, the WISE source doesn't send private IPs
+  '192.168.77.1': [{ name: 'Private IP Sent', category: 'cloud', attribution: 'general_use', ip_cidr: '192.168.77.0/24', location: null }]
+};
+// the API lists an origin once per source
+const SOURCEIP_ORIGINS = [
+  { asn: 16509, name: 'AMAZON-02 - Amazon.com, Inc.', country: 'US', prefix: '3.5.0.0/16', source: 'rpki', rpki_status: 'valid' },
+  { asn: 16509, name: 'AMAZON-02 - Amazon.com, Inc.', country: 'US', prefix: '3.5.0.0/16', source: 'irr', rpki_status: 'valid' }
+];
+
+// 3.5.140.4 has nothing published, other addresses only have network data
+function sourceipLookup (ip) {
+  const none = ip === '3.5.140.4';
+  return {
+    ip,
+    page_url: `https://sourceip.io/ip/${ip}`,
+    providers: SOURCEIP_PROVIDERS[ip] ?? [],
+    network: {
+      origins: none ? [] : SOURCEIP_ORIGINS,
+      origins_total: none ? 0 : SOURCEIP_ORIGINS.length,
+      allocation: none ? null : { holder_id: 'mini', country: 'US', rir: 'arin', status: 'allocated', allocated: '2017-12-20', prefix: '3.0.0.0/9' }
+    }
+  };
+}
+
+function handleSourceIP (req, res, body) {
+  const [urlPath, qs] = req.url.split('?');
+  if (req.headers['x-api-key'] !== SOURCEIP_KEY) {
+    return send(res, 403, 'application/json', JSON.stringify({ message: 'Forbidden' }));
+  }
+
+  let reply;
+  if (req.method === 'GET' && urlPath === '/v1/lookup') {
+    const ip = new URLSearchParams(qs).get('ip') ?? '';
+    if (!net.isIP(ip)) { return send(res, 400, 'application/json', JSON.stringify({ error: 'Invalid IP address' })); }
+    reply = { last_updated: '2026-11-01T00:00:00Z', asn_last_updated: '2026-10-31T00:00:00Z', ...sourceipLookup(ip) };
+  } else if (req.method === 'POST' && urlPath === '/v1/lookup/batch') {
+    let ips;
+    try { ips = JSON.parse(body).ips; } catch (e) {}
+    if (!Array.isArray(ips) || ips.length === 0) { return send(res, 400, 'application/json', JSON.stringify({ error: 'Bad body' })); }
+    if (ips.length > 100) { return send(res, 413, 'application/json', JSON.stringify({ error: 'Too many addresses' })); }
+    reply = {
+      last_updated: '2026-11-01T00:00:00Z',
+      asn_last_updated: '2026-10-31T00:00:00Z',
+      results: ips.map((ip) => net.isIP(ip) ? sourceipLookup(ip) : { ip, error: 'Invalid IP address' })
+    };
+  } else {
+    return send(res, 404, 'application/json', JSON.stringify({ error: 'Not found' }));
+  }
+
+  log(`SOURCEIP ${req.method} ${req.url}`);
+  const out = JSON.stringify(reply);
+  res.writeHead(200, {
+    'Content-Type': 'application/json',
+    'Content-Length': Buffer.byteLength(out),
+    'X-RateLimit-Remaining': '900',
+    'X-RateLimit-Reset': String(Math.floor(Date.now() / 1000) + 3600)
+  });
+  res.end(out);
+}
+
+// ----------------------------------------------------------------------------
 // Databricks Thrift (TCLIService) emulation
 // ----------------------------------------------------------------------------
 // Must be a valid v4 UUID (byte 6 high nibble = 4, byte 8 high nibble = 8..b):
@@ -478,6 +563,10 @@ const server = https.createServer({ key: KEY, cert: CERT, requestCert: true, rej
 
     if (req.url.split('?')[0] === '/attributes/restSearch') {
       return handleMisp(req, res, bodyBuf.toString('utf8'));
+    }
+
+    if (req.url.startsWith('/v1/')) {
+      return handleSourceIP(req, res, bodyBuf.toString('utf8'));
     }
 
     if ((req.headers['content-type'] || '').includes('application/x-thrift')) {
