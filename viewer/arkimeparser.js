@@ -613,10 +613,19 @@ function formatQuery (yy, field, op, value, completed) {
     throw field + ' - permission denied, ask your Arkime admin to give you access using + on Users tab';
   }
 
+  // A quoted value is one literal string, a , inside it doesn't start a $shortcut
+  if (value[0] === '"' && value[value.length - 1] === '"') {
+    return formatNormalQuery(yy, field, op, value, completed);
+  }
+
   const nonShortcuts = ListToArray(value, true);
 
   const shortcutsObj = formatShortcutsQuery(yy, field, op, value);
-  if (nonShortcuts.length === 0) { return shortcutsObj; }
+  if (nonShortcuts.length === 0) {
+    // A $shortcut* matching none would otherwise drop the clause, so it matches everything
+    if (shortcutsObj === undefined) { throw value + ' - no shortcuts match'; }
+    return shortcutsObj;
+  }
 
   const normalObj = formatNormalQuery(yy, field, op, value, completed);
   if (!shortcutsObj) { return normalObj; }
@@ -781,7 +790,7 @@ function formatNormalQuery (yy, field, op, value, completed) {
     if (value[0] === '/') { throw value + ' - Regex queries not supported for integer queries'; }
 
     if (op === 'eq' || op === 'ne') {
-      obj = termOrTermsInt(info.dbField, value);
+      obj = termOrTermsInt(info.dbField, value, fieldTransform(info));
       if (op === 'ne') {
         obj = { bool: { must_not: obj } };
       }
@@ -792,7 +801,7 @@ function formatNormalQuery (yy, field, op, value, completed) {
 
     obj = { range: {} };
     obj.range[info.dbField] = {};
-    obj.range[info.dbField][op] = parseInt(value);
+    obj.range[info.dbField][op] = parseInt(intTransform(value, fieldTransform(info)));
     return obj;
   case 'float':
     if (value[0] === '/') { throw value + ' - Regex queries not supported for float queries'; }
@@ -882,7 +891,7 @@ function formatNormalQuery (yy, field, op, value, completed) {
 
 function checkRegex (str) {
   let m;
-  if ((m = str.match(/^\/(?:\\?.)*?\//)) && m[0].length !== str.length) {
+  if ((m = str.match(/^\/(?:\\.|[^/\\\n])*(?:\/|\\\/)/)) && m[0].length !== str.length) {
     throw 'Must back slash any forward slashes in regexp query - ' + m[0];
   }
 }
@@ -1026,6 +1035,7 @@ global.arkime.dash2Colon = function (str) {
 };
 
 const protocols = {
+  'not-ip': 0,
   icmp: 1,
   igmp: 2,
   tcp: 6,
@@ -1039,17 +1049,58 @@ const protocols = {
   sctp: 132
 };
 
+function ipProtocolNumber (text) {
+  if (Object.hasOwn(protocols, text)) { return protocols[text]; }
+  if (isNaN(text)) { throw ('Unknown protocol string ' + text); }
+  return +text;
+}
+
 global.arkime.ipProtocolLookup = function (text) {
   if (typeof text !== 'string') {
     for (let i = 0; i < text.length; i++) {
-      if (!protocols[text[i]] && isNaN(text[i])) { throw ('Unknown protocol string ' + text); }
-      text[i] = protocols[text[i]] || +text[i];
+      text[i] = ipProtocolNumber(text[i]);
     }
     return text;
   } else {
-    if (!protocols[text] && isNaN(text)) { throw ('Unknown protocol string ' + text); }
-    return protocols[text] || +text;
+    return ipProtocolNumber(text);
   }
+};
+
+const ethertypes = {
+  ipv4: 0x0800,
+  arp: 0x0806,
+  wol: 0x0842,
+  teb: 0x6558,
+  rarp: 0x8035,
+  vlan: 0x8100,
+  ipv6: 0x86dd,
+  pause: 0x8808,
+  slow: 0x8809,
+  mpls: 0x8847,
+  'mpls-mc': 0x8848,
+  pppoed: 0x8863,
+  pppoe: 0x8864,
+  eapol: 0x888e,
+  profinet: 0x8892,
+  ethercat: 0x88a4,
+  qinq: 0x88a8,
+  goose: 0x88b8,
+  sv: 0x88ba,
+  lldp: 0x88cc,
+  macsec: 0x88e5,
+  ptp: 0x88f7,
+  fcoe: 0x8906,
+  fip: 0x8914,
+  nsh: 0x894f,
+  loopback: 0x9000
+};
+
+// Ethertype names and 0x hex to numbers, anything else is left for the number check
+global.arkime.ethertypeLookup = function (text) {
+  const lower = String(text).toLowerCase();
+  if (Object.hasOwn(ethertypes, lower)) { return ethertypes[lower]; }
+  if (/^0x[0-9a-f]{1,4}$/.test(lower)) { return parseInt(lower, 16); }
+  return text;
 };
 
 // Remove the "http://", "https://", etc from http.uri queries
@@ -1146,14 +1197,19 @@ function ListToArrayShortcuts (yy, text) {
   return nstrs;
 }
 
-function termOrTermsInt (dbField, str) {
+// Integer fields with a transform (ethertype) can be searched by name
+function intTransform (str, transform) {
+  return transform ? String(transform(str)) : str;
+}
+
+function termOrTermsInt (dbField, str, transform) {
   let obj = {};
   if (isArrayFull(str)) {
     if (isArrayAND(str)) {
       obj.bool = {
         filter: ListToArray(str).map(x => {
           const o = { term: {} };
-          o.term[dbField] = parseInt(x);
+          o.term[dbField] = parseInt(intTransform(x, transform));
           return o;
         })
       };
@@ -1161,9 +1217,9 @@ function termOrTermsInt (dbField, str) {
     }
 
     obj = { terms: {} };
-    obj.terms[dbField] = ListToArray(str).map(x => parseInt(x));
+    obj.terms[dbField] = ListToArray(str).map(x => parseInt(intTransform(x, transform)));
   } else {
-    str = stripQuotes(str);
+    str = intTransform(stripQuotes(str), transform);
     let match;
     // Anchored and unambiguous, the unanchored version was quadratic on long digit strings
     if ((match = str.match(/^(-?\d+)-(-?\d+)$/))) {
@@ -1702,7 +1758,7 @@ case 23:console.log(yy_.yytext);
 break;
 }
 },
-rules: [/^(?:\s+)/,/^(?:"(?:\\?.)*?")/,/^(?:\/(?:\\?.)*?\/)/,/^(?:[-+a-zA-Z0-9_.@:*?/$]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:\][^\[\\]*(?:\\.[^\[\\]*)*\[)/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
+rules: [/^(?:\s+)/,/^(?:"(?:\\.|[^"\\\n])*(?:"|\\"))/,/^(?:\/(?:\\.|[^/\\\n])*(?:\/|\\\/))/,/^(?:[-+a-zA-Z0-9_.@:*?/$\u0080-\uFFFF]+)/,/^(?:\[[^\]\\]*(?:\\.[^\]\\]*)*\])/,/^(?:\][^\[\\]*(?:\\.[^\[\\]*)*\[)/,/^(?:EXISTS!)/,/^(?:<=)/,/^(?:<)/,/^(?:>=)/,/^(?:>)/,/^(?:!=)/,/^(?:==)/,/^(?:=)/,/^(?:\|\|)/,/^(?:\|)/,/^(?:&&)/,/^(?:&)/,/^(?:\()/,/^(?:\))/,/^(?:!)/,/^(?:$)/,/^(?:.)/,/^(?:.)/],
 conditions: {"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23],"inclusive":true}}
 });
 return lexer;

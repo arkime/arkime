@@ -1,0 +1,7 @@
+# Loaded by the viewer tests through featherprintRulesFiles alongside
+# ../release/default.featherprint.yml, which is listed before this directory.
+# A user file is still consulted first, so this rule classifies the DESKTOP-
+# host in feather_synthetic.pcap ahead of the default windows_pc rule.
+classify:
+  - class: test_override
+    nameMatches: 'desktop-[0-9a-z]{7}'

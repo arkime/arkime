@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 const Cont3xtUtil = {
   isString (maybeStr, minLength = 1) {
     return typeof maybeStr === 'string' && maybeStr.length >= minLength;

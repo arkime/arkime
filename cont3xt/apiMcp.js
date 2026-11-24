@@ -15,7 +15,7 @@ const ArkimeUtil = require('../common/arkimeUtil');
 const { normalizeCardField } = require('./normalizeCardField.js');
 const { MCPToolError } = MCPServer;
 
-ArkimeConfig.registerValidated({
+ArkimeConfig.registerSettings({
   mcpMaxResultBytes: { type: 'int', min: 1024, unlimited: -1 }
 });
 

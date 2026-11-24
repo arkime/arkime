@@ -1,3 +1,7 @@
+<!--
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+-->
 <template>
   <v-btn>
     <v-icon
@@ -10,8 +14,8 @@
       <v-card>
         <v-list class="d-flex flex-column">
           <v-btn
-            v-for="({ icon, text, action, active, tooltip }) in actions"
-            :key="text"
+            v-for="({ icon, text, action, active, tooltip }, index) in actions"
+            :key="index"
             :active="!!active"
             @click="action"
             variant="text"
@@ -23,7 +27,7 @@
               {{ tooltip }}
             </v-tooltip>
             <v-icon
-              class="mr-1"
+              class="me-1"
               :icon="icon" />
             {{ text }}
           </v-btn>

@@ -66,6 +66,10 @@
       "Digest username=\"user12345678@domain.xxxx\",realm=\"xxxxxxx\",nonce=\"xxxxxxxxxxxxxxxx\",uri=\"/xxxxxxxxxxxxxxxxxxxxxxxxxxx/xxxx/xxxxxxxxxxxxxxxxxxxxxxxx\",algorithm=\"MD5\",cnonce=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",nc=00000003,qop=\"auth\",response=\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\",opaque=\"\""
      ],
      "request-authorizationCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "authorization",
       "cache-control",

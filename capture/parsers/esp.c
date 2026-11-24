@@ -15,7 +15,7 @@
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-LOCAL  int                   espMProtocol;
+extern int                   mProtocolEsp;
 LOCAL  int                   espSavePackets;
 
 /******************************************************************************/
@@ -34,7 +34,7 @@ LOCAL ArkimePacketRC esp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Arki
                           0, packet->vlan, packet->vni);
     }
 
-    packet->mProtocol = espMProtocol;
+    packet->mProtocol = mProtocolEsp;
     packet->hash = arkime_session_hash(sessionId);
 
     return ARKIME_PACKET_DO_PROCESS;
@@ -83,19 +83,33 @@ LOCAL int esp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet
     return 0;
 }
 /******************************************************************************/
+LOCAL void esp_natt_classify(ArkimeSession_t *session, const uint8_t *data, int len, int UNUSED(which), void *UNUSED(uw))
+{
+    // RFC 3948 UDP encapsulated ESP, skip the 4 zero byte non-ESP marker (IKE) and 1 byte keepalives,
+    // and require a non zero sequence number
+    if (len < 8 || (data[0] == 0 && data[1] == 0 && data[2] == 0 && data[3] == 0))
+        return;
+    if (data[4] == 0 && data[5] == 0 && data[6] == 0 && data[7] == 0)
+        return;
+    arkime_session_add_protocol(session, "esp");
+}
+/******************************************************************************/
 void arkime_parser_init()
 {
+    arkime_parsers_classifier_register_port("esp", NULL, 4500, ARKIME_PARSERS_PORT_UDP, esp_natt_classify);
+
     if (!config.trackESP)
         return;
 
     espSavePackets = arkime_config_boolean(NULL, "espSavePackets", FALSE);
     arkime_packet_set_ip_cb(IPPROTO_ESP, esp_packet_enqueue);
-    espMProtocol = arkime_mprotocol_register("esp",
-                                             SESSION_ESP,
+    mProtocolEsp = arkime_mprotocol_register("esp",
+                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID | ARKIME_MPROTOCOL_FLAG_STREAMS_LOW,
                                              esp_create_sessionid,
                                              esp_pre_process,
                                              NULL,
                                              NULL,
                                              NULL,
                                              arkime_config_int(NULL, "espTimeout", 600, 10, 0xffff));
+
 }

@@ -7,8 +7,8 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int dhcpMProtocol;
-LOCAL int dhcpv6MProtocol;
+LOCAL int mProtocolDhcp;
+LOCAL int mProtocolDhcpv6;
 
 LOCAL int typeField;
 LOCAL int hostField;
@@ -18,6 +18,9 @@ LOCAL int idField;
 LOCAL int classIdField;
 LOCAL int requestIpField;
 LOCAL int yiaddrField;
+LOCAL  int serverIpField;
+LOCAL  int leaseTimeField;
+LOCAL  int domainField;
 LOCAL int paramReqListField;
 
 LOCAL int dhcp_packet_func;
@@ -76,9 +79,8 @@ LOCAL void dhcpv6_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 8;
-    sessionId[1] = dhcpv6MProtocol;
-    memcpy(sessionId + 2, data + 1, 3);
-    sessionId[5] = sessionId[6] = sessionId[7] = 0;
+    memcpy(sessionId + 1, data + 1, 3);
+    sessionId[4] = sessionId[5] = sessionId[6] = sessionId[7] = 0;
 }
 /******************************************************************************/
 LOCAL int dhcpv6_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
@@ -161,8 +163,8 @@ LOCAL void dhcp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
 
     sessionId[0] = 8;
-    sessionId[1] = dhcpMProtocol;
-    memcpy(sessionId + 2, data + 28, 6);   // Copy 6-byte client MAC address
+    memcpy(sessionId + 1, data + 28, 6);   // Copy 6-byte client MAC address
+    sessionId[7] = 0;
 }
 /******************************************************************************/
 LOCAL int dhcp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const packet, int isNewSession)
@@ -191,7 +193,7 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
     const uint8_t *data = packet->pkt + packet->payloadOffset;
     int len = packet->payloadLen;
 
-    if (len < 256)
+    if (len < 244)
         return 0;
 
     BSB bsb;
@@ -236,7 +238,9 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
         switch (t) {
         case 12: // Host Name
             BSB_IMPORT_ptr(bsb, valueStr, l);
-            if (valueStr)
+            while (valueStr && l > 0 && valueStr[l - 1] == 0)
+                l--;
+            if (valueStr && l > 0)
                 arkime_field_string_add_lower(hostField, session, (char *)valueStr, l);
             break;
         case 53: // Message Type
@@ -290,6 +294,34 @@ LOCAL int dhcp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
             }
             break;
         }
+        case 15: // Domain Name
+            BSB_IMPORT_ptr(bsb, valueStr, l);
+            while (valueStr && l > 0 && valueStr[l - 1] == 0)
+                l--;
+            if (valueStr && l > 0)
+                arkime_field_string_add_lower(domainField, session, (char *)valueStr, l);
+            break;
+        case 51: // IP Address Lease Time
+            if (l == 4) {
+                uint32_t lease = 0;
+                BSB_IMPORT_u32(bsb, lease);
+                arkime_field_int_add(leaseTimeField, session, MIN(lease, (uint32_t)INT32_MAX));
+            } else {
+                BSB_IMPORT_skip(bsb, l);
+            }
+            break;
+        case 54: // Server Identifier
+            if (l == 4) {
+                BSB_IMPORT_ptr(bsb, valueStr, 4);
+                if (valueStr) {
+                    uint32_t ip;
+                    memcpy(&ip, valueStr, 4);
+                    arkime_field_ip4_add(serverIpField, session, ip);
+                }
+            } else {
+                BSB_IMPORT_skip(bsb, l);
+            }
+            break;
         case 81: // FQDN
             if (l < 3) {
                 BSB_IMPORT_skip(bsb, l);
@@ -321,7 +353,7 @@ LOCAL ArkimePacketRC dhcp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     uint8_t sessionId[ARKIME_SESSIONID_LEN];
 
     // Validate: minimum size, op field (1=request, 2=reply), magic cookie
-    if (len < 256 || (data[0] != 1 && data[0] != 2) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
+    if (len < 244 || (data[0] != 1 && data[0] != 2) || memcmp(data + 236, "\x63\x82\x53\x63", 4) != 0)
         return ARKIME_PACKET_UNKNOWN_IP;
 
     // Validate hardware type (1=Ethernet) and address length (6 bytes)
@@ -334,7 +366,7 @@ LOCAL ArkimePacketRC dhcp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
     dhcp_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = dhcpMProtocol;
+    packet->mProtocol = mProtocolDhcp;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -353,7 +385,7 @@ LOCAL ArkimePacketRC dhcpv6_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), A
     dhcpv6_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = dhcpv6MProtocol;
+    packet->mProtocol = mProtocolDhcpv6;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -417,6 +449,25 @@ void arkime_parser_init()
                                       ARKIME_FIELD_TYPE_IP_GHASH,  ARKIME_FIELD_FLAG_CNT,
                                       (char *)NULL);
 
+    serverIpField = arkime_field_define("dhcp", "ip",
+                                        "dhcp.serverIp", "Server IP", "dhcp.serverIp",
+                                        "DHCP server identifier (option 54)",
+                                        ARKIME_FIELD_TYPE_IP_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                        "category", "ip",
+                                        (char *)NULL);
+
+    leaseTimeField = arkime_field_define("dhcp", "integer",
+                                         "dhcp.leaseTime", "Lease Time", "dhcp.leaseTime",
+                                         "DHCP lease time in seconds (option 51)",
+                                         ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
+                                         (char *)NULL);
+
+    domainField = arkime_field_define("dhcp", "lotermfield",
+                                      "dhcp.domain", "Domain", "dhcp.domain",
+                                      "DHCP domain name (option 15)",
+                                      ARKIME_FIELD_TYPE_STR_HASH, ARKIME_FIELD_FLAG_CNT,
+                                      (char *)NULL);
+
     paramReqListField = arkime_field_define("dhcp", "termfield",
                                             "dhcp.paramReqList", "DHCP Param Req List", "dhcp.paramReqList",
                                             "DHCP Parameter Request List (option 55), comma-separated option codes",
@@ -428,8 +479,8 @@ void arkime_parser_init()
     arkime_packet_set_udpport_enqueue_cb(546, dhcpv6_packet_enqueue);
     arkime_packet_set_udpport_enqueue_cb(547, dhcpv6_packet_enqueue);
 
-    dhcpMProtocol = arkime_mprotocol_register("dhcp",
-                                              SESSION_OTHER,
+    mProtocolDhcp = arkime_mprotocol_register("dhcp",
+                                              0,
                                               dhcp_create_sessionid,
                                               dhcp_pre_process,
                                               dhcp_process,
@@ -437,8 +488,8 @@ void arkime_parser_init()
                                               NULL,
                                               arkime_config_int(NULL, "dhcpTimeout", 60, 10, 0xffff));
 
-    dhcpv6MProtocol = arkime_mprotocol_register("dhcpv6",
-                                                SESSION_OTHER,
+    mProtocolDhcpv6 = arkime_mprotocol_register("dhcpv6",
+                                                0,
                                                 dhcpv6_create_sessionid,
                                                 dhcpv6_pre_process,
                                                 dhcpv6_process,

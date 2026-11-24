@@ -8,20 +8,13 @@
 
 extern ArkimeConfig_t        config;
 
-LOCAL int lldpMProtocol;
+LOCAL int mProtocolLldp;
 
 /******************************************************************************/
-LOCAL void lldp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const UNUSED(packet))
+LOCAL void lldp_create_sessionid(uint8_t *sessionId, ArkimePacket_t *const packet)
 {
-    // not used, but leaving for now
-    // uint8_t *data = packet->pkt + packet->payloadOffset;
-
-    sessionId[0] = 4;
-    sessionId[1] = lldpMProtocol;
-    sessionId[2] = sessionId[3] = 0;
-
-    // I'm not sure what fields are required and if one can expect a specific ordering.
-    // so not sure it makes sense to try and further tease out sessions from the lldp traffic here.
+    // One session per talker pair instead of one session for everything
+    arkime_session_id_ether(sessionId, packet, 12);
 }
 /******************************************************************************/
 LOCAL int lldp_pre_process(ArkimeSession_t *session, ArkimePacket_t *const UNUSED(packet), int isNewSession)
@@ -43,13 +36,17 @@ LOCAL ArkimePacketRC lldp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 
     // no sanity checks as we don't parse
 
+    // Need src/dst MACs for the session id
+    if ((int)packet->pktlen - (int)packet->etherOffset < 12)
+        return ARKIME_PACKET_CORRUPT;
+
     packet->payloadOffset = data - packet->pkt;
     packet->payloadLen = len;
 
     lldp_create_sessionid(sessionId, packet);
 
     packet->hash = arkime_session_hash(sessionId);
-    packet->mProtocol = lldpMProtocol;
+    packet->mProtocol = mProtocolLldp;
 
     return ARKIME_PACKET_DO_PROCESS;
 }
@@ -57,8 +54,8 @@ LOCAL ArkimePacketRC lldp_packet_enqueue(ArkimePacketBatch_t *UNUSED(batch), Ark
 void arkime_parser_init()
 {
     arkime_packet_set_ethernet_cb(0x88cc, lldp_packet_enqueue);
-    lldpMProtocol = arkime_mprotocol_register("lldp",
-                                              SESSION_OTHER,
+    mProtocolLldp = arkime_mprotocol_register("lldp",
+                                              0,
                                               lldp_create_sessionid,
                                               lldp_pre_process,
                                               lldp_process,

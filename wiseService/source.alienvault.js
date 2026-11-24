@@ -30,14 +30,7 @@ class AlienVaultSource extends WISESource {
     this.activityField = this.api.addField('field:alienvault.activity;db:alienvault.activity;kind:termfield;friendly:Activity;help:Alien Vault Activity;count:true');
 
     this.api.addView('alienvault',
-      'if (session.alienvault)\n' +
-      '  div.sessionDetailMeta.bold AlienVault\n' +
-      '  dl.sessionDetailMeta\n' +
-      "    +arrayList(session.alienvault, 'activity', 'Activity', 'alienvault.activity')\n" +
-      "    +arrayList(session.alienvault, 'threatlevel', 'Threat Level', 'alienvault.threat-level')\n" +
-      "    +arrayList(session.alienvault, 'reliability', 'Reliability', 'alienvault.reliability')\n" +
-      "    +arrayList(session.alienvault, 'id', 'Id', 'alienvault.id')\n"
-    );
+      'require:alienvault;title:AlienVault;fields:alienvault.activity,alienvault.threat-level,alienvault.reliability,alienvault.id');
 
     setImmediate(this.loadFile.bind(this));
     setInterval(this.loadFile.bind(this), 2 * 60 * 60 * 1000); // Reload file every 2 hours

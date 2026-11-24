@@ -1,0 +1,119 @@
+{
+  "name": "Modbus",
+  "description": "Modbus sessions: protocols == modbus",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == modbus",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "modbus.funccode",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Modbus sessions by modbus.funccode"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Modbus sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Modbus bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "modbus.unitid",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Unit IDs"
+      },
+      {
+        "id": "w5",
+        "field": "modbus.exccode",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Exception codes"
+      },
+      {
+        "id": "w6",
+        "field": "modbus.funccode",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Function codes"
+      },
+      {
+        "id": "w7",
+        "field": "modbus.transactionid",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Transaction IDs"
+      },
+      {
+        "id": "w8",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "modbus.unitid",
+          "modbus.funccode",
+          "modbus.exccode"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

@@ -60,6 +60,11 @@ run_db() {
 }
 
 ######################################################################
+run_ch() {
+    $BASEDIR/db/ch.pl "$@"
+}
+
+######################################################################
 run_cont3xt() {
     copy_elasticsearch
     run_forever "$BASEDIR/cont3xt" "$BASEDIR/bin/node" cont3xt.js "$@"
@@ -98,6 +103,7 @@ show_help() {
     echo "Commands:"
     echo "  capture                Run capture"
     echo "  capture-viewer         Run capture and viewer"
+    echo "  ch.pl                  Run ch.pl"
     echo "  cont3xt                Run cont3xt"
     echo "  db.pl                  Run db.pl"
     echo "  esproxy                Run esproxy"
@@ -108,11 +114,13 @@ show_help() {
     echo "Options:"
     echo "  --add-admin            Add an admin user if missing, please change password ASAP"
     echo "  --basedir <dir>        Use a different base directory for Arkime, default is /opt/arkime"
+    echo "  --ch <args>            Run ch.pl with args, can be specified multiple times"
     echo "  --db <args>            Run db.pl with args, can be specified multiple times"
     echo "  --forever              Run the tools forever, default is just once"
     echo "  --insecure             Skip TLS cert verification for the setup steps, INSECURE"
     echo "  --insecure-all         Skip TLS cert verification for the setup steps and the command, INSECURE"
     echo "  --update-geo           Run /opt/arkime/bin/arkime_update_geo.sh"
+    echo "  --wait-for-ch <churl>  Wait for ClickHouse to be ready before running command"
     echo "  --wait-for-db <dburl>  Wait for Elasticsearch/OpenSearch to be ready before running command"
     echo "  --                     All arguments after this are passed to the command"
     echo
@@ -120,6 +128,11 @@ show_help() {
     echo "  $0 capture --db 'http://es:9200 init --ifneeded'"
     echo "  $0 capture --db 'http://es:9200 init --ifneeded --ilm' --db 'http://es:9200 ilm 12h 7d'"
     echo "  $0 capture --db 'http://es:9200 upgradenoprompt --ifneeded --compression gzip'"
+    echo "  $0 viewer --wait-for-ch http://clickhouse:8123 --ch 'http://clickhouse:8123 upgrade'"
+    echo
+    echo "Note: ch.pl 'upgrade' creates the database and tables if missing and then"
+    echo "      migrates the schema, so it is safe to run on every start. 'init' DROPS"
+    echo "      and recreates the sessions table, don't use it for that."
     echo
     echo "Deprecated (use --db instead):"
     echo "  --init <dburl>         Use: --db '<dburl> init --ifneeded'"
@@ -151,7 +164,9 @@ ISM_PARAM=""
 ILM_OPTION=""
 ILM_PARAM=""
 DB_COMMANDS=()
+CH_COMMANDS=()
 WAIT_DB_URLS=()
+WAIT_CH_URLS=()
 
 if [ -n "$ARKIME__insecure" ]; then
     echo "ERROR: ARKIME__insecure environment variable is no longer supported." >&2
@@ -168,6 +183,11 @@ while [ $# -gt 0 ]; do
         --basedir)
             shift
             BASEDIR=$1
+            shift
+            ;;
+        --ch)
+            shift
+            CH_COMMANDS+=("$1")
             shift
             ;;
         --db)
@@ -227,6 +247,11 @@ while [ $# -gt 0 ]; do
             $BASEDIR/bin/arkime_update_geo.sh
             shift
             ;;
+        --wait-for-ch)
+            shift
+            WAIT_CH_URLS+=("$1")
+            shift
+            ;;
         --wait-for-db)
             shift
             WAIT_DB_URLS+=("$1")
@@ -266,8 +291,8 @@ fi
 
 # Wait once the whole command line has been read, so --insecure and
 # --insecure-all work wherever they appear rather than only before
-# --wait-for-db. Still ahead of the db.pl commands below, which need the
-# database up.
+# --wait-for-db or --wait-for-ch. Still ahead of the db.pl and ch.pl
+# commands below, which need their databases up.
 for wait_url in "${WAIT_DB_URLS[@]}"; do
     echo "Waiting for Elasticsearch/OpenSearch to be ready..."
     CURL_OPTS="-sf"
@@ -282,6 +307,19 @@ for wait_url in "${WAIT_DB_URLS[@]}"; do
         sleep 2
     done
     echo "Elasticsearch/OpenSearch is ready"
+done
+
+for wait_url in "${WAIT_CH_URLS[@]}"; do
+    echo "Waiting for ClickHouse to be ready..."
+    CURL_OPTS="-sf"
+    if [ $INSECURE -eq 1 ]; then
+        CURL_OPTS="$CURL_OPTS -k"
+    fi
+    until curl $CURL_OPTS "$wait_url/ping" > /dev/null; do
+        echo "Waiting for ClickHouse..."
+        sleep 2
+    done
+    echo "ClickHouse is ready"
 done
 
 # Handle legacy --init/--upgrade with --ilm/--ism flags
@@ -310,6 +348,11 @@ fi
 # Run all db.pl commands
 for db_cmd in "${DB_COMMANDS[@]}"; do
     $BASEDIR/db/db.pl $INSECURE_OPT $db_cmd || exit 1
+done
+
+# Run all ch.pl commands
+for ch_cmd in "${CH_COMMANDS[@]}"; do
+    $BASEDIR/db/ch.pl $INSECURE_OPT $ch_cmd || exit 1
 done
 
 # Add admin user after DB init/upgrade so the users index exists
@@ -343,6 +386,10 @@ case "$command" in
     db|db.pl)
         echo "Starting db"
         run_db "$@"
+        ;;
+    ch|ch.pl)
+        echo "Starting ch"
+        run_ch "$@"
         ;;
     cont3xt)
         echo "Starting cont3xt"

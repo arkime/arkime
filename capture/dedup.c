@@ -13,38 +13,29 @@
  * We size the hashtable assuming DEDUP_SLOT_FACTOR elements per
  * slot, but actually allow DEDUP_SIZE_FACTOR elements.
  *
- * Hash ip + tcp/udp hdr using either MD5 or XXH3_128bits.
+ * Hash ip + tcp/udp hdr using keyed SipHash-1-3, or MD5 with -DDEDUP_USE_MD5.
  *
  * When dedup is enabled, arkime_dedup_should_drop is one of the
  * top CPU consumers at high packet rates. The ctrl array acts as
  * a cheap filter to avoid touching the larger hashes array on
- * non-matches. MD5 is used over XXH3 to keep the function small
- * and reduce instruction cache pressure.
+ * non-matches.
  */
 
+#include <inttypes.h>
 #include "arkime.h"
+#include "siphash.h"
 
-// MD5 is ~4% faster than XXH3 in production due to smaller icache footprint
-#define DEDUP_USE_MD5
-
+// SipHash-1-3 is ~50ns per packet cheaper than MD5 with 1 or 4 reader threads,
+// and keyed so packets can't be crafted to collide with real ones.
 #ifdef DEDUP_USE_MD5
 #define OPENSSL_SUPPRESS_DEPRECATED
 #include <openssl/md5.h>
-#else
-#define XXH_STATIC_LINKING_ONLY
-#define XXH_IMPLEMENTATION
-#if defined(__clang__)
-#pragma clang attribute push(__attribute__((no_sanitize("integer"))), apply_to = function)
-#include "xxhash.h"
-#pragma clang attribute pop
-#else
-#include "xxhash.h"
-#endif
 #endif
 
 extern ArkimeConfig_t          config;
 extern GHashTable             *collapseTable;
 extern ArkimeSessionIdTracking sessionIdTracking;
+extern uint64_t                hashKey[2];
 
 // How many items in each hashtable we expect to be used, must be less than DEDUP_SIZE_FACTOR
 #define DEDUP_SLOT_FACTOR   15
@@ -70,7 +61,6 @@ typedef struct dedupsecond {
 } DedupSeconds_t;
 
 LOCAL DedupSeconds_t *seconds;
-
 
 /******************************************************************************/
 int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
@@ -141,7 +131,7 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
     MD5_Final(md, &ctx);
 #else
     uint8_t buf[260];
-    XXH128_hash_t hash;
+    int     bufLen;
     if (prefix_len) {
         memcpy(buf, prefix, prefix_len);
     }
@@ -149,13 +139,13 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
         memcpy(buf + prefix_len, ptr, 8);
         buf[prefix_len + 8] = ptr[9];  // protocol, skip TTL (1 byte)
         memcpy(buf + prefix_len + 9, ptr + 12, headerLen - 12); // skip checksum (2 bytes)
-        hash = XXH3_128bits(buf, prefix_len + 9 + (headerLen - 12));
+        bufLen = prefix_len + 9 + (headerLen - 12);
     } else {
         memcpy(buf + prefix_len, ptr, 7);
         memcpy(buf + prefix_len + 7, ptr + 8, headerLen - 8); // skip HOP (1 byte)
-        hash = XXH3_128bits(buf, prefix_len + 7 + (headerLen - 8));
+        bufLen = prefix_len + 7 + (headerLen - 8);
     }
-    memcpy(md, &hash, 16);
+    arkime_siphash128(hashKey, buf, bufLen, md);
 #endif
 
     const int h = ((uint32_t *)md)[0] & dedupSlotsMask;
@@ -254,6 +244,69 @@ void arkime_dedup_init()
 
     if (config.debug)
         LOG("Dedup mode: %s", dedupMode == DEDUP_VLAN ? "VLAN" : dedupMode == DEDUP_VNI ? "VNI" : "PLAIN");
+}
+/******************************************************************************/
+void arkime_dedup_perf_stats(GString *out, gboolean all)
+{
+    g_string_append(out, "\n== dedup ==\n");
+    if (!config.enablePacketDedup) {
+        g_string_append(out, "disabled\n");
+        return;
+    }
+    if (!seconds) {
+        g_string_append(out, "not initialized yet\n");
+        return;
+    }
+
+    const uint64_t mem = (uint64_t)dedupSeconds * (dedupSlots + dedupSize + (uint64_t)dedupSize * 16);
+    g_string_append_printf(out, "%-18s %s\n", "mode:", dedupMode == DEDUP_VLAN ? "vlan" : dedupMode == DEDUP_VNI ? "vni" : "plain");
+    g_string_append_printf(out, "%-18s %u\n", "seconds:", dedupSeconds);
+    g_string_append_printf(out, "%-18s %u\n", "packets:", dedupPackets);
+    g_string_append_printf(out, "%-18s %u\n", "slots:", dedupSlots);
+    g_string_append_printf(out, "%-18s %u (expected %u)\n", "entriesPerSlot:", DEDUP_SIZE_FACTOR, DEDUP_SLOT_FACTOR);
+    g_string_append_printf(out, "%-18s %u\n", "size:", dedupSize);
+    g_string_append_printf(out, "%-18s %" PRIu64 " bytes\n", "memory:", mem);
+    g_string_append_printf(out, "%-18s %" PRIu64 "\n", "duplicatesDropped:", arkimeCounters.packetStats[ARKIME_PACKET_DUPLICATE_DROPPED]);
+
+    // Scanning every second's counts can stall the main thread, so only with --all
+    if (!all)
+        return;
+
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC_COARSE, &now);
+
+    g_string_append_printf(out, "\n%-6s %-7s %5s %10s %10s %6s %10s %9s %8s\n",
+                           "second", "state", "age", "entries", "usedSlots", "load%", "maxEntries", "fullSlots", "overflow");
+    for (uint32_t s = 0; s < dedupSeconds; s++) {
+        const uint32_t tv_sec = ARKIME_THREAD_ATOMIC_LOAD(seconds[s].tv_sec);
+        uint32_t entries = 0, usedSlots = 0, fullSlots = 0, maxEntries = 0;
+        for (uint32_t i = 0; i < dedupSlots; i++) {
+            // counts keeps incrementing for inserts rejected by a full slot, so clamp to what is really stored
+            const uint8_t raw = seconds[s].counts[i];
+            if (!raw)
+                continue;
+            const uint8_t c = MIN(raw, DEDUP_SIZE_FACTOR);
+            usedSlots++;
+            entries += c;
+            if (c > maxEntries)
+                maxEntries = c;
+            if (raw >= DEDUP_SIZE_FACTOR)
+                fullSlots++;
+        }
+
+        const char *state;
+        if (tv_sec == 0)
+            state = "unused";
+        else if ((uint32_t)now.tv_sec - dedupSeconds + 1 >= tv_sec)
+            state = "expired";
+        else
+            state = "active";
+
+        g_string_append_printf(out, "%-6u %-7s %5ld %10u %10u %5.1f%% %10u %9u %8s\n",
+                               s, state, tv_sec ? (long)now.tv_sec - (long)tv_sec : -1L,
+                               entries, usedSlots, dedupSlots ? usedSlots * 100.0 / dedupSlots : 0.0,
+                               maxEntries, fullSlots, seconds[s].error ? "yes" : "no");
+    }
 }
 /******************************************************************************/
 void arkime_dedup_exit()

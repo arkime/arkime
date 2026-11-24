@@ -1,0 +1,1 @@
+Not a rules file, must be ignored by the directory scan.

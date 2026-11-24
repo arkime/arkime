@@ -1,0 +1,390 @@
+{
+  "ip": {
+    "friendlyName": "All IP fields",
+    "group": "general",
+    "help": "Search all ip fields",
+    "type": "ip",
+    "dbField2": "ipall",
+    "portField": "portall",
+    "noFacet": "true"
+  },
+  "port": {
+    "friendlyName": "All port fields",
+    "group": "general",
+    "help": "Search all port fields",
+    "type": "integer",
+    "dbField2": "portall",
+    "regex": "(^port\\.(?:(?!\\.cnt$).)*$|\\.port$|Port$)"
+  },
+  "rir": {
+    "friendlyName": "All rir fields",
+    "group": "general",
+    "help": "Search all rir fields",
+    "type": "uptermfield",
+    "dbField2": "rirall",
+    "regex": "(^rir\\.(?:(?!\\.cnt$).)*$|\\.rir$)"
+  },
+  "country": {
+    "friendlyName": "All country fields",
+    "group": "general",
+    "help": "Search all country fields",
+    "type": "uptermfield",
+    "dbField2": "geoall",
+    "regex": "(^country\\.(?:(?!\\.cnt$).)*$|\\.country$)"
+  },
+  "asn": {
+    "friendlyName": "All ASN fields",
+    "group": "general",
+    "help": "Search all ASN fields",
+    "type": "termfield",
+    "dbField2": "asnall",
+    "regex": "(^asn\\.(?:(?!\\.cnt$).)*$|\\.asn$)"
+  },
+  "host": {
+    "friendlyName": "All Host fields",
+    "group": "general",
+    "help": "Search all Host fields",
+    "type": "lotermfield",
+    "dbField2": "hostall",
+    "regex": "(^host\\.(?:(?!\\.(cnt|tokens)$).)*$|\\.host$)"
+  },
+  "ip.src": {
+    "friendlyName": "Src IP",
+    "group": "general",
+    "help": "Source IP",
+    "type": "ip",
+    "dbField2": "srcIp",
+    "portField": "p1",
+    "portField2": "srcPort",
+    "portFieldECS": "source.port",
+    "category": "ip",
+    "fieldECS": "source.ip"
+  },
+  "port.src": {
+    "friendlyName": "Src Port",
+    "group": "general",
+    "help": "Source Port",
+    "type": "integer",
+    "dbField2": "srcPort",
+    "category": "port",
+    "fieldECS": "source.port"
+  },
+  "asn.src": {
+    "friendlyName": "Src ASN",
+    "group": "general",
+    "help": "GeoIP ASN string calculated from the source IP",
+    "type": "termfield",
+    "dbField2": "srcASN",
+    "category": "asn",
+    "fieldECS": "source.as.full"
+  },
+  "source.as.number": {
+    "friendlyName": "Src ASN Number",
+    "group": "general",
+    "help": "GeoIP ASN Number calculated from the source IP",
+    "type": "integer",
+    "fieldECS": "source.as.number"
+  },
+  "source.as.organization.name": {
+    "friendlyName": "Src ASN Name",
+    "group": "general",
+    "help": "GeoIP ASN Name calculated from the source IP",
+    "type": "termfield",
+    "fieldECS": "source.as.organization.name"
+  },
+  "country.src": {
+    "friendlyName": "Src Country",
+    "group": "general",
+    "help": "Source Country",
+    "type": "uptermfield",
+    "dbField2": "srcGEO",
+    "category": "country",
+    "fieldECS": "source.geo.country_iso_code"
+  },
+  "rir.src": {
+    "friendlyName": "Src RIR",
+    "group": "general",
+    "help": "Source RIR",
+    "type": "uptermfield",
+    "dbField2": "srcRIR",
+    "category": "rir"
+  },
+  "ip.dst": {
+    "friendlyName": "Dst IP",
+    "group": "general",
+    "help": "Destination IP",
+    "type": "ip",
+    "dbField2": "dstIp",
+    "portField": "p2",
+    "portField2": "dstPort",
+    "portFieldECS": "destination.port",
+    "category": "ip",
+    "aliases": [
+      "ip.dst:port"
+    ],
+    "fieldECS": "destination.ip"
+  },
+  "port.dst": {
+    "friendlyName": "Dst Port",
+    "group": "general",
+    "help": "Destination Port",
+    "type": "integer",
+    "dbField2": "dstPort",
+    "category": "port",
+    "fieldECS": "destination.port"
+  },
+  "asn.dst": {
+    "friendlyName": "Dst ASN",
+    "group": "general",
+    "help": "GeoIP ASN string calculated from the destination IP",
+    "type": "termfield",
+    "dbField2": "dstASN",
+    "category": "asn",
+    "fieldECS": "destination.as.full"
+  },
+  "destination.as.number": {
+    "friendlyName": "Dst ASN Number",
+    "group": "general",
+    "help": "GeoIP ASN Number calculated from the destination IP",
+    "type": "integer",
+    "fieldECS": "destination.as.number"
+  },
+  "destination.as.organization.name": {
+    "friendlyName": "Dst ASN Name",
+    "group": "general",
+    "help": "GeoIP ASN Name calculated from the destination IP",
+    "type": "termfield",
+    "fieldECS": "destination.as.organization.name"
+  },
+  "country.dst": {
+    "friendlyName": "Dst Country",
+    "group": "general",
+    "help": "Destination Country",
+    "type": "uptermfield",
+    "dbField2": "dstGEO",
+    "category": "country",
+    "fieldECS": "destination.geo.country_iso_code"
+  },
+  "rir.dst": {
+    "friendlyName": "Dst RIR",
+    "group": "general",
+    "help": "Destination RIR",
+    "type": "uptermfield",
+    "dbField2": "dstRIR",
+    "category": "rir"
+  },
+  "bytes": {
+    "friendlyName": "Bytes",
+    "group": "general",
+    "help": "Total number of raw bytes sent AND received in a session",
+    "type": "integer",
+    "dbField2": "totBytes",
+    "fieldECS": "network.bytes"
+  },
+  "bytes.src": {
+    "friendlyName": "Src Bytes",
+    "group": "general",
+    "help": "Total number of raw bytes sent by source in a session",
+    "type": "integer",
+    "dbField2": "srcBytes",
+    "fieldECS": "source.bytes"
+  },
+  "bytes.dst": {
+    "friendlyName": "Dst Bytes",
+    "group": "general",
+    "help": "Total number of raw bytes sent by destination in a session",
+    "type": "integer",
+    "dbField2": "dstBytes",
+    "fieldECS": "destination.bytes"
+  },
+  "databytes": {
+    "friendlyName": "Data bytes",
+    "group": "general",
+    "help": "Total number of data bytes sent AND received in a session",
+    "type": "integer",
+    "dbField2": "totDataBytes"
+  },
+  "databytes.src": {
+    "friendlyName": "Src data bytes",
+    "group": "general",
+    "help": "Total number of data bytes sent by source in a session",
+    "type": "integer",
+    "dbField2": "srcDataBytes",
+    "fieldECS": "client.bytes"
+  },
+  "databytes.dst": {
+    "friendlyName": "Dst data bytes",
+    "group": "general",
+    "help": "Total number of data bytes sent by destination in a session",
+    "type": "integer",
+    "dbField2": "dstDataBytes",
+    "fieldECS": "server.bytes"
+  },
+  "packets": {
+    "friendlyName": "Packets",
+    "group": "general",
+    "help": "Total number of packets sent AND received in a session",
+    "type": "integer",
+    "dbField2": "totPackets",
+    "fieldECS": "network.packets"
+  },
+  "packets.src": {
+    "friendlyName": "Src Packets",
+    "group": "general",
+    "help": "Total number of packets sent by source in a session",
+    "type": "integer",
+    "dbField2": "srcPackets",
+    "fieldECS": "source.packets"
+  },
+  "packets.dst": {
+    "friendlyName": "Dst Packets",
+    "group": "general",
+    "help": "Total number of packets sent by destination in a session",
+    "type": "integer",
+    "dbField2": "dstPackets",
+    "fieldECS": "destination.packets"
+  },
+  "ip.protocol": {
+    "friendlyName": "IP Protocol",
+    "group": "general",
+    "help": "IP protocol number or friendly name",
+    "type": "lotermfield",
+    "dbField2": "ipProtocol",
+    "transform": "ipProtocolLookup"
+  },
+  "id": {
+    "friendlyName": "Arkime ID",
+    "group": "general",
+    "help": "Arkime ID for the session",
+    "type": "termfield",
+    "dbField2": "_id",
+    "noFacet": "true"
+  },
+  "rootId": {
+    "friendlyName": "Arkime Root ID",
+    "group": "general",
+    "help": "Arkime ID of the first session in a multi session stream",
+    "type": "termfield",
+    "dbField2": "rootId"
+  },
+  "node": {
+    "friendlyName": "Arkime Node",
+    "group": "general",
+    "help": "Arkime node name the session was recorded on",
+    "type": "termfield",
+    "dbField2": "node"
+  },
+  "srcNode": {
+    "friendlyName": "Arkime Source Node",
+    "group": "general",
+    "help": "Source Arkime node name the session was recorded on when using send to cluster",
+    "type": "termfield",
+    "dbField2": "srcNode"
+  },
+  "file": {
+    "friendlyName": "Filename",
+    "group": "general",
+    "help": "Arkime offline pcap filename",
+    "type": "fileand",
+    "dbField2": "fileand"
+  },
+  "payload8.src.hex": {
+    "friendlyName": "Payload Src Hex",
+    "group": "general",
+    "help": "First 8 bytes of source payload in hex",
+    "type": "lotermfield",
+    "dbField2": "srcPayload8",
+    "aliases": [
+      "payload.src"
+    ]
+  },
+  "payload8.src.utf8": {
+    "friendlyName": "Payload Src UTF8",
+    "group": "general",
+    "help": "First 8 bytes of source payload in utf8",
+    "type": "termfield",
+    "dbField2": "srcPayload8",
+    "transform": "utf8ToHex",
+    "noFacet": "true"
+  },
+  "payload8.dst.hex": {
+    "friendlyName": "Payload Dst Hex",
+    "group": "general",
+    "help": "First 8 bytes of destination payload in hex",
+    "type": "lotermfield",
+    "dbField2": "dstPayload8",
+    "aliases": [
+      "payload.dst"
+    ]
+  },
+  "payload8.dst.utf8": {
+    "friendlyName": "Payload Dst UTF8",
+    "group": "general",
+    "help": "First 8 bytes of destination payload in utf8",
+    "type": "termfield",
+    "dbField2": "dstPayload8",
+    "transform": "utf8ToHex",
+    "noFacet": "true"
+  },
+  "payload8.hex": {
+    "friendlyName": "Payload Hex",
+    "group": "general",
+    "help": "First 8 bytes of payload in hex",
+    "type": "lotermfield",
+    "dbField2": "fballhex",
+    "regex": "^payload8\\.(src|dst)\\.hex$"
+  },
+  "payload8.utf8": {
+    "friendlyName": "Payload UTF8",
+    "group": "general",
+    "help": "First 8 bytes of payload in utf8",
+    "type": "lotermfield",
+    "dbField2": "fballutf8",
+    "regex": "^payload8\\.(src|dst)\\.utf8$"
+  },
+  "scrubbed.by": {
+    "friendlyName": "Scrubbed By",
+    "group": "general",
+    "help": "SPI data was scrubbed by",
+    "type": "lotermfield",
+    "dbField2": "scrubby"
+  },
+  "view": {
+    "friendlyName": "View Name",
+    "group": "general",
+    "help": "Arkime view name",
+    "type": "viewand",
+    "dbField2": "viewand",
+    "noFacet": "true"
+  },
+  "starttime": {
+    "friendlyName": "Start Time",
+    "group": "general",
+    "help": "Session Start Time",
+    "type": "seconds",
+    "type2": "date",
+    "dbField2": "firstPacket"
+  },
+  "stoptime": {
+    "friendlyName": "Stop Time",
+    "group": "general",
+    "help": "Session Stop Time",
+    "type": "seconds",
+    "type2": "date",
+    "dbField2": "lastPacket"
+  },
+  "huntId": {
+    "friendlyName": "Hunt ID",
+    "group": "general",
+    "help": "The ID of the packet search job that matched this session",
+    "type": "termfield",
+    "dbField2": "huntId"
+  },
+  "huntName": {
+    "friendlyName": "Hunt Name",
+    "group": "general",
+    "help": "The name of the packet search job that matched this session",
+    "type": "termfield",
+    "dbField2": "huntName"
+  }
+}

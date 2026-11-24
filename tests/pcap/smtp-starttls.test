@@ -5,6 +5,7 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "d8:3c:1a:7f:4d:04:46:bb:20:81:b8:1a:16:70:f8:18:34:51:ca:24",
       "issuerCN" : [
        "geotrust global ca"
@@ -12,12 +13,16 @@
       "issuerON" : [
        "GeoTrust Inc."
       ],
+      "keyLength" : 2048,
       "notAfter" : 1428160555000,
       "notBefore" : 1365174955000,
+      "pathLen" : 0,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 464,
       "remainingSeconds" : 40143431,
       "serial" : "023a69",
+      "sha256" : "a047a37fa2d2e118a4f5095fe074d6cfe0e352425a7632bf8659c03919a6c81d",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "google internet authority g2"
       ],
@@ -25,7 +30,8 @@
        "Google Inc"
       ],
       "validDays" : 729,
-      "validSeconds" : 62985600
+      "validSeconds" : 62985600,
+      "version" : 3
      },
      {
       "alt" : [
@@ -51,6 +57,7 @@
        "aspmx5.googlemail.com"
       ],
       "altCnt" : 20,
+      "exponent" : 65537,
       "hash" : "45:15:6a:e7:49:63:40:94:f9:ab:09:1e:f5:a7:33:6d:f3:7b:28:fc",
       "issuerCN" : [
        "google internet authority g2"
@@ -58,12 +65,15 @@
       "issuerON" : [
        "Google Inc"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1410262355000,
       "notBefore" : 1378726355000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 257,
       "remainingSeconds" : 22245231,
       "serial" : "325d8297987d50b0",
+      "sha256" : "4f0a1ac1c6e873c8805fe2fc56c7aac77025f1dcbbbf907e768f1ec88c3485db",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "mx.google.com"
       ],
@@ -71,9 +81,11 @@
        "Google Inc"
       ],
       "validDays" : 365,
-      "validSeconds" : 31536000
+      "validSeconds" : 31536000,
+      "version" : 3
      },
      {
+      "exponent" : 65537,
       "hash" : "73:59:75:5c:6d:f9:a0:ab:c3:06:0b:ce:36:95:64:c8:ec:45:42:a3",
       "issuerON" : [
        "Equifax"
@@ -81,12 +93,15 @@
       "issuerOU" : [
        "Equifax Secure Certificate Authority"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1534824000000,
       "notBefore" : 1021953600000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 1699,
       "remainingSeconds" : 146806876,
       "serial" : "12bbe6",
+      "sha256" : "3c35cc963eb004451323d3275d05b353235053490d9cd83729a2faf5e7ca1cc0",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "geotrust global ca"
       ],
@@ -94,7 +109,8 @@
        "GeoTrust Inc."
       ],
       "validDays" : 5936,
-      "validSeconds" : 512870400
+      "validSeconds" : 512870400,
+      "version" : 3
      }
     ],
     "certCnt" : 3,

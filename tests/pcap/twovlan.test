@@ -68,6 +68,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "connection",

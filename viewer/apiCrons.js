@@ -121,45 +121,30 @@ class CronAPIs {
     const user = req.settingUser;
     if (user.settings === undefined) { user.settings = {}; }
 
-    const roles = [...await user.getRoles()]; // es requires an array for terms search
+    const roles = [...await user.getRoles()];
 
-    const query = {
-      size: 1000,
-      sort: { created: { order: 'asc' } },
-      query: {
-        bool: {
-          must_not: [
-            { ids: { values: ['primary-viewer'] } }
-          ],
-          filter: [
-            {
-              bool: {
-                should: [
-                  { terms: { roles } }, // shared via user role
-                  { terms: { editRoles: roles } }, // shared via edit role
-                  { term: { users: user.userId } }, // shared via userId
-                  { term: { creator: user.userId } } // created by this user
-                ]
-              }
-            }
-          ]
-        }
-      }
+    let where = {
+      $or: [
+        { roles: { $in: roles } }, // shared via user role
+        { editRoles: { $in: roles } }, // shared via edit role
+        { users: user.userId }, // shared via userId
+        { creator: user.userId } // created by this user
+      ]
     };
 
     if (req.query.all && roles.includes('arkimeAdmin')) {
-      query.query.bool.filter = []; // remove sharing restrictions
+      where = null; // remove sharing restrictions
     }
 
     try {
-      const data = await Db.search('queries', query);
+      const data = await Db.searchQueries({ where, sort: { created: 'asc' }, size: 1000 });
 
       let queries = [];
 
-      if (data && data.hits && data.hits.hits) {
-        queries = data.hits.hits.map((item) => {
-          const key = item._id;
-          const result = item._source;
+      if (data?.data) {
+        queries = data.data.map((item) => {
+          const key = item.id;
+          const result = item.doc;
 
           if (user.userId !== result.creator && !user.hasRole('arkimeAdmin')) {
             // remove sensitive information for users this query is shared with (except arkimeAdmin)
@@ -282,11 +267,11 @@ class CronAPIs {
     doc.doc.creator = userId || 'anonymous';
 
     try {
-      const { body: info } = await Db.indexNow('queries', null, doc.doc);
+      const id = await Db.createQuery(doc.doc);
 
       if (CronAPIs.#primaryViewer) { CronAPIs.processCronQueries(); }
 
-      doc.doc.key = info._id;
+      doc.doc.key = id;
       if (doc.doc.users) {
         doc.doc.users = doc.doc.users.join(',');
       }
@@ -387,7 +372,16 @@ class CronAPIs {
     }
 
     try {
-      const { body: { _source: cron } } = await Db.getQuery(key);
+      const cron = await Db.getQuery(key);
+      if (!cron) {
+        return res.serverError(404, 'Unknown resource');
+      }
+
+      // the owner or editRoles may have changed since checkResourceAccess read it
+      const settingUser = req.settingUser || req.user;
+      if (!req.user.hasRole(Auth.appAdminRole) && !(cron.creator && cron.creator === settingUser.userId) && !settingUser.hasRole(cron.editRoles)) {
+        return res.serverError(403, 'Permission denied');
+      }
 
       // Only notifiers being added, an editor resaving a cron keeps the ones already on it
       const current = Array.isArray(cron.notifier) ? cron.notifier : ArkimeUtil.isString(cron.notifier) ? cron.notifier.split(',') : [];
@@ -418,7 +412,7 @@ class CronAPIs {
       };
 
       try {
-        await Db.update('queries', key, doc, { refresh: true });
+        await Db.updateQuery(key, doc.doc);
       } catch (err) {
         console.log(`ERROR - ${req.method} /api/cron/%s`, ArkimeUtil.sanitizeStr(key), util.inspect(err, false, 50));
       }
@@ -469,7 +463,7 @@ class CronAPIs {
     }
 
     try {
-      await Db.deleteDocument('queries', key, { refresh: true });
+      await Db.deleteQuery(key);
       res.json({
         success: true,
         text: 'Deleted periodic query successfully',
@@ -492,6 +486,11 @@ class CronAPIs {
     const nodes = Object.create(null);
 
     for (const item of list) {
+      // Both end up in the signed path and ids body sent to the remote node
+      if (!ViewerUtils.isSafeSegment(item.node) || !ViewerUtils.isSafeSegment(item.id)) {
+        console.log('ERROR - cron send skipping session with a bad node or id');
+        continue;
+      }
       if (!nodes[item.node]) {
         nodes[item.node] = [];
       }
@@ -559,8 +558,7 @@ class CronAPIs {
             resolve();
           });
           preq.setHeader('content-type', 'application/x-www-form-urlencoded');
-          preq.write('ids=');
-          preq.write(nodes[node].join(','));
+          preq.write('ids=' + encodeURIComponent(nodes[node].join(',')));
           preq.end();
           CronAPIs.#qlworking[url.pathname] = 'sent';
         });
@@ -626,7 +624,7 @@ class CronAPIs {
         if (hits.length > 0) {
           const doc = { doc: { count: (cq.count || 0) + count } };
           try {
-            await Db.update('queries', options.qid, doc, { refresh: true });
+            await Db.updateQuery(options.qid, doc.doc);
           } catch (err) {
             console.log('ERROR CRON - updating query', err);
           }
@@ -659,12 +657,11 @@ class CronAPIs {
     async.doWhilst(async () => {
       repeat = false;
       try {
-        const data = await Db.search('queries', { size: 1000 });
+        const data = await Db.searchQueries({ size: 1000 });
 
         const queries = {};
-        for (const item of data.hits.hits) {
-          if (item._id === 'primary-viewer') { continue; }
-          queries[item._id] = item._source;
+        for (const item of data.data) {
+          queries[item.id] = item.doc;
         }
 
         // Delayed by the max Timeout
@@ -694,6 +691,12 @@ class CronAPIs {
           }
           if (!user.enabled) {
             console.log(`CRON - User '${cq.creator}' has been disabled on users tab, either delete their cron jobs or enable them`);
+            continue;
+          }
+          if (user.getPermission('disableCron') === true) {
+            if (Config.debug) {
+              console.log(`CRON - User '${cq.creator}' has disableCron set, skipping '${cq.name}', either transfer their cron jobs or clear disableCron`);
+            }
             continue;
           }
 
@@ -766,7 +769,7 @@ class CronAPIs {
           };
 
           try {
-            await Db.update('queries', qid, doc, { refresh: true });
+            await Db.updateQuery(qid, doc.doc);
           } catch (err) {
             console.log('ERROR CRON - updating query', err);
           }
@@ -800,12 +803,10 @@ ${Config.arkimeWebURL()}${urlPath}${cq.description ? '\n' + ArkimeUtil.safeStr(c
 
             // persist the notification state so the 10-minute throttle works
             try {
-              await Db.update('queries', qid, {
-                doc: {
-                  lastNotified: doc.doc.lastNotified,
-                  lastNotifiedCount: doc.doc.lastNotifiedCount
-                }
-              }, { refresh: true });
+              await Db.updateQuery(qid, {
+                lastNotified: doc.doc.lastNotified,
+                lastNotifiedCount: doc.doc.lastNotifiedCount
+              });
             } catch (err) {
               console.log('ERROR CRON - updating lastNotified', err);
             }

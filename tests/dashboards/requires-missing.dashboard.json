@@ -1,0 +1,12 @@
+{
+  "name": "Test requires missing",
+  "description": "Requires a field that doesn't exist, so it is hidden (api-dashboards.t)",
+  "requires": ["protocols", "no.such.field"],
+  "data": {
+    "version": 1,
+    "folder": "Test",
+    "widgets": [
+      { "id": "w0", "field": "no.such.field", "viewMode": "bar", "width": 4, "height": 3 }
+    ]
+  }
+}

@@ -32,9 +32,7 @@ process.env.TZ = 'UTC';
 
 const root = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
 const read = (file) => fs.readFileSync(path.join(root, file), 'utf8');
-const { escapeHtml, commaString } = await import('../common/vueapp/vueFilters.js');
-// cont3xt's @common is cont3xt/common/vueapp
-const { safeUrl, parseSeconds } = await import('../cont3xt/common/vueapp/vueFilters.js');
+const { escapeHtml, commaString, safeUrl, parseSeconds } = await import('../common/vueapp/vueFilters.js');
 const en = JSON.parse(read('common/vueapp/locales/en.json'));
 
 const XSS = '<img src=x onerror="alert(document.domain)">';
@@ -222,6 +220,7 @@ describe('viewer value actions', () => {
       getInfo: () => ({ field: 'host.http', category: ['host'], info: { dbField: 'http.host' } }),
       getSession: () => ({ id: 'id1', node: 'node1', nodehost: 'nodehost1' }),
       $route: { query: { date: '1' } },
+      $store: { state: { timeRange: 1, time: {} } },
       clearMenuItems () {},
       menuItems: {},
       asyncMenuItems: {}

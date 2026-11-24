@@ -1,4 +1,4 @@
-use Test::More tests => 132;
+use Test::More tests => 142;
 use Cwd;
 use IO::Socket::INET;
 use IO::Select;
@@ -21,6 +21,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
 # notifier types
   my $notifierTypes = viewerGetToken("/api/notifiertypes", $token);
   ok(exists $notifierTypes->{email}, "email notifier exists");
+  ok(exists $notifierTypes->{pushover}, "pushover notifier exists");
   ok(exists $notifierTypes->{slack}, "slack notifier exists");
   ok(exists $notifierTypes->{snmp}, "snmp notifier exists");
   ok(exists $notifierTypes->{syslog}, "syslog notifier exists");
@@ -114,6 +115,24 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   my $teamsId = $json->{notifier}->{id};
   $json = viewerDeleteToken("/api/notifier/$teamsId", $token);
   ok($json->{success}, "teams notifier delete success");
+
+# pushover notifier
+  my $pushoverFields = '{"name":"appToken","value":"azGDORePK8gMaC0QOYAMyEEuzJnyUi"},{"name":"userKey","value":"uQiRzpo4DXghDmr9QzzfQu27cmVRsG"}';
+  $json = viewerPostToken("/api/notifier", '{"name":"pushover1","type":"pushover","fields":[{"name":"userKey","value":"uQiRzpo4DXghDmr9QzzfQu27cmVRsG"}]}', $token);
+  is($json->{text}, "Missing a value for appToken", "pushover required field caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"priority\",\"value\":\"3\"}]}", $token);
+  is($json->{text}, "Priority must be -2, -1, 0, 1, or 2", "pushover bad priority caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"priority\",\"value\":\"2\"},{\"name\":\"retry\",\"value\":\"10\"}]}", $token);
+  is($json->{text}, "Retry must be a number of seconds, at least 30", "pushover short emergency retry caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"priority\",\"value\":\"2\"},{\"name\":\"expire\",\"value\":\"3600\"}]}", $token);
+  is($json->{text}, "Pushover stops an emergency alert after 50 repeats, so expire can be at most 50 times retry (3000)", "pushover emergency expire past 50 repeats caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"encryptionKey\",\"value\":\"notahexkey\"}]}", $token);
+  is($json->{text}, "Encryption key must be 64 hex characters", "pushover bad encryption key caught");
+  $json = viewerPostToken("/api/notifier", "{\"name\":\"pushover1\",\"type\":\"pushover\",\"fields\":[$pushoverFields,{\"name\":\"priority\",\"value\":\"2\"},{\"name\":\"encryptionKey\",\"value\":\"4f3c2a1b0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a39281706f5e4d3c2b1a090\"}]}", $token);
+  ok($json->{success}, "pushover notifier create success");
+  my $pushoverId = $json->{notifier}->{id};
+  $json = viewerDeleteToken("/api/notifier/$pushoverId", $token);
+  ok($json->{success}, "pushover notifier delete success");
 
 # roles validation - create with non-array roles should fail
   $json = viewerPostToken("/api/notifier", '{"name":"badroles","type":"slack","fields":[{"name":"slackWebhookUrl","value":"test"}],"roles":"notanarray"}', $token);
@@ -244,6 +263,12 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   ok($json->{success}, "syslog notifier update success");
   is($json->{notifier}->{name}, "syslog1a", "syslog notifier name updated");
 
+# syslog notifier - a CRLF in the tag would inject lines into the tcp stream
+  $json = viewerPutToken("/api/notifier/$syslogId", '{"name":"syslog1a","type":"syslog","fields":[{"name":"host","value":"localhost"},{"name":"port","value":"514"},{"name":"protocol","value":"tcp"},{"name":"tag","value":"arkime\\r\\nSET x 1\\r\\n"}]}', $token);
+  is($json->{text}, "Notifier field tag can not contain control characters", "syslog tag with a CRLF refused");
+  my $syslogMsg = `cd ../common && node -e "process.stdout.write(require('./notifier.syslog.js').buildSyslogMessage({tag:'x\\r\\nSET a 1'}, 'm'))" 2>&1`;
+  like($syslogMsg, qr/^<\d+>1 \S+ \S+ arkime \d+ - - m$/, "a stored tag with a CRLF is replaced at send time");
+
 # cleanup
   $json = viewerDeleteToken("/api/notifier/$syslogId", $token);
   ok($json->{success}, "syslog notifier delete success");
@@ -353,7 +378,7 @@ viewerGet("/regressionTests/deleteAllNotifiers");
   ok($lpValue, "periodic query starts at the oldest session");
   viewerGet("/regressionTests/processCronQueries"); # let the run the create kicked off finish, it advances lpValue
   # now a matching query, the start reset, and the notifier twice like a doc saved before the api deduped them
-  $json = esPost("/tests_queries/_update/$alertKey?refresh=true", "{\"doc\":{\"notifier\":\"$sysId,$sysId\",\"query\":\"file=*/pcap/smtp-originating.pcap\",\"lpValue\":$lpValue}}");
+  $json = viewerPost("/regressionTests/updateQuery/$alertKey", "{\"notifier\":\"$sysId,$sysId\",\"query\":\"file=*/pcap/smtp-originating.pcap\",\"lpValue\":$lpValue}");
   is($json->{result}, "updated", "stored the notifier twice behind the api's back");
   my ($alertCron) = grep { $_->{key} eq $alertKey } @{viewerGetToken("/api/crons", $token)};
   is_deeply($alertCron->{notifier}, [$sysId, $sysId], "the periodic query now lists the notifier twice");

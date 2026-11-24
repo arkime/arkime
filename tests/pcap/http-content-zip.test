@@ -65,6 +65,10 @@
       "/a.zip"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -87,6 +91,10 @@
       "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"
      ],
      "requestHeaderValueCnt" : 4,
+     "responseBodyLen" : [
+      310
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "accept-ranges",
       "connection",

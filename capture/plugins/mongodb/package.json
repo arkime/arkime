@@ -1,0 +1,11 @@
+{
+  "name": "arkime-mongodb",
+  "version": "1.0.0",
+  "description": "MongoDB sessions, users, cont3xt and cluster db plugin for Arkime",
+  "private": true,
+  "license": "Apache-2.0",
+  "main": "mongodb.js",
+  "dependencies": {
+    "mongodb": "7.7.0"
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "name": "DNP3",
+  "description": "DNP3 sessions: protocols == dnp3",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == dnp3",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "dnp3.funcName",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "DNP3 sessions by dnp3.funcName"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "DNP3 sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "DNP3 bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "dnp3.src",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "DNP3 sources"
+      },
+      {
+        "id": "w5",
+        "field": "dnp3.dst",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "DNP3 destinations"
+      },
+      {
+        "id": "w6",
+        "field": "dnp3.funcName",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Functions"
+      },
+      {
+        "id": "w7",
+        "field": "dnp3.func",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Function codes"
+      },
+      {
+        "id": "w8",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "dnp3.src",
+          "dnp3.dst",
+          "dnp3.funcName"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

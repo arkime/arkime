@@ -1,5 +1,5 @@
 { 
   "cooldown": 3,
 
-  "reject": ["@elastic/elasticsearch", "express"]
+  "reject": ["@elastic/elasticsearch", "express", "vite"]
 }

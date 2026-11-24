@@ -58,6 +58,10 @@
      "requestBody" : [
       "aGVsbG8NCg=="
      ],
+     "requestBodyLen" : [
+      12
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "connection",
       "content-length",
@@ -76,6 +80,11 @@
       "keep-alive"
      ],
      "requestHeaderValueCnt" : 3,
+     "responseBodyLen" : [
+      "0",
+      "445"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "cache-control",
       "content-length",

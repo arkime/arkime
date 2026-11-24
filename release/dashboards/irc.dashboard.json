@@ -1,0 +1,118 @@
+{
+  "name": "IRC",
+  "description": "IRC sessions: protocols == irc",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == irc",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "irc.channel",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "IRC sessions by irc.channel"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "IRC sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "IRC bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "irc.nick",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Nicks"
+      },
+      {
+        "id": "w5",
+        "field": "irc.channel",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Channels"
+      },
+      {
+        "id": "w6",
+        "field": "irc.channel",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Channels"
+      },
+      {
+        "id": "w7",
+        "field": "irc.nick",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Nicks"
+      },
+      {
+        "id": "w8",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "irc.channel",
+          "irc.nick"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

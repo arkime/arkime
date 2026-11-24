@@ -1,4 +1,4 @@
-use Test::More tests => 129;
+use Test::More tests => 130;
 use ArkimeTest;
 use JSON;
 use Test::Differences;
@@ -50,6 +50,9 @@ is($form->code, 415, "text/plain body is refused");
 $form = $ArkimeTest::userAgent->post("$MCP?arkimeRegressionUser=superAdmin",
     Content => '{"jsonrpc":"2.0","id":1,"method":"ping"}', "Content-Type" => "application/json; charset=utf-8");
 is($form->code, 200, "json with a charset is fine");
+$form = $ArkimeTest::userAgent->post("$MCP?arkimeRegressionUser=superAdmin",
+    Content => '{"jsonrpc":"2.0","id":1,"method":"ping"}', "Content-Type" => "application/json; charset=utf-7");
+is(from_json($form->content)->{error}->{message}, "Parse error", "json in a charset other than utf-8 is refused, the guards only read utf-8");
 
 ################################################################################
 # auth - the gateway contract: 401 + WWW-Authenticate, never a redirect

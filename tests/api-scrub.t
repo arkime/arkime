@@ -12,7 +12,7 @@ my $token = getTokenCookie();
 
 countTest(0, "date=-1&expression=" . uri_escape("file=$copytest"));
 
-system("../db/db.pl --prefix tests $ArkimeTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
+clusterDeleteWhere(8123, "files", {name => $copytest});
 viewerPost("/regressionTests/flushCache");
 system("/bin/cp pcap/socks-http-example.pcap copytest.pcap");
 system("../capture/capture $ArkimeTest::es -c config.test.ini -n test -r copytest.pcap $ENV{INSECURE} $ENV{SCHEME}");
@@ -85,7 +85,7 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 # to every normal viewer (Db.isLocalView compares hostnames), so the multiviewer
 # on 8125 is the only way in here: multiES sets Db.isLocalView to always false,
 # which sends the scrub out over ViewerUtils.makeRequest to the owning node.
-    system("../db/db.pl --prefix tests $ArkimeTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
+    clusterDeleteWhere(8123, "files", {name => $copytest});
     viewerPost("/regressionTests/flushCache");
     system("/bin/cp pcap/socks-http-example.pcap copytest.pcap");
     system("../capture/capture $ArkimeTest::es -c config.test.ini -n test -r copytest.pcap $ENV{INSECURE} $ENV{SCHEME}");
@@ -118,7 +118,7 @@ countTest(3, "date=-1&expression=" . uri_escape("file=$copytest"));
 
 # cleanup
     unlink("copytest.pcap");
-    system("../db/db.pl --prefix tests $ArkimeTest::elasticsearch rm $copytest 2>&1 1>/dev/null");
+    clusterDeleteWhere(8123, "files", {name => $copytest});
     viewerPost("/regressionTests/flushCache");
     esGet("/_flush");
     esGet("/_refresh");

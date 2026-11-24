@@ -1,0 +1,138 @@
+{
+  "name": "STUN",
+  "description": "STUN sessions: protocols == stun",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == stun",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "stun.type",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "STUN sessions by stun.type"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "STUN sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "STUN bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "stun.software",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Software"
+      },
+      {
+        "id": "w5",
+        "field": "stun.type",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Message types"
+      },
+      {
+        "id": "w6",
+        "field": "stun.mapped-ip",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Mapped IPs"
+      },
+      {
+        "id": "w7",
+        "field": "stun.xor-mapped-ip",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "XOR mapped IPs"
+      },
+      {
+        "id": "w8",
+        "field": "stun.username",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Usernames"
+      },
+      {
+        "id": "w9",
+        "field": "stun.realm",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Realms"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "stun.type",
+          "stun.mapped-ip",
+          "stun.xor-mapped-ip",
+          "stun.software"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

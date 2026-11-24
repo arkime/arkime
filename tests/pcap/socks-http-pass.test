@@ -332,6 +332,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "host",
@@ -345,6 +349,10 @@
       "*/*"
      ],
      "requestHeaderValueCnt" : 1,
+     "responseBodyLen" : [
+      1270
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "accept-ranges",
       "cache-control",
@@ -479,9 +487,34 @@
      "ASN" : "AS15133 MCI Communications Services, Inc. d/b/a Verizon Business",
      "GEO" : "US",
      "RIR" : "RIPE",
+     "boundASN" : [
+      "---"
+     ],
+     "boundGEO" : [
+      "US"
+     ],
+     "boundIp" : [
+      "10.180.156.249"
+     ],
+     "boundIpCnt" : 1,
+     "boundPort" : [
+      33214
+     ],
+     "boundPortCnt" : 1,
+     "boundRIR" : [
+      ""
+     ],
      "ip" : "93.184.216.119",
      "port" : 80,
-     "user" : "testuser"
+     "status" : [
+      "succeeded"
+     ],
+     "statusCnt" : 1,
+     "user" : "testuser",
+     "version" : [
+      5
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "bytes" : 984,

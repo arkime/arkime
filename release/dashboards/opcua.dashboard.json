@@ -1,0 +1,118 @@
+{
+  "name": "OPC UA",
+  "description": "OPC UA sessions: protocols == opcua",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == opcua",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "opcua.securityPolicyUri",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "OPC UA sessions by opcua.securityPolicyUri"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "OPC UA sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "OPC UA bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "opcua.endpointUrl",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Endpoint URLs"
+      },
+      {
+        "id": "w5",
+        "field": "opcua.securityPolicyUri",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Security policies"
+      },
+      {
+        "id": "w6",
+        "field": "opcua.endpointUrl",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Endpoint URLs"
+      },
+      {
+        "id": "w7",
+        "field": "ip.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "OPC UA servers"
+      },
+      {
+        "id": "w8",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "opcua.endpointUrl",
+          "opcua.securityPolicyUri"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

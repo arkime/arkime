@@ -1,0 +1,1 @@
+{ "description": "no name, so it is skipped (api-dashboards.t)", "data": { "widgets": [ { "id": "w0", "viewMode": "stats" } ] } }

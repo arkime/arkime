@@ -100,8 +100,33 @@
     "socks" : {
      "ASN" : "AS0 This is neat",
      "GEO" : "RU",
+     "boundASN" : [
+      "---"
+     ],
+     "boundGEO" : [
+      "---"
+     ],
+     "boundIp" : [
+      "0.0.0.0"
+     ],
+     "boundIpCnt" : 1,
+     "boundPort" : [
+      0
+     ],
+     "boundPortCnt" : 1,
+     "boundRIR" : [
+      ""
+     ],
      "ip" : "10.0.0.1",
-     "port" : 3389
+     "port" : 3389,
+     "status" : [
+      "succeeded"
+     ],
+     "statusCnt" : 1,
+     "version" : [
+      5
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "as" : {

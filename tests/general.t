@@ -1,4 +1,4 @@
-use Test::More tests => 746;
+use Test::More tests => 759;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -204,6 +204,16 @@ my $pwd = "*/pcap";
     countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/sctp-www.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=132"));
     countTest(3, "date=-1&expression=" . uri_escape("(file=$pwd/sctp-www.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=sctp"));
     countTest(24, "date=-1&expression=" . uri_escape("(file=$pwd/wireshark-esp.pcap||file=$pwd/bt-tcp.pcap)&&ip.protocol=esp"));
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/cloudshark-arp.pcap&&ip.protocol=not-ip"));
+    countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/cloudshark-arp.pcap&&ip.protocol!=not-ip"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/cloudshark-arp.pcap&&ip.protocol=[not-ip,icmp]"));
+
+# ethertype
+    my $json = countTest(2, "date=-1&fields=ethertype&expression=" . uri_escape("file=$pwd/cloudshark-arp.pcap&&ethertype=2054"));
+    is($json->{data}->[0]->{ethertype}, 2054, "ethertype is a single value");
+    countTest(2, "date=-1&expression=" . uri_escape("file=$pwd/cloudshark-arp.pcap&&ethertype=arp"));
+    countTest(3, "date=-1&expression=" . uri_escape("file=$pwd/cloudshark-arp.pcap&&ethertype=[arp,ipv4]"));
+
 # IP:Port tests
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0.2:50759"));
     countTest(1, "date=-1&expression=" . uri_escape("file=$pwd/bt-udp.pcap&&ip.src=10.0.0:50759"));

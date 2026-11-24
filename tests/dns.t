@@ -1,4 +1,4 @@
-use Test::More tests => 142;
+use Test::More tests => 192;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -93,7 +93,7 @@ countTest(1, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.ip==69.20
 
 # dns.answer.cname
 countTest(2, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.cname==github.com"));
-countTest(0, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.cname==GITHUB.COM"));
+countTest(2, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.cname==GITHUB.COM"));
 
 # dns.answer.ns
 countTest(2, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.ns==ns2.p16.dynect.net"));
@@ -129,3 +129,42 @@ countTest(8, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.class==IN
 # dns.answer.ttl
 countTest(1, "date=-1&expression=" . uri_escape("$dnsfiles&&dns.answer.ttl==1980"));
 
+# Raw UTF-8 names, see sec_dns_utf8_names in gen/gen_dnssec_synthetic.py
+my $u8 = "file=$pwd/dnssec_synthetic.pcap";
+
+# valid UTF-8 names are saved as sent instead of cat -v escaped
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&host.dns==\"andy’s macbook pro._airplay._tcp.local\""));
+countTest(0, "date=-1&expression=" . uri_escape("$u8&&host.dns==\"andym-bm-^\@m-^ys macbook pro._airplay._tcp.local\""));
+countTest(3, "date=-1&expression=" . uri_escape("$u8&&host.dns==\"café*\""));
+
+# raw UTF-8 and decoded punycode with uppercase letters are both saved lowercase
+countTest(2, "date=-1&expression=" . uri_escape("$u8&&host.dns==café.example.com"));
+countTest(2, "date=-1&expression=" . uri_escape("$u8&&host.dns==CAFÉ.EXAMPLE.COM"));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&host.dns==café.example.com&&dns.puny==xn--caf-dma.example.com"));
+
+# names that aren't valid hostnames lowercase their non ASCII letters too, mDNS and LLMNR don't tag them
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&protocols==llmnr&&dns.query.host==\"büro pc\""));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&protocols==llmnr&&dns.query.host==\"BÜRO PC\""));
+countTest(0, "date=-1&expression=" . uri_escape("$u8&&protocols==[llmnr,mdns]&&tags==[bad-hostname,dns:raw-utf8]"));
+countTest(3, "date=-1&expression=" . uri_escape("$u8&&protocols==dns&&tags==dns:raw-utf8"));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&protocols==dns&&tags==bad-hostname&&tags==dns:raw-utf8"));
+
+# answer names are saved lowercase and searched ignoring case
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.ptr==\"café speaker._airplay._tcp.local\""));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.ptr==\"Café Speaker._airplay._tcp.local\""));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.name==\"Café Shop.example.com\""));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.cname==ÉCOLE.example.com"));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.mx==\"Mail Größe.example.com\""));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.ns==\"NS Zürich.example.com\""));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&host.dns==école.example.com&&host.dns.mailserver==\"mail größe.example.com\"&&host.dns.nameserver==\"ns zürich.example.com\""));
+
+# fullwidth letters and ideographic full stops aren't folded into another hostname
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&host.dns==\xef\xbd\x87oogle.com"));
+countTest(0, "date=-1&expression=" . uri_escape("$u8&&host.dns==google.com"));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&host.dns==\"evil\xe3\x80\x82google.com\""));
+countTest(0, "date=-1&expression=" . uri_escape("$u8&&host.dns==evil.google.com"));
+
+# right-to-left override and zero width space are escaped, emoji joined with a zero width joiner are kept
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.ptr==\"abcm-bm-^\@m-.cod.exe._airplay._tcp.local\""));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.ptr==\"zerom-bm-^\@m-^kwidth._airplay._tcp.local\""));
+countTest(1, "date=-1&expression=" . uri_escape("$u8&&dns.answer.ptr==\"family \xf0\x9f\x91\xa8\xe2\x80\x8d\xf0\x9f\x91\xa9\xe2\x80\x8d\xf0\x9f\x91\xa7 tv._airplay._tcp.local\""));
