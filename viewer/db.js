@@ -245,7 +245,7 @@ Db.initialize = async (info) => {
   let clusterDbUrl;
   if (!internals.multiES) {
     const urls = ArkimeConfig.dbUrls();
-    const norm = (list) => [list].flat().map(u => (u.includes('://') ? u : 'http://' + u).replace(/\/+$/, '')).join(',');
+    const norm = (list) => [list].flat().map(u => ArkimeUtil.removeTrailingSlashes(u.includes('://') ? u : 'http://' + u)).join(',');
     if (!ArkimeConfig.isEsUrl(urls[0]) || norm(urls) !== norm(internals.info.host)) {
       clusterDbUrl = urls.join(',');
     }

@@ -64,7 +64,7 @@ class MISPSource extends WISESource {
       console.log(this.section, '- ERROR not loading since missing url or key');
       return;
     }
-    this.url = this.url.replace(/\/+$/, '');
+    this.url = ArkimeUtil.removeTrailingSlashes(this.url);
 
     this.serverName = api.getConfig(section, 'name', section.substring(5));
     this.last = api.getConfig(section, 'last', this.mode === 'bulk' ? '30d' : undefined);
