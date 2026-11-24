@@ -1,22 +1,24 @@
 /******************************************************************************/
-/* SourceIP.io integration for Cont3xt
+/* SourceIP.io integration, contributed by Alan Keister (@AlanKK)
  *
- * Resolves an IP to the operator that publishes it, how that operator uses the
- * space (self_operated / shared_platform / general_use) and the ASN/RIR data.
- * Install into /opt/arkime/cont3xt/integrations/sourceip/ (see README.md).
- * API docs: https://sourceip.io/api
+ * Who operates a public IP and how they use it (self_operated,
+ * shared_platform or general_use), plus the ASN origins and registry
+ * allocation. https://sourceip.io/api
+ *
+ * SPDX-License-Identifier: Apache-2.0
  */
 const Integration = require('../../integration.js');
 const axios = require('axios');
 
 const ANON_URL = 'https://sourceip.io/api/v1/lookup';
+const DEFAULT_ENDPOINT = 'https://api.sourceip.io';
 
 class SourceIPIntegration extends Integration {
   name = 'SourceIP.io';
   section = 'sourceip';
   icon = 'integrations/sourceip/icon.png';
   order = 335;
-  // the dataset is rebuilt daily and quota is small (100/day anon, 1000/day free key)
+  // the dataset is rebuilt daily and the quota is small (100/day anonymous, 1000/day with a free key)
   cacheTimeout = '1d';
   itypes = {
     ip: 'fetchIp'
@@ -29,12 +31,12 @@ class SourceIPIntegration extends Integration {
       type: 'boolean'
     },
     key: {
-      help: 'Optional SourceIP.io API key (free key: 1,000 lookups/day instead of 100). Can also be set with the SOURCEIP_API_KEY environment variable.',
+      help: 'Optional SourceIP.io API key, a free key allows 1,000 lookups a day instead of 100',
       password: true,
       required: false
     },
     endpoint: {
-      help: 'Keyed API endpoint, normally https://api.sourceip.io (no trailing path). Both this and the key are needed for keyed lookups; otherwise the anonymous endpoint is used. Can also be set with SOURCEIP_ENDPOINT.',
+      help: `The endpoint that came with your key, default ${DEFAULT_ENDPOINT}. Only used with your own key`,
       required: false
     }
   };
@@ -92,22 +94,52 @@ class SourceIPIntegration extends Integration {
     ]
   };
 
+  tidbits = {
+    order: 335,
+    fields: [
+      {
+        tooltip: 'SourceIP.io provider',
+        field: 'providers',
+        fieldRoot: 'name',
+        type: 'array',
+        display: 'primaryGroup'
+      }
+    ]
+  };
+
+  #endpoint;
+  #axiosTls;
+
   constructor () {
     super();
+
+    this.#endpoint = this.getConfig('endpoint', DEFAULT_ENDPOINT).replace(/\/+$/, '');
+    // insecure/caTrustFile/client certs apply to the configured endpoint only
+    this.#axiosTls = this.axiosTls(this.#endpoint);
 
     Integration.register(this);
   }
 
   async fetchIp (user, ip) {
     try {
-      const key = this.getUserConfig(user, 'key') ?? process.env.SOURCEIP_API_KEY;
-      const endpoint = (this.getUserConfig(user, 'endpoint') ?? process.env.SOURCEIP_ENDPOINT ?? '').replace(/\/+$/, '');
+      const key = this.getUserConfig(user, 'key');
+      // a user's own endpoint is only used with the user's own key, so the
+      // configured key is never sent to a host a user picked
+      let endpoint = this.#endpoint;
+      if (this.hasUserConfig(user, 'key') && this.hasUserConfig(user, 'endpoint')) {
+        endpoint = this.getUserConfig(user, 'endpoint').replace(/\/+$/, '');
+      }
 
       const headers = { 'User-Agent': this.userAgent() };
       if (key) { headers['x-api-key'] = key; }
-      const url = (key && endpoint) ? `${endpoint}/v1/lookup` : ANON_URL;
+      const url = key ? `${endpoint}/v1/lookup` : ANON_URL;
 
-      const res = await axios.get(url, { params: { ip }, headers });
+      const res = await axios.get(url, {
+        params: { ip },
+        headers,
+        timeout: 30 * 1000,
+        ...(key && endpoint === this.#endpoint ? this.#axiosTls : {})
+      });
       const d = res.data;
 
       const providers = (d.providers ?? []).map((p) => ({
@@ -120,7 +152,7 @@ class SourceIPIntegration extends Integration {
         region: p.location?.region_name ?? p.location?.region,
         city: p.location?.city
       }));
-      // the API lists an origin once per source (rpki and irr); merge them into one row per asn+prefix
+      // the API lists an origin once per source (rpki and irr), merge them into one row per asn+prefix
       const merged = new Map();
       for (const o of (d.network?.origins ?? [])) {
         const k = `${o.asn}|${o.prefix}`;
@@ -150,11 +182,11 @@ class SourceIPIntegration extends Integration {
         _cont3xt: { count: providers.length }
       };
     } catch (err) {
-      const status = err?.response?.status;
-      if (status === 404 || status === 400) {
-        return Integration.NoResult; // unparseable / unknown address
+      const httpStatus = err?.response?.status;
+      if (httpStatus === 404 || httpStatus === 400) {
+        return Integration.NoResult; // unparseable or unknown address
       }
-      if (status === 429) {
+      if (httpStatus === 429) {
         console.log(this.name, ip, 'rate limited, quota resets at', err.response.headers?.['x-ratelimit-reset']);
         return undefined;
       }

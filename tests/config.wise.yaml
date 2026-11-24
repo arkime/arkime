@@ -91,6 +91,13 @@ misp:api:
   mode: api
   tags: mispapi
   onlyIPs: 10.66.0.0/16
+# onlyIPs keeps capture's lookups of the test pcap IPs away from it
+sourceip:
+  key: sourceip-test-key
+  endpoint: https://localhost:9998
+  insecure: true
+  batchWaitMs: 50
+  onlyIPs: 3.5.140.0/24;2600:1f18:7a00::/40;192.168.77.0/24
 databricks:test:
   type: databrickstest
   tags: databrickswise

@@ -1,28 +1,26 @@
 /******************************************************************************/
-/* SourceIP.io source for WISE
+/* SourceIP.io source, contributed by Alan Keister (@AlanKK)
  *
- * Adds a "SourceIP.io Provider" field (sourceip.provider) to sessions whose IP is public, so it can be
- * shown as a column next to Dst ASN. Install into /opt/arkime/wiseService/ (see README.md).
- * Configured by the [sourceip] section of wiseService.ini.
+ * Fills sourceip.provider with the operators that publish a public IP.
+ * With a key, IPs that arrive within batchWaitMs go in one POST
+ * /v1/lookup/batch (max 100), without one each IP is a GET on the anonymous
+ * endpoint (100/day, shared with Cont3xt). Only public IPs are sent, and a
+ * daily budget plus the server's rate limit headers keep it inside the quota.
+ * https://sourceip.io/api
  *
- * With SOURCEIP_API_KEY + SOURCEIP_ENDPOINT (https://api.sourceip.io) lookups are batched: IPs that
- * arrive within batchWaitMs are sent in one POST /v1/lookup/batch (max 100). Without a key it falls back to
- * one GET /api/v1/lookup per IP on the anonymous quota (100/day, shared with Cont3xt).
- * Guards: public IPs only, 1 day cache, daily budget, pause on 429 (Retry-After / quota reset).
- * Each request is a single attempt with a hard deadline (timeoutMs, default 4000), so batchWaitMs + timeoutMs stays under
- * WISE's own 5 s response timeout. (A retry never helped: when api.sourceip.io stalls, the second attempt stalls too.) A call that still fails yields "no result"
- * for its IPs instead of failing capture's whole /get batch.
+ * SPDX-License-Identifier: Apache-2.0
  */
 'use strict';
 
-const https = require('https');
+const axios = require('axios');
 const net = require('net');
 const WISESource = require('./wiseSource.js');
 
 const ANON_URL = 'https://sourceip.io/api/v1/lookup';
+const DEFAULT_ENDPOINT = 'https://api.sourceip.io';
 const MAX_BATCH = 100;
 
-// Non-public ranges: these would cost quota and carry no operator info worth showing.
+// Non-public ranges are never sent, they would only spend quota and leak internal addresses
 const privateList = new net.BlockList();
 [
   ['0.0.0.0', 8], ['10.0.0.0', 8], ['100.64.0.0', 10], ['127.0.0.0', 8], ['169.254.0.0', 16],
@@ -39,189 +37,224 @@ function isPublic (ip) {
   return family !== undefined && !privateList.check(ip, family);
 }
 
-class SourceIPSource extends WISESource {
-  constructor (api, section) {
-    super(api, section, { cacheTimeout: 60 * 60 * +api.getConfig(section, 'cacheAgeMin', '1440') });
+function utcDay () {
+  return new Date().toISOString().slice(0, 10);
+}
 
+class SourceIPSource extends WISESource {
+  // ----------------------------------------------------------------------------
+  constructor (api, section) {
+    super(api, section, { cacheTimeout: 60 * +api.getConfig(section, 'cacheAgeMin', 1440), tlsSettings: 'endpoint' });
+    if (this.tlsOptions === undefined) { return; } // bad TLS settings, already logged
+
+    this.key = api.getConfig(section, 'key');
+    this.endpoint = String(api.getConfig(section, 'endpoint', DEFAULT_ENDPOINT)).replace(/\/+$/, '');
     this.field = api.getConfig(section, 'field', 'sourceip.provider');
-    this.key = api.getConfig(section, 'key', process.env.SOURCEIP_API_KEY);
-    this.endpoint = String(api.getConfig(section, 'endpoint', process.env.SOURCEIP_ENDPOINT) ?? '').replace(/\/+$/, '');
-    this.keyed = !!(this.key && this.endpoint);
-    // addresses per UTC day this source may spend; keep headroom for Cont3xt (shares the key's quota)
-    this.budget = +api.getConfig(section, 'dailyBudget', this.keyed ? '800' : '60');
-    this.reserve = +api.getConfig(section, 'reserve', this.keyed ? '100' : '0'); // stop when the server says <= this left
-    this.batchWaitMs = +api.getConfig(section, 'batchWaitMs', '500');
-    this.trace = String(api.getConfig(section, 'trace', 'false')) === 'true'; // log every public-IP lookup outcome
-    this.timeoutMs = +api.getConfig(section, 'timeoutMs', '4000'); // batchWaitMs + this must stay under WISE's 5 s
+    // lookups per UTC day, the key's quota is shared with Cont3xt so leave it some
+    this.dailyBudget = +api.getConfig(section, 'dailyBudget', this.key ? 800 : 60);
+    // pause once the server says this many or fewer lookups are left
+    this.reserve = +api.getConfig(section, 'reserve', this.key ? 100 : 0);
+    this.batchWaitMs = +api.getConfig(section, 'batchWaitMs', 500);
+    this.timeoutMs = +api.getConfig(section, 'timeoutMs', 4000);
+    this.trace = api.getConfigBool(section, 'trace', false);
+
+    for (const setting of ['dailyBudget', 'reserve', 'batchWaitMs', 'timeoutMs']) {
+      if (!Number.isInteger(this[setting]) || this[setting] < 0) {
+        console.log(`${section} - ERROR not loading since ${setting} must be a whole number >= 0`);
+        return;
+      }
+    }
+    if (this.batchWaitMs + this.timeoutMs >= 5000) {
+      console.log(`${section} - WARNING batchWaitMs + timeoutMs is ${this.batchWaitMs + this.timeoutMs}ms, WISE gives up on a request after 5000ms`);
+    }
 
     this.used = 0;
-    this.day = new Date().toISOString().slice(0, 10);
+    this.day = utcDay();
     this.blockedUntil = 0;
+    this.skipLogged = new Map();
     this.pending = new Map(); // ip -> [cb, ...]
-    this.timer = undefined;
 
-    this.theField = this.api.addField(
-      `field:${this.field};db:${this.field};kind:termfield;count:true;friendly:SourceIP.io Provider;` +
-      'help:Operator(s) of the public IP according to sourceip.io');
-    this.api.addSource(section, this, ['ip']);
-    console.log(this.section, this.keyed
-      ? `- keyed batch ${this.endpoint}/v1/lookup/batch, budget ${this.budget}/day, reserve ${this.reserve}`
-      : `- anonymous ${ANON_URL}, budget ${this.budget}/day`);
+    this.providerField = api.addField(`field:${this.field};db:${this.field};kind:termfield;count:true;friendly:SourceIP.io Provider;help:Operators that publish this public IP, from sourceip.io`);
+    api.addView('sourceip', `require:${this.field.split('.')[0]};title:SourceIP.io;fields:${this.field}`);
+    api.addValueAction('sourceip', { name: 'SourceIP.io', url: 'https://sourceip.io/lookup?ip=%TEXT%', category: 'ip' });
+    api.addSource(section, this, ['ip']);
+
+    console.log(this.section, this.key
+      ? `- batch lookups with a key on ${this.endpoint}, budget ${this.dailyBudget}/day, reserve ${this.reserve}`
+      : `- anonymous lookups on ${ANON_URL}, budget ${this.dailyBudget}/day`);
   }
 
-  // log why lookups were skipped, at most once a minute per reason
-  logSkip (reason, ...extra) {
-    this.skipLogged ??= {};
-    if (Date.now() - (this.skipLogged[reason] ?? 0) < 60 * 1000) { return; }
-    this.skipLogged[reason] = Date.now();
-    console.log(this.section, 'no result:', reason, ...extra, `(used ${this.used}/${this.budget})`);
-  }
-
-  // why lookups can't happen right now, or undefined if they can
-  blockReason (n) {
-    const today = new Date().toISOString().slice(0, 10);
+  // ----------------------------------------------------------------------------
+  // why lookups can't happen right now, at most one log a minute per reason
+  #blocked (n) {
+    const today = utcDay();
     if (today !== this.day) { this.day = today; this.used = 0; }
-    if (Date.now() < this.blockedUntil) { return `paused until ${new Date(this.blockedUntil).toISOString()}`; }
-    if (this.used + n > this.budget) { return 'daily budget exhausted'; }
-    return undefined;
+
+    let why;
+    if (Date.now() < this.blockedUntil) {
+      why = `paused until ${new Date(this.blockedUntil).toISOString()}`;
+    } else if (this.used + n > this.dailyBudget) {
+      why = 'daily budget used up';
+    } else {
+      return false;
+    }
+
+    const key = why.split(' ')[0];
+    if (Date.now() - (this.skipLogged.get(key) ?? 0) >= 60 * 1000) {
+      this.skipLogged.set(key, Date.now());
+      console.log(`${this.section} - not looking up, ${why} (used ${this.used}/${this.dailyBudget})`);
+    }
+    return true;
   }
 
-  // true if n more addresses may be looked up now; counts them against the budget
-  allow (n) {
-    const why = this.blockReason(n);
-    if (why) { this.logSkip(why); return false; }
+  // ----------------------------------------------------------------------------
+  // true if n more addresses may be looked up now, and counts them
+  #allow (n) {
+    if (this.#blocked(n)) { return false; }
     this.used += n;
     return true;
   }
 
-  // WISE result for a provider response entry
-  toResult (providers) {
+  // ----------------------------------------------------------------------------
+  #toResult (providers) {
     const names = [...new Set((providers ?? []).map((p) => p.name).filter(Boolean))];
     if (names.length === 0) { return WISESource.emptyResult; }
-    return WISESource.encodeResult.apply(null, names.flatMap((n) => [this.theField, n]));
+    return WISESource.encodeResult(...names.flatMap((n) => [this.providerField, n]));
   }
 
-  // Look at rate limit headers: pause on 429, and stop early once the server's remaining count hits the reserve
-  checkLimits (res) {
+  // ----------------------------------------------------------------------------
+  // pause on a 429, and stop early once the server's remaining count reaches the reserve
+  #checkLimits (res) {
     const reset = +res.headers['x-ratelimit-reset']; // epoch seconds, next UTC midnight
     const remaining = res.headers['x-ratelimit-remaining'];
-    if (res.statusCode === 429) {
+    if (res.status === 429) {
       const retry = +res.headers['retry-after'];
       const quotaGone = remaining !== undefined && +remaining <= 0;
       this.blockedUntil = (quotaGone && reset > 0) ? reset * 1000 : Date.now() + (retry > 0 ? retry * 1000 : 60 * 1000);
-      console.log(this.section, 'rate limited, pausing until', new Date(this.blockedUntil).toISOString());
+      console.log(`${this.section} - rate limited, pausing until ${new Date(this.blockedUntil).toISOString()}`);
     } else if (remaining !== undefined && +remaining <= this.reserve && reset > 0) {
       this.blockedUntil = reset * 1000;
-      console.log(this.section, `only ${remaining} lookups left, pausing until`, new Date(this.blockedUntil).toISOString());
+      console.log(`${this.section} - only ${remaining} lookups left, pausing until ${new Date(this.blockedUntil).toISOString()}`);
     }
   }
 
-  // one attempt; done(err) on timeout/network error, done(null, status, data) once a response is complete
-  attempt (method, url, body, done) {
+  // ----------------------------------------------------------------------------
+  // One attempt with a deadline for the whole request, a retry never helps when
+  // the API stalls. Returns the response, or undefined after logging the error
+  async #call (method, url, data) {
     const headers = { 'User-Agent': 'arkime-wise-sourceip' };
     if (this.key) { headers['x-api-key'] = this.key; }
-    if (body) { headers['content-type'] = 'application/json'; }
-    let finished = false;
-    const finish = (...args) => {
-      if (finished) { return; }
-      finished = true;
-      clearTimeout(deadline);
-      done(...args);
-    };
-    // overall deadline (not just socket idle), so a slow or stalled response can't outlast WISE's 5 s timeout
-    const deadline = setTimeout(() => req.destroy(new Error(`timeout after ${this.timeoutMs} ms`)), this.timeoutMs);
-    const req = https.request(url, { method, headers }, (res) => {
-      let data = '';
-      res.on('data', (c) => { data += c; });
-      res.on('end', () => { this.checkLimits(res); finish(null, res.statusCode, data); });
-      res.on('error', (err) => finish(err));
-      res.on('aborted', () => finish(new Error('response aborted')));
-    });
-    req.on('error', (err) => finish(err));
-    req.end(body);
+    try {
+      const res = await axios({
+        method,
+        url,
+        data,
+        headers,
+        signal: AbortSignal.timeout(this.timeoutMs),
+        validateStatus: () => true,
+        // the TLS settings are for the endpoint, not the anonymous sourceip.io url
+        ...(url.startsWith(`${this.endpoint}/`) ? this.axiosTls : {})
+      });
+      this.#checkLimits(res);
+      return res;
+    } catch (err) {
+      console.log(`${this.section} - ${method} failed: ${err.message}`);
+      return undefined;
+    }
   }
 
-  // single attempt (no retry: a stalled API stalls the retry too, and the time is better spent waiting on the first)
-  request (method, url, body, done) {
-    this.attempt(method, url, body, done);
-  }
-
+  // ----------------------------------------------------------------------------
   getIp (ip, cb) {
-    // undefined = "not handled", which WISE does not cache, so these IPs are retried later
+    // undefined isn't cached by WISE, so skipped IPs are tried again later
     if (!isPublic(ip)) { return cb(null, undefined); }
+
     if (this.trace) {
-      const t0 = Date.now();
+      const start = Date.now();
       const orig = cb;
-      cb = (err, out) => {
-        const what = out === undefined ? 'UNDEFINED' : (out === WISESource.emptyResult ? 'empty' : 'providers');
-        console.log(this.section, 'trace', ip, what, `${Date.now() - t0}ms`);
-        orig(err, out);
+      cb = (err, result) => {
+        const what = result === undefined ? 'no answer' : (result === WISESource.emptyResult ? 'no provider' : 'provider');
+        console.log(`${this.section} - trace ${ip} ${what} ${Date.now() - start}ms`);
+        orig(err, result);
       };
     }
-    if (!this.keyed) { return this.getSingle(ip, cb); }
 
+    if (!this.key) { return this.#lookupOne(ip, cb); }
+
+    // each address in a batch is charged, so send duplicates once
     const waiting = this.pending.get(ip);
-    if (waiting) { return waiting.push(cb); } // duplicates are charged, so collapse them
-    const why = this.blockReason(1);
-    if (why) { this.logSkip(why); return cb(null, undefined); }
+    if (waiting) { waiting.push(cb); return; }
+    if (this.#blocked(this.pending.size + 1)) { return cb(null, undefined); }
+
     this.pending.set(ip, [cb]);
     if (this.pending.size >= MAX_BATCH) {
-      this.flush();
-    } else if (!this.timer) {
-      this.timer = setTimeout(() => this.flush(), this.batchWaitMs);
+      this.#flush();
+    } else {
+      this.timer ??= setTimeout(() => this.#flush(), this.batchWaitMs);
     }
   }
 
-  flush () {
+  // ----------------------------------------------------------------------------
+  async #flush () {
     clearTimeout(this.timer);
     this.timer = undefined;
-    const ips = [...this.pending.keys()].slice(0, MAX_BATCH);
-    const batch = ips.map((ip) => [ip, this.pending.get(ip)]);
-    ips.forEach((ip) => this.pending.delete(ip));
-    if (this.pending.size > 0) { this.timer = setTimeout(() => this.flush(), 0); }
-    if (batch.length === 0) { return; }
+    const batch = this.pending;
+    this.pending = new Map();
+    const ips = [...batch.keys()];
+    const answer = (ip, result) => batch.get(ip).forEach((cb) => cb(null, result));
 
-    const fail = () => batch.forEach(([, cbs]) => cbs.forEach((cb) => cb(null, undefined)));
-    if (!this.allow(ips.length)) { return fail(); }
+    if (!this.#allow(ips.length)) { return ips.forEach((ip) => answer(ip, undefined)); }
 
-    this.request('POST', `${this.endpoint}/v1/lookup/batch`, JSON.stringify({ ips }), (err, status, data) => {
-      if (err) { console.log(this.section, 'batch', err.message); return fail(); }
-      if (status !== 200) {
-        if (status !== 429) { console.log(this.section, 'batch HTTP', status); }
-        return fail();
-      }
-      let results;
-      try { results = JSON.parse(data).results; } catch (e) { console.log(this.section, 'batch', e.message); return fail(); }
-      batch.forEach(([ip, cbs], i) => {
-        const r = (results?.[i]?.ip === ip) ? results[i] : results?.find((x) => x.ip === ip);
-        if (r === undefined) { this.logSkip('IP missing from batch response', ip); }
-        const out = r === undefined ? undefined : (r.error ? WISESource.emptyResult : this.toResult(r.providers));
-        cbs.forEach((cb) => cb(null, out));
-      });
+    const res = await this.#call('POST', `${this.endpoint}/v1/lookup/batch`, { ips });
+    if (res?.status !== 200 || !Array.isArray(res.data?.results)) {
+      if (res && res.status !== 429) { console.log(`${this.section} - batch HTTP ${res.status}`); }
+      return ips.forEach((ip) => answer(ip, undefined));
+    }
+
+    // results are in the order sent, an address that didn't parse has an error instead of providers
+    const results = res.data.results;
+    ips.forEach((ip, i) => {
+      const r = results[i]?.ip === ip ? results[i] : results.find((x) => x?.ip === ip);
+      answer(ip, r === undefined ? undefined : (r.error ? WISESource.emptyResult : this.#toResult(r.providers)));
     });
   }
 
-  getSingle (ip, cb) {
-    if (!this.allow(1)) { return cb(null, undefined); }
-    const url = this.keyed ? `${this.endpoint}/v1/lookup` : ANON_URL;
-    this.request('GET', `${url}?ip=${encodeURIComponent(ip)}`, undefined, (err, status, data) => {
-      if (err) { console.log(this.section, ip, err.message); return cb(null, undefined); }
-      if (status === 400 || status === 404) { return cb(null, WISESource.emptyResult); }
-      if (status !== 200) {
-        if (status !== 429) { console.log(this.section, ip, 'HTTP', status); }
-        return cb(null, undefined);
-      }
-      try {
-        cb(null, this.toResult(JSON.parse(data).providers));
-      } catch (e) {
-        console.log(this.section, ip, e.message);
-        cb(null, undefined);
-      }
-    });
+  // ----------------------------------------------------------------------------
+  async #lookupOne (ip, cb) {
+    if (!this.#allow(1)) { return cb(null, undefined); }
+
+    const res = await this.#call('GET', `${ANON_URL}?ip=${encodeURIComponent(ip)}`);
+    if (res?.status === 400 || res?.status === 404) { return cb(null, WISESource.emptyResult); }
+    if (res?.status !== 200) {
+      if (res && res.status !== 429) { console.log(`${this.section} - ${ip} HTTP ${res.status}`); }
+      return cb(null, undefined);
+    }
+    cb(null, this.#toResult(res.data?.providers));
   }
 }
 
+// ----------------------------------------------------------------------------
 exports.initSource = function (api) {
-  if (String(api.getConfig('sourceip', 'enabled', 'false')) !== 'true') { return; }
+  api.addSourceConfigDef('sourceip', {
+    singleton: true,
+    name: 'sourceip',
+    description: 'Fill sourceip.provider with the operator of public IPs from sourceip.io. Every public IP WISE is asked about is sent to sourceip.io',
+    link: 'https://arkime.com/wise#sourceip',
+    types: ['ip'],
+    fields: [
+      { name: 'key', password: true, required: false, help: 'SourceIP.io API key, without one lookups are anonymous and limited to 100 a day' },
+      { name: 'endpoint', required: false, help: `The endpoint that came with the key (defaults to ${DEFAULT_ENDPOINT})` },
+      { name: 'field', required: false, help: 'The field to fill with provider names (defaults to sourceip.provider)' },
+      { name: 'dailyBudget', required: false, regex: '^[0-9]+$', help: 'Addresses to look up per UTC day, counted in memory (defaults to 800 with a key, 60 without)' },
+      { name: 'reserve', required: false, regex: '^[0-9]+$', help: 'Pause when the server says this many lookups or fewer are left, leaving them for Cont3xt (defaults to 100 with a key, 0 without)' },
+      { name: 'batchWaitMs', required: false, regex: '^[0-9]+$', help: 'How long to collect IPs into one batch (defaults to 500)' },
+      { name: 'timeoutMs', required: false, regex: '^[0-9]+$', help: 'Deadline for each API call, keep batchWaitMs + timeoutMs under 5000 (defaults to 4000)' },
+      { name: 'trace', required: false, regex: '^(true|false)$', help: 'Log every lookup and its outcome' },
+      ...WISESource.tlsConfigFields
+    ]
+  });
+
+  // works without any settings, so load when the section exists
+  if (!api.getConfigSections().includes('sourceip')) { return; }
   return new SourceIPSource(api, 'sourceip');
 };
+// ----------------------------------------------------------------------------
