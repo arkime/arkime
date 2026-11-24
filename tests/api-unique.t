@@ -1,4 +1,4 @@
-use Test::More tests => 84;
+use Test::More tests => 88;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -272,6 +272,18 @@ ok($res->content =~ /fielddata/i, "unique search failure returns error reason");
 $res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=dns.hostTokens&autocomplete=1");
 is($res->code, 400, "unique autocomplete search failure returns 400");
 ok($res->content =~ /"success":false/, "unique autocomplete search failure returns json error");
+
+# A partial index without the sessions template answers on its own shard while
+# the others fail, or fails while the others answer
+esPut("/partial-tests_sessions3-uniquetest", '{"mappings":{"properties":{"node":{"type":"text"}}}}');
+$res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=dns.hostTokens");
+is($res->code, 400, "unique search failing on all shards but one returns 400");
+ok($res->content =~ /shards failed: .*fielddata/i, "unique partial failure returns the shard failure reason");
+
+$res = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/unique?date=-1&field=node");
+is($res->code, 200, "unique values from the shards that answered are kept");
+is($res->content, "test\n", "unique partial result has the values");
+esDelete("/partial-tests_sessions3-uniquetest");
 
 viewerDeleteToken("/api/user/sac-test1", $token);
 viewerDeleteToken("/api/user/sac-test2", $token);
