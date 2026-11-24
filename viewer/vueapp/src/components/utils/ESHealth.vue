@@ -8,8 +8,7 @@ SPDX-License-Identifier: Apache-2.0
     <!-- error -->
     <div
       v-if="error"
-      id="networkError"
-      class="error-div text-muted pull-right">
+      class="error-div text-medium-emphasis">
       <small>
         {{ error || 'Network Error' }} - try
         <a
@@ -18,50 +17,68 @@ SPDX-License-Identifier: Apache-2.0
           reloading the page
         </a>
       </small>
-      <BTooltip target="networkError">{{ errorTitle }}</BTooltip>
+      <v-tooltip activator="parent">{{ errorTitle }}</v-tooltip>
     </div> <!-- /error -->
 
     <!-- info icon -->
-    <span
-      class="cursor-help"
-      id="infoTooltip">
-      <span
-        class="fa fa-info-circle fa-lg"
-        :class="esHealthClass"
-        v-if="!error && esHealth" />
-      <!-- tooltip content -->
-      <BTooltip target="infoTooltip">
+    <v-menu
+      open-on-hover
+      :close-on-content-click="false"
+      location="bottom end">
+      <template #activator="{ props: activatorProps }">
+        <v-btn
+          v-if="!error && esHealth"
+          v-bind="activatorProps"
+          variant="text"
+          icon
+          size="small"
+          density="comfortable"
+          class="cursor-help">
+          <v-icon
+            icon="mdi-information"
+            :class="esHealthClass" />
+        </v-btn>
+      </template>
+      <div class="es-health-popup">
         <div class="text-center mb-1">
           <strong>{{ $t('eshealth.title') }}</strong>
         </div>
         <dl
           v-if="!error && esHealth"
-          class="dl-horizontal es-stats-dl">
+          class="dl-horizontal es-stats-dl mb-0">
           <dt>{{ $t('eshealth.userName') }}</dt>
           <dd>{{ user.userName }}&nbsp;</dd>
           <dt>{{ $t('eshealth.userId') }}</dt>
           <dd>{{ user.userId }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.esVersion') }}</dt>
-          <dd>{{ esHealth.version }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.dbVersion') }}</dt>
-          <dd>{{ esHealth.molochDbVersion }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.cluster') }}</dt>
-          <dd>{{ esHealth.cluster_name }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.status') }}</dt>
-          <dd>{{ esHealth.status }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.nodes') }}</dt>
-          <dd>{{ esHealth.number_of_nodes }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.shards') }}</dt>
-          <dd>{{ esHealth.active_shards }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.relocating') }}</dt>
-          <dd>{{ esHealth.relocating_shards }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.unassigned') }}</dt>
-          <dd>{{ esHealth.unassigned_shards }}&nbsp;</dd>
-          <dt>{{ $t('eshealth.initializing') }}</dt>
-          <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
+          <template v-if="esHealth.db">
+            <dt>{{ $t('eshealth.database') }}</dt>
+            <dd>{{ esHealth.version }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.status') }}</dt>
+            <dd>{{ esHealth.status }}&nbsp;</dd>
+          </template>
+          <template v-else>
+            <dt>{{ $t('eshealth.esVersion') }}</dt>
+            <dd>{{ esHealth.version }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.dbVersion') }}</dt>
+            <dd>{{ esHealth.molochDbVersion }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.cluster') }}</dt>
+            <dd>{{ esHealth.cluster_name }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.status') }}</dt>
+            <dd>{{ esHealth.status }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.nodes') }}</dt>
+            <dd>{{ esHealth.number_of_nodes }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.shards') }}</dt>
+            <dd>{{ esHealth.active_shards }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.relocating') }}</dt>
+            <dd>{{ esHealth.relocating_shards }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.unassigned') }}</dt>
+            <dd>{{ esHealth.unassigned_shards }}&nbsp;</dd>
+            <dt>{{ $t('eshealth.initializing') }}</dt>
+            <dd>{{ esHealth.initializing_shards }}&nbsp;</dd>
+          </template>
         </dl>
-      </BTooltip> <!-- /tooltip content -->
-    </span> <!-- /info icon -->
+      </div>
+    </v-menu> <!-- /info icon -->
 
   </span>
 </template>
@@ -156,5 +173,16 @@ export default {
   margin-left: 145px;
   text-align: left;
   font-weight: bold;
+}
+
+.es-health-popup {
+  background-color: rgb(var(--v-theme-background));
+  color: rgb(var(--v-theme-foreground));
+  border: 1px solid rgb(var(--v-theme-neutral-light));
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 0.85rem;
+  min-width: 280px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
 }
 </style>

@@ -60,416 +60,42 @@ const SESSION_SCRIPTS = {
       `
 };
 
+// Elasticsearch ranks a bucket with no values for an avg or percentile (NaN),
+// min or max (+-Infinity) ahead of the others, so first order by whether the
+// metric's field has a value, ranking those buckets last
+const EMPTY_METRICS = ['avg', 'min', 'max', 'percentiles'];
+function rankEmptyMetricsLast (aggs) {
+  if (!aggs || typeof aggs !== 'object') { return; }
+  for (const agg of Object.values(aggs)) {
+    const sub = agg?.aggregations ?? agg?.aggs;
+    if (!sub) { continue; }
+    rankEmptyMetricsLast(sub);
+    const bucketAgg = agg.terms ?? agg.histogram ?? agg.date_histogram;
+    if (!bucketAgg?.order) { continue; }
+    const order = Array.isArray(bucketAgg.order) ? bucketAgg.order : [bucketAgg.order];
+    for (let i = 0; i < order.length; i++) {
+      const metricName = Object.keys(order[i] ?? {})[0]?.replace(/[[.].*$/, '');
+      const field = EMPTY_METRICS.map(m => sub[metricName]?.[m]?.field).find(f => f);
+      const hasName = `${metricName}_has`;
+      if (!field || sub[hasName]) { continue; }
+      sub[hasName] = { max: { script: { source: 'doc.containsKey(params.f) && doc[params.f].size() > 0 ? 1 : 0', params: { f: field } } } };
+      bucketAgg.order = [...order.slice(0, i), { [hasName]: 'desc' }, ...order.slice(i)];
+      break;
+    }
+  }
+}
+
 class DbESImpl {
-  #client;
-  #prefix;
   #Db;
   #internals;
   #fixIndex;
 
-  // The sessions instance passes { Db, internals, fixIndex }, which the
-  // SESSIONS methods below need; the users instance omits them.
-  constructor (client, prefix, { Db, internals, fixIndex } = {}) {
-    this.#client = client;
-    this.#prefix = prefix;
+  constructor ({ Db, internals, fixIndex }) {
     this.#Db = Db;
     this.#internals = internals;
     this.#fixIndex = fixIndex;
   }
 
-  // --------------------------------------------------------------------------
-  // VIEWS
-  // --------------------------------------------------------------------------
-  async searchViews (params) {
-    const query = this.#buildViewsQuery(params);
-    query.sort = { [params.sortField || 'name']: { order: params.sortOrder || 'asc' } };
-    query.from = params.from || 0;
-    query.size = params.size || 50;
-
-    const { body: { hits } } = await this.#client.search({
-      index: `${this.#prefix}views`,
-      body: query,
-      rest_total_hits_as_int: true
-    });
-
-    return {
-      data: hits.hits.map(h => ({ id: h._id, source: h._source })),
-      total: hits.total
-    };
-  }
-
-  async numberOfViews (params) {
-    const query = this.#buildViewsQuery(params);
-    const { body: { count } } = await this.#client.count({
-      index: `${this.#prefix}views`,
-      body: query
-    });
-    return count;
-  }
-
-  async getView (id) {
-    const { body } = await this.#client.get({
-      index: `${this.#prefix}views`,
-      id
-    });
-    return body._source;
-  }
-
-  async getViewByIdOrName (idOrName, user, roles) {
-    const query = {
-      size: 100,
-      query: {
-        bool: {
-          filter: [{
-            bool: {
-              must: [{
-                bool: {
-                  should: [
-                    { term: { _id: idOrName } },
-                    { term: { name: idOrName } }
-                  ]
-                }
-              }, {
-                bool: {
-                  should: [
-                    { terms: { roles } },
-                    { term: { users: user } },
-                    { term: { user } }
-                  ]
-                }
-              }]
-            }
-          }]
-        }
-      }
-    };
-
-    const { body: { hits: { hits } } } = await this.#client.search({
-      index: `${this.#prefix}views`,
-      body: query,
-      rest_total_hits_as_int: true
-    });
-
-    if (hits.length === 0) { return null; }
-
-    // Prefer an id match, then the user's own view with that name
-    const hit = hits.find(h => h._id === idOrName) ?? hits.find(h => h._source.user === user) ?? hits[0];
-    return hit._source;
-  }
-
-  async createView (doc) {
-    const { body } = await this.#client.index({
-      index: `${this.#prefix}views`,
-      body: doc,
-      refresh: 'wait_for',
-      timeout: '10m'
-    });
-    return body._id;
-  }
-
-  async deleteView (id) {
-    await this.#client.delete({
-      index: `${this.#prefix}views`,
-      id,
-      refresh: true
-    });
-  }
-
-  async deleteAllViews () {
-    await this.#client.deleteByQuery({
-      index: `${this.#prefix}views`,
-      body: { query: { match_all: {} } },
-      conflicts: 'proceed',
-      refresh: true
-    });
-  }
-
-  async setView (id, doc) {
-    await this.#client.index({
-      index: `${this.#prefix}views`,
-      body: doc,
-      id,
-      refresh: true,
-      timeout: '10m'
-    });
-  }
-
-  // --------------------------------------------------------------------------
-  // SHAREABLES
-  // --------------------------------------------------------------------------
-  async searchShareables (params) {
-    const query = this.#buildShareablesQuery(params);
-    query.sort = { name: { order: 'asc' } };
-    query.from = params.from || 0;
-    query.size = params.size || 50;
-
-    const { body: { hits } } = await this.#client.search({
-      index: `${this.#prefix}shareables`,
-      body: query,
-      rest_total_hits_as_int: true
-    });
-
-    return {
-      data: hits.hits.map(h => ({ id: h._id, source: h._source })),
-      total: hits.total
-    };
-  }
-
-  async numberOfShareables (params) {
-    const query = this.#buildShareablesQuery(params);
-    const { body: { count } } = await this.#client.count({
-      index: `${this.#prefix}shareables`,
-      body: query
-    });
-    return count;
-  }
-
-  async getShareable (id) {
-    const { body } = await this.#client.get({
-      index: `${this.#prefix}shareables`,
-      id
-    });
-    return body._source;
-  }
-
-  async createShareable (doc) {
-    const { body } = await this.#client.index({
-      index: `${this.#prefix}shareables`,
-      body: doc,
-      refresh: 'wait_for',
-      timeout: '10m'
-    });
-    return body._id;
-  }
-
-  async deleteShareable (id) {
-    await this.#client.delete({
-      index: `${this.#prefix}shareables`,
-      id,
-      refresh: true
-    });
-  }
-
-  async deleteAllShareables () {
-    await this.#client.deleteByQuery({
-      index: `${this.#prefix}shareables`,
-      body: { query: { match_all: {} } },
-      conflicts: 'proceed',
-      refresh: true
-    });
-  }
-
-  async setShareable (id, doc) {
-    await this.#client.index({
-      index: `${this.#prefix}shareables`,
-      body: doc,
-      id,
-      refresh: true,
-      timeout: '10m'
-    });
-  }
-
-  // --------------------------------------------------------------------------
-  // SHORTCUTS
-  // --------------------------------------------------------------------------
-  async searchShortcuts (params) {
-    const query = this.#buildShortcutsQuery(params);
-    query.sort = { [params.sortField || 'name']: { order: params.sortOrder || 'asc' } };
-    query.from = params.from || 0;
-    query.size = params.size || 50;
-
-    const { body: { hits } } = await this.#client.search({
-      index: `${this.#prefix}lookups`,
-      body: query,
-      rest_total_hits_as_int: true
-    });
-
-    return {
-      data: hits.hits.map(h => ({ id: h._id, source: h._source })),
-      total: hits.total
-    };
-  }
-
-  async numberOfShortcuts (params) {
-    const query = this.#buildShortcutsQuery(params);
-    const { body: { count } } = await this.#client.count({
-      index: `${this.#prefix}lookups`,
-      body: query
-    });
-    return count;
-  }
-
-  async getShortcut (id) {
-    const { body } = await this.#client.get({
-      index: `${this.#prefix}lookups`,
-      id
-    });
-    return body._source;
-  }
-
-  async createShortcut (doc) {
-    const { body } = await this.#client.index({
-      index: `${this.#prefix}lookups`,
-      body: doc,
-      refresh: 'wait_for',
-      timeout: '10m'
-    });
-    return body._id;
-  }
-
-  async deleteShortcut (id) {
-    await this.#client.delete({
-      index: `${this.#prefix}lookups`,
-      id,
-      refresh: true
-    });
-  }
-
-  async setShortcut (id, doc) {
-    await this.#client.index({
-      index: `${this.#prefix}lookups`,
-      body: doc,
-      id,
-      refresh: true,
-      timeout: '10m'
-    });
-  }
-
-  async deleteAllShortcuts () {
-    await this.#client.deleteByQuery({
-      index: `${this.#prefix}lookups`,
-      body: { query: { match_all: {} } },
-      conflicts: 'proceed',
-      refresh: true
-    });
-  }
-
-  // Returns all shortcuts with id, source, and version for sync purposes
-  async getAllShortcuts () {
-    const { body: { hits } } = await this.#client.search({
-      index: `${this.#prefix}lookups`,
-      body: { size: 10000 },
-      rest_total_hits_as_int: true,
-      version: true
-    });
-    return hits.hits.map(h => ({ id: h._id, source: h._source, version: h._version }));
-  }
-
-  async getShortcutsVersion () {
-    const { body: doc } = await this.#client.indices.getMapping({
-      index: `${this.#prefix}lookups`
-    });
-    return doc[Object.keys(doc)[0]]?.mappings?._meta?.version || 0;
-  }
-
-  async setShortcutsVersion () {
-    const version = await this.getShortcutsVersion();
-    return this.#client.indices.putMapping({
-      index: `${this.#prefix}lookups`,
-      body: { _meta: { version: version + 1, initSync: true } }
-    });
-  }
-
-  // --------------------------------------------------------------------------
-  // Flush/Refresh for backend indices
-  // --------------------------------------------------------------------------
-  async flush (index, cluster) {
-    return this.#client.indices.flush({ index: `${this.#prefix}${index}`, cluster });
-  }
-
-  async refresh (index, cluster) {
-    return this.#client.indices.refresh({ index: `${this.#prefix}${index}`, cluster });
-  }
-
-  // --------------------------------------------------------------------------
-  // PRIVATE HELPERS
-  // --------------------------------------------------------------------------
-  #buildViewsQuery (params) {
-    const filter = [];
-
-    if (!params.all) {
-      filter.push({
-        bool: {
-          should: [
-            { terms: { roles: params.roles || [] } },
-            { terms: { editRoles: params.roles || [] } },
-            { term: { users: params.user } },
-            { term: { user: params.user } }
-          ]
-        }
-      });
-    }
-
-    if (params.searchTerm) {
-      filter.push({ wildcard: { name: '*' + params.searchTerm + '*' } });
-    }
-
-    return { query: { bool: { filter } } };
-  }
-
-  #buildShareablesQuery (params) {
-    const must = [{ term: { type: params.type } }];
-
-    const permissionFilters = [];
-    permissionFilters.push({ term: { creator: params.user } });
-
-    if (params.viewOnly) {
-      permissionFilters.push({ term: { viewUsers: params.user } });
-      if (params.roles?.length > 0) {
-        permissionFilters.push({ terms: { viewRoles: params.roles } });
-      }
-    } else {
-      permissionFilters.push({ term: { editUsers: params.user } });
-      if (params.roles?.length > 0) {
-        permissionFilters.push({ terms: { editRoles: params.roles } });
-      }
-      permissionFilters.push({ term: { viewUsers: params.user } });
-      if (params.roles?.length > 0) {
-        permissionFilters.push({ terms: { viewRoles: params.roles } });
-      }
-    }
-
-    const filter = [{
-      bool: { should: permissionFilters, minimum_should_match: 1 }
-    }];
-
-    return { query: { bool: { must, filter } } };
-  }
-
-  #buildShortcutsQuery (params) {
-    const filter = [];
-
-    if (!params.all) {
-      filter.push({
-        bool: {
-          should: [
-            { terms: { roles: params.roles || [] } },
-            { terms: { editRoles: params.roles || [] } },
-            { term: { users: params.user } },
-            { term: { userId: params.user } }
-          ]
-        }
-      });
-    }
-
-    if (params.searchTerm) {
-      filter.push({ wildcard: { name: '*' + params.searchTerm + '*' } });
-    }
-
-    if (params.fieldType) {
-      filter.push({ exists: { field: params.fieldType } });
-    }
-
-    // Name collision check: find shortcuts with this name but NOT this id
-    if (params.nameCheck) {
-      filter.push({ term: { name: params.nameCheck } });
-      if (params.excludeId) {
-        return { query: { bool: { filter, must_not: [{ ids: { values: [params.excludeId] } }] } } };
-      }
-    }
-
-    return { query: { bool: { filter } } };
-  }
   /// /////////////////////////////////////////////////////////////////////////
   /// / SESSIONS - Elasticsearch implementation of the sessions DB backend.
   /// / internals.sessionsImpl in db.js always points at an implementation
@@ -498,6 +124,7 @@ class DbESImpl {
   async searchScroll (index, query, options, cb) {
     const Db = this.#Db;
     const internals = this.#internals;
+    if (!internals.multiES) { rankEmptyMetricsLast(query?.aggregations ?? query?.aggs); }
 
     // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
     if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
@@ -645,6 +272,7 @@ class DbESImpl {
     const body = [];
 
     for (let i = 0, ilen = queries.length; i < ilen; i++) {
+      if (!this.#internals.multiES) { rankEmptyMetricsLast(queries[i]?.aggregations ?? queries[i]?.aggs); }
       body.push({ index: this.#fixIndex(index) });
       body.push(queries[i]);
     }
@@ -750,26 +378,10 @@ class DbESImpl {
 
   // --------------------------------------------------------------------------
   async numberOfDocuments (index, options) {
-    // count interface is slow for large data sets, don't use for sessions unless multiES
-    if (index !== 'sessions2-*' || this.#internals.multiES) {
-      const params = { index: this.#fixIndex(index), ignore_unavailable: true };
-      this.#Db.merge(params, options);
-      const { body: total } = await this.#internals.client7.count(params);
-      return { count: total.count };
-    }
-
-    let count = 0;
-    const str = `${this.#internals.prefix}sessions2-`;
-
-    const indices = await this.#Db.indicesCache(options.cluster);
-
-    for (let i = 0; i < indices.length; i++) {
-      if (indices[i].index.includes(str)) {
-        count += parseInt(indices[i]['docs.count']);
-      }
-    }
-
-    return { count };
+    const params = { index: this.#fixIndex(index), ignore_unavailable: true };
+    this.#Db.merge(params, options);
+    const { body: total } = await this.#internals.client7.count(params);
+    return { count: total.count };
   }
 
   // --------------------------------------------------------------------------
@@ -804,9 +416,7 @@ class DbESImpl {
         if (index.endsWith('-reindex')) {
           index = index.substring(0, index.length - 8);
         }
-        if (index.startsWith('sessions2-')) { // sessions2 might not have prefix
-          index = index.substring(10);
-        } else if (this.#internals.queryExtraIndicesRegex.some(re => re.test(index))) {
+        if (this.#internals.queryExtraIndicesRegex.some(re => re.test(index))) {
           // extra user-specified indexes from the queryExtraIndices don't have the prefix
           isQueryExtraIndex = true;
         } else {
@@ -925,7 +535,7 @@ class DbESImpl {
   // --------------------------------------------------------------------------
   getSessionIndices (excludeExtra) {
     if (excludeExtra) {
-      return ['sessions2-*', 'sessions3-*'];
+      return ['sessions3-*'];
     }
     return this.#internals.sessionIndices;
   }
@@ -947,5 +557,7 @@ class DbESImpl {
 }
 
 DbESImpl.SESSION_SCRIPTS = SESSION_SCRIPTS;
+
+DbESImpl.rankEmptyMetricsLast = rankEmptyMetricsLast;
 
 module.exports = DbESImpl;

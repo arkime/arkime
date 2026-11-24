@@ -3,75 +3,89 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 -->
 <template>
-  <b-dropdown
-    v-if="multiviewer"
-    right
-    size="sm"
-    class="multies-menu-dropdown pull-right ms-1"
-    no-caret
-    toggle-class="rounded"
-    variant="theme-secondary"
-    @show="esVisMenuOpen = true"
-    @hide="esVisMenuOpen = false">
-    <template #button-content>
-      <div id="esMenuHoverText">
-        <span class="fa fa-database me-1" />
-        {{ selectedCluster.length }}
-        <BTooltip target="esMenuHoverText">
-          {{ esMenuHoverText }}
-        </BTooltip>
-      </div>
-    </template>
-    <b-dropdown-header>
-      <input
-        type="text"
-        v-model="esQuery"
-        class="form-control form-control-sm dropdown-typeahead"
-        :placeholder="$t('utils.searchForClustersPlaceholder')">
-    </b-dropdown-header>
-    <template v-if="!selectOne">
-      <b-dropdown-divider />
-      <b-dropdown-item @click.prevent.stop="selectAllCluster">
-        <span class="fa fa-list" />&nbsp;
-        {{ $t('common.selectAll') }}
-      </b-dropdown-item>
-      <b-dropdown-item @click.prevent.stop="clearAllCluster">
-        <span class="fa fa-eraser" />&nbsp;
-        {{ $t('common.clearAll') }}
-      </b-dropdown-item>
-    </template>
-    <b-dropdown-divider />
-    <template v-if="esVisMenuOpen">
-      <template
-        v-for="(clusters, group) in filteredClusters"
-        :key="group">
-        <b-dropdown-header
-          class="group-header">
-          {{ group + ' (' + clusters.length + ')' }}
-        </b-dropdown-header>
-        <template
-          v-for="cluster in clusters"
-          :key="group + cluster + 'item'">
-          <b-dropdown-item
-            :id="group + cluster + 'item'"
-            :class="{'active':isClusterVis(cluster)}"
-            @click.prevent.stop="toggleClusterSelection(cluster)">
-            {{ cluster }}
-          </b-dropdown-item>
-        </template>
+  <!-- Single stable root: keeps Vue's component anchor present even when
+       v-menu (which teleports its content) is conditionally rendered.
+       Otherwise unmount-during-navigation hits 'Cannot read properties
+       of null (reading parentNode)'. -->
+  <div class="clusters-root d-inline-block">
+    <v-menu
+      v-if="multiviewer"
+      v-model="esVisMenuOpen"
+      :close-on-content-click="false"
+      location="bottom end">
+      <template #activator="{ props: activatorProps }">
+        <v-btn
+          v-bind="activatorProps"
+          variant="flat"
+          size="small"
+          density="comfortable"
+          :style="secondaryBtnStyle"
+          class="ms-1 multies-menu-trigger">
+          <v-icon
+            icon="mdi-database"
+            class="me-1" />
+          {{ selectedCluster.length }}
+          <v-tooltip activator="parent">
+            {{ esMenuHoverText }}
+          </v-tooltip>
+        </v-btn>
       </template>
-    </template>
-  </b-dropdown>
-  <div
-    v-if="showMessage"
-    class="alert alert-warning position-fixed fixed-bottom m-0 rounded-0"
-    style="z-index: 2000;">
-    <button
-      type="button"
-      :aria-label="$t('common.dismiss')"
-      class="btn-close pull-right"
-      @click="showMessage = false" />
-    {{ $t('utils.onlyOne') }}
+      <v-list
+        density="compact"
+        class="multies-menu-list">
+        <div class="px-2 py-1">
+          <div class="arkime-input-group arkime-input-group--fluid">
+            <input
+              type="text"
+              v-model="esQuery"
+              class="arkime-input-control"
+              :placeholder="$t('utils.searchForClustersPlaceholder')">
+          </div>
+        </div>
+        <template v-if="!selectOne">
+          <v-divider />
+          <v-list-item @click.prevent.stop="selectAllCluster">
+            <v-icon icon="mdi-format-list-bulleted" />&nbsp;
+            {{ $t('common.selectAll') }}
+          </v-list-item>
+          <v-list-item @click.prevent.stop="clearAllCluster">
+            <v-icon icon="mdi-eraser" />&nbsp;
+            {{ $t('common.clearAll') }}
+          </v-list-item>
+        </template>
+        <v-divider />
+        <template v-if="esVisMenuOpen">
+          <template
+            v-for="(clusters, group) in filteredClusters"
+            :key="group">
+            <div class="group-header">
+              {{ group + ' (' + clusters.length + ')' }}
+            </div>
+            <template
+              v-for="cluster in clusters"
+              :key="group + cluster + 'item'">
+              <v-list-item
+                :id="group + cluster + 'item'"
+                :active="isClusterVis(cluster)"
+                @click.prevent.stop="toggleClusterSelection(cluster)">
+                {{ cluster }}
+              </v-list-item>
+            </template>
+          </template>
+        </template>
+      </v-list>
+    </v-menu>
+    <v-alert
+      v-if="showMessage"
+      type="warning"
+      variant="tonal"
+      density="compact"
+      closable
+      style="z-index: 2000;"
+      class="position-fixed fixed-bottom m-0 rounded-0"
+      @click:close="showMessage = false">
+      {{ $t('utils.onlyOne') }}
+    </v-alert>
   </div>
 </template>
 
@@ -92,7 +106,12 @@ export default {
       esQuery: '', // query for ES to toggle visibility
       showMessage: false,
       esVisMenuOpen: false,
-      multiviewer: this.$constants.MULTIVIEWER
+      multiviewer: this.$constants.MULTIVIEWER,
+      // Arkime theme-color v-btn style. Vuetify :color can't take CSS vars.
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   watch: {
@@ -252,3 +271,16 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.multies-menu-list {
+  width: 300px;
+}
+.group-header {
+  text-transform: uppercase;
+  margin-top: 8px;
+  padding: 0.2rem 0.5rem;
+  font-weight: bold;
+  font-size: 0.78rem;
+}
+</style>

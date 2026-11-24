@@ -78,6 +78,19 @@ splunk:test:
   keyPath: ip
   query: search index=threats ip="%%SEARCHTERM%%" | fields ip, threat
   fields: field:tags;shortcut:threat
+misp:test:
+  url: https://localhost:9998
+  key: misp-test-key
+  insecure: true
+  tags: mispwise
+  pageSize: 2
+misp:api:
+  url: https://localhost:9998
+  key: misp-test-key
+  insecure: true
+  mode: api
+  tags: mispapi
+  onlyIPs: 10.66.0.0/16
 databricks:test:
   type: databrickstest
   tags: databrickswise
@@ -97,11 +110,34 @@ urlapi:test:
   insecure: true
   resultField: value
   fields: field:urlapi.value;db:urlapi.value;kind:termfield;friendly:Value;shortcut:value\nfield:urlapi.b64;db:urlapi.b64;kind:termfield;friendly:B64;shortcut:b64\nfield:urlapi.b64url;db:urlapi.b64url;kind:termfield;friendly:B64Url;shortcut:b64url
+# verifies the mock with caTrustFile and sends a client cert whose key needs a
+# passphrase. insecure: false because an https://localhost url skips verification
+# unless the section says otherwise
+urlapi:mtls:
+  type: urlapimtls
+  tags: urlapimtls
+  url: https://localhost:9998/urlapi/{value}/{valueBase64}/{valueBase64Url}
+  insecure: false
+  caTrustFile: ../tests/mini-wise-source.crt
+  clientKey: ../tests/mtls-client-pass.key
+  clientCert: ../tests/mtls-client.crt
+  clientKeyPass: mtlspass
+  resultField: value
+  fields: field:urlapi.value;db:urlapi.value;kind:termfield;friendly:Value;shortcut:value\nfield:urlapi.clientcn;db:urlapi.clientcn;kind:termfield;friendly:Client CN;shortcut:clientCN
+# clientKey without clientCert is refused, so this source must not load
+urlapi:badtls:
+  type: urlapibad
+  url: https://localhost:9998/urlapi/{value}
+  clientKey: ../tests/mtls-client.key
+  resultField: value
 reversedns:
   ips: 0.0.0.0/32
   field: asset
 cache:
   type: memory
+  # unused with type memory, config.t checks View Config hides it because the
+  # cache configDef marks it a password, not because of its name
+  redisURL: redis://user:redispass@localhost:6379/0
 url:aws-ips:
   type: ip
   format: json

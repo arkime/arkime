@@ -15,7 +15,6 @@
 /******************************************************************************/
 extern ArkimeConfig_t        config;
 
-extern int                   udpMProtocol;
 extern uint32_t              pluginsCbs;
 
 /******************************************************************************/
@@ -99,8 +98,8 @@ LOCAL int udp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
 /******************************************************************************/
 void arkime_parser_init()
 {
-    udpMProtocol = arkime_mprotocol_register("udp",
-                                             SESSION_UDP,
+    mProtocolUdp = arkime_mprotocol_register("udp",
+                                             ARKIME_MPROTOCOL_FLAG_COMMUNITYID | ARKIME_MPROTOCOL_FLAG_STREAMS_MED,
                                              udp_create_sessionid,
                                              udp_pre_process,
                                              udp_process,

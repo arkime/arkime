@@ -13,6 +13,8 @@ if (session.http)
               |)
         div(style="display:inline-block;") &nbsp;
     +arrayList(session.http, "statuscode", "Status code", "http.statuscode")
+    +arrayList(session.http, "requestBodyLen", "Request Body Length", "http.bodylen.src")
+    +arrayList(session.http, "responseBodyLen", "Response Body Length", "http.bodylen.dst")
     +arrayList(session.http, "host", "Hosts", "host.http")
     +arrayList(session.http, "useragent", "User Agents", "http.user-agent")
     +ipArrayList(session.http, "xffIp", "XFFs", "ip.xff")

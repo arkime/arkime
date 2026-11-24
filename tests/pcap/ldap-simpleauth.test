@@ -58,7 +58,19 @@
       "CN=xxxxxxxx,OU=Users,OU=Accounts,DC=xx,DC=xxx,DC=xxxxx,DC=net",
       "xxxxxxxxxxx@xx.xxx.xxxxx.net"
      ],
-     "bindnameCnt" : 2
+     "bindnameCnt" : 2,
+     "op" : [
+      "bind",
+      "bind_response",
+      "search",
+      "search_entry",
+      "search_result"
+     ],
+     "opCnt" : 5,
+     "result" : [
+      "success"
+     ],
+     "resultCnt" : 1
     },
     "length" : 181520,
     "network" : {

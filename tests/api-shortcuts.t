@@ -1,4 +1,4 @@
-use Test::More tests => 135;
+use Test::More tests => 147;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -117,6 +117,24 @@ countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==[\$test_shortcut_updated,\$ip_shortcut]"));
 countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip==[\$test_shortcut_updated,\$ip_shortcut]"));
 countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=[\$test_shortcut_updated,\$ip_shortcut]"));
+
+# a CIDR in an ip shortcut matches its range like the CIDR typed in the expression,
+# bt-udp.pcap's ip.dst are 10.0.0.1, 10.0.0.3 and 10.0.0.5
+$json = viewerPostToken("/api/shortcut", '{"name":"cidr_shortcut","type":"ip","value":"10.0.0.0/30"}', $token);
+my $cidrShortcutId = $json->{shortcut}->{id};
+esGet("/_refresh");
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==10.0.0.0/30"));
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==\$cidr_shortcut"));
+countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$cidr_shortcut"));
+countTest(2, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip==\$cidr_shortcut"));
+countTest(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip!=\$cidr_shortcut"));
+viewerDeleteToken("/api/shortcut/$cidrShortcutId", $token);
+
+# a $shortcut* matching none is refused, it used to drop the clause so on ClickHouse it matched everything
+$json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst==\$no_such_shortcut*"));
+like($json->{error}, qr/no shortcuts match/, "shortcut wildcard matching none is an error");
+$json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst!=\$no_such_shortcut*"));
+like($json->{error}, qr/no shortcuts match/, "negated shortcut wildcard matching none is an error");
 
 # same tests with multi
 countTestMulti(1, "date=-1&expression=" . uri_escape("file=*/pcap/bt-udp.pcap&&ip.dst=\$test_shortcut_updated"));
@@ -252,22 +270,25 @@ ok(exists $shortcuts->{$shortcut1Id}->{help}, "Shortcut has help");
 ok(exists $shortcuts->{$shortcut1Id}->{dbField}, "Shortcut has dbField");
 
 # the local (test2) cluster should sync with the remote (test) cluster
-sleep(1);
-esGet("/_refresh");
-viewerGet2("/api/syncshortcuts");
-sleep(1);
-esGet("/_refresh");
-sleep(2);
+SKIP: {
+    skip "shortcuts are only copied to an ES lookups index when the sessions are in ES", 1 if $ArkimeTest::noEs;
+    sleep(1);
+    esGet("/_refresh");
+    viewerGet2("/api/syncshortcuts");
+    sleep(1);
+    esGet("/_refresh");
+    sleep(2);
 
-my $testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
-my $tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
+    my $testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
+    my $tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
 
-for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
-  delete $testsCluster->[$i]->{_index};
-  delete $tests2Cluster->[$i]->{_index};
+    for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
+      delete $testsCluster->[$i]->{_index};
+      delete $tests2Cluster->[$i]->{_index};
+    }
+
+    eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 }
-
-eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
 # delete shortcut requires token
 $json = viewerDelete("/api/shortcut/$shortcut1Id");
@@ -302,19 +323,22 @@ $shortcuts = viewerGet("/api/shortcuts?arkimeRegressionUser=sac-user2");
 is(@{$shortcuts->{data}}, 0, "Empty shortcuts for sac-user2 after cleanup");
 
 # the local (test2) cluster should sync with the remote (test) cluster
-viewerGet2("/api/syncshortcuts");
-esGet("/_refresh");
-sleep(2);
+SKIP: {
+    skip "shortcuts are only copied to an ES lookups index when the sessions are in ES", 1 if $ArkimeTest::noEs;
+    viewerGet2("/api/syncshortcuts");
+    esGet("/_refresh");
+    sleep(2);
 
-$testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
-$tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
+    my $testsCluster = esGet("/tests_lookups/_search?sort=name")->{hits}->{hits};
+    my $tests2Cluster = esGet("/tests2_lookups/_search?sort=name")->{hits}->{hits};
 
-for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
-  delete $testsCluster->[$i]->{_index};
-  delete $tests2Cluster->[$i]->{_index};
+    for (my $i=0; $i < scalar(@{$testsCluster}); $i++) { # indexes are different
+      delete $testsCluster->[$i]->{_index};
+      delete $tests2Cluster->[$i]->{_index};
+    }
+
+    eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 }
-
-eq_or_diff($testsCluster, $tests2Cluster, "cluster sync failed", { context => 2 });
 
 # --- Description type validation tests ---
 

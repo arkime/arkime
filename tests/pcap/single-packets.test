@@ -4,7 +4,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 574
     },
     "destination" : {
      "as" : {
@@ -64,6 +64,10 @@
       "http://www.shangri-la.com/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -141,6 +145,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f616374",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -160,7 +165,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 574
    },
    "header" : {
     "index" : {
@@ -172,7 +177,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 1324
     },
     "destination" : {
      "as" : {
@@ -261,6 +266,10 @@
       "http://www.shangri-la.com/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -346,6 +355,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f486f74",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -365,7 +375,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 1324
    },
    "header" : {
     "index" : {
@@ -377,7 +387,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 400
     },
     "destination" : {
      "as" : {
@@ -436,6 +446,10 @@
       "http://www.shangri-la.com/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -515,6 +529,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f757365",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -534,7 +549,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 400
    },
    "header" : {
     "index" : {
@@ -546,7 +561,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 616
     },
     "destination" : {
      "as" : {
@@ -615,6 +630,10 @@
      "requestBody" : [
       "id=455187796&event=PAGEVIEW&pixel_version=1"
      ],
+     "requestBodyLen" : [
+      43
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -705,6 +724,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "504f5354202f5254",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -724,7 +744,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 616
    },
    "header" : {
     "index" : {
@@ -736,7 +756,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 578
     },
     "destination" : {
      "as" : {
@@ -815,6 +835,10 @@
       "http://whc.unesco.org/en/interactive-map/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -902,6 +926,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f3f6369",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -921,7 +946,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 578
    },
    "header" : {
     "index" : {
@@ -933,7 +958,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 762
     },
     "destination" : {
      "as" : {
@@ -1010,6 +1035,10 @@
       "http://whc.unesco.org/en/interactive-map/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -1106,6 +1135,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f722f63",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -1125,7 +1155,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 762
    },
    "header" : {
     "index" : {
@@ -1137,7 +1167,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 504
     },
     "destination" : {
      "as" : {
@@ -1197,6 +1227,10 @@
       "http://whc.unesco.org/en/interactive-map/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -1276,6 +1310,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f6d6170",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -1295,7 +1330,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 504
    },
    "header" : {
     "index" : {
@@ -1307,7 +1342,7 @@
    "body" : {
     "@timestamp" : "SET",
     "client" : {
-     "bytes" : 0
+     "bytes" : 871
     },
     "destination" : {
      "as" : {
@@ -1385,6 +1420,10 @@
       "http://www.sustainablesites.org/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -1472,6 +1511,7 @@
      "VMware, Inc."
     ],
     "srcOuiCnt" : 1,
+    "srcPayload8" : "474554202f616e61",
     "srcRIR" : "ARIN",
     "srcTTL" : [
      128
@@ -1491,7 +1531,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 871
    },
    "header" : {
     "index" : {
@@ -1513,7 +1553,7 @@
        "name" : "GoDaddy.com, LLC"
       }
      },
-     "bytes" : 0,
+     "bytes" : 243,
      "geo" : {
       "city_name" : "Scottsdale",
       "country_iso_code" : "US",
@@ -1521,17 +1561,22 @@
      },
      "ip" : "68.178.213.61",
      "mac" : [
-      "00:0c:29:6f:84:37"
+      "00:50:56:f4:62:21"
      ],
      "mac-cnt" : 1,
-     "packets" : 0,
+     "packets" : 1,
      "port" : 80
     },
     "dstOui" : [
      "VMware, Inc."
     ],
     "dstOuiCnt" : 1,
+    "dstPayload8" : "485454502f312e30",
     "dstRIR" : "ARIN",
+    "dstTTL" : [
+     128
+    ],
+    "dstTTLCnt" : 1,
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1532525539024,
@@ -1547,6 +1592,10 @@
      "requestBody" : [
       "<html><body><h1>403 Forbidden</h1>\nRequest forbidden by administrative rules.\n</body></html>\n\n"
      ],
+     "requestBodyLen" : [
+      94
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "cache-control",
       "connection",
@@ -1603,16 +1652,16 @@
     "protocolCnt" : 2,
     "segmentCnt" : 1,
     "server" : {
-     "bytes" : 0
+     "bytes" : 189
     },
     "source" : {
-     "bytes" : 243,
+     "bytes" : 0,
      "ip" : "192.168.25.150",
      "mac" : [
-      "00:50:56:f4:62:21"
+      "00:0c:29:6f:84:37"
      ],
      "mac-cnt" : 1,
-     "packets" : 1,
+     "packets" : 0,
      "port" : 49749
     },
     "srcOui" : [
@@ -1620,10 +1669,6 @@
     ],
     "srcOuiCnt" : 1,
     "srcRIR" : "ARIN",
-    "srcTTL" : [
-     128
-    ],
-    "srcTTLCnt" : 1,
     "tags" : [
      "flip test"
     ],
@@ -1642,7 +1687,7 @@
      "syn-ack" : 0,
      "urg" : 0
     },
-    "totDataBytes" : 0
+    "totDataBytes" : 189
    },
    "header" : {
     "index" : {

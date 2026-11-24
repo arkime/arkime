@@ -8,6 +8,10 @@ const Integration = require('../../integration.js');
 const ArkimeConfig = require('../../../common/arkimeConfig');
 const { DBSQLClient } = require('@databricks/sql');
 
+ArkimeConfig.registerSettings({
+  token: { secret: true }
+});
+
 class DatabricksIntegration extends Integration {
   // Integration Items
   name;

@@ -46,7 +46,7 @@ LOCAL void bgp_pq_cb(ArkimeSession_t *session, void UNUSED(*uw))
 /******************************************************************************/
 void arkime_parser_init()
 {
-    arkime_parsers_classifier_register_port("bgp",  NULL, 179, ARKIME_PARSERS_PORT_TCP_DST, bgp_tcp_classify);
+    arkime_parsers_classifier_register_port("bgp",  NULL, 179, ARKIME_PARSERS_PORT_TCP, bgp_tcp_classify);
     bgpPq = arkime_pq_alloc(10, bgp_pq_cb);
 
     typeField = arkime_field_define("bgp", "uptermfield",

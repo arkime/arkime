@@ -1,0 +1,140 @@
+{
+  "name": "SOCKS",
+  "description": "SOCKS sessions: protocols == socks",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == socks",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "socks.status",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "SOCKS sessions by socks.status"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SOCKS sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SOCKS bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "host.socks",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Requested hosts"
+      },
+      {
+        "id": "w5",
+        "field": "socks.version",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Versions"
+      },
+      {
+        "id": "w6",
+        "field": "ip.socks",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Requested IPs"
+      },
+      {
+        "id": "w7",
+        "field": "port.socks",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Requested ports"
+      },
+      {
+        "id": "w8",
+        "field": "socks.user",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Users"
+      },
+      {
+        "id": "w9",
+        "field": "socks.status",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Results"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "socks.version",
+          "socks.user",
+          "host.socks",
+          "ip.socks",
+          "socks.status"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

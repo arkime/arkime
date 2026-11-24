@@ -1,0 +1,157 @@
+{
+  "name": "SS7",
+  "description": "SS7 over IP (SIGTRAN) sessions: SCCP, TCAP, CAMEL, M3UA, M2UA and ISUP",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == [sccp, tcap, camel, m3ua, m2ua, isup]",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "SS7 sessions by protocols"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SS7 sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SS7 bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "camel.imsi",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "IMSIs"
+      },
+      {
+        "id": "w5",
+        "field": "camel.op",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "CAMEL operations"
+      },
+      {
+        "id": "w6",
+        "field": "sccp.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "SCCP calling parties"
+      },
+      {
+        "id": "w7",
+        "field": "sccp.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "SCCP called parties"
+      },
+      {
+        "id": "w8",
+        "field": "camel.calling",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Calling numbers"
+      },
+      {
+        "id": "w9",
+        "field": "camel.called",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Called numbers"
+      },
+      {
+        "id": "w10",
+        "field": "tcap.opcode",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "TCAP opcodes"
+      },
+      {
+        "id": "w11",
+        "field": "m3ua.si",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "M3UA service indicators"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w13",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "protocols",
+          "sccp.src",
+          "sccp.dst",
+          "camel.op",
+          "camel.imsi"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

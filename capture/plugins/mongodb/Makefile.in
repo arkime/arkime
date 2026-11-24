@@ -1,0 +1,33 @@
+# Not part of the default build, build it with make -C capture/plugins/mongodb
+CC            = @CC@
+MKDIR_P       = mkdir -p
+INSTALL       = @INSTALL@
+PLUGINDIR     = $(DESTDIR)@prefix@/plugins
+NPM          ?= npm
+
+INCLUDE_OTHER = -I../.. -I../../thirdparty \
+                @GLIB2_CFLAGS@
+
+MONGOC_CFLAGS = $(shell pkg-config --cflags mongoc2)
+MONGOC_LIBS   = $(shell pkg-config --libs mongoc2)
+
+../mongodb.so : mongodb.c ../../arkime.h ../../hash.h ../../dll.h ../../bsb.h
+	$(CC) -pthread @SHARED_FLAGS@ $(EXTRA_CFLAGS) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fno-strict-aliasing -g -fPIC $(INCLUDE_OTHER) $(MONGOC_CFLAGS) $< $(MONGOC_LIBS)
+
+all:../mongodb.so
+
+node_modules: package.json package-lock.json
+	$(NPM) ci --omit=dev --ignore-scripts
+
+check: ../mongodb.so node_modules
+	node --test mongodb.unit.mjs
+
+install: ../mongodb.so
+	$(MKDIR_P) "$(PLUGINDIR)/mongodb"
+	$(INSTALL) ../mongodb.so $(PLUGINDIR)
+	$(INSTALL) -m 644 mongodb.js mongodb.sessions.js package.json package-lock.json README.md $(PLUGINDIR)/mongodb
+	(cd "$(PLUGINDIR)/mongodb" && $(NPM) ci --omit=dev --ignore-scripts)
+
+distclean realclean clean:
+	rm -f *.o ../mongodb.so
+	rm -rf node_modules

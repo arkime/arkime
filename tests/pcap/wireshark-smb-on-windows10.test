@@ -169,6 +169,42 @@
      "packets" : 24
     },
     "node" : "test",
+    "ntlm" : {
+     "dnsComputerName" : [
+      "SCV"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "SCV"
+     ],
+     "dnsDomainNameCnt" : 1,
+     "host" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "hostCnt" : 1,
+     "nbComputerName" : [
+      "SCV"
+     ],
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "SCV"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "SCV"
+     ],
+     "targetNameCnt" : 1,
+     "type" : [
+      "2",
+      "3"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "10.0.10586",
+      "6.3.9600"
+     ],
+     "versionCnt" : 2
+    },
     "packetLen" : [
      82,
      82,
@@ -226,16 +262,21 @@
      "lte" : 1476605374755
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 1177
     },
     "smb" : {
      "dialect" : "NT LM 0.12",
+     "host" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "hostCnt" : 1,
      "share" : [
       "\\\\SCV\\IPC$"
      ],
@@ -329,6 +370,45 @@
      "packets" : 12
     },
     "node" : "test",
+    "ntlm" : {
+     "dnsComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsDomainNameCnt" : 1,
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "nbComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "targetNameCnt" : 1,
+     "type" : [
+      "2",
+      "3"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "10.0.10586"
+     ],
+     "versionCnt" : 1
+    },
     "packetLen" : [
      82,
      82,
@@ -362,16 +442,29 @@
      "lte" : 1476605590447
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 1388
     },
     "smb" : {
-     "dialect" : "SMB 3.1.1"
+     "dialect" : "SMB 3.1.1",
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "user" : [
+      "user"
+     ],
+     "userCnt" : 1
     },
     "source" : {
      "bytes" : 1550,
@@ -414,7 +507,11 @@
      "dst" : 0,
      "src" : 2002877506
     },
-    "totDataBytes" : 2548
+    "totDataBytes" : 2548,
+    "user" : [
+     "user"
+    ],
+    "userCnt" : 1
    },
    "header" : {
     "index" : {
@@ -461,6 +558,45 @@
      "packets" : 10
     },
     "node" : "test",
+    "ntlm" : {
+     "dnsComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsDomainNameCnt" : 1,
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "nbComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "targetNameCnt" : 1,
+     "type" : [
+      "2",
+      "3"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "10.0.10586"
+     ],
+     "versionCnt" : 1
+    },
     "packetLen" : [
      82,
      82,
@@ -490,16 +626,29 @@
      "lte" : 1476605590475
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 936
     },
     "smb" : {
-     "dialect" : "SMB 3.1.1"
+     "dialect" : "SMB 3.1.1",
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "user" : [
+      "user"
+     ],
+     "userCnt" : 1
     },
     "source" : {
      "bytes" : 1337,
@@ -542,7 +691,11 @@
      "dst" : 0,
      "src" : 537301043
     },
-    "totDataBytes" : 1937
+    "totDataBytes" : 1937,
+    "user" : [
+     "user"
+    ],
+    "userCnt" : 1
    },
    "header" : {
     "index" : {
@@ -589,6 +742,45 @@
      "packets" : 10
     },
     "node" : "test",
+    "ntlm" : {
+     "dnsComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsDomainNameCnt" : 1,
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "nbComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "targetNameCnt" : 1,
+     "type" : [
+      "2",
+      "3"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "10.0.10586"
+     ],
+     "versionCnt" : 1
+    },
     "packetLen" : [
      82,
      82,
@@ -618,16 +810,29 @@
      "lte" : 1476605590486
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 936
     },
     "smb" : {
-     "dialect" : "SMB 3.1.1"
+     "dialect" : "SMB 3.1.1",
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "user" : [
+      "user"
+     ],
+     "userCnt" : 1
     },
     "source" : {
      "bytes" : 1337,
@@ -670,7 +875,11 @@
      "dst" : 0,
      "src" : 2255723120
     },
-    "totDataBytes" : 1937
+    "totDataBytes" : 1937,
+    "user" : [
+     "user"
+    ],
+    "userCnt" : 1
    },
    "header" : {
     "index" : {
@@ -717,6 +926,45 @@
      "packets" : 10
     },
     "node" : "test",
+    "ntlm" : {
+     "dnsComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsDomainNameCnt" : 1,
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "nbComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "targetNameCnt" : 1,
+     "type" : [
+      "2",
+      "3"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "10.0.10586"
+     ],
+     "versionCnt" : 1
+    },
     "packetLen" : [
      82,
      82,
@@ -746,16 +994,29 @@
      "lte" : 1476605590497
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 936
     },
     "smb" : {
-     "dialect" : "SMB 3.1.1"
+     "dialect" : "SMB 3.1.1",
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "user" : [
+      "user"
+     ],
+     "userCnt" : 1
     },
     "source" : {
      "bytes" : 1337,
@@ -798,7 +1059,11 @@
      "dst" : 0,
      "src" : 2799607514
     },
-    "totDataBytes" : 1937
+    "totDataBytes" : 1937,
+    "user" : [
+     "user"
+    ],
+    "userCnt" : 1
    },
    "header" : {
     "index" : {
@@ -845,6 +1110,45 @@
      "packets" : 12
     },
     "node" : "test",
+    "ntlm" : {
+     "dnsComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsDomainNameCnt" : 1,
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "nbComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "targetNameCnt" : 1,
+     "type" : [
+      "2",
+      "3"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "10.0.10586"
+     ],
+     "versionCnt" : 1
+    },
     "packetLen" : [
      82,
      82,
@@ -878,16 +1182,29 @@
      "lte" : 1476605609933
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 1388
     },
     "smb" : {
-     "dialect" : "SMB 3.1.1"
+     "dialect" : "SMB 3.1.1",
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "user" : [
+      "Tim Tester"
+     ],
+     "userCnt" : 1
     },
     "source" : {
      "bytes" : 1562,
@@ -930,7 +1247,11 @@
      "dst" : 0,
      "src" : 2788791006
     },
-    "totDataBytes" : 2560
+    "totDataBytes" : 2560,
+    "user" : [
+     "Tim Tester"
+    ],
+    "userCnt" : 1
    },
    "header" : {
     "index" : {
@@ -977,6 +1298,45 @@
      "packets" : 36
     },
     "node" : "test",
+    "ntlm" : {
+     "dnsComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "dnsDomainNameCnt" : 1,
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
+     "nbComputerName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "DESKTOP-V1FA0UQ"
+     ],
+     "targetNameCnt" : 1,
+     "type" : [
+      "2",
+      "3"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "10.0.10586"
+     ],
+     "versionCnt" : 1
+    },
     "packetLen" : [
      82,
      82,
@@ -1058,24 +1418,37 @@
      "lte" : 1476605881504
     },
     "protocol" : [
+     "ntlm",
      "smb",
      "tcp"
     ],
-    "protocolCnt" : 2,
+    "protocolCnt" : 3,
     "segmentCnt" : 1,
     "server" : {
      "bytes" : 3192
     },
     "smb" : {
      "dialect" : "SMB 3.1.1",
+     "domain" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "domainCnt" : 1,
      "filename" : [
       "srvsvc"
      ],
      "filenameCnt" : 1,
+     "host" : [
+      "DESKTOP-2AEFM7G"
+     ],
+     "hostCnt" : 1,
      "share" : [
       "\\\\192.168.199.133\\IPC$"
      ],
-     "shareCnt" : 1
+     "shareCnt" : 1,
+     "user" : [
+      "Willi Wireshark"
+     ],
+     "userCnt" : 1
     },
     "source" : {
      "bytes" : 3592,
@@ -1118,7 +1491,11 @@
      "dst" : 0,
      "src" : 2694908746
     },
-    "totDataBytes" : 5732
+    "totDataBytes" : 5732,
+    "user" : [
+     "Willi Wireshark"
+    ],
+    "userCnt" : 1
    },
    "header" : {
     "index" : {

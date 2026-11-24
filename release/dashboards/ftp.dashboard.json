@@ -1,0 +1,137 @@
+{
+  "name": "FTP",
+  "description": "FTP sessions: protocols == ftp",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == ftp",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "ftp.command",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "FTP sessions by ftp.command"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "FTP sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "FTP bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "ftp.filename",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Files"
+      },
+      {
+        "id": "w5",
+        "field": "ftp.responseCode",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Reply codes"
+      },
+      {
+        "id": "w6",
+        "field": "ftp.command",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Commands"
+      },
+      {
+        "id": "w7",
+        "field": "ftp.responseMsg",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Replies"
+      },
+      {
+        "id": "w8",
+        "field": "ftp.banner",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Server banners"
+      },
+      {
+        "id": "w9",
+        "field": "ftp.filename",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Files"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "ftp.command",
+          "ftp.filename",
+          "ftp.responseCode"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

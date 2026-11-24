@@ -6,7 +6,7 @@ SPDX-License-Identifier: Apache-2.0
   <id-tooltip
     :target="target"
     location="top">
-    TTL: {{ ttl }} ({{ readableDuration(ttl * 1000) }})
+    {{ $t('cont3xt.ttlTip', { ttl, duration: readableDuration(ttl * 1000) }) }}
   </id-tooltip>
 </template>
 

@@ -39,18 +39,13 @@ class VirusTotalSource extends WISESource {
     this.api.addSource('virustotal', this, ['md5']);
     setInterval(this.performQuery.bind(this), 60000 / this.queriesPerMinute);
 
-    let str =
-      'if (session.virustotal)\n' +
-      '  div.sessionDetailMeta.bold VirusTotal\n' +
-      '  dl.sessionDetailMeta\n' +
-      "    +arrayList(session.virustotal, 'hits', 'Hits', 'virustotal.hits')\n" +
-      "    +arrayList(session.virustotal, 'links', 'Links', 'virustotal.links')\n";
+    const viewFields = ['virustotal.hits', 'virustotal.links'];
 
     for (let i = 0; i < this.dataSources.length; i++) {
       const uc = this.dataSources[i];
       const lc = this.dataSourcesLC[i];
       this.dataFields[i] = this.api.addField(`field:virustotal.${lc};db:virustotal.${lc};kind:lotermfield;friendly:${uc};help:VirusTotal ${uc} Status;count:true`);
-      str += "    +arrayList(session.virustotal, '" + lc + "', '" + uc + "', 'virustotal." + lc + "')\n";
+      viewFields.push(`virustotal.${lc}`);
     }
 
     this.hitsField = this.api.addField('field:virustotal.hits;db:virustotal.hits;kind:integer;friendly:Hits;help:VirusTotal Hits;count:true');
@@ -59,7 +54,7 @@ class VirusTotalSource extends WISESource {
     this.api.addValueAction('virustotallinks', { name: 'Open', url: '%TEXT%', fields: 'virustotal.links' });
     this.api.addValueAction('virustotalmd5', { name: 'Virus Total MD5 Search', url: 'https://www.virustotal.com/gui/search/%TEXT%', category: 'md5' });
 
-    this.api.addView('virustotal', str);
+    this.api.addView('virustotal', `require:virustotal;title:VirusTotal;fields:${viewFields.join(',')}`);
   }
 
   // ----------------------------------------------------------------------------

@@ -15,7 +15,8 @@ const { EventEmitter } = require('events');
 const ArkimeConfig = require('./arkimeConfig');
 const ArkimeUtil = require('./arkimeUtil');
 
-ArkimeConfig.registerValidated({
+ArkimeConfig.registerSettings({
+  mcpEnabled: { type: 'bool' },
   mcpAllowedIps: { type: 'cidrs' },
   mcpMaxQueryDays: { type: 'float', min: 0, unlimited: -1 }
 });
@@ -94,10 +95,6 @@ class MCPServer {
     router.post('/', async (req, res) => {
       if (!enabled()) {
         return MCPServer.#error(res, 404, null, INVALID_REQUEST, 'MCP is not enabled');
-      }
-
-      if (!MCPServer.#checkIps(req)) {
-        return MCPServer.#error(res, 403, null, INVALID_REQUEST, 'Forbidden');
       }
 
       // A cross-site html form can POST urlencoded or text/plain without a preflight, and the
@@ -298,6 +295,9 @@ class MCPServer {
    *            JWT verification and passes the short_id through)
    *   jwt    - verify the Bearer JWT ourselves against a remote JWKS
    *
+   * A request carrying a Bearer token is only checked as a jwt when jwt is on,
+   * so a token that fails to verify can't fall back to trusting a header.
+   *
    * Kept as an array so another verifier can be added later without touching
    * the router.
    */
@@ -308,10 +308,11 @@ class MCPServer {
     for (const mode of ArkimeConfig.getArray('mcpAuthMode', 'header')) {
       switch (mode) {
       case 'header':
-        verifiers.push(req => Auth.headerAuth(req));
+        MCPServer.#ips = MCPServer.#headerIps(Auth);
+        verifiers.push({ mode, verify: req => MCPServer.#headerIpAllowed(req) ? Auth.headerAuth(req) : undefined });
         break;
       case 'jwt':
-        verifiers.push(req => Auth.jwtAuth(req));
+        verifiers.push({ mode, verify: req => Auth.jwtAuth(req) });
         break;
       case 'regressionTests':
         // Takes the user from a query param, so it must never be reachable
@@ -320,7 +321,7 @@ class MCPServer {
           console.log('ERROR - mcpAuthMode=regressionTests requires --regressionTests');
           process.exit(1);
         }
-        verifiers.push(req => Auth.regressionTestsAuth(req));
+        verifiers.push({ mode, verify: req => Auth.regressionTestsAuth(req) });
         break;
       default:
         console.log('ERROR - unknown mcpAuthMode', ArkimeUtil.sanitizeStr(mode), '- must be one of: header, jwt');
@@ -333,10 +334,13 @@ class MCPServer {
       process.exit(1);
     }
 
+    const hasJwt = verifiers.some(v => v.mode === 'jwt');
     return async (req) => {
-      for (const verifier of verifiers) {
+      const bearer = hasJwt && /^bearer\s/i.test(req.headers.authorization ?? '');
+      for (const { mode, verify } of verifiers) {
+        if (bearer && mode !== 'jwt') { continue; }
         try {
-          const user = await verifier(req);
+          const user = await verify(req);
           if (user) { return user; }
         } catch (err) {
           // Try the next verifier, a 401 is only sent once they all decline
@@ -351,32 +355,28 @@ class MCPServer {
   static #ips;
 
   /**
-   * Source ip allow list, mcpAllowedIps. The gateway presents no client cert so
-   * ip is the only network level check available to us.
+   * mcpAllowedIps, the hosts trusted to send the MCP username header. A header is
+   * only worth what the proxy that set it is worth, while a JWT is its own
+   * credential, so JWT requests aren't checked against it.
    *
-   * When it isn't set and any header mode is in use, default to loopback only.
-   * A username header is only worth what the proxy that set it is worth, and
-   * /mcp is mounted before Auth.app() so the userAuthIps loopback default that
-   * protects the rest of the site (see Auth.initialize) never applies here.
-   * Without this a header mode /mcp would accept a spoofed username from
-   * anywhere the port is reachable, while the web ui on the same port would not.
-   * Any other mode, or an explicit list, is used as given.
+   * Unset, it is the proxies the web ui already trusts, userAuthIps, on a header
+   * authMode site, and loopback elsewhere, where userAuthIps is who may log in at
+   * all. /mcp is mounted before Auth.app() so userAuthIps never applies by itself.
    * @ignore
    */
-  static #checkIps (req) {
-    if (MCPServer.#ips === undefined) {
-      const list = ArkimeConfig.getArray('mcpAllowedIps', '');
-      MCPServer.#ips = null;
-      if (list.length > 0) {
-        MCPServer.#ips = ArkimeUtil.buildIpTrie(list).trie; // validated at config load
-      } else if (ArkimeConfig.getArray('mcpAuthMode', 'header').some(mode => mode.startsWith('header'))) {
-        MCPServer.#ips = ArkimeUtil.buildIpTrie(['127.0.0.0/8', '::1']).trie;
-        console.log('MCP: mcpAllowedIps is not set and mcpAuthMode includes header, only allowing loopback. Set mcpAllowedIps to the address of the proxy to allow it.');
-      }
+  static #headerIps (Auth) {
+    let list = ArkimeConfig.getArray('mcpAllowedIps', '');
+    if (list.length === 0 && Auth.mode?.startsWith('header')) {
+      list = ArkimeConfig.getArray('userAuthIps', '');
     }
+    if (list.length === 0) {
+      list = ['127.0.0.0/8', '::1'];
+      console.log('MCP: mcpAllowedIps is not set, only trusting the MCP username header from loopback. Set mcpAllowedIps to the address of the proxy to allow it.');
+    }
+    return ArkimeUtil.buildIpTrie(list).trie; // validated at config load
+  }
 
-    if (MCPServer.#ips === null) { return true; }
-
+  static #headerIpAllowed (req) {
     // Must be the real socket peer, not req.ip: with trust proxy on, req.ip
     // comes from the client-supplied X-Forwarded-For and is spoofable
     const peer = req.socket?.remoteAddress;
@@ -385,7 +385,7 @@ class MCPServer {
     const allowed = !!MCPServer.#ips.find(ip);
     // debug only, an unauthenticated peer can trigger this at will
     if (!allowed && ArkimeConfig.debug > 0) {
-      console.log('MCP: blocked by mcpAllowedIps', ArkimeUtil.sanitizeStr(ip));
+      console.log('MCP: username header not trusted from', ArkimeUtil.sanitizeStr(ip), '- not in mcpAllowedIps');
     }
     return allowed;
   }

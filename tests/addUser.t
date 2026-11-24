@@ -1,5 +1,5 @@
 # Test addUser.js and general authentication
-use Test::More tests => 158;
+use Test::More tests => 167;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
@@ -294,10 +294,10 @@ like ($response->content, qr/"success":\s*true/, "receiveSession first chunk acc
 unlink glob("/tmp/test3-*-receivefail.pcap");
 $response = receiveSession("receivefail", "receivefail2");
 like ($response->content, qr/"success":\s*false/, "receiveSession reports pcap write failure");
-ok (!esGet("/tests2_sessions3-receivetest/_doc/receivefail2")->{found}, "session not indexed when its pcap write failed");
+ok (!sessionGet(8126, "3\@receivetest:receivefail2")->{found}, "session not indexed when its pcap write failed");
 $response = receiveSession("receivefail", "receivefail3");
 like ($response->content, qr/"success":\s*true/, "receiveSession after a failed write starts a new pcap");
-ok (esGet("/tests2_sessions3-receivetest/_doc/receivefail3")->{found}, "session after a failed write indexed");
+ok (sessionGet(8126, "3\@receivetest:receivefail3")->{found}, "session after a failed write indexed");
 
 # /receiveSession - a session without packets reports when it can't be indexed
 $response = receiveSession("receivenopcap", '9@receivetest:x', 1);
@@ -306,12 +306,13 @@ like ($response->content, qr/"success":\s*false/, "receiveSession reports sessio
 # /receiveSession - a received session is indexed once its pcap is written, pointing at the new file
 $response = receiveSession("receiveok");
 like ($response->content, qr/"success":\s*true/, "receiveSession with pcap accepted");
-my $received = esGet("/tests2_sessions3-receivetest/_doc/receiveok");
+my $received = sessionGet(8126, "3\@receivetest:receiveok");
 is ($received->{_source}->{srcNode}, "receivetest", "received session indexed");
 ok ($received->{_source}->{packetPos}->[0] < 0 && -e glob("/tmp/test3-*-receiveok.pcap"), "received session points at written pcap");
+sessionDelete(8126, "3\@receivetest:$_") for (qw(toString receivefail receivefail3 receiveok));
 esDelete("/tests2_sessions3-receivetest");
 
-esPost("/tests2_files*/_delete_by_query?refresh=true", '{"query":{"bool":{"should":[{"wildcard":{"name":"*-toString.pcap"}},{"wildcard":{"name":"*-receivefail.pcap"}},{"wildcard":{"name":"*-receiveok.pcap"}}]}}}');
+clusterDeleteWhere(8124, "files", {'$or' => [map { {name => {'$wildcard' => "*-$_.pcap"}} } qw(toString receivefail receiveok)]});
 unlink glob("/tmp/test3-*-receiveok.pcap");
 unlink glob("/tmp/test3-*-receivefail.pcap");
 unlink glob("/tmp/test3-*-toString.pcap");
@@ -390,7 +391,7 @@ ok(!grep(/^role:headerRole$/, @{$sameReq->{roles}}), "sameequser loses role:head
 #### JWT Auth Header tests (test4 node on port 8127)
 
 # Valid JWT with short_id claim — should auto-create user
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIxIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMSJ9.fakesig');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6Imp3dHVzZXIxIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMSJ9.fakesig');
 is ($response->code, 200, "JWT header auth success");
 
 # Verify user was created with short_id as userId
@@ -406,18 +407,32 @@ $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt
 is ($response->code, 403, "Invalid JWT returns 403");
 is ($response->content, '{"success":false,"text":"Invalid JWT in header"}');
 
+# Unsigned, expired, not yet valid and signatureless JWTs — should 403, sac- so getUser won't auto create
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6InNhYy1qd3R1c2VyMyJ9.fakesig');
+is ($response->code, 403, "JWT with alg none returns 403");
+is ($response->content, '{"success":false,"text":"Invalid JWT in header"}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6InNhYy1qd3R1c2VyMyIsImV4cCI6MTAwMDAwMDAwMH0.fakesig');
+is ($response->code, 403, "Expired JWT returns 403");
+is ($response->content, '{"success":false,"text":"Invalid JWT in header"}');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6InNhYy1qd3R1c2VyMyIsIm5iZiI6NDAwMDAwMDAwMH0.fakesig');
+is ($response->code, 403, "Not yet valid JWT returns 403");
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6InNhYy1qd3R1c2VyMyJ9.');
+is ($response->code, 403, "JWT without a signature returns 403");
+$response = viewerGet("/regressionTests/getUser/sac-jwtuser3");
+ok(!defined $response->{userId}, "Rejected JWTs did not create sac-jwtuser3");
+
 # JWT without the required short_id claim — should 403
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.fakesig');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5jb20ifQ.fakesig');
 is ($response->code, 403, "JWT without required claim returns 403");
 is ($response->content, '{"success":false,"text":"User name header is empty"}');
 
 # JWT with role: prefix in claim — should be rejected
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6InJvbGU6ZXZpbCIsInByZWZlcnJlZF91c2VybmFtZSI6IkhhY2tlciJ9.fakesig');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6InJvbGU6ZXZpbCIsInByZWZlcnJlZF91c2VybmFtZSI6IkhhY2tlciJ9.fakesig');
 is ($response->code, 403, "JWT with role: prefix rejected");
 is ($response->content, '{"success":false,"text":"Cannot authenticate with role"}');
 
 # JWT with department claim — should get role:securityTeam via role mappings
-$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJzaG9ydF9pZCI6Imp3dHVzZXIyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMiIsImRlcGFydG1lbnQiOiJzZWN1cml0eSJ9.fakesig');
+$response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8127/", 'x-jwt-data' => 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJzaG9ydF9pZCI6Imp3dHVzZXIyIiwicHJlZmVycmVkX3VzZXJuYW1lIjoiSldUIFVzZXIgMiIsImRlcGFydG1lbnQiOiJzZWN1cml0eSJ9.fakesig');
 is ($response->code, 200, "JWT with department claim auth success");
 $response = viewerGet("/regressionTests/getUser/jwtuser2");
 ok(grep(/^role:securityTeam$/, @{$response->{roles}}), "jwtuser2 has role:securityTeam from JWT department claim");
@@ -426,8 +441,9 @@ ok(grep(/^arkimeUser$/, @{$response->{roles}}), "jwtuser2 still has arkimeUser")
 
 #### Form Auth tests (test5 node on port 8128)
 
-addUser("-n test5 formuser formuser formuser --roles arkimeUser");
-addUser("-n test5 formuser8 formuser8 formuser8 --roles 'parliamentUser' ");
+# a session auth node must not open the sids store from the script and die after adding
+is(addUser("-n test5 formuser formuser formuser --roles arkimeUser"), 0, "addUser exits 0 on a form auth node");
+is(addUser("-n test5 formuser8 formuser8 formuser8 --roles 'parliamentUser' "), 0, "addUser exits 0 on a form auth node");
 esGet("/_refresh");
 
 sub formLogin {

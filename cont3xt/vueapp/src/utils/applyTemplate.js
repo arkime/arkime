@@ -1,4 +1,7 @@
 /**
+ * Copyright Yahoo Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Fills a templated string from an integration configuration
  * @example
  * // returns 'hi and hello'

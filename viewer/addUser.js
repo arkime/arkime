@@ -29,6 +29,8 @@ function help (msg) {
   console.log('  --admin                   Has admin privileges');
   console.log('  --apionly                 Can only use api, not web pages');
   console.log('  --createOnly              Only create the user if it doesn\'t exist');
+  console.log('  --disableCron             Cannot use periodic queries, the ones they own do not run');
+  console.log('  --no-disableCron          Can use periodic queries');
   console.log('  --disablePcapDownload     The user can see the pcap but not download it');
   console.log('  --no-disablePcapDownload  The user can download the pcap');
   console.log('  --email                   Can do email searches');
@@ -184,6 +186,14 @@ function mainWithPassword (password) {
       nuser.disablePcapDownload = false;
       break;
 
+    case '--disableCron':
+      nuser.disableCron = true;
+      break;
+
+    case '--no-disableCron':
+      nuser.disableCron = false;
+      break;
+
     case '--timeLimit':
       if (i + 1 >= process.argv.length) { help('Missing value for --timeLimit'); }
       nuser.timeLimit = parseInt(process.argv[i + 1], 10);
@@ -231,35 +241,35 @@ async function premain () {
   await Config.initialize({ initAuth: true });
 
   if (Config.nodeName() === 'cont3xt') {
-    const usersUrl = Config.get('usersUrl');
-    const usersEs = Config.getArray('usersElasticsearch', Config.get('elasticsearch', 'http://localhost:9200'));
+    const usersEs = ArkimeConfig.usersDbUrls() ?? ArkimeConfig.dbUrls();
     User.initialize({
-      insecure: ArkimeConfig.isInsecure([usersUrl, usersEs]),
+      insecure: ArkimeConfig.isInsecure([usersEs]),
       requestTimeout: Config.get('elasticsearchTimeout', 300),
-      url: usersUrl,
       node: usersEs,
       caTrustFile: Config.get('caTrustFile'),
       clientKey: Config.get('esClientKey'),
       clientCert: Config.get('esClientCert'),
       clientKeyPass: Config.get('esClientKeyPass'),
-      prefix: Config.get('usersPrefix'),
+      prefix: ArkimeConfig.usersPrefix(),
       apiKey: Config.get('usersElasticsearchAPIKey'),
       basicAuth: Config.get('usersElasticsearchBasicAuth', Config.get('elasticsearchBasicAuth')),
       noUsersCheck: true
     });
     main();
   } else {
-    const escInfo = Config.getArray('elasticsearch', 'http://localhost:9200');
+    const escInfo = ArkimeConfig.sessionsEsUrls();
     await Db.initialize({
       host: escInfo,
-      prefix: Config.get('prefix', 'arkime_'),
+      prefix: ArkimeConfig.sessionsDbPrefix(),
+      clusterPrefix: ArkimeConfig.dbPrefix(),
       esClientKey: Config.get('esClientKey', null),
       esClientCert: Config.get('esClientCert', null),
       esClientKeyPass: Config.get('esClientKeyPass', null),
-      insecure: ArkimeConfig.isInsecure([escInfo, Config.getArray('usersElasticsearch')]),
+      insecure: ArkimeConfig.insecure,
       caTrustFile: Config.getFull(Config.nodeName(), 'caTrustFile'),
-      usersHost: Config.getArray('usersElasticsearch'),
-      usersPrefix: Config.get('usersPrefix'),
+      usersHost: ArkimeConfig.usersDbUrls(),
+      usersFallbackHost: ArkimeConfig.dbUrls(),
+      usersPrefix: ArkimeConfig.usersPrefix(),
       esApiKey: Config.get('elasticsearchAPIKey', null),
       usersEsApiKey: Config.get('usersElasticsearchAPIKey', null),
       esBasicAuth: Config.get('elasticsearchBasicAuth', null),

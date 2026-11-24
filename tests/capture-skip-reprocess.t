@@ -38,7 +38,7 @@ my $json = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("tags=$ta
 my $count = $json->{recordsFiltered};
 ok($count > 0, "ingested $count sessions");
 
-my $files = esPost("/tests_files/_search?rest_total_hits_as_int=true", to_json({query => {term => {name => $realFile}}}));
+my $files = clusterSearch(8123, "files", {where => {name => $realFile}});
 is($files->{hits}->{total}, 1, "one files record with the exact name");
 
 # --skip finds the existing record for the same name
@@ -56,11 +56,11 @@ countTest($count, "date=-1&expression=" . uri_escape("tags=$tag-c"));
 my $out = runCapture("$tag-d", "-r", $file, "--reprocess");
 unlike($out, qr/Can't reprocess/, "reprocess found the files record");
 esGet("/_refresh");
-$files = esPost("/tests_files/_search?rest_total_hits_as_int=true", to_json({query => {term => {name => $realFile}}}));
+$files = clusterSearch(8123, "files", {where => {name => $realFile}});
 is($files->{hits}->{total}, 1, "reprocess reused the files record");
 
 # Cleanup
 esPost("/tests_sessions3-*/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {tags => $tag}}}));
-esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {name => realpath($dir)}}}));
-esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {name => realpath($dir2)}}}));
+clusterDeleteWhere(8123, "files", {name => {'$prefix' => realpath($dir)}});
+clusterDeleteWhere(8123, "files", {name => {'$prefix' => realpath($dir2)}});
 remove_tree($dir, $dir2);

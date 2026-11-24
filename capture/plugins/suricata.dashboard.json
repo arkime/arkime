@@ -1,0 +1,187 @@
+{
+  "name": "Suricata",
+  "description": "Sessions with a Suricata alert (suricata plugin): signatures, categories, severities and who was involved",
+  "requires": [
+    "suricata.signature"
+  ],
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "suricata.signature == EXISTS!",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "suricata.category",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Alerted sessions by category"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Alerted sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Signatures",
+        "metricType": "suricata.signature",
+        "metricAgg": "cardinality"
+      },
+      {
+        "id": "w4",
+        "field": "suricata.signature",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Signatures"
+      },
+      {
+        "id": "w5",
+        "field": "suricata.severity",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Severity"
+      },
+      {
+        "id": "w6",
+        "field": "suricata.category",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "orientation": "horizontal",
+        "title": "Categories"
+      },
+      {
+        "id": "w7",
+        "field": "suricata.signature",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Top signatures"
+      },
+      {
+        "id": "w8",
+        "field": "suricata.action",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Actions"
+      },
+      {
+        "id": "w9",
+        "field": "suricata.signatureId",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Signature IDs"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Alert sources"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Alert targets"
+      },
+      {
+        "id": "w12",
+        "field": "country.src",
+        "viewMode": "map",
+        "width": 2,
+        "height": 2,
+        "title": "Source countries"
+      },
+      {
+        "id": "w13",
+        "field": "country.dst",
+        "viewMode": "map",
+        "width": 2,
+        "height": 2,
+        "title": "Destination countries"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "Alert tree: sources to targets (click a host to re-root)"
+      },
+      {
+        "id": "w15",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "port.dst",
+          "suricata.signature",
+          "suricata.category",
+          "suricata.severity",
+          "suricata.action"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

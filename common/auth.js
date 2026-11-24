@@ -34,7 +34,6 @@ class Auth {
   static #requiredAuthHeader;
   static #requiredAuthHeaderVal;
   static #requiredAuthHeaderHmacs;
-  static #userAutoCreateTmpl;
   static #userAutoCreateFuncs;
   static #userAuthIps;
   static #strategies;
@@ -45,7 +44,10 @@ class Auth {
   static #caTrustCerts;
   static #passwordSecretSection;
   static #app;
+  static #sessionAuth = false;
   static #keyCache = new LRUCache({ max: 1000, ttl: 1000 * 60 * 5 });
+  static #macKeys = new Map();
+  static #v6Compatible;
   static #logoutUrl;
   static #logoutUrlMethod;
 
@@ -58,6 +60,9 @@ class Auth {
     Auth.#app = app;
     app.use(Auth.#ppChecker);
     app.use(Auth.#authRouter);
+    if (Auth.#sessionAuth) {
+      DbStore.start();
+    }
 
     app.post('/api/login', bodyParser.urlencoded({ extended: true }));
     app.use(Auth.doAuth);
@@ -75,9 +80,9 @@ class Auth {
    * @param {string} options.userNameHeader In header auth mode, which http header has the user id
    * @param {string} options.passwordSecret=password For basic/digest mode, what password to use to encrypt the password hash
    * @param {string} options.serverSecret=passwordSecret What password is used to encrypt S2S auth
+   * @param {boolean} options.v6Compatible=true Accept what older versions send, like S2S and cookie tokens without a mac
    * @param {string} options.requiredAuthHeader In header auth mode, another header can be required
    * @param {string} options.requiredAuthHeaderVal In header auth mode, a comma separated list of values for requiredAuthHeader, if none are matched the user will not be authorized
-   * @param {string} options.userAutoCreateTmpl A JavaScript string function that is used to create users that don't exist
    * @param {boolean} options.s2s Support s2s auth also
    * @param {object} options.authConfig options specific to each auth mode
    * @param {object} options.caTrustFile Optional path to CA certificate file to use for external authentication
@@ -92,9 +97,9 @@ class Auth {
     options.userNameHeader ??= ArkimeConfig.get('userNameHeader');
     options.passwordSecret ??= ArkimeConfig.getFull(options.passwordSecretSection ?? undefined, 'passwordSecret');
     options.serverSecret ??= ArkimeConfig.get('serverSecret');
+    options.v6Compatible ??= ArkimeConfig.getBool('v6Compatible', true);
     options.requiredAuthHeader ??= ArkimeConfig.get('requiredAuthHeader');
     options.requiredAuthHeaderVal ??= ArkimeConfig.get('requiredAuthHeaderVal');
-    options.userAutoCreateTmpl ??= ArkimeConfig.get('userAutoCreateTmpl');
     options.userAuthIps = ArkimeConfig.getArray('userAuthIps');
     options.caTrustFile ??= ArkimeConfig.get('caTrustFile');
 
@@ -120,25 +125,25 @@ class Auth {
     options.authConfig.jwtUserIdPrefix ??= ArkimeConfig.get('authJwtUserIdPrefix');
     options.authConfig.jwtRequiredScopes ??= ArkimeConfig.get('authJwtRequiredScopes');
     options.authConfig.jwtClockSkew ??= ArkimeConfig.getInt('authJwtClockSkew', 60);
+    options.authConfig.headerJwtVerify ??= ArkimeConfig.getBool('authHeaderJwtVerify', false);
 
     if (ArkimeConfig.debug > 1) {
       console.log('Auth.initialize', options);
     }
 
+    // userNameHeader used to also select the auth mode, now it is only ever the header name
+    if (options.userNameHeader?.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form|s2s)$/)) {
+      console.log(`WARNING - Ignoring userNameHeader=${options.userNameHeader}, it no longer selects the auth mode, use authMode instead.`);
+      delete options.userNameHeader;
+    }
+
     if (options.mode === undefined) {
       if (options.userNameHeader) {
-        if (options.userNameHeader.match(/^(digest|basic|anonymous|oidc|basic\+oidc|form|basic\+form)$/)) {
-          console.log(`WARNING - Using authMode=${options.userNameHeader} setting since userNameHeader set, add to config file to silence this warning.`);
-          options.mode = options.userNameHeader;
-          delete options.userNameHeader;
-        } else {
-          console.log('WARNING - Using authMode=header since not set, add to config file to silence this warning.');
-          options.mode = 'header';
-        }
+        console.log('WARNING - Using authMode=digest since not set, userNameHeader alone no longer enables header auth, set authMode=header to use it.');
       } else {
         console.log('WARNING - Using authMode=digest since not set, add to config file to silence this warning.');
-        options.mode = 'digest';
       }
+      options.mode = 'digest';
     }
 
     Auth.mode = options.mode;
@@ -155,6 +160,10 @@ class Auth {
       Auth.#serverSecret = Auth.passwordSecret;
       Auth.#serverSecret256 = Auth.passwordSecret256;
     }
+    Auth.#v6Compatible = options.v6Compatible;
+    // Derive now so the first request doesn't pay for it
+    Auth.#macKey(Auth.#serverSecret);
+    Auth.#macKey(Auth.passwordSecret256);
     Auth.#requiredAuthHeader = options.requiredAuthHeader;
     Auth.#requiredAuthHeaderVal = options.requiredAuthHeaderVal?.split(',').map(s => s.trim()).filter(s => s !== '');
     Auth.#requiredAuthHeaderHmacs = Auth.#requiredAuthHeaderVal?.map(v => crypto.createHmac('sha256', 'compare').update(v).digest());
@@ -168,21 +177,17 @@ class Auth {
       console.log('ERROR - requiredAuthHeaderVal is set but requiredAuthHeader is missing or empty');
       process.exit(1);
     }
-    Auth.#userAutoCreateTmpl = options.userAutoCreateTmpl;
-    if (Auth.#userAutoCreateTmpl) {
-      console.log('WARNING - userAutoCreateTmpl is deprecated and INSECURE, use [user-auto-create] section instead. This functionality will be removed in Arkime 7.');
+    if (options.userAutoCreateTmpl ?? ArkimeConfig.get('userAutoCreateTmpl')) {
+      console.log('ERROR - userAutoCreateTmpl has been removed, use the [user-auto-create] section instead');
+      process.exit(1);
     }
 
     const userAutoCreate = ArkimeConfig.getSection('user-auto-create');
     if (userAutoCreate) {
-      if (Auth.#userAutoCreateTmpl) {
-        console.log('ERROR - Cannot use both userAutoCreateTmpl and [user-auto-create] section');
-        process.exit(1);
-      }
       const allowedUserFields = new Set([
         'userId', 'userName', 'passStore', 'enabled', 'webEnabled', 'headerAuthEnabled',
         'emailSearch', 'createEnabled', 'removeEnabled', 'packetSearch',
-        'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload',
+        'hideStats', 'hideFiles', 'hidePcap', 'disablePcapDownload', 'disableCron',
         'expression', 'settings', 'views', 'columnConfigs', 'spiviewFieldConfigs',
         'tableStates', 'timeLimit', 'roles', 'roleAssigners', 'cont3xt'
       ]);
@@ -290,6 +295,11 @@ class Auth {
       break;
     case 'header-jwt':
       check('userIdField', 'authUserIdField');
+      if (Auth.#authConfig.headerJwtVerify) {
+        check('jwtJwksUrl', 'authJwtJwksUrl');
+        check('jwtIssuer', 'authJwtIssuer');
+        check('jwtAudience', 'authJwtAudience');
+      }
       Auth.#strategies = ['header'];
       break;
     case 's2s':
@@ -322,6 +332,12 @@ class Auth {
       process.exit(1);
     }
 
+    // Before 7.0 mcpAllowedIps also limited jwt callers, so it may have been widened for them
+    if (ArkimeConfig.getBool('mcpEnabled', false) && ArkimeConfig.getArray('mcpAuthMode', 'header').includes('jwt') &&
+        ArkimeConfig.getArray('mcpAllowedIps', '').length > 0) {
+      console.log('WARNING - mcpAllowedIps only lists the hosts trusted to send the MCP username header, jwt requests are not checked against it. Make sure it only lists your proxies.');
+    }
+
     // Add basic to beginning
     if (addBasic) {
       Auth.#strategies.unshift('basic');
@@ -340,13 +356,18 @@ class Auth {
 
     // If sessionAuth is required enable the express and passport sessions
     if (sessionAuth) {
+      Auth.#sessionAuth = true;
+      // Scripts like addUser.js never mount an app, so they never open the sids store
+      if (Auth.#app) {
+        DbStore.start();
+      }
       Auth.#authRouter.use(expressSession({
         name: 'ARKIME-SID',
         secret: Auth.passwordSecret + Auth.#serverSecret,
         resave: false,
         saveUninitialized: false,
         cookie: { path: Auth.#basePath, secure: Auth.#authConfig.cookieSecure, sameSite: Auth.#authConfig.cookieSameSite ?? 'Lax', maxAge: 24 * 60 * 60 * 1000, httpOnly: true },
-        store: new ESStore({ })
+        store: new DbStore({ })
       }));
       Auth.#authRouter.use(passport.initialize());
       Auth.#authRouter.use(passport.session());
@@ -512,7 +533,7 @@ class Auth {
 
     User.getUserCache(userId, (err, user) => {
       // No claims means identity only, so no auto create either
-      if (claims === undefined || (Auth.#userAutoCreateTmpl === undefined && Auth.#userAutoCreateFuncs === undefined)) {
+      if (claims === undefined || Auth.#userAutoCreateFuncs === undefined) {
         return authCheck(err, user);
       } else if ((err && err.toString().includes('Not Found')) || (!user)) { // Try dynamic creation
         Auth.#dynamicCreate(userId, claims, authCheck);
@@ -553,36 +574,72 @@ class Auth {
       }
     }
 
-    let userId;
-    let vals;
-
     if (Auth.mode === 'header-jwt') {
-      // No signature verification — the upstream proxy (ALB, Cloudflare Access, etc.)
-      // has already verified the JWT before forwarding the request.
+      // The upstream proxy (ALB, Cloudflare Access, etc.) has already verified the JWT,
+      // so by default only check it is well formed and current. authHeaderJwtVerify
+      // also checks the signature against authJwtJwksUrl.
+      const jwt = req.headers[Auth.#userNameHeader];
+      let payload;
       try {
-        const jwt = req.headers[Auth.#userNameHeader];
-        const parts = jwt.split('.');
-        if (parts.length !== 3) {
-          return done('Invalid JWT in header');
-        }
-        const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-        userId = payload[Auth.#authConfig.userIdField]?.toString().trim();
-        vals = payload;
+        payload = Auth.#decodeHeaderJwt(jwt);
       } catch (e) {
-        console.log('AUTH: Failed to decode JWT from header', Auth.#userNameHeader, e.message);
-        return done('Failed to decode JWT');
+        console.log('AUTH: Bad JWT in header', Auth.#userNameHeader, e.message);
+        return done('Invalid JWT in header');
       }
-    } else {
-      // Node decodes HTTP header values as ISO-8859-1 (RFC 7230). Reverse proxies
-      // (Caddy, nginx, oauth2-proxy, ALB OIDC, etc.) typically write UTF-8 bytes
-      // directly into headers, so non-ASCII characters arrive as mojibake. Re-decode
-      // each string header from latin-1 bytes back to UTF-8 so auto-create
-      // expressions, dynamic roles, and downstream consumers see the original UTF-8
-      // string. Pure-ASCII values are unchanged.
-      vals = Auth.#utf8Headers(req.headers);
-      userId = vals[Auth.#userNameHeader].trim();
+
+      const userIdOf = (claims) => claims[Auth.#authConfig.userIdField]?.toString().trim();
+      if (!Auth.#authConfig.headerJwtVerify) {
+        return Auth.#headerAuthUser(userIdOf(payload), payload, done);
+      }
+
+      Auth.verifyJwt(jwt, { checkScopes: false }).then(
+        (claims) => Auth.#headerAuthUser(userIdOf(claims), claims, done),
+        (e) => {
+          console.log('AUTH: JWT in header failed verification', Auth.#userNameHeader, e.message);
+          done('Invalid JWT in header');
+        }
+      );
+      return;
     }
 
+    // Node decodes HTTP header values as ISO-8859-1 (RFC 7230). Reverse proxies
+    // (Caddy, nginx, oauth2-proxy, ALB OIDC, etc.) typically write UTF-8 bytes
+    // directly into headers, so non-ASCII characters arrive as mojibake. Re-decode
+    // each string header from latin-1 bytes back to UTF-8 so auto-create
+    // expressions, dynamic roles, and downstream consumers see the original UTF-8
+    // string. Pure-ASCII values are unchanged.
+    const vals = Auth.#utf8Headers(req.headers);
+    return Auth.#headerAuthUser(vals[Auth.#userNameHeader].trim(), vals, done);
+  }
+
+  // ----------------------------------------------------------------------------
+  /* Decode a proxy supplied JWT without checking its signature, rejecting
+   * anything malformed, unsigned, expired or not yet valid. */
+  static #decodeHeaderJwt (jwt) {
+    if (!ArkimeUtil.isString(jwt) || jwt.split('.').some(part => part === '')) {
+      throw new Error('not a signed JWT');
+    }
+
+    const header = jose.decodeProtectedHeader(jwt);
+    if (typeof header.alg !== 'string' || header.alg.toLowerCase() === 'none') {
+      throw new Error('unsigned JWT');
+    }
+
+    const payload = jose.decodeJwt(jwt);
+    const now = Date.now() / 1000;
+    const skew = Auth.#authConfig.jwtClockSkew;
+    if (payload.exp !== undefined && !(typeof payload.exp === 'number' && now <= payload.exp + skew)) {
+      throw new Error('expired JWT');
+    }
+    if (payload.nbf !== undefined && !(typeof payload.nbf === 'number' && now + skew >= payload.nbf)) {
+      throw new Error('JWT not yet valid');
+    }
+
+    return payload;
+  }
+
+  // ----------------------------------------------------------------------------
+  static #headerAuthUser (userId, vals, done) {
     if (!userId || userId === '') {
       return done('User name header is empty');
     }
@@ -623,8 +680,9 @@ class Auth {
   /**
    * Verify a Bearer JWT against the configured remote JWKS and return its claims.
    * Throws when the token is missing, malformed, or fails any check.
+   * authJwtRequiredScopes is for Bearer tokens, a proxy's header JWT passes { checkScopes: false }.
    */
-  static async verifyJwt (token) {
+  static async verifyJwt (token, { checkScopes = true } = {}) {
     // Refuse to run half configured. Without an expected issuer and audience a
     // valid token minted for some *other* service would authenticate here.
     // Checked on every call, not just when the JWKS is first built.
@@ -640,7 +698,7 @@ class Auth {
       clockTolerance: Auth.#authConfig.jwtClockSkew
     });
 
-    const required = Auth.#authConfig.jwtRequiredScopes?.split(',').map(s => s.trim()).filter(s => s !== '');
+    const required = !checkScopes ? undefined : Auth.#authConfig.jwtRequiredScopes?.split(',').map(s => s.trim()).filter(s => s !== '');
     if (required?.length) {
       const scopes = Array.isArray(payload.scp) ? payload.scp : (payload.scope ?? '').split(' ');
       const missing = required.filter(s => !scopes.includes(s));
@@ -726,9 +784,13 @@ class Auth {
       return done('Cannot authenticate with role');
     }
 
-    User.getUserCache(userId, (err, user) => {
+    User.getUserCache(userId, async (err, user) => {
+      // Await lastUsed so it can't race a setUser later in the same
+      // request. On stores that bump lastUsed via a full-document
+      // read-modify-write (redis), a fire-and-forget write here can land
+      // after a settings save and clobber it.
       if (user) {
-        user.setLastUsed();
+        await user.setLastUsed();
       }
       return done(null, user);
     });
@@ -874,7 +936,7 @@ class Auth {
           user.tableStates = dbUser.tableStates;
           user.cont3xt = dbUser.cont3xt;
         } else {
-          user.save();
+          User.setUser(user.userId, user).catch(err => console.log('ERROR - saving anonymous user', ArkimeUtil.sanitizeLine(err?.message ?? String(err))));
         }
         return done(null, user);
       });
@@ -1028,6 +1090,12 @@ class Auth {
       if (req.query.username !== undefined || req.query.password !== undefined) {
         return done('Credentials must be in the POST body');
       }
+      // Another site can post a login form here too, logging the victim in as the attacker. Browsers
+      // set Sec-Fetch-Site and pages can't, older browsers and scripts don't send it at all.
+      const fetchSite = req.headers['sec-fetch-site'];
+      if (fetchSite !== undefined && fetchSite !== 'same-origin' && fetchSite !== 'none') {
+        return done('Login must come from this site');
+      }
       if (userId.startsWith('role:')) {
         console.log(`AUTH: User ${userId} Cannot authenticate with role`);
         return done('Cannot authenticate with role');
@@ -1077,7 +1145,7 @@ class Auth {
           packetSearch: true,
           settings: {},
           welcomeMsgNum: 1,
-          roles: ['arkimeAdmin', 'cont3xtUser', 'parliamentUser', 'usersAdmin', 'wiseUser']
+          roles: ['arkimeAdmin', 'cont3xtUser', 'dbAdmin', 'parliamentUser', 'usersAdmin', 'wiseUser']
         });
         await user.expandFromRoles();
         return done(null, user);
@@ -1151,30 +1219,32 @@ class Auth {
       console.log('AUTH - #dynamicCreate', ArkimeUtil.sanitizeStr(userId));
     }
 
-    let nuser;
-    if (Auth.#userAutoCreateTmpl) {
-      nuser = JSON.parse(new Function('return `' + Auth.#userAutoCreateTmpl + '`;').call(vars));
-    } else {
-      nuser = {};
-      // No user record exists yet, so `this` is undefined in these expressions,
-      // unlike [user-role-mappings] which binds the existing user
-      for (const [field, func] of Auth.#userAutoCreateFuncs) {
-        try {
-          nuser[field] = func(vars);
-        } catch (e) {
-          console.log(`ERROR - user-auto-create function for '${field}' failed:`, e.message);
-          return cb('User auto-create failed');
-        }
+    // userIds end up in the admin pages' api urls, where these could send an admin's request
+    // elsewhere. The UI encodes ids, but no encoding stops . and .. from being dot segments.
+    if (/[\u0000-\u001f\u007f/?#%]/.test(userId) || userId === '.' || userId === '..') {
+      console.log('AUTH - not auto creating user with a bad userId', ArkimeUtil.sanitizeStr(userId));
+      return cb('Bad userId');
+    }
+
+    const nuser = {};
+    // No user record exists yet, so `this` is undefined in these expressions,
+    // unlike [user-role-mappings] which binds the existing user
+    for (const [field, func] of Auth.#userAutoCreateFuncs) {
+      try {
+        nuser[field] = func(vars);
+      } catch (e) {
+        console.log(`ERROR - user-auto-create function for '${field}' failed:`, e.message);
+        return cb('User auto-create failed');
       }
     }
 
     if (nuser.userId !== userId) {
       if (nuser.userId === undefined) {
         if (ArkimeConfig.debug > 0) {
-          console.log(`WARNING - the userAutoCreateTmpl didn't set a userId field, instead using header/oidc set '${userId}'`);
+          console.log(`WARNING - user-auto-create didn't set a userId field, instead using header/oidc set '${userId}'`);
         }
       } else {
-        console.log(`WARNING - the userAutoCreateTmpl set userId to a different value than header/oidc '${userId}' while the userAutoCreateTmpl returned '${nuser.userId}', resetting to use '${userId}'`);
+        console.log(`WARNING - user-auto-create set userId to '${nuser.userId}' but header/oidc set '${userId}', resetting to use '${userId}'`);
       }
       nuser.userId = userId;
     }
@@ -1184,7 +1254,7 @@ class Auth {
     }
 
     if (nuser.userName === undefined || nuser.userName === 'undefined') {
-      console.log(`WARNING - The userAutoCreateTmpl didn't set a userName, using userId ${nuser.userId} for userName`);
+      console.log(`WARNING - user-auto-create didn't set a userName, using userId ${nuser.userId} for userName`);
       nuser.userName = nuser.userId;
     }
 
@@ -1274,8 +1344,17 @@ class Auth {
     const savedOgurl = req.session?.ogurl;
 
     const passportAuthOptionsExtra = {};
-    if (Auth.#strategies.includes('oidc') && (Auth.#authConfig.redirectURIs === undefined || Auth.#authConfig.redirectURIs.split(',').length > 1)) {
-      passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
+    if (Auth.#strategies.includes('oidc')) {
+      const redirectURIs = Auth.#authConfig.redirectURIs?.split(',').map(s => s.trim()).filter(s => s !== '') ?? [];
+      if (redirectURIs.length === 0) {
+        passportAuthOptionsExtra.redirect_uri = req.protocol + '://' + req.hostname + `${Auth.#basePath}auth/login/callback`;
+      } else if (redirectURIs.length > 1) {
+        // Always one of ours, so a forged Host header can't have the IdP send the code elsewhere
+        const host = req.hostname?.toLowerCase();
+        passportAuthOptionsExtra.redirect_uri = redirectURIs.find(uri => {
+          try { return new URL(uri).hostname.toLowerCase() === host; } catch { return false; }
+        }) ?? redirectURIs[0];
+      }
     }
     // receiveSession's s2s placeholder user has no userId, so never try to session-serialize it
     if (req.url.match(/^\/receiveSession/i) || req.url.match(/^\/api\/sessions\/receive/i)) {
@@ -1306,7 +1385,8 @@ class Auth {
         if (req.route?.path === '/api/login' || req._parsedUrl.pathname === '/auth/login/callback') {
           const loginRedirect = () => {
             const ogurlEncoded = req.body?.ogurl || req.session?.ogurl || savedOgurl;
-            if (ogurlEncoded) {
+            // Buffer.from walks any object with a length, so only a bounded string
+            if (typeof ogurlEncoded === 'string' && ogurlEncoded.length <= 16384) {
               try {
                 const ogurl = Auth.auth2objNext(Buffer.from(ogurlEncoded, 'base64').toString());
                 // Only redirect to a local same-origin path; reject absolute, protocol-relative
@@ -1455,8 +1535,26 @@ class Auth {
       data, // already hex
       tag: tag.toString('hex')
     };
+    auth.mac = Auth.#authMac(secret, auth.iv, auth.salt, auth.data, auth.tag).toString('hex');
 
     return JSON.stringify(auth);
+  }
+
+  // ----------------------------------------------------------------------------
+  // Lets auth2objNext reject a forged token before paying for its PBKDF2. The key
+  // is derived once per secret, so it uses a fixed salt.
+  static #authMac (secret, iv, salt, data, tag) {
+    return crypto.createHmac('sha256', Auth.#macKey(secret)).update(`${iv}.${salt}.${data}.${tag}`).digest();
+  }
+
+  static #macKey (secret) {
+    const id = crypto.createHash('sha256').update(secret).digest('hex');
+    let key = Auth.#macKeys.get(id);
+    if (!key) {
+      key = crypto.pbkdf2Sync(secret, 'arkime auth mac', 300000, 32, 'sha256');
+      Auth.#macKeys.set(id, key);
+    }
+    return key;
   }
 
   // ----------------------------------------------------------------------------
@@ -1471,16 +1569,18 @@ class Auth {
   static STORED_AUTH_MAX = 1024 * 1024;
 
   // ----------------------------------------------------------------------------
-  // Decrypt the auth string into an object
-  static auth2objNext (auth, secret, maxDataLen = 8192) {
+  // Decrypt the auth string into an object. Pass { stored: true } only for values
+  // read back from our own db, which may be larger and may predate the mac.
+  static auth2objNext (auth, secret, { stored = false } = {}) {
     secret ??= Auth.#serverSecret;
+    const maxDataLen = stored ? Auth.STORED_AUTH_MAX : 8192;
     try {
       const parsed = JSON.parse(auth);
       if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed) ||
           ArkimeUtil.isPP(Object.keys(parsed))) {
         throw new Error('Malformed auth token');
       }
-      const { iv, salt, data, tag } = parsed;
+      const { iv, salt, data, tag, mac } = parsed;
 
       // Validate strict shapes BEFORE expensive PBKDF2 (DoS protection)
       const isHex = /^[0-9a-fA-F]+$/;
@@ -1489,6 +1589,15 @@ class Auth {
           typeof tag !== 'string' || tag.length !== 32 || !isHex.test(tag) ||
           typeof data !== 'string' || data.length === 0 || data.length > maxDataLen || !isHex.test(data)) {
         throw new Error('Malformed auth token');
+      }
+
+      if (mac !== undefined) {
+        if (typeof mac !== 'string' || mac.length !== 64 || !isHex.test(mac) ||
+            !crypto.timingSafeEqual(Buffer.from(mac, 'hex'), Auth.#authMac(secret, iv, salt, data, tag))) {
+          throw new Error('Bad auth token mac');
+        }
+      } else if (!Auth.#v6Compatible && !stored) {
+        throw new Error('Auth token has no mac');
       }
 
       const cacheKey = `${secret}:${salt}`;
@@ -1517,14 +1626,17 @@ class Auth {
 
   // ----------------------------------------------------------------------------
   // Decrypt the auth string into an object
-  static auth2obj (auth, secret, maxDataLen) {
+  static auth2obj (auth, secret, options) {
     // New json style
-    if (auth[0] === '{') { return Auth.auth2objNext(auth, secret, maxDataLen); }
+    if (auth[0] === '{') { return Auth.auth2objNext(auth, secret, options); }
 
     // New json style, but still encoded, bad proxy probably
-    if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret, maxDataLen); }
+    if (auth.startsWith('%7B%22')) { return Auth.auth2objNext(decodeURIComponent(auth), secret, options); }
 
-    // IV.E.H
+    // IV.E.H, written before 6.4.0, cont3xt keys saved then are still stored this way
+    if (!Auth.#v6Compatible && !options?.stored) {
+      throw new Error('Unsupported auth2obj IV.E.H');
+    }
     const parts = auth.split('.');
 
     if (parts.length !== 3) {
@@ -1681,150 +1793,99 @@ class Auth {
 }
 
 // ----------------------------------------------------------------------------
-class ESStore extends expressSession.Store {
-  static #client;
-  static #index;
+class DbStore extends expressSession.Store {
+  static #sids;
+  static #started = false;
   static #ttl = 24 * 60 * 60 * 1000; // 24 hrs
-  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no Elasticsearch client
+  static #memoryStore = new expressSession.MemoryStore(); // fallback when there's no users db
 
-  constructor (options) {
-    super();
-    setTimeout(async () => {
-      ESStore.#client = User.getClient();
-      if (!ESStore.#client) {
-        console.log('WARNING - usersElasticsearch is not Elasticsearch/OpenSearch, using in-memory sessions (lost on restart, not shared across nodes)');
-        // MemoryStore only drops an expired session when it is read again, all() checks every one
-        setInterval(() => ESStore.#memoryStore.all(), 60 * 1000).unref();
-        return;
-      }
-      ESStore.start();
-      setInterval(() => ESStore.#prune(), 10 * 60 * 1000).unref();
-    }, 100);
-    const prefix = ArkimeUtil.formatPrefix(ArkimeConfig.get('usersPrefix', ArkimeConfig.get('prefix', 'arkime_')));
-    ESStore.#index = `${prefix}sids_v50`;
+  static start () {
+    if (DbStore.#started) { return; }
+    DbStore.#started = true;
+    DbStore.#start(0);
   }
 
-  // ----------------------------------------------------------------------------
-  static async start () {
-    // Create Index if needed
-    try {
-      await ESStore.#client.indices.create({
-        index: ESStore.#index,
-        body: {
-          settings: {
-            number_of_shards: 1,
-            number_of_replicas: 0,
-            auto_expand_replicas: '0-1'
+  // The app sets up its users db after auth, wait up to 30s for it
+  static #start (tries) {
+    setTimeout(async () => {
+      if (User.getDbUrl() === undefined && tries < 300) {
+        return DbStore.#start(tries + 1);
+      }
+      // The same prefix as the users index, whichever way the app picked it
+      const prefix = User.getDbPrefix() ?? '';
+      const conn = User.dbConnect();
+      if (!conn) {
+        console.log('WARNING - no users db, using in-memory sessions (lost on restart, not shared across nodes)');
+        // MemoryStore only drops an expired session when it is read again, all() checks every one
+        setInterval(() => DbStore.#memoryStore.all(), 60 * 1000).unref();
+        return;
+      }
+      const sids = conn.collection('sids', {
+        fields: {
+          _timestamp: { type: 'date', indexed: true },
+          _expires: { type: 'date', indexed: true }
+        },
+        es: {
+          index: `${prefix}sids_v50`,
+          create: {
+            settings: { number_of_shards: 1, number_of_replicas: 0, auto_expand_replicas: '0-1' },
+            mappings: { dynamic_templates: [{ string_template: { match_mapping_type: 'string', mapping: { type: 'keyword' } } }] }
           }
         }
       });
-    } catch (err) {
-      // If already exists ignore error
-      if (err.meta?.body?.error?.type !== 'resource_already_exists_exception') {
-        console.log(err);
+      try {
+        await sids.init();
+      } catch (err) {
+        console.log('ERROR - creating the sids store', err);
         process.exit(1);
       }
-    }
-
-    // Update mapping if needed
-    await ESStore.#client.indices.putMapping({
-      index: ESStore.#index,
-      body: {
-        dynamic_templates: [
-          {
-            string_template: {
-              match_mapping_type: 'string',
-              mapping: {
-                type: 'keyword'
-              }
-            }
-          }
-        ],
-        properties: {
-          _timestamp: { type: 'date' },
-          _expires: { type: 'date' }
-        }
-      }
-    });
-
-    await ESStore.#prune();
+      DbStore.#sids = sids;
+      await DbStore.#prune();
+      setInterval(() => DbStore.#prune(), 10 * 60 * 1000).unref();
+    }, 100);
   }
 
   // ----------------------------------------------------------------------------
   // Delete expired sids, ignore errors. Older docs only have _timestamp.
   static async #prune () {
-    const now = new Date().getTime();
+    const now = Date.now();
     try {
-      await ESStore.#client.deleteByQuery({
-        index: ESStore.#index,
-        body: {
-          query: {
-            bool: {
-              should: [
-                { range: { _expires: { lte: now } } },
-                { range: { _timestamp: { lte: now - ESStore.#ttl } } }
-              ]
-            }
-          }
-        },
-        timeout: '5m'
-      });
+      await DbStore.#sids.deleteWhere({ $or: [{ _expires: { $lte: now } }, { _timestamp: { $lte: now - DbStore.#ttl } }] });
     } catch (err) { }
   }
 
   // ----------------------------------------------------------------------------
   destroy (sid, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.destroy(sid, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.destroy(sid, callback);
     }
-    ESStore.#client.delete({
-      index: ESStore.#index,
-      id: sid
-    }, (err, response) => {
-      callback();
-    });
+    DbStore.#sids.delete(sid, { refresh: false }).then(() => callback(), () => callback());
   }
 
   // ----------------------------------------------------------------------------
   get (sid, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.get(sid, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.get(sid, callback);
     }
-    ESStore.#client.get({
-      index: ESStore.#index,
-      id: sid
-    }, (err, response) => {
-      if (err) {
-        if (response?.statusCode === 404) {
-          return callback();
-        }
-        return callback(err);
-      }
-
-      const _source = response.body._source;
-      const now = new Date().getTime();
-      if (now - _source._timestamp > ESStore.#ttl || now > (_source._expires ?? Infinity)) {
+    DbStore.#sids.get(sid).then((session) => {
+      if (!session) { return callback(); }
+      const now = Date.now();
+      if (now - session._timestamp > DbStore.#ttl || now > (session._expires ?? Infinity)) {
         this.destroy(sid, () => {});
         return callback();
       }
-      return callback(err, _source);
-    });
+      return callback(null, session);
+    }, err => callback(err));
   }
 
   // ----------------------------------------------------------------------------
   set (sid, session, callback) {
-    if (!ESStore.#client) {
-      return ESStore.#memoryStore.set(sid, session, callback);
+    if (!DbStore.#sids) {
+      return DbStore.#memoryStore.set(sid, session, callback);
     }
-    session._timestamp = new Date().getTime();
-    session._expires = session.cookie?.expires ? new Date(session.cookie.expires).getTime() : session._timestamp + ESStore.#ttl;
-    ESStore.#client.index({
-      index: ESStore.#index,
-      id: sid,
-      body: session
-    }, (err, response) => {
-      callback(err);
-    });
+    session._timestamp = Date.now();
+    session._expires = session.cookie?.expires ? new Date(session.cookie.expires).getTime() : session._timestamp + DbStore.#ttl;
+    DbStore.#sids.put(sid, session, { refresh: false }).then(() => callback(), err => callback(err));
   }
 }
 // ----------------------------------------------------------------------------
@@ -1834,8 +1895,14 @@ const User = require('../common/user');
 const ArkimeUtil = require('../common/arkimeUtil');
 const ArkimeConfig = require('../common/arkimeConfig');
 
-ArkimeConfig.registerValidated({
+ArkimeConfig.registerSettings({
+  passwordSecret: { secret: true },
+  serverSecret: { secret: true },
+  authClientSecret: { secret: true },
+  requiredAuthHeaderVal: { secret: true },
   userAuthIps: { type: 'cidrs' },
+  v6Compatible: { type: 'bool' },
+  authHeaderJwtVerify: { type: 'bool' },
   // A non numeric skew becomes NaN, and jose compares exp against NaN, which is
   // always false - so an expired token would verify forever
   authJwtClockSkew: { type: 'int', min: 0 }

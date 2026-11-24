@@ -5,6 +5,7 @@
     "@timestamp" : "SET",
     "cert" : [
      {
+      "exponent" : 65537,
       "hash" : "c5:3e:73:07:3f:93:ce:78:95:de:74:84:12:6b:c3:03:da:b9:e6:57",
       "issuerCN" : [
        "entrust.net certification authority (2048)"
@@ -16,12 +17,16 @@
        "www.entrust.net/CPS_2048 incorp. by ref. (limits liab.)",
        "(c) 1999 Entrust.net Limited"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1636685477000,
       "notBefore" : 1321026040000,
+      "pathLen" : 0,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 2585,
       "remainingSeconds" : 223347403,
       "serial" : "4c0e8c39",
+      "sha256" : "0ee4daf71a85d842d23f4910fd4c909b7271861931f1d5feac868225f52700e2",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "entrust certification authority - l1c"
       ],
@@ -33,7 +38,8 @@
        "(c) 2009 Entrust, Inc."
       ],
       "validDays" : 3653,
-      "validSeconds" : 315659437
+      "validSeconds" : 315659437,
+      "version" : 3
      },
      {
       "alt" : [
@@ -101,6 +107,7 @@
        "hp.aol.ca"
       ],
       "altCnt" : 62,
+      "exponent" : 65537,
       "hash" : "2f:b6:7a:b6:34:99:c2:65:69:0c:cc:f6:8d:8a:73:ee:e2:0e:7a:8b",
       "issuerCN" : [
        "entrust certification authority - l1c"
@@ -112,12 +119,15 @@
        "www.entrust.net/rpa is incorporated by reference",
        "(c) 2009 Entrust, Inc."
       ],
+      "keyLength" : 2048,
       "notAfter" : 1497242632000,
       "notBefore" : 1402510723000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 971,
       "remainingSeconds" : 83904558,
       "serial" : "4c235548",
+      "sha256" : "3656dbe9ced047a74a8e6205e28e4b77bbdbe4d51eed066961552d7ac80c7977",
+      "signatureAlgorithm" : "sha256WithRSAEncryption",
       "subjectCN" : [
        "www.aol.com"
       ],
@@ -128,7 +138,8 @@
        "Homepages"
       ],
       "validDays" : 1096,
-      "validSeconds" : 94731909
+      "validSeconds" : 94731909,
+      "version" : 3
      }
     ],
     "certCnt" : 2,

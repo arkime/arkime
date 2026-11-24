@@ -866,10 +866,18 @@
       "/before-rst"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -1021,10 +1029,18 @@
       "/before-rst"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -1171,10 +1187,18 @@
       "/new-conn"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -1318,10 +1342,18 @@
       "/before-rst"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -1482,10 +1514,18 @@
       "/before-rst"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -1630,10 +1670,18 @@
       "/new-conn"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -1777,10 +1825,18 @@
       "/before-rst"
      ],
      "pathCnt" : 2,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "host"
      ],
      "requestHeaderCnt" : 1,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "serverVersion" : [
       "1.1"
      ],
@@ -1889,6 +1945,656 @@
      "src" : 196608
     },
     "totDataBytes" : 153
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m06"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 69
+    },
+    "destination" : {
+     "bytes" : 148,
+     "ip" : "10.9.51.2",
+     "mac" : [
+      "02:aa:00:00:25:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1748736300000,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "late-syn.nosyn.test"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "444bcb3a3fcf8389296c49467f27e1d6"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
+     "requestHeader" : [
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      2
+     ],
+     "responseBodyLenCnt" : 1,
+     "responseHeader" : [
+      "content-length"
+     ],
+     "responseHeaderCnt" : 1,
+     "responseHeaderField" : [
+      "content-length"
+     ],
+     "responseHeaderValue" : [
+      "2"
+     ],
+     "responseHeaderValueCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "2689367b205c16ce32ed4200942b8b8b1e262dfc70d9bc9fbc77c49699a4f1df"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "late-syn.nosyn.test/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "nosyn-test"
+     ],
+     "useragentCnt" : 1
+    },
+    "initRTT" : 50,
+    "ipProtocol" : 6,
+    "lastPacket" : 1748736300200,
+    "length" : 200,
+    "network" : {
+     "bytes" : 379,
+     "community_id" : "1:TiXIXLTMyY1x30+RUJ1ukREtG4c=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     139,
+     70,
+     70,
+     70,
+     110
+    ],
+    "packetPos" : [
+     8645,
+     8784,
+     8854,
+     8924,
+     8994
+    ],
+    "packetRange" : {
+     "gte" : 1748736300000,
+     "lte" : 1748736300200
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 40
+    },
+    "source" : {
+     "bytes" : 231,
+     "ip" : "10.9.51.1",
+     "mac" : [
+      "02:aa:00:00:25:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 3,
+     "port" : 49965
+    },
+    "srcISNCnt" : 1,
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpSynAckValidated" : true,
+    "tcpSynValidated" : true,
+    "tcpflags" : {
+     "ack" : 1,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 1,
+     "syn-ack" : 1,
+     "urg" : 0
+    },
+    "tcpseq" : {
+     "dst" : 0,
+     "src" : 196659
+    },
+    "totDataBytes" : 109
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m06"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 70
+    },
+    "destination" : {
+     "bytes" : 94,
+     "ip" : "10.9.52.2",
+     "mac" : [
+      "02:aa:00:00:25:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 80
+    },
+    "dstPayload8" : "485454502f312e31",
+    "dstTTL" : [
+     64
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1748736300250,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "midstream.nosyn.test"
+     ],
+     "hostCnt" : 1,
+     "md5" : [
+      "444bcb3a3fcf8389296c49467f27e1d6"
+     ],
+     "md5Cnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
+     "requestHeader" : [
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 2,
+     "responseBodyLen" : [
+      2
+     ],
+     "responseBodyLenCnt" : 1,
+     "responseHeader" : [
+      "content-length"
+     ],
+     "responseHeaderCnt" : 1,
+     "responseHeaderField" : [
+      "content-length"
+     ],
+     "responseHeaderValue" : [
+      "2"
+     ],
+     "responseHeaderValueCnt" : 1,
+     "serverVersion" : [
+      "1.1"
+     ],
+     "serverVersionCnt" : 1,
+     "sha256" : [
+      "2689367b205c16ce32ed4200942b8b8b1e262dfc70d9bc9fbc77c49699a4f1df"
+     ],
+     "sha256Cnt" : 1,
+     "statuscode" : [
+      200
+     ],
+     "statuscodeCnt" : 1,
+     "uri" : [
+      "midstream.nosyn.test/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "nosyn-test"
+     ],
+     "useragentCnt" : 1
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1748736300300,
+    "length" : 50,
+    "network" : {
+     "bytes" : 218,
+     "community_id" : "1:IH/JjKgIc5jm3CzcQtilJGg+1cE=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     140,
+     110
+    ],
+    "packetPos" : [
+     9104,
+     9244
+    ],
+    "packetRange" : {
+     "gte" : 1748736300250,
+     "lte" : 1748736300300
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 40
+    },
+    "source" : {
+     "bytes" : 124,
+     "ip" : "10.9.52.1",
+     "mac" : [
+      "02:aa:00:00:25:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 1,
+     "port" : 49966
+    },
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 110
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m06"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 3966
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.9.53.2",
+     "mac" : [
+      "02:aa:00:00:25:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1748736300350,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "limit.nosyn.test"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
+     "requestHeader" : [
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 2,
+     "uri" : [
+      "limit.nosyn.test/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "nosyn-test"
+     ],
+     "useragentCnt" : 1
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1748736302299,
+    "length" : 1949,
+    "network" : {
+     "bytes" : 6126,
+     "community_id" : "1:91yFK0QjQTXK79yPVltdhQiczQw=",
+     "packets" : 40
+    },
+    "node" : "test",
+    "packetLen" : [
+     136,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170,
+     170
+    ],
+    "packetPos" : [
+     9354,
+     9490,
+     9660,
+     9830,
+     10000,
+     10170,
+     10340,
+     10510,
+     10680,
+     10850,
+     11020,
+     11190,
+     11360,
+     11530,
+     11700,
+     11870,
+     12040,
+     12210,
+     12380,
+     12550,
+     12720,
+     12890,
+     13060,
+     13230,
+     13400,
+     13570,
+     13740,
+     13910,
+     14080,
+     14250,
+     14420,
+     14590,
+     14760,
+     14930,
+     15100,
+     15270,
+     15440,
+     15610,
+     15780,
+     15950
+    ],
+    "packetRange" : {
+     "gte" : 1748736300350,
+     "lte" : 1748736302299
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 6126,
+     "ip" : "10.9.53.1",
+     "mac" : [
+      "02:aa:00:00:25:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 40,
+     "port" : 49967
+    },
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 39,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 1,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 3966
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-25m06"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 64
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.9.54.2",
+     "mac" : [
+      "02:aa:00:00:25:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 80
+    },
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1748736302349,
+    "http" : {
+     "clientVersion" : [
+      "1.1"
+     ],
+     "clientVersionCnt" : 1,
+     "host" : [
+      "gap.nosyn.test"
+     ],
+     "hostCnt" : 1,
+     "method" : [
+      "GET"
+     ],
+     "method-GET" : 1,
+     "methodCnt" : 1,
+     "path" : [
+      "/"
+     ],
+     "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
+     "requestHeader" : [
+      "host",
+      "user-agent"
+     ],
+     "requestHeaderCnt" : 2,
+     "uri" : [
+      "gap.nosyn.test/"
+     ],
+     "uriCnt" : 1,
+     "useragent" : [
+      "nosyn-test"
+     ],
+     "useragentCnt" : 1
+    },
+    "ipProtocol" : 6,
+    "lastPacket" : 1748736302399,
+    "length" : 50,
+    "network" : {
+     "bytes" : 272,
+     "community_id" : "1:21ZpmSeKlBaWN9qF1s+8PMxtL6g=",
+     "packets" : 2
+    },
+    "node" : "test",
+    "packetLen" : [
+     134,
+     170
+    ],
+    "packetPos" : [
+     16120,
+     16254
+    ],
+    "packetRange" : {
+     "gte" : 1748736302349,
+     "lte" : 1748736302399
+    },
+    "protocol" : [
+     "http",
+     "tcp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 272,
+     "ip" : "10.9.54.1",
+     "mac" : [
+      "02:aa:00:00:25:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 2,
+     "port" : 49968
+    },
+    "srcPayload8" : "474554202f204854",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tcpflags" : {
+     "ack" : 0,
+     "ae" : 0,
+     "cwr" : 0,
+     "dstZero" : 0,
+     "ece" : 0,
+     "fin" : 0,
+     "psh" : 2,
+     "rst" : 0,
+     "srcZero" : 0,
+     "syn" : 0,
+     "syn-ack" : 0,
+     "urg" : 0
+    },
+    "totDataBytes" : 64
    },
    "header" : {
     "index" : {

@@ -1,3 +1,7 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
 import store from '../../store';
 import { fetchWrapper } from '@common/fetchWrapper.js';
 
@@ -96,7 +100,7 @@ export default {
    *                            or rejection of the request.
    */
   cancelEsTask: async function (cancelId) {
-    return await fetchWrapper({ url: `api/estasks/${cancelId}/cancelwith`, method: 'POST' });
+    return await fetchWrapper({ url: `api/estasks/${cancelId}/cancelwith`, method: 'POST', background: true });
   },
 
   /**

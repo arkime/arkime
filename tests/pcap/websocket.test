@@ -48,6 +48,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept-encoding",
       "accept-language",
@@ -88,6 +92,10 @@
       "zh-cn,zh;q=0.8,en-us;q=0.6,en;q=0.4"
      ],
      "requestHeaderValueCnt" : 10,
+     "responseBodyLen" : [
+      0
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "connection",
       "sec-websocket-accept",
