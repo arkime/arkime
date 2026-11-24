@@ -49,6 +49,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4464 disableParsers now defaults to empty so every parser loads, including arp, set disableParsers=arp.so for the old behavior
   - #4464 saveUnknownPackets now defaults to all;corrupt so unknown ether, unknown ip and corrupt packets are saved as sessions, set saveUnknownPackets= for the old behavior
   - #4472 DNS, mDNS and LLMNR names that are valid UTF-8 are saved as is instead of cat -v escaped (andy’s macbook pro instead of andym-bm-^@m-^ys macbook pro), so searches for the escaped form won't match new sessions; the name is saved as sent, only lowercased; invalid bytes, control characters and invisible characters such as bidi overrides and zero width spaces are still escaped and plain DNS names with raw UTF-8 get the dns:raw-utf8 tag
+  - #4492 tpacketv3ClusterId now defaults to 0, which has the kernel pick an unused fanout group id, set to 8005 for the old behavior (thanks @DresslerFrank)
 ## All
   - #4490 db.pl and ch.pl now skip the cert check for localhost, 127.x.x.x or ::1, matching capture and the node tools. ch.pl didn't skip it at all and db.pl only matched localhost and 127.0.0.1
   - #4490 Shark tab tshark minimum is now per release series, 4.4.19 on the 4.4 line and 4.6.4 on 4.6, up from a flat 4.4.15. Per series because a 4.6.0 is numerically above the 4.4 floor but was released before it
