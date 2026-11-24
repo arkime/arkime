@@ -13,6 +13,7 @@
 'use strict';
 
 const axios = require('axios');
+const ArkimeUtil = require('../common/arkimeUtil');
 const net = require('net');
 const WISESource = require('./wiseSource.js');
 
@@ -48,7 +49,7 @@ class SourceIPSource extends WISESource {
     if (this.tlsOptions === undefined) { return; } // bad TLS settings, already logged
 
     this.key = api.getConfig(section, 'key');
-    this.endpoint = String(api.getConfig(section, 'endpoint', DEFAULT_ENDPOINT)).replace(/\/+$/, '');
+    this.endpoint = ArkimeUtil.removeTrailingSlashes(String(api.getConfig(section, 'endpoint', DEFAULT_ENDPOINT)));
     this.field = api.getConfig(section, 'field', 'sourceip.provider');
     // lookups per UTC day, the key's quota is shared with Cont3xt so leave it some
     this.dailyBudget = +api.getConfig(section, 'dailyBudget', this.key ? 800 : 60);

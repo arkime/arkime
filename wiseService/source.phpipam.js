@@ -74,7 +74,7 @@ class PHPIPAMSource extends WISESource {
     }
 
     // Normalise base URL – strip trailing slash
-    this.url = this.url.replace(/\/+$/, '');
+    this.url = ArkimeUtil.removeTrailingSlashes(this.url);
 
     // ---- Field definitions -------------------------------------------------
     // Base fields: used by WISE when encoding results. The capture plugin

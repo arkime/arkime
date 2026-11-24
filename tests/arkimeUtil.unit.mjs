@@ -34,3 +34,20 @@ describe('ArkimeUtil jsonParser', () => {
     assert.deepEqual(await parse(body), JSON.parse(body));
   });
 });
+
+describe('ArkimeUtil removeTrailingSlashes', () => {
+  test('removes only trailing slashes', () => {
+    assert.equal(ArkimeUtil.removeTrailingSlashes('https://a.example'), 'https://a.example');
+    assert.equal(ArkimeUtil.removeTrailingSlashes('https://a.example///'), 'https://a.example');
+    assert.equal(ArkimeUtil.removeTrailingSlashes('https://a.example/x/'), 'https://a.example/x');
+    assert.equal(ArkimeUtil.removeTrailingSlashes('///'), '');
+    assert.equal(ArkimeUtil.removeTrailingSlashes(''), '');
+  });
+
+  test('a long run of slashes that does not end the string is linear', () => {
+    const start = Date.now();
+    const str = '/'.repeat(500000) + 'x';
+    assert.equal(ArkimeUtil.removeTrailingSlashes(str), str);
+    assert.ok(Date.now() - start < 1000, `took ${Date.now() - start}ms`);
+  });
+});
