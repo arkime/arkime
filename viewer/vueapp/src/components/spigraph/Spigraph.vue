@@ -305,7 +305,7 @@ SPDX-License-Identifier: Apache-2.0
               <!-- hierarchy "add another field" anchor (own full-width row); a
                    tag cloud draws one field, so it has none -->
               <div
-                v-if="['bar', 'pie', 'waffle', 'table', 'treemap', 'sankey', 'matrix', 'mosaic'].includes(spiGraphType)"
+                v-if="['bar', 'pie', 'waffle', 'table', 'treemap', 'icicle', 'sankey', 'matrix', 'mosaic'].includes(spiGraphType)"
                 id="spigraph-subfield-anchor"
                 class="spigraph-subfield-anchor d-flex flex-wrap align-center gap-1" />
             </div>
@@ -691,7 +691,7 @@ export default {
       maxElementsOptions: [5, 10, 15, 20, 30, 50, 100, 200, 500],
       refreshOptions: [0, 5, 10, 15, 30, 45, 60],
       snackbar: { show: false, text: '', color: 'success', link: '' },
-      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'boxplot', 'pie', 'tagcloud', 'waffle', 'table', 'treemap', 'sankey', 'matrix', 'mosaic', 'connections', 'tree', 'circle'],
+      graphTypeOptions: ['default', 'area', 'timeofday', 'heatmap', 'bar', 'combo', 'scatter', 'boxplot', 'pie', 'tagcloud', 'waffle', 'table', 'treemap', 'icicle', 'sankey', 'matrix', 'mosaic', 'connections', 'tree', 'circle'],
       timelineModes: ['separate', 'stacked', 'percent', 'overlaid'],
       showSettings: false,
       settingsDraft: { sortBy: 'graph', refresh: 0 }, // the dialog's page settings, until applied
@@ -1362,7 +1362,7 @@ export default {
     changeSpiGraphType: function (spiGraphType) {
       this.spiGraphType = spiGraphType;
       if (this.spiGraphType === 'pie' || this.spiGraphType === 'bar' || this.spiGraphType === 'tagcloud' || this.spiGraphType === 'waffle' ||
-        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'sankey' || this.spiGraphType === 'matrix' || this.spiGraphType === 'mosaic') {
+        this.spiGraphType === 'table' || this.spiGraphType === 'treemap' || this.spiGraphType === 'icicle' || this.spiGraphType === 'sankey' || this.spiGraphType === 'matrix' || this.spiGraphType === 'mosaic') {
         if (!this.$route.query.size) {
           this.query.size = 5; // set default size to 5
         }

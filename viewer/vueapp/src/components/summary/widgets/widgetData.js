@@ -414,7 +414,7 @@ export function hierarchyFields (widget) {
 /**
  * A widget's title when it has none of its own, from its fields' names: a
  * matrix's or mosaic's "Rows × Columns", a nested or split pie's, a treemap's,
- * a sankey's and a split waffle's levels outermost first ("Split / Field"),
+ * an icicle's, a sankey's and a split waffle's levels outermost first ("Split / Field"),
  * else its field's. The dashboard's first-load cards use it too, so a card
  * keeps its title once its data is in.
  */
@@ -422,7 +422,7 @@ export function defaultWidgetTitle (widget) {
   const friendly = (exp) => FieldService.getField(exp, true)?.friendlyName || exp;
   const mode = widget?.viewMode;
   if (mode === 'matrix' || mode === 'mosaic') { return widgetFields(widget).map(friendly).join(' × '); }
-  if (mode === 'pie' || mode === 'treemap' || mode === 'sankey' || (mode === 'waffle' && widget.splitField)) {
+  if (mode === 'pie' || mode === 'treemap' || mode === 'icicle' || mode === 'sankey' || (mode === 'waffle' && widget.splitField)) {
     return hierarchyFields(widget).map(friendly).join(' / ');
   }
   return friendly(widget?.field || '');
@@ -430,7 +430,7 @@ export function defaultWidgetTitle (widget) {
 
 /**
  * Fetch SPIGraph hierarchy data for a widget's nested fields (the
- * "Intersection" table, nested pie/treemap/sankey). For a single field the
+ * "Intersection" table, nested pie/treemap/icicle/sankey). For a single field the
  * endpoint returns `tableResults` as a flat list of { name, size, parents: [] }
  * — one row per unique value. Returns the raw response ({ tableResults,
  * hierarchicalResults }).
@@ -442,9 +442,10 @@ export async function fetchHierarchy (route, store, widget, { signal } = {}) {
   if (fields.length > widgetFields(widget).length) {
     extra.sizes = [widget.splitLength || 5, ...fields.slice(1).map(() => widget.length)].join(',');
   }
-  // a matrix reads a row's "Other" to know which of its missing values are
-  // zero, and a mosaic's columns and cells add up to their sessions with it
-  if (((widget.viewMode === 'pie' || widget.viewMode === 'waffle') && widget.other) || widget.viewMode === 'matrix' || widget.viewMode === 'mosaic') { extra.other = true; }
+  // a pie, waffle or icicle draws its "Other" when shown, a matrix reads a
+  // row's "Other" to know which of its missing values are zero, and a
+  // mosaic's columns and cells add up to their sessions with it
+  if ((['pie', 'waffle', 'icicle'].includes(widget.viewMode) && widget.other) || widget.viewMode === 'matrix' || widget.viewMode === 'mosaic') { extra.other = true; }
   const data = buildWidgetParams(route, store, widget, extra);
   return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal, ...queryInfo(widget) });
 }
