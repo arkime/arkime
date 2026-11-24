@@ -7,6 +7,8 @@
 #  0 - Before this script existed
 #  1 - First version of script; sessions3 table and schema_version table
 #  2 - Typed JSON paths + max_dynamic_paths, bloom_filter data-skipping indexes
+#  3 - max_dynamic_paths 256 instead of 4096 (--max-dynamic-paths), existing
+#      tables get the new fields type in place
 
 use strict;
 use warnings;
@@ -16,10 +18,12 @@ use Getopt::Long;
 use Data::Dumper;
 use MIME::Base64;
 
-our $VERSION = 2;
+our $VERSION = 3;
 
 my $verbose = 0;
 my $PARTITION = "monthly";
+my $MAX_DYNAMIC_PATHS = 256;
+my $MAX_DYNAMIC_PATHS_SET = 0;
 my $PREFIX = "arkime_";
 my $SECURE = 1;
 my $CABUNDLE = "";
@@ -58,6 +62,10 @@ sub showHelp
     print "  --partition STR            - Sessions partition granularity: monthly (default), daily, none.\n";
     print "                               Every query pays a per-part cost, so fewer partitions = faster\n";
     print "                               searches; expire still works at day granularity for all values.\n";
+    print "  --max-dynamic-paths N      - Most used session fields stored as their own subcolumns, 0-10000,\n";
+    print "                               default 256. Each is about 14 files in every part, so more make\n";
+    print "                               inserts and merges slower; the rest share one column that is\n";
+    print "                               slower to search. With upgrade, changes an existing table in place.\n";
     print "  --prefix STR               - Prefix for ClickHouse table names, default arkime_\n";
     print "  --user USER                - ClickHouse user for basic authentication\n";
     print "  --password PASS            - ClickHouse password for basic authentication\n";
@@ -143,6 +151,7 @@ sub sqlTable
 sub validateOptions
 {
     die "--partition must be monthly, daily, or none\n" if ($PARTITION !~ /^(monthly|daily|none)$/);
+    die "--max-dynamic-paths must be between 0 and 10000\n" if ($MAX_DYNAMIC_PATHS < 0 || $MAX_DYNAMIC_PATHS > 10000);
     die "--prefix must start with a letter or underscore and contain only letters, digits, and underscores\n" if ($PREFIX !~ /^([A-Za-z_][A-Za-z0-9_]*)?$/);
     $PREFIX .= "_" if ($PREFIX ne "" && $PREFIX !~ /_$/);
     die "--database must start with a letter or underscore and contain only letters, digits, and underscores\n" if ($DATABASE !~ /^[A-Za-z_][A-Za-z0-9_]*$/);
@@ -253,24 +262,18 @@ EOSQL
 }
 
 ################################################################################
-sub sessionsDDL
+# The sessions fields column type. Typed paths are stored as real typed
+# subcolumns: direct reads with no Dynamic-type dispatch, and they never count
+# against max_dynamic_paths. Scalars are Nullable so a missing field behaves
+# like ES (no match). Of the other paths, the max_dynamic_paths most used are
+# dynamic subcolumns and the rest share one shared-data column. A dynamic path
+# is about 14 files in every wide part, so thousands of them make inserts and
+# merges slow, while a path in the shared data is slower to search.
+sub fieldsType
 {
-    my %partitionMap = (
-        monthly => "toYYYYMM(lastPacket)",
-        daily   => "toYYYYMMDD(lastPacket)",
-        none    => "tuple()",
-    );
-    my $partitionExpr = $partitionMap{$PARTITION};
-
-    return <<EOSQL;
-CREATE TABLE IF NOT EXISTS $sessionsTable (
-    -- Typed paths are stored as real typed subcolumns: direct reads with no
-    -- Dynamic-type dispatch, and they never count against max_dynamic_paths.
-    -- Scalars are Nullable so a missing field behaves like ES (no match).
-    -- max_dynamic_paths is raised from the default 1024 so the many remaining
-    -- Arkime fields don't overflow into the (much slower) shared-data blob.
-    fields JSON(
-        max_dynamic_paths = 4096,
+    my $type = <<EOSQL;
+JSON(
+        max_dynamic_paths = $MAX_DYNAMIC_PATHS,
         \`_id\`                 String,
         node                   Nullable(String),
         \`\@timestamp\`          Nullable(Int64),
@@ -309,7 +312,26 @@ CREATE TABLE IF NOT EXISTS $sessionsTable (
         \`http.useragent\`      Array(String),
         \`http.method\`         Array(String),
         \`http.statuscode\`     Array(Int64)
-    ),
+    )
+EOSQL
+    chomp $type;
+    return $type;
+}
+
+################################################################################
+sub sessionsDDL
+{
+    my %partitionMap = (
+        monthly => "toYYYYMM(lastPacket)",
+        daily   => "toYYYYMMDD(lastPacket)",
+        none    => "tuple()",
+    );
+    my $partitionExpr = $partitionMap{$PARTITION};
+    my $fieldsType = fieldsType();
+
+    return <<EOSQL;
+CREATE TABLE IF NOT EXISTS $sessionsTable (
+    fields $fieldsType,
     \`_id\`           String                  DEFAULT fields.\`_id\`,
     node             LowCardinality(String)  MATERIALIZED ifNull(fields.node, ''),
     timestamp        DateTime64(3, 'UTC')    MATERIALIZED fromUnixTimestamp64Milli(ifNull(fields.\`\@timestamp\`, 0)),
@@ -352,8 +374,10 @@ sub optionalIndexes
 ################################################################################
 sub applyOptionalIndexes
 {
+    my %existing = map { $_ => 1 } split(/\n/, chquery("SELECT", "SELECT name FROM system.data_skipping_indices WHERE database = " . sqlString($DATABASE) . " AND table = " . sqlString($PREFIX . "sessions3") . " FORMAT TSV"));
     foreach my $idx (optionalIndexes()) {
         my ($name, $expr, $type) = @$idx;
+        next if ($existing{$name});
         my $ok = eval {
             chquery("ALTER TABLE", "ALTER TABLE $sessionsTable ADD INDEX IF NOT EXISTS $name $expr TYPE $type GRANULARITY 4");
             chquery("ALTER TABLE", "ALTER TABLE $sessionsTable MATERIALIZE INDEX $name");
@@ -437,6 +461,26 @@ sub checkServerVersion
 }
 
 ################################################################################
+# Changes an existing sessions table's fields column to fieldsType(). ClickHouse
+# keeps the data but rewrites the fields column of every part, about the cost of
+# rewriting the whole table once, so it runs in the background without waiting.
+sub updateFieldsType
+{
+    my $current = chquery("SELECT", "SELECT type FROM system.columns WHERE database = " . sqlString($DATABASE) . " AND table = " . sqlString($PREFIX . "sessions3") . " AND name = 'fields' FORMAT TSV");
+    my $wanted = chquery("SELECT", "SELECT toTypeName(CAST('{}' AS " . fieldsType() . ")) FORMAT TSV");
+    chomp $wanted;
+    (my $currentCmp = $current) =~ s/\s+//g;
+    (my $wantedCmp = $wanted) =~ s/\s+//g;
+    return if ($currentCmp eq $wantedCmp);
+
+    logmsg "Changing the sessions fields column to max_dynamic_paths = $MAX_DYNAMIC_PATHS\n";
+    chquery("ALTER TABLE", "ALTER TABLE $sessionsTable MODIFY COLUMN fields $wanted SETTINGS alter_sync = 0, mutations_sync = 0");
+    logmsg "NOTE: ClickHouse is now rewriting every existing sessions part in the background, as heavy as rewriting the\n";
+    logmsg "NOTE: whole table once. Searches and capture keep working meanwhile. Check progress with\n";
+    logmsg "NOTE:   SELECT parts_to_do, latest_fail_reason FROM system.mutations WHERE NOT is_done AND database = " . sqlString($DATABASE) . " AND table = " . sqlString($PREFIX . "sessions3") . "\n";
+}
+
+################################################################################
 sub upgradeToCurrent
 {
     checkServerVersion();
@@ -466,15 +510,18 @@ sub upgradeToCurrent
 
         applyOptionalIndexes();
 
-        # Typed JSON paths can only be set at CREATE TABLE time; warn if this
-        # table predates them.
-        my $fieldsType = chquery("SELECT", "SELECT type FROM system.columns WHERE database = " . sqlString($DATABASE) . " AND table = " . sqlString($PREFIX . "sessions3") . " AND name = 'fields' FORMAT TSV");
-        if ($fieldsType !~ /max_dynamic_paths/) {
-            logmsg "NOTE: the sessions table was created before typed JSON paths existed.\n";
-            logmsg "NOTE: run '$0 <url> init' to recreate it for full query performance (deletes session metadata, NOT pcap files).\n";
-        }
-
+        # A table from before typed JSON paths gets them with the version 3 fields type change
         setSchemaVersion(2);
+    }
+
+    if ($current < 3) {
+        logmsg "Applying schema version 3 migrations\n";
+        updateFieldsType();
+        # Only adds what a table from before typed JSON paths couldn't index in version 2
+        applyOptionalIndexes();
+        setSchemaVersion(3);
+    } elsif ($MAX_DYNAMIC_PATHS_SET) {
+        updateFieldsType();
     }
 
     logmsg "ClickHouse schema is current at version $VERSION\n";
@@ -591,6 +638,7 @@ GetOptions(
     "v|verbose+" => \$verbose,
     "insecure" => sub { $SECURE = 0; },
     "partition=s" => \$PARTITION,
+    "max-dynamic-paths=i" => sub { $MAX_DYNAMIC_PATHS = $_[1]; $MAX_DYNAMIC_PATHS_SET = 1; },
     "cabundle=s" => \$CABUNDLE,
     "prefix=s" => \$PREFIX,
     "user=s" => \$USER,
