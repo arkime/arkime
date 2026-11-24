@@ -2986,9 +2986,23 @@ class SessionAPIs {
 
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
+        let msg;
         if (err) {
           const esError = err.meta?.body?.error;
-          const msg = String(esError?.root_cause?.[0]?.reason ?? esError?.reason ?? err.message ?? err);
+          msg = String(esError?.root_cause?.[0]?.reason ?? esError?.reason ?? err.message ?? err);
+        } else if (result?._shards?.failed > 0) {
+          const reason = result._shards.failures?.[0]?.reason;
+          const failure = `${result._shards.failed} of ${result._shards.total} shards failed: ${reason?.reason ?? reason?.type ?? 'unknown reason'}`;
+          // No values from the shards that answered can't be told apart from a
+          // field with no values, so it is an error. Values are a partial answer,
+          // often just an empty index mapped differently, so they are kept.
+          if (!result.aggregations?.field?.buckets?.length) {
+            msg = failure;
+          } else {
+            console.log(`WARNING - ${req.method} /api/unique partial result,`, failure);
+          }
+        }
+        if (msg !== undefined) {
           console.log(`ERROR - ${req.method} /api/unique`, msg);
           if (req.query.autocomplete !== undefined) {
             return res.serverError(400, msg);
