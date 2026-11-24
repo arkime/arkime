@@ -8,6 +8,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 const Integration = require('../../integration.js');
+const ArkimeUtil = require('../../../common/arkimeUtil');
 const axios = require('axios');
 
 const ANON_URL = 'https://sourceip.io/api/v1/lookup';
@@ -113,7 +114,7 @@ class SourceIPIntegration extends Integration {
   constructor () {
     super();
 
-    this.#endpoint = this.getConfig('endpoint', DEFAULT_ENDPOINT).replace(/\/+$/, '');
+    this.#endpoint = ArkimeUtil.removeTrailingSlashes(this.getConfig('endpoint', DEFAULT_ENDPOINT));
     // insecure/caTrustFile/client certs apply to the configured endpoint only
     this.#axiosTls = this.axiosTls(this.#endpoint);
 
@@ -127,7 +128,7 @@ class SourceIPIntegration extends Integration {
       // configured key is never sent to a host a user picked
       let endpoint = this.#endpoint;
       if (this.hasUserConfig(user, 'key') && this.hasUserConfig(user, 'endpoint')) {
-        endpoint = this.getUserConfig(user, 'endpoint').replace(/\/+$/, '');
+        endpoint = ArkimeUtil.removeTrailingSlashes(this.getUserConfig(user, 'endpoint'));
       }
 
       const headers = { 'User-Agent': this.userAgent() };

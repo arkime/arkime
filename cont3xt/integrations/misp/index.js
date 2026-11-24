@@ -74,7 +74,7 @@ class MISPIntegration extends Integration {
     this.icon = ArkimeConfig.getFull(section, 'icon', this.icon);
     this.order = MISPIntegration.#order++;
 
-    this.#url = ArkimeConfig.getFull(section, 'url', ArkimeConfig.exit).replace(/\/+$/, '');
+    this.#url = ArkimeUtil.removeTrailingSlashes(ArkimeConfig.getFull(section, 'url', ArkimeConfig.exit));
     this.#key = ArkimeConfig.getFull(section, 'key', ArkimeConfig.exit);
     this.#maxResults = parseInt(ArkimeConfig.getFull(section, 'maxResults', 50), 10);
     if (!(this.#maxResults > 0)) { this.#maxResults = 50; }

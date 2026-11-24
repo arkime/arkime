@@ -401,6 +401,17 @@ class ArkimeUtil {
   }
 
   // ----------------------------------------------------------------------------
+  // RE2 since /\/+$/ is quadratic on a long run of slashes that doesn't end the string
+  static #trailingSlashes = new RE2('/+$');
+
+  /**
+   * str without its trailing slashes, safe on user supplied urls
+   */
+  static removeTrailingSlashes (str) {
+    return str.replace(ArkimeUtil.#trailingSlashes, '');
+  }
+
+  // ----------------------------------------------------------------------------
   static parseTimeStr (time) {
     if (typeof time !== 'string') {
       return time;
