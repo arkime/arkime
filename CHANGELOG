@@ -116,6 +116,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4483 Add a disableCron user permission, the user can't see or change Periodic Queries and the ones they own don't run, needs db.pl upgrade
 ## Cont3xt
   - #4488 New VPNDetection integration for IPs, shows VPN, Tor exit, privacy relay and proxy flags (thanks @UmanShahzad)
+## ch.pl
+  - #4493 Schema version 3 gives only the 256 most used session fields their own subcolumns instead of 4096, so parts have far fewer files and inserts and merges keep up on busy sites; upgrade changes an existing table in place, then ClickHouse rewrites the whole sessions table once in the background; --max-dynamic-paths picks a different number
 ## ESProxy
   - #4462 A sensor can no longer change a pcap file's scheme or S3 location after creating its file record
 ## Multies
