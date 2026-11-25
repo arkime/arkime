@@ -843,6 +843,11 @@ class Pcap {
       case 0: // IPPROTO_HOPOPTS:
       case 60: // IPPROTO_DSTOPTS:
       case 43: // IPPROTO_ROUTING:
+        // Cut off before the length byte, the undefined length would add 0 and loop forever
+        if (offset + 1 >= buffer.length) {
+          obj.ip.data = buffer.slice(offset, offset + obj.ip.len);
+          return;
+        }
         obj.ip.p = buffer[offset];
         offset += ((buffer[offset + 1] + 1) << 3);
         break;
