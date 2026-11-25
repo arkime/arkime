@@ -170,6 +170,9 @@
      247
     ],
     "dstTTLCnt" : 1,
+    "encrypted" : [
+     "tls"
+    ],
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1413338074954,

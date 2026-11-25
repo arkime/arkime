@@ -49,6 +49,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4464 disableParsers now defaults to empty so every parser loads, including arp, set disableParsers=arp.so for the old behavior
   - #4464 saveUnknownPackets now defaults to all;corrupt so unknown ether, unknown ip and corrupt packets are saved as sessions, set saveUnknownPackets= for the old behavior
   - #4472 DNS, mDNS and LLMNR names that are valid UTF-8 are saved as is instead of cat -v escaped (andy’s macbook pro instead of andym-bm-^@m-^ys macbook pro), so searches for the escaped form won't match new sessions; the name is saved as sent, only lowercased; invalid bytes, control characters and invisible characters such as bidi overrides and zero width spaces are still escaped and plain DNS names with raw UTF-8 get the dns:raw-utf8 tag
+  - #4498 The new default rule "Stop saving pcap once encrypted" stops saving pcap 2 packets after a TLS, QUIC or SSH handshake finishes, SPI data is still saved for the whole session; turn it off with disabled: true in your own rules file if you decrypt saved pcap
 ## All
   - #4490 db.pl and ch.pl now skip the cert check for localhost, 127.x.x.x or ::1, matching capture and the node tools. ch.pl didn't skip it at all and db.pl only matched localhost and 127.0.0.1
   - #4490 Shark tab tshark minimum is now per release series, 4.4.19 on the 4.4 line and 4.6.4 on 4.6, up from a flat 4.4.15. Per series because a 4.6.0 is numerically above the 4.4 floor but was released before it
@@ -89,6 +90,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4472 Fix DNS names from punycode with uppercase letters being saved with the uppercase letters, which lowercased searches couldn't match
   - #4472 dns.answer.name, dns.answer.cname, dns.answer.ns, dns.answer.mx, dns.answer.ptr and dns.answer.srv are now lotermfield, so searches on them ignore case
   - #4472 Capture now updates a field's type in the db on startup when it only changed between termfield, lotermfield and uptermfield, other type changes still just warn
+  - #4498 Add the encrypted field, set to tls, quic or ssh once both sides of the handshake have switched to encrypted traffic, tls includes SMTP STARTTLS, MySQL, SOCKS and HTTP CONNECT
+  - #4498 _maxPacketsToSave: +N saves N more packets than the session has now, and only ever lowers the limit
+  - #4498 Fix ssh.key only being saved for diffie-hellman-group-exchange, it is now saved for curve25519, ecdh, mlkem, sntrup and the other key exchanges too
+  - #4498 Fix SSH sessions missing ssh.hasshServer and the negotiated algorithms when the server's version line and KEXINIT arrive in the same packet
+  - #4498 Fix _maxPacketsToSave starting over after a tcpSaveTimeout save, so a long session could save more packets than the limit
+  - #4498 Fix sessions that stopped saving pcap, from _maxPacketsToSave or a full disk, losing every later part of a long session, the later parts are now saved with their SPI data and no pcap
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type, hosts on a ring with an arc between each talking pair, colored by protocol or a chosen field
   - #4456 Fix the settings editor resetting a connections widget or graph sample size to 100 when opened

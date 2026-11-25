@@ -866,12 +866,34 @@ LOCAL int tls_merge_next_record(ArkimeParserBuf_t *tls, int which, int need)
     return 1;
 }
 /******************************************************************************/
+// ArkimeParserBuf_t flags
+#define TLS_FLAG_DONE(which)      (0x01 << (which)) // nothing more to look at on this side
+#define TLS_FLAG_ENCRYPTED(which) (0x04 << (which)) // this side has switched to encrypted records
+#define TLS_FLAG_HRR              0x10              // server sent a TLS 1.3 HelloRetryRequest
+#define TLS_FLAG_WATCH(which)     (0x20 << (which)) // done decoding this side, only watching for encrypted
+
+// SHA-256 of "HelloRetryRequest", the ServerHello random that marks a HelloRetryRequest
+LOCAL const uint8_t tlsHrrRandom[32] = {
+    0xcf, 0x21, 0xad, 0x74, 0xe5, 0x9a, 0x61, 0x11, 0xbe, 0x1d, 0x8c, 0x02, 0x1e, 0x65, 0xb8, 0x91,
+    0xc2, 0xa2, 0x11, 0x16, 0x7a, 0xbb, 0x8c, 0x5e, 0x07, 0x9e, 0x09, 0xe2, 0xc8, 0xa8, 0x33, 0x9c
+};
+
+/******************************************************************************/
+// This side has nothing more in the clear, it sent a ChangeCipherSpec or application data
+// record. Once both sides have, the session is encrypted.
+LOCAL void tls_side_encrypted(ArkimeSession_t *session, ArkimeParserBuf_t *tls, int which)
+{
+    tls->flags |= TLS_FLAG_ENCRYPTED(which);
+    if ((tls->flags & (TLS_FLAG_ENCRYPTED(0) | TLS_FLAG_ENCRYPTED(1))) == (TLS_FLAG_ENCRYPTED(0) | TLS_FLAG_ENCRYPTED(1)))
+        arkime_session_add_encrypted(session, "tls");
+}
+/******************************************************************************/
 LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int remaining, int which)
 {
     ArkimeParserBuf_t    *tls          = uw;
 
     // This side is done
-    if (tls->flags & (1 << which))
+    if (tls->flags & TLS_FLAG_DONE(which))
         return 0;
 
     // Copy the data we have
@@ -881,17 +903,26 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
     }
 
     while (tls->len[which] >= 5) {
+        const int isHandshake = tls->buf[which][0] == 0x16;
+
+        // After a HelloRetryRequest each side's compatibility ChangeCipherSpec comes before the
+        // second ClientHello and the real ServerHello, so that side isn't encrypted yet. Stop
+        // decoding the side like always, but keep watching for its first application data record.
+        const int isHrrCCS = tls->buf[which][0] == 0x14 && (tls->flags & TLS_FLAG_HRR);
+
         // Not handshake protocol, stop looking on this direction
-        if (tls->buf[which][0] != 0x16) {
+        if (!isHandshake && !isHrrCCS) {
             // Alerts before ChangeCipherSpec are in the clear
             if (tls->buf[which][0] == 0x15 && tls->len[which] >= 7 && tls->buf[which][3] == 0 && tls->buf[which][4] == 2) {
                 const char *name = tls_alert_name(tls->buf[which][6]);
                 if (name)
                     arkime_field_string_add(alertField, session, name, -1, TRUE);
+            } else if (tls->buf[which][0] == 0x14 || tls->buf[which][0] == 0x17) {
+                tls_side_encrypted(session, tls, which);
             }
             tls->len[which] = 0;
-            tls->flags |= (1 << which);
-            if ((tls->flags & 3) == 3)
+            tls->flags |= TLS_FLAG_DONE(which);
+            if ((tls->flags & (TLS_FLAG_DONE(0) | TLS_FLAG_DONE(1))) == (TLS_FLAG_DONE(0) | TLS_FLAG_DONE(1)))
                 return ARKIME_PARSER_UNREGISTER;
             return 0;
         }
@@ -905,6 +936,15 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         if (need > tls->len[which])
             return 0;
 
+        if (isHrrCCS)
+            tls->flags |= TLS_FLAG_WATCH(which);
+
+        // Only watching this side for when it switches to encrypted
+        if (tls->flags & TLS_FLAG_WATCH(which)) {
+            arkime_parser_buf_del(tls, which, need);
+            continue;
+        }
+
         // Confirm sessions that were classified on a short first segment
         if (need >= 6 && (tls->buf[which][5] == 1 || tls->buf[which][5] == 2))
             arkime_session_add_protocol(session, "tls");
@@ -915,13 +955,14 @@ LOCAL int tls_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
 
         // Now actually process server or client records
         if (which == tls->serverWhich) {
-            if (tls_process_server_handshake_record(session, tls->buf[which] + 5, need - 5)) {
-                tls->len[which] = 0;
-                tls->flags |= (1 << which);
-                if ((tls->flags & 3) == 3)
-                    return ARKIME_PARSER_UNREGISTER;
-                return 0;
-            }
+            // ServerHello: type(1) length(3) version(2) random(32)
+            if (need >= 5 + 38 && tls->buf[which][5] == 2 && memcmp(tls->buf[which] + 11, tlsHrrRandom, sizeof(tlsHrrRandom)) == 0)
+                tls->flags |= TLS_FLAG_HRR;
+
+            // After ServerHelloDone there is nothing more to decode, but the server isn't
+            // encrypted until its own ChangeCipherSpec
+            if (tls_process_server_handshake_record(session, tls->buf[which] + 5, need - 5))
+                tls->flags |= TLS_FLAG_WATCH(which);
         } else {
             // need >= 6 so we don't read byte 5 of a zero length record
             if (need >= 6 && tls->buf[which][5] == 1) {
@@ -949,14 +990,14 @@ LOCAL void tls_save(ArkimeSession_t *session, void *uw, int final)
         return;
 
     int which = tls->serverWhich;
-    if (tls->len[which] > 5 && tls->buf[which][0] == 0x16) {
+    if (tls->len[which] > 5 && tls->buf[which][0] == 0x16 && !(tls->flags & TLS_FLAG_WATCH(which))) {
         tls_process_server_handshake_record(session, tls->buf[which] + 5, tls->len[which] - 5);
         tls->len[which] = 0;
     }
 
     // A complete Client Hello record still waiting for its next record won't get it now
     which = (which + 1) % 2;
-    if (final && tls->len[which] >= 6 && tls->buf[which][0] == 0x16 && tls->buf[which][5] == 1) {
+    if (final && tls->len[which] >= 6 && tls->buf[which][0] == 0x16 && tls->buf[which][5] == 1 && !(tls->flags & TLS_FLAG_WATCH(which))) {
         int need = ((tls->buf[which][3] << 8) | tls->buf[which][4]) + 5;
         if (need <= tls->len[which]) {
             tls_process_client(session, tls->buf[which], need);

@@ -1757,7 +1757,12 @@ void arkime_field_ops_run_match(ArkimeSession_t *session, ArkimeFieldOps_t *ops,
                     arkime_session_set_stop_spi(session, op->strLenOrInt);
                 break;
             case ARKIME_FIELD_SPECIAL_STOP_PCAP:
-                if (arkime_field_ops_should_run_int_op(op, session->stopSaving)) {
+                if (op->set == ARKIME_FIELD_OP_SET_FROM_NOW) {
+                    // Only lowers the limit, packet.c adds truncated-pcap when a packet isn't saved
+                    const uint32_t value = session->packets[0] + session->packets[1] + op->strLenOrInt;
+                    if (value < session->stopSaving)
+                        session->stopSaving = value;
+                } else if (arkime_field_ops_should_run_int_op(op, session->stopSaving)) {
                     session->stopSaving = op->strLenOrInt;
                     if (session->packets[0] + session->packets[1] >= session->stopSaving)
                         arkime_session_add_tag(session, "truncated-pcap");
@@ -1972,7 +1977,12 @@ void arkime_field_ops_add_match(ArkimeFieldOps_t *ops, int fieldPos, char *value
             op->str = 0;
             break;
         case ARKIME_FIELD_SPECIAL_STOP_PCAP:
-            arkime_field_ops_int_parse(op, value);
+            if (value[0] == '+') {
+                op->set = ARKIME_FIELD_OP_SET_FROM_NOW;
+                op->strLenOrInt = atoi(value + 1);
+            } else {
+                arkime_field_ops_int_parse(op, value);
+            }
             if (op->strLenOrInt > 0xffff) op->strLenOrInt = 0xffff;
             if (op->strLenOrInt < 0) op->strLenOrInt = 0;
             op->str = 0;

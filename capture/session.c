@@ -20,6 +20,7 @@ extern ArkimeProtocol_t      mProtocols[ARKIME_MPROTOCOL_MAX];
 /******************************************************************************/
 
 LOCAL int                   protocolField;
+LOCAL int                   encryptedField;
 extern uint64_t             hashKey[2];
 
 #if ARKIME_SESSION_HASH == ARKIME_SESSION_HASH_CTRL_PROBE
@@ -338,6 +339,13 @@ void arkime_session_add_cmd_thread(int thread, gpointer uw1, gpointer uw2, Arkim
 void arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol)
 {
     arkime_field_string_add(protocolField, session, protocol, -1, TRUE);
+}
+/******************************************************************************/
+// A parser calls this once both directions have finished the cleartext part of a
+// handshake and switched to encrypted traffic, protocol is tls, quic, ssh, ...
+void arkime_session_add_encrypted(ArkimeSession_t *session, const char *protocol)
+{
+    arkime_field_string_add(encryptedField, session, protocol, -1, TRUE);
 }
 /******************************************************************************/
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol)
@@ -894,6 +902,12 @@ void arkime_session_mid_save(ArkimeSession_t *session, uint32_t tv_sec)
     // Don't change saveTime if already closing
     if (!session->closingQ) {
         session->saveTime = tv_sec + mProtocols[session->mProtocol].saveTimeout;
+    }
+
+    // The packet counts restart at 0, so take the packets already counted off the save limit
+    if (session->stopSaving != 0xffff) {
+        const uint32_t packets = session->packets[0] + session->packets[1];
+        session->stopSaving = packets >= session->stopSaving ? 0 : session->stopSaving - packets;
     }
 
     session->bytes[0] = 0;
@@ -1462,6 +1476,12 @@ void arkime_session_init()
                                         "Protocols set for session",
                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT | ARKIME_FIELD_FLAG_LINKED_SESSIONS,
                                         (char *)NULL);
+
+    encryptedField = arkime_field_define("general", "termfield",
+                                         "encrypted", "Encrypted", "encrypted",
+                                         "Protocols that finished their handshake and switched the session to encrypted traffic",
+                                         ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_LINKED_SESSIONS,
+                                         (char *)NULL);
 
     char *str = arkime_config_str(NULL, "sessionIdTracking", "none");
     if (strcmp(str, "none") == 0) {

@@ -5,7 +5,7 @@
 # Capture starts slowly under the sanitizers, so most checks are queued and run by
 # runQueued() at the end: expressions that load share one capture run, each load
 # error needs a run of its own, and those runs go in parallel, one per cpu.
-use Test::More tests => 185;
+use Test::More tests => 190;
 use JSON;
 use POSIX ();
 use strict;
@@ -455,5 +455,30 @@ queueRun(join("", map { ruleYaml("e$_", "beforeFinalSave", $explains[$_][0], log
         is($line, $explains[$i]->[1], "explain: $explains[$i]->[0]");
     }
 });
+
+# The shipped default rules load, and stop saving pcap 2 packets after the session is encrypted,
+# which is the server's ChangeCipherSpec in packet 15 of 20
+{
+    open(my $fh, '<', "../release/default.rules.yml") or die "can't read ../release/default.rules.yml";
+    my $yaml = do { local $/; <$fh> };
+    close($fh);
+    push(@runs, [$yaml, "openssl-tls1_2.pcap", 0, sub {
+        my ($out) = @_;
+        unlike($out, qr/FATAL CONFIG ERROR/, "default.rules.yml loads");
+        like($out, qr/"encrypted":\["tls"\]/, "default.rules.yml: session is encrypted");
+        my ($pos) = $out =~ /"packetPos":\[([^\]]*)\]/;
+        is(scalar(split(/,/, $pos // "")), 17, "default.rules.yml: saves 17 of 20 packets");
+    }]);
+}
+
+# _maxPacketsToSave is for the whole session. A save every 5 packets lands right on a limit of 5,
+# the 15 packets after it aren't saved and the linked sessions get truncated-pcap
+push(@runs, ["version: 1\nrules:\n  - name: \"limit\"\n    when: \"sessionSetup\"\n    bpf: \"tcp\"\n    ops:\n      _maxPackets: 5\n      _maxPacketsToSave: 5\n", "openssl-tls1_2.pcap", 0, sub {
+    my ($out) = @_;
+    my @pos = map { split(/,/, $_) } ($out =~ /"packetPos":\[([^\]]*)\]/g);
+    is(scalar(@pos), 5, "_maxPacketsToSave: saves 5 packets across linked sessions");
+    my @truncated = ($out =~ /"truncated-pcap"/g);
+    is(scalar(@truncated), 4, "_maxPacketsToSave: linked sessions after the limit have truncated-pcap");
+}]);
 
 runQueued();

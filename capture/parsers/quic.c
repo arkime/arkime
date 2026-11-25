@@ -27,6 +27,8 @@ typedef struct {
     uint16_t       clen;
     uint8_t        packets;
     uint8_t        totalPackets;
+    uint8_t        helloDone;    // ClientHello decoded or given up on
+    uint8_t        shortSeen;    // bit per direction that has sent a short header (1-RTT) packet
 } QUICIetfInfo_t;
 
 LOCAL uint32_t tls_process_client_hello_func;
@@ -390,13 +392,38 @@ LOCAL gboolean quic_crypto_have(const QUICIetfInfo_t *info, uint32_t len)
     return TRUE;
 }
 /******************************************************************************/
-LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int UNUSED(which))
+// Done with the ClientHello, keep watching until both sides have sent 1-RTT packets
+LOCAL int quic_ietf_hello_done(QUICIetfInfo_t *info)
+{
+    info->helloDone = 1;
+    return info->shortSeen == 3 ? ARKIME_PARSER_UNREGISTER : 0;
+}
+/******************************************************************************/
+LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, int len, int which)
 {
     QUICIetfInfo_t *info = (QUICIetfInfo_t *)uw;
 
-    // Give up if the ClientHello hasn't been assembled within the session's first packets
+    // Give up if the ClientHello and handshake haven't finished within the session's first packets
     if (++info->totalPackets >= 64)
         return ARKIME_PARSER_UNREGISTER;
+
+    // A side only sends short header (1-RTT) packets once it has finished its part of
+    // the handshake, once both sides have the session is encrypted. The fixed bit is
+    // required so other traffic on the same ports isn't counted
+    if (len > 0 && (data[0] & 0xc0) == 0x40) {
+        if ((info->shortSeen & (1 << which)) == 0) {
+            info->shortSeen |= 1 << which;
+            if (info->shortSeen == 3) {
+                arkime_session_add_encrypted(session, "quic");
+                if (info->helloDone)
+                    return ARKIME_PARSER_UNREGISTER;
+            }
+        }
+        return 0;
+    }
+
+    if (info->helloDone)
+        return 0;
 
     // Min length for quic packets because of padding
     if (len < 1100 || len > 3000)
@@ -433,7 +460,7 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
 
     // Give up if the ClientHello hasn't been assembled within a few client initials
     if (++info->packets >= 32)
-        return ARKIME_PARSER_UNREGISTER;
+        return quic_ietf_hello_done(info);
 
     // Source
     int slen = 0;
@@ -632,10 +659,10 @@ LOCAL int quic_ietf_udp_parser(ArkimeSession_t *session, void *uw, const uint8_t
     if (quic_crypto_have(info, 4) && info->cbuf[0] == 0x01) {
         uint32_t hsLen = 4 + ((info->cbuf[1] << 16) | (info->cbuf[2] << 8) | info->cbuf[3]);
         if (hsLen > sizeof(info->cbuf))
-            return ARKIME_PARSER_UNREGISTER;
+            return quic_ietf_hello_done(info);
         if (quic_crypto_have(info, hsLen)) {
             arkime_parsers_call_named_func(tls_process_client_hello_func, session, info->cbuf, hsLen, NULL);
-            return ARKIME_PARSER_UNREGISTER;
+            return quic_ietf_hello_done(info);
         }
     }
     return 0;
