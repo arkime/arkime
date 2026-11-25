@@ -715,8 +715,8 @@ void arkime_db_save_session(ArkimeSession_t *session, int final)
     if (session->stopSPI)
         return;
 
-    /* No Packets */
-    if (!config.dryRun && !session->filePosArray->len)
+    /* No Packets. A part with packets but no pcap, such as after _maxPacketsToSave, still has SPI data to save */
+    if (!config.dryRun && !session->filePosArray->len && session->packets[0] + session->packets[1] == 0)
         return;
 
     /* Not enough packets */

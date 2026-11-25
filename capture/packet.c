@@ -376,13 +376,13 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         }
     } else {
         // If we hit stopSaving for this session and try and save 1 more packet then
-        // add truncated-pcap tag to the session
-        if (session->stopSaving != 0 && packets - 1 == session->stopSaving) {
+        // add truncated-pcap tag to the session. A stopSaving of 0 is checked too, a mid save
+        // that lands right on the limit leaves 0 before any packet has been skipped
+        if (packets - 1 == session->stopSaving) {
             arkime_session_set_stop_saving(session);
         }
         if (packets >= session->maxPackets || session->midSave) {
             arkime_session_mid_save(session, packet->ts.tv_sec);
-            session->stopSaving = 0;
         }
         packetThreadData[thread].unwrittenBytes += packet->pktlen;
     }

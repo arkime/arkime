@@ -102,7 +102,8 @@ LOCAL void ssh_parse_keyinit(ArkimeSession_t *session, const uint8_t *data, int 
 }
 /******************************************************************************/
 // RFC 4253 7.1: the chosen algorithm is the first on the client's list that the server also lists
-LOCAL void ssh_negotiate_one(ArkimeSession_t *session, int field, const char *client, const char *server)
+// Returns the chosen algorithm, which the caller frees, or NULL
+LOCAL char *ssh_negotiate_one(ArkimeSession_t *session, int field, const char *client, const char *server)
 {
     char **cnames = g_strsplit(client, ",", 0);
     char **snames = g_strsplit(server, ",", 0);
@@ -112,15 +113,17 @@ LOCAL void ssh_negotiate_one(ArkimeSession_t *session, int field, const char *cl
             continue;
         for (int s = 0; snames[s]; s++) {
             if (strcmp(cnames[c], snames[s]) == 0) {
-                arkime_field_string_add(field, session, cnames[c], -1, TRUE);
+                char *chosen = g_strdup(cnames[c]);
+                arkime_field_string_add(field, session, chosen, -1, TRUE);
                 g_strfreev(cnames);
                 g_strfreev(snames);
-                return;
+                return chosen;
             }
         }
     }
     g_strfreev(cnames);
     g_strfreev(snames);
+    return NULL;
 }
 /******************************************************************************/
 LOCAL void ssh_negotiate(ArkimeSession_t *session, SSHInfo_t *ssh, const uint8_t *data, int remaining, int which)
@@ -155,8 +158,17 @@ LOCAL void ssh_negotiate(ArkimeSession_t *session, SSHInfo_t *ssh, const uint8_t
     for (int i = 0; i < 5; i++) {
         const char *client = which == 0 ? lists[i] : ssh->lists[i];
         const char *server = which == 0 ? ssh->lists[i] : lists[i];
-        if (client && server)
-            ssh_negotiate_one(session, negotiatedFields[i], client, server);
+        if (client && server) {
+            char *chosen = ssh_negotiate_one(session, negotiatedFields[i], client, server);
+            if (i == 0 && chosen) {
+                // gss-* and rsa* use 31 for a token or secret, not the reply, so they stay unknown
+                if (strncmp(chosen, "diffie-hellman-group-exchange-", 30) == 0)
+                    ssh->kex = SSH_KEX_GEX;
+                else if (strncmp(chosen, "gss-", 4) != 0 && strncmp(chosen, "rsa", 3) != 0)
+                    ssh->kex = SSH_KEX_OTHER;
+            }
+            g_free(chosen);
+        }
         g_free(lists[i]);
         g_free(ssh->lists[i]);
         ssh->lists[i] = NULL;
@@ -201,23 +213,28 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
         }
     }
 
-    // ssh->done is set when are finished decoding
-    if (ssh->done)
+    // ssh->done is set when are finished decoding, after NEWKEYS this side is encrypted
+    if (ssh->done || (ssh->newKeys & (1 << which)))
         return 0;
 
     // Version handshake
     if (remaining > 3 && memcmp("SSH", data, 3) == 0) {
-        const uint8_t *n = memchr(data + 3, 0x0a, remaining - 3);
-        if (n && *(n - 1) == 0x0d)
-            n--;
+        const uint8_t *nl = memchr(data + 3, 0x0a, remaining - 3);
+        if (!nl)
+            return 0;
 
-        if (n) {
-            int len = (n - data);
+        int len = nl - data;
+        if (data[len - 1] == 0x0d)
+            len--;
 
-            arkime_field_string_add_lower(verField, session, (char *)data, len);
-            arkime_field_string_add_lower(which == 0 ? verSrcField : verDstField, session, (char *)data, len);
-        }
-        return 0;
+        arkime_field_string_add_lower(verField, session, (char *)data, len);
+        arkime_field_string_add_lower(which == 0 ? verSrcField : verDstField, session, (char *)data, len);
+
+        // The KEXINIT can follow the version line in the same segment
+        remaining -= nl + 1 - data;
+        data = nl + 1;
+        if (remaining <= 0)
+            return 0;
     }
 
     // Actual messages
@@ -247,9 +264,15 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
             // Only this record's content, not everything buffered
             ssh_parse_keyinit(session, BSB_WORK_PTR(bsb), sshLen - 2, which);
             ssh_negotiate(session, ssh, BSB_WORK_PTR(bsb), sshLen - 2, which);
-        } else if (sshCode == 33) {
-            ssh->done = 1;
-
+        } else if (sshCode == 21) {
+            // NEWKEYS, everything after it from this side is encrypted
+            ssh->newKeys |= 1 << which;
+            if (ssh->newKeys == 3)
+                arkime_session_add_encrypted(session, "ssh");
+            ssh->len[which] = 0;
+            return 0;
+        } else if (sshCode == 33 || (sshCode == 31 && ssh->kex == SSH_KEX_OTHER)) {
+            // The reply starts with the server host key, it is 33 for group exchange and 31 for the rest
             uint32_t keyLen = 0;
             BSB_IMPORT_u32(bsb, keyLen);
 
@@ -259,7 +282,6 @@ LOCAL int ssh_parser(ArkimeSession_t *session, void *uw, const uint8_t *data, in
                     g_free(str);
                 }
             }
-            break;
         }
         ssh->len[which] -= 4 + sshLen;
         memmove(ssh->buf[which], ssh->buf[which] + sshLen + 4, ssh->len[which]);

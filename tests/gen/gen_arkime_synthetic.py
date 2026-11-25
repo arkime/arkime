@@ -52,7 +52,10 @@ Layout:
   - dns_limits (3 sessions, 3 packets)
   - socks_ips (8 sessions, 94 packets)
   - dhcp_ips (2 sessions, 9 packets)
-  - zeek_fields (6 sessions, TLS SAN cert, krb5 AS/TGS, ldap bind failure, smtp headers, ntp extension, appended last)
+  - zeek_fields (6 sessions, TLS SAN cert, krb5 AS/TGS, ldap bind failure, smtp headers, ntp extension)
+  - ssh_kex_reply (6 sessions, 93 packets)
+  - tls_encrypted (2 sessions, 29 packets)
+  - quic_1rtt (7 packets, appended last)
 
 Run from the tests directory:  python3 gen/gen_arkime_synthetic.py
 main() shifts every section after the LEGACY blob so file timestamps never run backwards
@@ -1733,6 +1736,332 @@ def sec_ssdp():
     return out
 
 
+def sec_ssh_kex_reply():
+    # SSH sessions for the server host key and the encrypted field.
+    # 1) curve25519-sha256: the server's version line and KEXINIT share one
+    #    segment, the host key is in KEX_ECDH_REPLY (31) with NEWKEYS in the
+    #    same segment. Expect ssh.key, ssh.hasshServer, the negotiated
+    #    algorithms and encrypted=ssh.
+    # 2) diffie-hellman-group-exchange-sha256: 31 is KEX_DH_GEX_GROUP (p, g)
+    #    and the host key is in KEX_DH_GEX_REPLY (33). Expect only the 33 host
+    #    key, never the group, and encrypted=ssh.
+    # 3) mlkem768x25519-sha256 and 4) sntrup761x25519-sha512: post-quantum
+    #    hybrids, the host key is in KEX_HYBRID_REPLY (31) and the key shares
+    #    are the real sizes. Expect ssh.key and encrypted=ssh.
+    # 5) gss-curve25519-sha256-*: 31 is KEXGSS_CONTINUE, a GSS token sent by
+    #    both sides, and there is no host key. Expect ssh.kex, encrypted=ssh
+    #    and no ssh.key.
+    # 6) curve25519-sha256 to the server of 1), so the "encrypted test" rule
+    #    stops saving pcap 2 packets after NEWKEYS, then encrypted segments 100
+    #    seconds apart so tcpSaveTimeout saves the session part way. Expect two
+    #    linked sessions, both with encrypted=ssh, and no pcap saved for the
+    #    second.
+    # Sessions 10.9.51.1:49501 -> 10.9.51.2:22, 10.9.51.3:49502 -> 10.9.51.4:22,
+    # 10.9.51.5:49503 -> 10.9.51.6:22, 10.9.51.7:49504 -> 10.9.51.8:22,
+    # 10.9.51.9:49505 -> 10.9.51.10:22 and 10.9.51.11:49506 -> 10.9.51.2:22
+    # (Ethernet linktype).
+
+    TS_START = 1700007100.0
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def nl(b):
+        return struct.pack('>I', len(b)) + b
+
+    def ssh_record(code, payload):
+        # packet_length(4) + padding_length(1) + code(1) + payload + padding,
+        # padded so the length after packet_length is a multiple of 8
+        padlen = 4 + (8 - (6 + len(payload) + 4) % 8) % 8
+        body = bytes([padlen, code]) + payload + b'\0' * padlen
+        return struct.pack('>I', len(body)) + body
+
+    def kexinit(kex, cookie):
+        return ssh_record(20, bytes([cookie]) * 16 +
+                          nl(kex) +
+                          nl(b'ssh-ed25519') +
+                          nl(b'aes128-ctr') + nl(b'aes128-ctr') +
+                          nl(b'hmac-sha2-256') + nl(b'hmac-sha2-256') +
+                          nl(b'none') + nl(b'none') +
+                          nl(b'') + nl(b'') +
+                          b'\x00' + b'\x00\x00\x00\x00')
+
+    def hostkey(seed):
+        return nl(b'ssh-ed25519') + nl(bytes((seed + i) & 0xff for i in range(32)))
+
+    def sig(seed):
+        return nl(nl(b'ssh-ed25519') + nl(bytes((seed + i) & 0xff for i in range(64))))
+
+    def mpint(b):
+        return nl(b'\x00' + b if b[0] & 0x80 else b)
+
+    newkeys = ssh_record(21, b'')
+    encrypted_c = bytes((0x5a + i * 13) & 0xff for i in range(96))
+    encrypted_s = bytes((0xa5 + i * 17) & 0xff for i in range(160))
+
+    def session(cli_ip, srv_ip, cli_port, cli_mac, srv_mac, steps):
+        pkts = []
+        cseq, sseq = 0x3000, 0x4000
+
+        def c(flags, payload=b''):
+            nonlocal cseq
+            pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, 22,
+                                   cseq, sseq, flags, payload))
+            cseq += len(payload)
+
+        def s(flags, payload=b''):
+            nonlocal sseq
+            pkts.append(eth_ip_tcp(srv_ip, cli_ip, srv_mac, cli_mac, 22, cli_port,
+                                   sseq, cseq, flags, payload))
+            sseq += len(payload)
+
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, 22,
+                               cseq, 0, 0x02))                     # SYN
+        cseq += 1
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, srv_mac, cli_mac, 22, cli_port,
+                               sseq, cseq, 0x12))                  # SYN-ACK
+        sseq += 1
+        c(0x10)                                                    # ACK
+
+        for side, payload in steps:
+            (c if side == 'c' else s)(0x18, payload)
+
+        c(0x11)                                                    # FIN
+        cseq += 1
+        s(0x11)                                                    # FIN
+        sseq += 1
+        c(0x10)
+        return pkts
+
+    # 1) curve25519, banner and KEXINIT in one server segment, key in 31
+    s1 = session('10.9.51.1', '10.9.51.2', 49501,
+                 bytes.fromhex('02aa00001001'), bytes.fromhex('02aa00001002'), [
+                     ('c', b'SSH-2.0-OpenSSH_10.0\r\n'),
+                     ('s', b'SSH-2.0-OpenSSH_10.0\r\n' + kexinit(b'curve25519-sha256', 0x22)),
+                     ('c', kexinit(b'curve25519-sha256,ext-info-c', 0x11)),
+                     ('c', ssh_record(30, nl(bytes(range(0x40, 0x60))))),                   # KEX_ECDH_INIT
+                     ('s', ssh_record(31, nl(hostkey(0x10)) + nl(bytes(range(0x60, 0x80))) +
+                                      sig(0x30)) + newkeys + encrypted_s),                   # KEX_ECDH_REPLY, NEWKEYS
+                     ('c', newkeys + encrypted_c),
+                     ('s', encrypted_s),
+                 ])
+
+    # 2) group exchange, 31 is the group, key in 33
+    s2 = session('10.9.51.3', '10.9.51.4', 49502,
+                 bytes.fromhex('02aa00001003'), bytes.fromhex('02aa00001004'), [
+                     ('c', b'SSH-2.0-OpenSSH_10.0\r\n'),
+                     ('s', b'SSH-2.0-OpenSSH_10.0\r\n'),
+                     ('c', kexinit(b'diffie-hellman-group-exchange-sha256', 0x33)),
+                     ('s', kexinit(b'diffie-hellman-group-exchange-sha256', 0x44)),
+                     ('c', ssh_record(34, struct.pack('>III', 2048, 3072, 8192))),          # KEX_DH_GEX_REQUEST
+                     ('s', ssh_record(31, mpint(b'\xff' * 256) + mpint(b'\x02'))),         # KEX_DH_GEX_GROUP
+                     ('c', ssh_record(32, mpint(bytes(range(1, 129)) * 2))),                # KEX_DH_GEX_INIT
+                     ('s', ssh_record(33, nl(hostkey(0x70)) + mpint(bytes(range(2, 130)) * 2) +
+                                      sig(0x90)) + newkeys + encrypted_s),                   # KEX_DH_GEX_REPLY, NEWKEYS
+                     ('c', newkeys + encrypted_c),
+                     ('s', encrypted_s),
+                 ])
+
+    # 3, 4) post-quantum hybrids, client share is the KEM public key plus an
+    # x25519 key, server share is the KEM ciphertext plus an x25519 key
+    def hybrid(n, kex, cli_share, srv_share, seed):
+        return session('10.9.51.%d' % (2 * n - 1), '10.9.51.%d' % (2 * n), 49500 + n,
+                       bytes.fromhex('02aa000010%02x' % (2 * n - 1)),
+                       bytes.fromhex('02aa000010%02x' % (2 * n)), [
+                           ('c', b'SSH-2.0-OpenSSH_10.0\r\n'),
+                           ('s', b'SSH-2.0-OpenSSH_10.0\r\n'),
+                           ('c', kexinit(kex + b',curve25519-sha256,ext-info-c', 0x50 + n)),
+                           ('s', kexinit(kex + b',curve25519-sha256', 0x60 + n)),
+                           ('c', ssh_record(30, nl(bytes((seed + i) & 0xff for i in range(cli_share))))),
+                           ('s', ssh_record(31, nl(hostkey(seed)) +
+                                            nl(bytes((seed + 7 * i) & 0xff for i in range(srv_share))) +
+                                            sig(seed + 0x20)) + newkeys + encrypted_s),
+                           ('c', newkeys + encrypted_c),
+                           ('s', encrypted_s),
+                       ])
+
+    s3 = hybrid(3, b'mlkem768x25519-sha256', 1184 + 32, 1088 + 32, 0xb0)
+    s4 = hybrid(4, b'sntrup761x25519-sha512', 1158 + 32, 1039 + 32, 0xd0)
+
+    # 5) gss kex, 31 is KEXGSS_CONTINUE and carries a GSS token from either side
+    gss = b'gss-curve25519-sha256-toWM5Slw5Ew8Mqkay+al2g=='
+    s5 = session('10.9.51.9', '10.9.51.10', 49505,
+                 bytes.fromhex('02aa00001009'), bytes.fromhex('02aa0000100a'), [
+                     ('c', b'SSH-2.0-OpenSSH_10.0\r\n'),
+                     ('s', b'SSH-2.0-OpenSSH_10.0\r\n'),
+                     ('c', kexinit(gss + b',curve25519-sha256,ext-info-c', 0x71)),
+                     ('s', kexinit(gss + b',curve25519-sha256', 0x72)),
+                     ('c', ssh_record(30, nl(bytes((0x21 + 3 * i) & 0xff for i in range(96))) +
+                                      nl(bytes(range(0x80, 0xa0))))),                       # KEXGSS_INIT
+                     ('s', ssh_record(31, nl(bytes((0x43 + 5 * i) & 0xff for i in range(80))))),  # KEXGSS_CONTINUE
+                     ('c', ssh_record(31, nl(bytes((0x65 + 7 * i) & 0xff for i in range(48))))),  # KEXGSS_CONTINUE
+                     ('s', ssh_record(32, nl(bytes(range(0xa0, 0xc0))) +
+                                      nl(bytes((0x87 + 9 * i) & 0xff for i in range(28))) +
+                                      b'\x00') + newkeys + encrypted_s),                     # KEXGSS_COMPLETE, NEWKEYS
+                     ('c', newkeys + encrypted_c),
+                     ('s', encrypted_s),
+                 ])
+
+    # 6) long session to the server of 1), 8 encrypted segments 100 seconds apart
+    LONG_FIRST = 3 + 6
+    LONG_COUNT = 8
+    s6 = session('10.9.51.11', '10.9.51.2', 49506,
+                 bytes.fromhex('02aa0000100b'), bytes.fromhex('02aa00001002'), [
+                     ('c', b'SSH-2.0-OpenSSH_10.0\r\n'),
+                     ('s', b'SSH-2.0-OpenSSH_10.0\r\n' + kexinit(b'curve25519-sha256', 0x82)),
+                     ('c', kexinit(b'curve25519-sha256,ext-info-c', 0x81)),
+                     ('c', ssh_record(30, nl(bytes(range(0x20, 0x40))))),
+                     ('s', ssh_record(31, nl(hostkey(0x10)) + nl(bytes(range(0x30, 0x50))) +
+                                      sig(0x50)) + newkeys + encrypted_s),
+                     ('c', newkeys + encrypted_c),
+                 ] + [('s', encrypted_s), ('c', encrypted_c)] * (LONG_COUNT // 2))
+
+    out = b''
+    ts = TS_START
+    for pkts, slow in ((s1 + s2 + s3 + s4 + s5, range(0)), (s6, range(LONG_FIRST, LONG_FIRST + LONG_COUNT))):
+        for i, p in enumerate(pkts):
+            if i in slow:
+                ts += 100
+            sec = int(ts)
+            usec = int(round((ts - sec) * 1e6))
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+            ts += 0.05
+    return out
+
+
+def sec_tls_encrypted():
+    # Two TLS sessions for when the encrypted field is set, each side has to send
+    # its own ChangeCipherSpec or application data record first. The
+    # "encrypted tls test" rule stops saving pcap at the packet that sets it.
+    # 1) MySQL then TLS 1.2: greeting, SSL request and a full handshake. The
+    #    server's NewSessionTicket and ChangeCipherSpec come after the client's
+    #    ChangeCipherSpec. Expect protocols mysql and tls, encrypted=tls, and
+    #    pcap saved through the server's ChangeCipherSpec segment.
+    # 2) TLS 1.3 with a HelloRetryRequest: both sides send their compatibility
+    #    ChangeCipherSpec before the second Client Hello and the real Server
+    #    Hello. Expect encrypted=tls and pcap saved through the client's first
+    #    application data segment.
+    # Sessions 10.9.49.1:49601 -> 10.9.49.2:3306 and 10.9.49.3:49602 ->
+    # 10.9.49.4:443 (Ethernet linktype).
+
+    TS_START = 1700024000.0
+
+    client_hello, _ = _tls_hellos()
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def eth_ip_tcp(src, dst, smac, dmac, sport, dport, seq, ack, flags, payload=b''):
+        iplen = 20 + 20 + len(payload)
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, iplen, 1, 0, 64, 6, 0,
+                         bytes(map(int, src.split('.'))), bytes(map(int, dst.split('.'))))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        tcp = struct.pack('>HHIIBBHHH', sport, dport, seq, ack, 0x50, flags, 8192, 0, 0)
+        pseudo = ip[12:20] + struct.pack('>BBH', 0, 6, 20 + len(payload))
+        tcp = tcp[:16] + struct.pack('>H', csum(pseudo + tcp + payload)) + tcp[18:]
+        return dmac + smac + b'\x08\x00' + ip + tcp + payload
+
+    def session(cli_ip, srv_ip, cli_port, srv_port, cli_mac, srv_mac, steps):
+        pkts = []
+        cseq, sseq = 0x7000, 0x8000
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, srv_port, cseq, 0, 0x02)); cseq += 1
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, srv_mac, cli_mac, srv_port, cli_port, sseq, cseq, 0x12)); sseq += 1
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, srv_port, cseq, sseq, 0x10))
+        for side, payload in steps:
+            if side == 'c':
+                pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, srv_port, cseq, sseq, 0x18, payload)); cseq += len(payload)
+            else:
+                pkts.append(eth_ip_tcp(srv_ip, cli_ip, srv_mac, cli_mac, srv_port, cli_port, sseq, cseq, 0x18, payload)); sseq += len(payload)
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, srv_port, cseq, sseq, 0x11)); cseq += 1
+        pkts.append(eth_ip_tcp(srv_ip, cli_ip, srv_mac, cli_mac, srv_port, cli_port, sseq, cseq, 0x11)); sseq += 1
+        pkts.append(eth_ip_tcp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, srv_port, cseq, sseq, 0x10))
+        return pkts
+
+    def fill(n, seed):
+        return bytes((seed * 29 + i * 11) & 0xff for i in range(n))
+
+    def record(rtype, body, ver=b'\x03\x03'):
+        return bytes([rtype]) + ver + struct.pack('>H', len(body)) + body
+
+    def handshake(hstype, body):
+        return bytes([hstype]) + struct.pack('>I', len(body))[1:] + body
+
+    def ext(etype, data):
+        return struct.pack('>HH', etype, len(data)) + data
+
+    def server_hello(random, cipher, exts):
+        body = b'\x03\x03' + random + b'\x00' + cipher + b'\x00' + struct.pack('>H', len(exts)) + exts
+        return handshake(2, body)
+
+    ccs = record(0x14, b'\x01')
+
+    # 1) MySQL 5.7 greeting and SSL request, then TLS 1.2
+    greeting = bytes.fromhex('4a0000000a352e372e3136004d6820000937522b2f25462900ffff080200ffc115'
+                             '0000000000000000000069647844637e236654082b1b006d7973716c5f6e617469'
+                             '76655f70617373776f726400')
+    ssl_request = bytes.fromhex('200000018faa3a00ffffff00210000000000000000000000000000000000000000000000')
+    s1 = session('10.9.49.1', '10.9.49.2', 49601, 3306,
+                 bytes.fromhex('02aa00001b01'), bytes.fromhex('02aa00001b02'), [
+                     ('s', greeting),
+                     ('c', ssl_request),
+                     ('c', record(0x16, client_hello('mysql-tls.example'), b'\x03\x01')),
+                     ('s', record(0x16, server_hello(fill(32, 1), b'\xc0\x2f', ext(0xff01, b'\x00'))) +
+                           record(0x16, handshake(14, b''))),                                  # ServerHello, ServerHelloDone
+                     ('c', record(0x16, handshake(16, b'\x20' + fill(32, 2))) + ccs +
+                           record(0x16, fill(40, 3))),                                         # ClientKeyExchange, CCS, Finished
+                     ('s', record(0x16, handshake(4, struct.pack('>IH', 7200, 160) + fill(160, 4)))),  # NewSessionTicket
+                     ('s', ccs + record(0x16, fill(40, 5))),                                   # CCS, Finished
+                     ('c', record(0x17, fill(60, 6))),
+                     ('s', record(0x17, fill(90, 7))),
+                 ])
+
+    # 2) TLS 1.3 HelloRetryRequest asking for secp256r1
+    hrr_random = bytes.fromhex('cf21ad74e59a6111be1d8c021e65b891c2a211167abb8c5e079e09e2c8a8339c')
+    hrr = server_hello(hrr_random, b'\x13\x01', ext(0x002b, b'\x03\x04') + ext(0x0033, b'\x00\x17'))
+    real = server_hello(fill(32, 8), b'\x13\x01',
+                        ext(0x002b, b'\x03\x04') + ext(0x0033, struct.pack('>HH', 0x0017, 65) + b'\x04' + fill(64, 9)))
+    s2 = session('10.9.49.3', '10.9.49.4', 49602, 443,
+                 bytes.fromhex('02aa00001b03'), bytes.fromhex('02aa00001b04'), [
+                     ('c', record(0x16, client_hello('tls-hrr.example'), b'\x03\x01')),
+                     ('s', record(0x16, hrr) + ccs),                                           # HelloRetryRequest, CCS
+                     ('c', ccs + record(0x16, client_hello('tls-hrr.example', pad=65))),       # CCS, second ClientHello
+                     ('s', record(0x16, real) + record(0x17, fill(600, 10))),                  # ServerHello, encrypted
+                     ('s', record(0x17, fill(300, 11))),
+                     ('c', record(0x17, fill(53, 12))),                                        # Finished
+                     ('s', record(0x17, fill(120, 13))),
+                     ('c', record(0x17, fill(80, 14))),
+                 ])
+
+    out = b''
+    ts = TS_START
+    for p in s1 + s2:
+        sec = int(ts)
+        usec = int(round((ts - sec) * 1e6))
+        out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        ts += 0.05
+    return out
+
+
 def sec_ssh_kexinit_overrun():
     # SSH session whose client KEXINIT has a corrupt final name-list length
     # that runs past the record end, with a NEWKEYS record buffered in the
@@ -3058,8 +3387,9 @@ def _quic_crypto(offset, data):
     return b'\x06' + struct.pack('>HH', 0x4000 | offset, 0x4000 | len(data)) + data
 
 
-def _quic_session(cli_ip, srv_ip, cli_port, ts, dcid, client_datagrams):
-    # Client Initials, with a server long header packet after the first
+def _quic_session(cli_ip, srv_ip, cli_port, ts, dcid, client_datagrams, rest=None, srv=None):
+    # Client Initials, with a server long header packet (srv if set) after the
+    # first, then any rest ('c' or 's', datagram) in order
     cli_mac = bytes.fromhex('02aa00001a01')
     srv_mac = bytes.fromhex('02aa00001a02')
 
@@ -3083,11 +3413,17 @@ def _quic_session(cli_ip, srv_ip, cli_port, ts, dcid, client_datagrams):
         udp = udp[:6] + struct.pack('>H', ck if ck else 0xffff)
         return dmac + smac + b'\x08\x00' + ip + udp + payload
 
-    srv = b'\xc0' + struct.pack('>I', 1) + b'\x00\x08' + dcid + bytes(1200 - 14)
+    if srv is None:
+        srv = b'\xc0' + struct.pack('>I', 1) + b'\x00\x08' + dcid + bytes(1200 - 14)
     pkts = [eth_ip_udp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, 443, client_datagrams[0]),
             eth_ip_udp(srv_ip, cli_ip, srv_mac, cli_mac, 443, cli_port, srv)]
     for d in client_datagrams[1:]:
         pkts.append(eth_ip_udp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, 443, d))
+    for side, d in rest or []:
+        if side == 'c':
+            pkts.append(eth_ip_udp(cli_ip, srv_ip, cli_mac, srv_mac, cli_port, 443, d))
+        else:
+            pkts.append(eth_ip_udp(srv_ip, cli_ip, srv_mac, cli_mac, 443, cli_port, d))
 
     out = b''
     for p in pkts:
@@ -3113,6 +3449,47 @@ def sec_quic_duplicate_crypto():
         _quic_initial(dcid, 0, _quic_crypto(0, hs[:400])),
         _quic_initial(dcid, 1, _quic_crypto(0, hs[:400]) + _quic_crypto(400, hs[400:])),
     ])
+
+
+def sec_quic_1rtt():
+    # Append a QUIC v1 session that finishes its handshake to arkime_synthetic.pcap.
+    #
+    # Session 10.9.58.1:52104 -> 10.9.58.2:443 UDP (Ethernet linktype):
+    #   Client Initial with the Client Hello (SNI quic-1rtt.example), the
+    #   server's long header reply, a server short header (1-RTT) packet, the
+    #   client's Handshake packet, then short header packets both ways. Expect
+    #   encrypted=quic once both sides have sent a short header packet.
+    #   Needs the python cryptography package to build the Initial packet.
+
+    client_hello, _ = _tls_hellos()
+    dcid = bytes.fromhex('5b2f0e6a91c4d738')
+    scid = bytes.fromhex('a1b2c3d4e5f60718')
+    hs = client_hello('quic-1rtt.example', alpn=b'h3', pad=500)
+
+    def fill(n, seed):
+        return bytes((seed * 31 + i * 7) & 0xff for i in range(n))
+
+    def short(to_dcid, seed, n):
+        # Short header: fixed bit set, protected packet number and payload
+        return bytes([0x40 | (seed & 3)]) + to_dcid + fill(n, seed)
+
+    # Server Initial, protected with keys the pcap doesn't have
+    payload = fill(1160, 5)
+    srv = (b'\xc1' + struct.pack('>I', 1) + b'\x08' + scid + b'\x08' + dcid + b'\x00' +
+           struct.pack('>H', 0x4000 | len(payload)) + payload)
+
+    # Client Handshake packet (type 2) carrying its Finished
+    handshake = (b'\xe0' + struct.pack('>I', 1) + b'\x08' + scid + b'\x08' + dcid +
+                 struct.pack('>H', 0x4000 | 80) + fill(80, 9))
+
+    return _quic_session('10.9.58.1', '10.9.58.2', 52104, 1700023700.0, dcid,
+                         [_quic_initial(dcid, 0, _quic_crypto(0, hs))], [
+                             ('s', short(dcid, 1, 200)),     # server 0.5-RTT data
+                             ('c', handshake),
+                             ('c', short(scid, 2, 40)),      # client 1-RTT, now encrypted
+                             ('s', short(dcid, 3, 60)),
+                             ('c', short(scid, 4, 70)),
+                         ], srv)
 
 
 def sec_udp_tunnel_port_fallback():
@@ -4559,6 +4936,9 @@ def main():
         sec_socks_ips(),
         sec_dhcp_ips(),
         sec_zeek_fields(),
+        sec_ssh_kex_reply(),
+        sec_tls_encrypted(),
+        sec_quic_1rtt(),
     ]:
         blob, tmax = _after(blob, tmax)
         out += blob

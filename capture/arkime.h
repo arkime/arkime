@@ -271,6 +271,7 @@ typedef struct {
 #define ARKIME_FIELD_OP_SET           0
 #define ARKIME_FIELD_OP_SET_IF_LESS   1
 #define ARKIME_FIELD_OP_SET_IF_MORE   2
+#define ARKIME_FIELD_OP_SET_FROM_NOW  3 // _maxPacketsToSave: +N, N more than the session has now
 
 typedef struct {
     char                 *str;
@@ -1468,6 +1469,7 @@ void     arkime_session_config();
 void     arkime_session_mprotocol_init(int mProtocol);
 void     arkime_session_exit();
 void     arkime_session_add_protocol(ArkimeSession_t *session, const char *protocol);
+void     arkime_session_add_encrypted(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_has_protocol(ArkimeSession_t *session, const char *protocol);
 gboolean arkime_session_rm_protocol(ArkimeSession_t *session, const char *protocol);
 void     arkime_session_add_tag(ArkimeSession_t *session, const char *tag);

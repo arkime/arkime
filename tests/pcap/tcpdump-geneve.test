@@ -208,6 +208,9 @@
      64
     ],
     "dstTTLCnt" : 1,
+    "encrypted" : [
+     "ssh"
+    ],
     "ethertype" : 2048,
     "fileId" : [],
     "firstPacket" : 1422828273999,

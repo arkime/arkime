@@ -29,7 +29,7 @@
 #
 #   ops:                          - List of ops, 1 per line
 #     _dontSaveSPI                - Don't save SPI data for session
-#     _maxPacketsToSave           - Don't save more than X packets
+#     _maxPacketsToSave           - Don't save more than X packets, +X for X more than now
 #     _minPacketsBeforeSavingSPI  - Don't save SPI data unless this many packets
 #     _maxPackets                 - Override maxPackets, save session after this many packets
 #     <fieldname>                 - Add value to field
@@ -168,6 +168,18 @@ rules:
     bpf: "host 10.89.85.15 and port 49570"
     ops:
       _maxPackets: 40
+
+  - name: "encrypted test"
+    when: "fieldSet"
+    expression: "encrypted == ssh && ip.dst == 10.9.51.2 && port.dst == 22"
+    ops:
+      _maxPacketsToSave: "+2"
+
+  - name: "encrypted tls test"
+    when: "fieldSet"
+    expression: "encrypted == tls && ip.dst == 10.9.49.0/24"
+    ops:
+      _maxPacketsToSave: "+0"
 
   # Expression versions of the fields: rules above with the same ops, so they can't change
   # the results, but any session they match that the original doesn't fails the tests
