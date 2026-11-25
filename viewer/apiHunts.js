@@ -109,8 +109,13 @@ class HuntAPIs {
           // strip the 16 byte pcap record header, only packet data should be searched
           packets.push(buffer.slice(16));
         } else {
+          // A packet that can't be decoded is still searched, it just has no side
           const packet = {};
-          pcap.decode(buffer, packet);
+          try {
+            pcap.decode(buffer, packet);
+          } catch (e) {
+            delete packet.ip;
+          }
           packet.data = buffer.slice(16);
           packets.push(packet);
         }
@@ -133,7 +138,9 @@ class HuntAPIs {
           const dstIp = session.destination?.ip ? ipaddr.parse(session.destination.ip).toString() : undefined;
           for (let i = 0; i < len; i++) {
             let isSrc, isDst;
-            if (packets[i].ip?.frag) {
+            if (!packets[i].ip) {
+              isSrc = isDst = true;
+            } else if (packets[i].ip.frag) {
               // An ip fragment has no ports, the raw search is still per packet so go by ip. The
               // outer fragment of a tunnel has neither of the session's ips, it could be either side.
               const addr = ipaddr.parse(packets[i].ip.addr1).toString();

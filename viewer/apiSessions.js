@@ -610,20 +610,21 @@ class SessionAPIs {
       console.log('localSessionDetail query', req.query);
     }
 
-    const packets = [];
+    let packets = [];
+    let decodeErrors = 0;
     SessionAPIs.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
-      let obj = {};
+      // A packet that can't be decoded is left out, the rest of the session can still be shown
       if (buffer.length > 16) {
         try {
+          const obj = {};
           pcap.decode(buffer, obj);
+          packets[i] = obj;
         } catch (e) {
-          obj = { ip: { p: 'Error decoding ' + e } };
-          console.trace('loadSessionDetail error', ArkimeUtil.sanitizeStr(e.stack));
+          if (!decodeErrors++) {
+            console.log('ERROR - localSessionDetail decode', ArkimeUtil.sanitizeStr(e.stack));
+          }
         }
-      } else {
-        obj = { ip: { p: 'Empty' } };
       }
-      packets[i] = obj;
       cb(null);
     }, async (err, session, cutOff) => {
       if (err) {
@@ -633,7 +634,7 @@ class SessionAPIs {
       try {
         session.id = req.params.id;
         SessionAPIs.#sortFields(session);
-        Pcap.defrag(packets, cutOff);
+        packets = Pcap.defrag(packets.filter(Boolean), cutOff);
 
         if (session.source?.ip) {
           const sep = session.source.ip.includes(':') ? '.' : ':';
@@ -731,7 +732,13 @@ class SessionAPIs {
         nextCb('Error');
         break;
       default:
-        packetCb(pcap, packet, nextCb, i);
+        // processFile isn't awaited, a throw here would leave the session waiting forever
+        try {
+          packetCb(pcap, packet, nextCb, i);
+        } catch (err) {
+          console.log('ERROR - processSessionIdDisk -', util.inspect(err, false, 50));
+          nextCb(err);
+        }
         break;
       }
       pcap.unref();
@@ -1560,7 +1567,13 @@ class SessionAPIs {
         if (packet.length > 16) {
           try {
             const obj = {};
-            pcap.decode(packet, obj);
+            try {
+              pcap.decode(packet, obj);
+            } catch (e) {
+              // Without knowing where its headers end all of the packet is scrubbed
+              console.log(`ERROR - Couldn't decode packet at ${pos}, scrubbing all of it -`, util.inspect(e, false, 50));
+              delete obj.ip;
+            }
             pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[0], whatToRemove === 'all');
             pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[1], whatToRemove === 'all');
             pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[2], whatToRemove === 'all');
@@ -1938,14 +1951,20 @@ class SessionAPIs {
       // fullSession=false: decode/reassembly only reads ipProtocol and
       // source ip/port, all of which are in processSessionId's narrow field
       // list; the full-field fetch is expensive per session
+      let decodeErrors = 0;
       SessionAPIs.processSessionId(id, false, null, (pcap, buffer, cb, i) => {
-        let obj = {};
+        // A packet that can't be decoded is left out, filtered below
         if (buffer.length > 16) {
-          pcap.decode(buffer, obj);
-        } else {
-          obj = { ip: { p: '' } };
+          try {
+            const obj = {};
+            pcap.decode(buffer, obj);
+            packets[i] = obj;
+          } catch (e) {
+            if (!decodeErrors++) {
+              console.log('ERROR - processSessionIdAndDecode decode', ArkimeUtil.sanitizeStr(e.stack));
+            }
+          }
         }
-        packets[i] = obj;
         cb(null);
       }, async (err, session, cutOff) => {
         // A throw in here would leave the promise pending forever
