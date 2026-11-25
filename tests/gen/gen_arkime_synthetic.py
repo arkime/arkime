@@ -55,7 +55,8 @@ Layout:
   - zeek_fields (6 sessions, TLS SAN cert, krb5 AS/TGS, ldap bind failure, smtp headers, ntp extension)
   - ssh_kex_reply (6 sessions, 93 packets)
   - tls_encrypted (2 sessions, 29 packets)
-  - quic_1rtt (7 packets, appended last)
+  - quic_1rtt (7 packets)
+  - quic_ja4l (2 sessions, 12 packets, appended last)
 
 Run from the tests directory:  python3 gen/gen_arkime_synthetic.py
 main() shifts every section after the LEGACY blob so file timestamps never run backwards
@@ -3492,6 +3493,109 @@ def sec_quic_1rtt():
                          ], srv)
 
 
+def sec_quic_ja4l():
+    # Append QUIC JA4L/JA4LS sessions to arkime_synthetic.pcap, the ja4plus plugin
+    # times A the first client Initial, B the first server Initial, C the first
+    # server Handshake and emits both at D, the first client Handshake.
+    #
+    # Session 10.9.81.1:52105 -> 10.9.81.2:443 UDP, QUIC v1, client ttl 128, server ttl 57:
+    #   0us client Initial (SNI quic-ja4l.example), 10000us one server datagram
+    #   with an Initial and a Handshake coalesced, 10500us a second server
+    #   Handshake, 12000us a second client Initial (an ack), 14000us one client
+    #   datagram with its Handshake and a short header packet coalesced, then
+    #   short header packets both ways. Coalesced packets share a destination
+    #   connection id, wireshark ignores the rest of the datagram otherwise.
+    #   Expect ja4ls 5000_57_quic and ja4l 2000_128_quic.
+    #
+    # Session [2001:db8:9:82::1]:52106 -> [2001:db8:9:82::2]:443 UDP, QUIC v2,
+    # client hop limit 64, server hop limit 50:
+    #   0us client Initial (SNI quic-ja4l-v2.example), 30000us server Initial,
+    #   31000us server Handshake, 31600us client Handshake.
+    #   Expect ja4ls 15000_50_quic and ja4l 300_64_quic.
+    #   Needs the python cryptography package to build the client Initials.
+
+    client_hello, _ = _tls_hellos()
+
+    def csum(data):
+        if len(data) & 1:
+            data += b'\0'
+        s = sum(struct.unpack('>%dH' % (len(data) // 2), data))
+        while s >> 16:
+            s = (s & 0xffff) + (s >> 16)
+        return (~s) & 0xffff
+
+    def udp(src, dst, sport, dport, payload, ttl):
+        udplen = 8 + len(payload)
+        hdr = struct.pack('>HHHH', sport, dport, udplen, 0)
+        if ':' in src:
+            s6, d6 = socket.inet_pton(socket.AF_INET6, src), socket.inet_pton(socket.AF_INET6, dst)
+            ck = csum(s6 + d6 + struct.pack('>IxxxB', udplen, 17) + hdr + payload)
+            hdr = hdr[:6] + struct.pack('>H', ck if ck else 0xffff)
+            ip = struct.pack('>IHBB', 0x60000000, udplen, 17, ttl) + s6 + d6
+            return bytes.fromhex('02aa00005202') + bytes.fromhex('02aa00005201') + b'\x86\xdd' + ip + hdr + payload
+        ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, 20 + udplen, 1, 0, ttl, 17, 0,
+                         socket.inet_aton(src), socket.inet_aton(dst))
+        ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
+        ck = csum(ip[12:20] + struct.pack('>BBH', 0, 17, udplen) + hdr + payload)
+        hdr = hdr[:6] + struct.pack('>H', ck if ck else 0xffff)
+        return bytes.fromhex('02aa00005102') + bytes.fromhex('02aa00005101') + b'\x08\x00' + ip + hdr + payload
+
+    def fill(n, seed):
+        return bytes((seed * 31 + i * 7) & 0xff for i in range(n))
+
+    def long_pkt(first, version, dcid, scid, n, seed):
+        # Long header with protected packet number and payload, only Initial
+        # (0xc0 v1, 0xd0 v2) carries a token length
+        token = b'\x00' if first in (0xc0, 0xd0) else b''
+        return (bytes([first | (seed & 3)]) + struct.pack('>I', version) + bytes([len(dcid)]) + dcid +
+                bytes([len(scid)]) + scid + token + struct.pack('>H', 0x4000 | n) + fill(n, seed))
+
+    def short(dcid, seed, n):
+        return bytes([0x40 | (seed & 3)]) + dcid + fill(n, seed)
+
+    def records(base, pkts):
+        out = b''
+        for usec, p in pkts:
+            sec, usec = base + usec // 1000000, usec % 1000000
+            out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
+        return out
+
+    # QUIC v1
+    cli, srv, cport = '10.9.81.1', '10.9.81.2', 52105
+    dcid = bytes.fromhex('7c1f4e2a9b3d5068')
+    scid = bytes.fromhex('b1c2d3e4f5061728')
+    c = lambda p: udp(cli, srv, cport, 443, p, 128)
+    s = lambda p: udp(srv, cli, 443, cport, p, 57)
+    hs = client_hello('quic-ja4l.example', alpn=b'h3', pad=500)
+    ack = b'\x02\x00\x00\x00\x00'
+    out = records(1700024000, [
+        (0, c(_quic_initial(dcid, 0, _quic_crypto(0, hs)))),
+        (10000, s(long_pkt(0xc0, 1, b'', scid, 120, 1) + long_pkt(0xe0, 1, b'', scid, 900, 2))),
+        (10500, s(long_pkt(0xe0, 1, b'', scid, 600, 3))),
+        (12000, c(_quic_initial(dcid, 1, ack))),
+        (14000, c(long_pkt(0xe0, 1, scid, b'', 80, 4) + short(scid, 11, 30))),
+        (15000, c(short(scid, 5, 40))),
+        (16000, s(short(b'', 6, 60))),
+    ])
+
+    # QUIC v2 over IPv6
+    cli, srv, cport = '2001:db8:9:82::1', '2001:db8:9:82::2', 52106
+    dcid = bytes.fromhex('2d4b6f8a1c3e5079')
+    scid = bytes.fromhex('c8d9eafb0c1d2e3f')
+    c = lambda p: udp(cli, srv, cport, 443, p, 64)
+    s = lambda p: udp(srv, cli, 443, cport, p, 50)
+    hs = client_hello('quic-ja4l-v2.example', alpn=b'h3', pad=500)
+    v2 = 0x6b3343cf
+    out += records(1700024010, [
+        (0, c(_quic_initial(dcid, 0, _quic_crypto(0, hs), v2=True))),
+        (30000, s(long_pkt(0xd0, v2, b'', scid, 120, 7))),
+        (31000, s(long_pkt(0xf0, v2, b'', scid, 900, 8))),
+        (31600, c(long_pkt(0xf0, v2, scid, b'', 80, 9))),
+        (32500, c(short(scid, 10, 40))),
+    ])
+    return out
+
+
 def sec_udp_tunnel_port_fallback():
     # Append UDP tunnel port fallback regression sessions to arkime_synthetic.pcap.
     #
@@ -4939,6 +5043,7 @@ def main():
         sec_ssh_kex_reply(),
         sec_tls_encrypted(),
         sec_quic_1rtt(),
+        sec_quic_ja4l(),
     ]:
         blob, tmax = _after(blob, tmax)
         out += blob

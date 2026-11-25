@@ -96,6 +96,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4498 Fix SSH sessions missing ssh.hasshServer and the negotiated algorithms when the server's version line and KEXINIT arrive in the same packet
   - #4498 Fix _maxPacketsToSave starting over after a tcpSaveTimeout save, so a long session could save more packets than the limit
   - #4498 Fix sessions that stopped saving pcap, from _maxPacketsToSave or a full disk, losing every later part of a long session, the later parts are now saved with their SPI data and no pcap
+  - #4499 Add the udp_raw_packet named func, called for every UDP packet after classify with the payload and the packet, like tcp_raw_packet, so plugins can see the IP header and timestamp
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type, hosts on a ring with an arc between each talking pair, colored by protocol or a chosen field
   - #4456 Fix the settings editor resetting a connections widget or graph sample size to 100 when opened
