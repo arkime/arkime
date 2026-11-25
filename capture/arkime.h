@@ -587,36 +587,41 @@ struct arkime_pcap_sf_pkthdr {
 
 #define ARKIME_PACKET_LEN_FILE_DONE     1
 
-typedef struct arkimepacket_t {
-    struct arkimepacket_t   *packet_next, *packet_prev;
-    struct timeval ts;                  // timestamp
-    uint8_t       *pkt;                 // full packet
-    uint64_t       writerFilePos;       // where in output file
-    uint64_t       readerFilePos;       // where in input file
-    uint32_t       writerFileNum;       // file number in db
-    uint32_t       hash;                // Saved hash
-    uint16_t       pktlen;              // length of packet
-    uint16_t       payloadLen;          // length of ip payload
-    uint16_t       payloadOffset;       // offset to ip payload from start
-    uint16_t       vlan;                // non zero if the reader gets the vlan
-    uint8_t        ipProtocol;          // ip protocol
-    uint8_t        mProtocol;           // arkime protocol
-    uint8_t        readerPos;           // offline - fileInfo, online - which interface
-    uint8_t        interfaceIndex;      // which interface within fileInfo[readerPos] (pcapng EPB interface_id)
-    uint32_t       etherOffset: 11;     // offset to current ethernet frame from start
-    uint32_t       outerEtherOffset: 11; // offset to previous ethernet frame from start
-    uint32_t       tunnel: 10;          // tunnel type
-    uint32_t       direction: 1;        // direction of packet
-    uint32_t       v6: 1;               // v6 or not
-    uint32_t       outerv6: 1;          // outer v6 or not
-    uint32_t       copied: 1;           // don't need to copy
-    uint32_t       wasfrag: 1;          // was a fragment
-    uint32_t       vlanCopy: 1;         // vlan was copied from packet
-    uint32_t       tunnelDepth: 4;      // nesting depth for tunnel dispatch (see ARKIME_PACKET_MAX_TUNNEL_DEPTH)
-    uint32_t       ipOffset: 11;        // offset to ip header from start
-    uint32_t       outerIpOffset: 11;   // offset to outer ip header from start
-    uint32_t       vni: 24;             // vxlan id
-} ArkimePacket_t;
+typedef struct arkimepacket_t ArkimePacket_t;
+struct arkimepacket_t {
+    ArkimePacket_t *packet_next, *packet_prev;
+    struct timeval  ts;                   // timestamp
+    uint8_t        *pkt;                  // full packet
+    uint64_t        writerFilePos;        // where in output file
+    union {
+        uint64_t        readerFilePos;    // where in input file
+        ArkimePacket_t *fragPackets;      // ONLY if wasfrag, the packets from the wire
+    };
+    uint32_t        writerFileNum;        // file number in db
+    uint32_t        hash;                 // Saved hash
+    uint16_t        pktlen;               // length of packet
+    uint16_t        payloadLen;           // length of ip payload
+    uint16_t        payloadOffset;        // offset to ip payload from start
+    uint16_t        vlan;                 // non zero if the reader gets the vlan
+    uint8_t         ipProtocol;           // ip protocol
+    uint8_t         mProtocol;            // arkime protocol
+    uint8_t         readerPos;            // offline - fileInfo, online - which interface
+    uint8_t         interfaceIndex;       // which interface within fileInfo[readerPos] (pcapng EPB interface_id)
+    uint32_t        etherOffset: 11;      // offset to current ethernet frame from start
+    uint32_t        outerEtherOffset: 11; // offset to previous ethernet frame from start
+    uint32_t        tunnel: 10;           // tunnel type
+    uint32_t        direction: 1;         // direction of packet
+    uint32_t        v6: 1;                // v6 or not
+    uint32_t        outerv6: 1;           // outer v6 or not
+    uint32_t        copied: 1;            // don't need to copy
+    uint32_t        wasfrag: 1;           // was a fragment
+    uint32_t        vlanCopy: 1;          // vlan was copied from packet
+    uint32_t        tunnelDepth: 4;       // nesting depth for tunnel dispatch (see ARKIME_PACKET_MAX_TUNNEL_DEPTH)
+    uint32_t        ipOffset: 11;         // offset to ip header from start
+    uint32_t        outerIpOffset: 11;    // offset to outer ip header from start
+    uint32_t        vni: 24;              // vxlan id
+    uint32_t        isfrag: 1;            // in the fragPackets of a wasfrag packet
+};
 
 // Maximum tunnel/encapsulation nesting depth across IP-in-IP, GRE, ERSPAN,
 // VXLAN, etc. Must fit in the tunnelDepth bitfield above (4 bits, max 15).

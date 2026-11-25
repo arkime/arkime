@@ -729,6 +729,50 @@ class Pcap {
   }
 
   // --------------------------------------------------------------------------
+  // Where the headers that scrubbing keeps end, relative to the start of the pcap record
+  #headersEnd (packet) {
+    const frag = packet.ip.frag;
+    if (frag) {
+      // A first ip4 fragment still has the headers after its ip header, for a tunnel the
+      // inner ones too, so decode them like a whole packet to keep them
+      if (frag.v === 4 && frag.off === 0) {
+        try {
+          const ip = { ...packet.ip, p: frag.p };
+          delete ip.data;
+          const obj = { pcap: packet.pcap, ip };
+          this.ip4payload(frag.buffer, obj, frag.pos);
+          if (obj.ip !== ip) { return this.#headersEnd(obj); }
+        } catch (e) {
+          // The inner headers aren't all in this fragment, keep what the outer ones say
+        }
+      }
+
+      // Only the first fragment has a transport header to keep
+      const payloadPos = frag.pos + frag.hdrLen + (frag.v === 6 ? 8 : 0);
+      if (frag.off !== 0) {
+        return payloadPos;
+      } else if (frag.p === 6) {
+        return payloadPos + (frag.payload.length > 12 ? 4 * ((frag.payload[12] >> 4) & 0xf) : 20);
+      } else {
+        return payloadPos + 8;
+      }
+    }
+
+    switch (packet.ip.p) {
+    case 1:
+      return packet.icmp._pos + 8;
+    case 6:
+      return packet.tcp._pos + 4 * packet.tcp.off;
+    case 17:
+      return packet.udp._pos + 8;
+    case 132:
+      return packet.sctp._pos + 8;
+    default:
+      throw new Error("Unknown packet type, can't scrub");
+    }
+  }
+
+  // --------------------------------------------------------------------------
   scrubPacket (packet, pos, buf, entire) {
     this.blockCache.clear();
     const headerLen = (this.shortHeader === undefined) ? 16 : 6;
@@ -738,23 +782,7 @@ class Pcap {
       pos += headerLen; // Don't delete pcap header
       len -= headerLen;
     } else {
-      let skip;
-      switch (packet.ip.p) {
-      case 1:
-        skip = packet.icmp._pos + 8;
-        break;
-      case 6:
-        skip = packet.tcp._pos + 4 * packet.tcp.off;
-        break;
-      case 17:
-        skip = packet.udp._pos + 8;
-        break;
-      case 132:
-        skip = packet.sctp._pos + 8;
-        break;
-      default:
-        throw new Error("Unknown packet type, can't scrub");
-      }
+      let skip = Math.min(this.#headersEnd(packet), packet.pcap.incl_len + 16);
       // decode() runs on the buffer readPacket rebuilds with a standard
       // 16 byte header, so _pos values are 16-based even when the on-disk
       // record header is 6 bytes
@@ -1014,11 +1042,29 @@ class Pcap {
       addr2: Pcap.inet_ntoa(buffer.readUInt32BE(16))
     };
 
-    // Non-first fragments don't have transport headers, force raw handling
-    if ((obj.ip.off & 0x1fff) !== 0) {
+    // Capture saves the fragments as they were on the wire, Pcap.defrag() stitches them back
+    // into the datagram. Until then a fragment has no transport layer.
+    if ((obj.ip.off & 0x3fff) !== 0) {
+      obj.ip.frag = {
+        pcap: this,
+        v: 4,
+        buffer,
+        pos,
+        hdrLen: obj.ip.hl * 4,
+        id: obj.ip.id,
+        p: obj.ip.p,
+        off: (obj.ip.off & 0x1fff) * 8,
+        more: (obj.ip.off & 0x2000) !== 0,
+        payload: buffer.slice(obj.ip.hl * 4, obj.ip.len)
+      };
       obj.ip.p = 0;
     }
 
+    this.ip4payload(buffer, obj, pos);
+  }
+
+  // --------------------------------------------------------------------------
+  ip4payload (buffer, obj, pos) {
     switch (obj.ip.p) {
     case 1:
       this.icmp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
@@ -1062,14 +1108,40 @@ class Pcap {
     };
 
     let offset = 40;
+    let nxtPos = 6; // where the next header byte for the header at offset is
     while (offset < buffer.length) {
       switch (obj.ip.p) {
       case 0: // IPPROTO_HOPOPTS:
       case 60: // IPPROTO_DSTOPTS:
       case 43: // IPPROTO_ROUTING:
+        // Cut off before the length byte, the undefined length would add 0 and loop forever
+        if (offset + 1 >= buffer.length) {
+          obj.ip.data = buffer.slice(offset, offset + obj.ip.len);
+          return;
+        }
         obj.ip.p = buffer[offset];
+        nxtPos = offset;
         offset += ((buffer[offset + 1] + 1) << 3);
         break;
+      case 44: // IPPROTO_FRAGMENT, see ip4 above
+        if (offset + 8 <= buffer.length) {
+          const offFlags = buffer.readUInt16BE(offset + 2);
+          obj.ip.frag = {
+            pcap: this,
+            v: 6,
+            buffer,
+            pos,
+            hdrLen: offset,
+            nxtPos,
+            id: buffer.readUInt32BE(offset + 4),
+            p: buffer[offset],
+            off: offFlags & 0xfff8,
+            more: (offFlags & 1) !== 0,
+            payload: buffer.slice(offset + 8, 40 + obj.ip.len)
+          };
+        }
+        obj.ip.data = buffer.slice(offset, offset + obj.ip.len);
+        return;
       case 1:
       case 58:
         this.icmp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
@@ -1639,103 +1711,195 @@ class Pcap {
   /// ///////////////////////////////////////////////////////////////////////////////
 
   // --------------------------------------------------------------------------
-  static reassemble_icmp (packets, numPackets) {
-    const results = [];
-    packets.length = Math.min(packets.length, numPackets);
-    for (const packet of packets) {
-      const key = packet.ip.addr1;
-      if (results.length === 0 || key !== results[results.length - 1].key) {
-        results.push({
-          key,
-          buffers: [packet.icmp.data],
-          ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
-        });
-      } else {
-        results[results.length - 1].buffers.push(packet.icmp.data);
+  // Build the datagram from the decoded fragments of it that have been seen so far.
+  // Returns undefined when there are still holes.
+  static #defragStitch (fragPackets, last) {
+    const frags = fragPackets.map(p => p.ip.frag).sort((a, b) => a.off - b.off);
+    if (frags[0].off !== 0 || !frags.some(f => !f.more)) { return undefined; }
+
+    // Same as capture, the datagram goes as far as any fragment does. Capture drops
+    // datagrams whose fragments disagree where they end, so this is the last fragment's end.
+    let total = 0;
+    for (const frag of frags) {
+      if (frag.off > total) { return undefined; } // a hole
+      total = Math.max(total, frag.off + frag.payload.length);
+    }
+
+    const first = frags[0];
+    const buffer = Buffer.alloc(first.hdrLen + total);
+    first.buffer.copy(buffer, 0, 0, first.hdrLen);
+    for (const frag of frags) {
+      // capture only reassembles when overlapping bytes are the same, so the order doesn't matter
+      frag.payload.copy(buffer, first.hdrLen + frag.off);
+    }
+
+    // Everything below ip is from the fragment that completed the datagram, same as capture
+    const obj = { ...last };
+    if (first.v === 4) {
+      if (buffer.length > 0xffff) { return undefined; }
+      buffer.writeUInt16BE(buffer.length, 2);
+      buffer.writeUInt16BE(0, 6);
+      first.pcap.ip4(buffer, obj, last.ip.frag.pos);
+    } else {
+      if (buffer.length - 40 > 0xffff) { return undefined; }
+      buffer.writeUInt16BE(buffer.length - 40, 4);
+      buffer[first.nxtPos] = first.p;
+      first.pcap.ip6(buffer, obj, last.ip.frag.pos);
+    }
+    return obj;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Capture parses the reassembled datagram but saves the ip fragments that were on the
+   * wire, so before anything looks at the transport layer the fragments need to be put
+   * back together. The datagram replaces the fragment that completed it and the other
+   * fragments are removed. Fragments that can't be completed are left alone.
+   * cutOff is when packets isn't all of the session's packets, then the fragments at the
+   * end are a datagram whose other fragments weren't read, so they are removed too.
+   * Changes packets in place and returns it.
+   */
+  static defrag (packets, cutOff) {
+    if (!packets.some(p => p?.ip?.frag)) { return packets; }
+
+    const groups = new Map();
+    const remove = new Set();
+    let warned = false;
+    for (let i = 0; i < packets.length; i++) {
+      // A stitched datagram can be a fragment of a tunneled datagram, so keep going
+      while (packets[i]?.ip?.frag) {
+        const packet = packets[i];
+        const key = `${packet.ip.frag.v}-${packet.ip.addr1}-${packet.ip.addr2}-${packet.ip.frag.id}`;
+        let group = groups.get(key);
+        if (!group) {
+          group = [];
+          groups.set(key, group);
+        }
+        group.push(i);
+
+        // Capture keeps at most 128 fragments and 128 duplicates of a datagram, a bigger group
+        // isn't one datagram. Its fragments are left as they are, which also keeps a crafted
+        // session from making every later fragment try the whole group again.
+        if (group.length > 256) {
+          groups.delete(key);
+          break;
+        }
+
+        let stitched;
+        try {
+          stitched = Pcap.#defragStitch(group.map(j => packets[j]), packet);
+        } catch (e) {
+          // The datagram is all there but doesn't decode, leave its fragments as they are
+          if (!warned) {
+            console.log("WARNING - Couldn't put ip fragments back together", e.message);
+            warned = true;
+          }
+          groups.delete(key);
+          break;
+        }
+        if (!stitched) { break; }
+
+        groups.delete(key);
+        for (const j of group) { remove.add(j); }
+        remove.delete(i);
+        packets[i] = stitched;
       }
     }
-    for (const result of results) {
-      result.data = Buffer.concat(result.buffers);
-      delete result.buffers;
+
+    // What is left wasn't completed, a first ip4 fragment still starts with the transport header
+    for (const group of groups.values()) {
+      for (const i of group) {
+        const frag = packets[i].ip.frag;
+        if (frag.v === 4 && frag.off === 0) {
+          try {
+            delete packets[i].ip.data;
+            packets[i].ip.p = frag.p;
+            frag.pcap.ip4payload(frag.buffer, packets[i], frag.pos);
+          } catch (e) {
+            packets[i].ip.p = 0;
+            packets[i].ip.data = frag.payload;
+          }
+        }
+      }
     }
-    return { results };
+
+    if (remove.size > 0) {
+      let n = 0;
+      for (let i = 0; i < packets.length; i++) {
+        if (!remove.has(i)) { packets[n++] = packets[i]; }
+      }
+      packets.length = n;
+    }
+
+    // Capture saves a datagram's fragments together, so the ones not read are for the last
+    // datagram. If it is all there is, showing part of it is better than nothing.
+    if (cutOff) {
+      let end = packets.length;
+      while (end > 0 && packets[end - 1]?.ip?.frag) { end--; }
+      if (end > 0) { packets.length = end; }
+    }
+    return packets;
+  }
+
+  // --------------------------------------------------------------------------
+  // Consecutive packets from the same side are joined into one result. layer is where the
+  // data is, withPort adds its sport to the key.
+  static #reassembleSimple (packets, numPackets, layer, withPort) {
+    const results = [];
+    try {
+      packets.length = Math.min(packets.length, numPackets);
+
+      // An ip fragment left over from a datagram that wasn't all saved has no transport
+      // layer, it goes with the other packets from its ip and shows its ip payload
+      const keyOf = (packet) => withPort ? `${packet.ip.addr1}:${packet[layer].sport}` : packet.ip.addr1;
+      const ipKeys = new Map();
+      for (const packet of packets) {
+        if (packet[layer] && !ipKeys.has(packet.ip.addr1)) {
+          ipKeys.set(packet.ip.addr1, keyOf(packet));
+        }
+      }
+
+      for (const packet of packets) {
+        const key = packet[layer] ? keyOf(packet) : (ipKeys.get(packet.ip.addr1) ?? packet.ip.addr1);
+        const data = packet[layer] ? packet[layer].data : (packet.ip.data ?? EMPTY_BUFFER);
+        if (results.length === 0 || key !== results[results.length - 1].key) {
+          results.push({
+            key,
+            buffers: [data],
+            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
+          });
+        } else {
+          results[results.length - 1].buffers.push(data);
+        }
+      }
+      for (const result of results) {
+        result.data = Buffer.concat(result.buffers);
+        delete result.buffers;
+      }
+      return { results };
+    } catch (err) {
+      return { err, results };
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  static reassemble_icmp (packets, numPackets) {
+    return Pcap.#reassembleSimple(packets, numPackets, 'icmp', false);
   }
 
   // --------------------------------------------------------------------------
   static reassemble_udp (packets, numPackets) {
-    const results = [];
-    try {
-      packets.length = Math.min(packets.length, numPackets);
-      for (const packet of packets) {
-        const key = packet.ip.addr1 + ':' + packet.udp.sport;
-        if (results.length === 0 || key !== results[results.length - 1].key) {
-          results.push({
-            key,
-            buffers: [packet.udp.data],
-            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
-          });
-        } else {
-          results[results.length - 1].buffers.push(packet.udp.data);
-        }
-      }
-      for (const result of results) {
-        result.data = Buffer.concat(result.buffers);
-        delete result.buffers;
-      }
-      return { results };
-    } catch (err) {
-      return { err, results };
-    }
+    return Pcap.#reassembleSimple(packets, numPackets, 'udp', true);
   }
 
   // --------------------------------------------------------------------------
   static reassemble_sctp (packets, numPackets) {
-    const results = [];
-    try {
-      packets.length = Math.min(packets.length, numPackets);
-      for (const packet of packets) {
-        const key = packet.ip.addr1 + ':' + packet.sctp.sport;
-        if (results.length === 0 || key !== results[results.length - 1].key) {
-          results.push({
-            key,
-            buffers: [packet.sctp.data],
-            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
-          });
-        } else {
-          results[results.length - 1].buffers.push(packet.sctp.data);
-        }
-      }
-      for (const result of results) {
-        result.data = Buffer.concat(result.buffers);
-        delete result.buffers;
-      }
-      return { results };
-    } catch (err) {
-      return { err, results };
-    }
+    return Pcap.#reassembleSimple(packets, numPackets, 'sctp', true);
   }
 
   // --------------------------------------------------------------------------
   static reassemble_esp (packets, numPackets) {
-    const results = [];
-    packets.length = Math.min(packets.length, numPackets);
-    for (const packet of packets) {
-      const key = packet.ip.addr1;
-      if (results.length === 0 || key !== results[results.length - 1].key) {
-        results.push({
-          key,
-          buffers: [packet.esp.data],
-          ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
-        });
-      } else {
-        results[results.length - 1].buffers.push(packet.esp.data);
-      }
-    }
-    for (const result of results) {
-      result.data = Buffer.concat(result.buffers);
-      delete result.buffers;
-    }
-    return { results };
+    return Pcap.#reassembleSimple(packets, numPackets, 'esp', false);
   }
 
   // --------------------------------------------------------------------------

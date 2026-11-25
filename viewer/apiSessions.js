@@ -625,77 +625,86 @@ class SessionAPIs {
       }
       packets[i] = obj;
       cb(null);
-    }, async (err, session) => {
+    }, async (err, session, cutOff) => {
       if (err) {
         return res.type('text/plain').end('Problem loading packets for ' + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
-      session.id = req.params.id;
-      SessionAPIs.#sortFields(session);
+      // A throw in here would leave the request waiting forever
+      try {
+        session.id = req.params.id;
+        SessionAPIs.#sortFields(session);
+        Pcap.defrag(packets, cutOff);
 
-      if (session.source?.ip) {
-        const sep = session.source.ip.includes(':') ? '.' : ':';
-        session.sourceKey = `${session.source.ip}${sep}${session.source.port}`;
-        session.destinationKey = `${session.destination.ip}${sep}${session.destination.port}`;
-      } else {
-        session.sourceKey = 'Fix 1';
-        session.destinationKey = 'Fix 2';
-      }
+        if (session.source?.ip) {
+          const sep = session.source.ip.includes(':') ? '.' : ':';
+          session.sourceKey = `${session.source.ip}${sep}${session.source.port}`;
+          session.destinationKey = `${session.destination.ip}${sep}${session.destination.port}`;
+        } else {
+          session.sourceKey = 'Fix 1';
+          session.destinationKey = 'Fix 2';
+        }
 
-      if (req.query.showFrames && packets.length !== 0) {
-        const { dKey, sKey, results } = Pcap.packetFlow(session, packets, +req.query.packets || 200);
-        session.sourceKey = sKey;
-        session.destinationKey = dKey;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets.length === 0) {
-        session._err = 'No pcap data found';
-        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
-      } else if (packets[0].ether !== undefined && packets[0].ether.data !== undefined) {
-        const { err, results } = Pcap.reassemble_generic_ether(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip === undefined) {
-        session._err = "Couldn't decode pcap file, check viewer log";
-        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
-      } else if (packets[0].ip.p === 1) {
-        const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.p === 6) {
-        // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
-        const hasFragments = packets.some(p => !p.tcp);
-        if (hasFragments) {
+        if (req.query.showFrames && packets.length !== 0) {
+          const { dKey, sKey, results } = Pcap.packetFlow(session, packets, +req.query.packets || 200);
+          session.sourceKey = sKey;
+          session.destinationKey = dKey;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets.length === 0) {
+          session._err = 'No pcap data found';
+          SessionAPIs.#localSessionDetailReturn(req, res, session, []);
+        } else if (packets[0].ether !== undefined && packets[0].ether.data !== undefined) {
+          const { err, results } = Pcap.reassemble_generic_ether(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip === undefined) {
+          session._err = "Couldn't decode pcap file, check viewer log";
+          SessionAPIs.#localSessionDetailReturn(req, res, session, []);
+        } else if (packets[0].ip.p === 1) {
+          const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.p === 6) {
+          // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
+          const hasFragments = packets.some(p => !p.tcp);
+          if (hasFragments) {
+            const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
+            session._err = err;
+            SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+          } else {
+            const key = ipaddr.parse(session.source.ip).toString();
+            const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
+            session._err = err;
+            SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+          }
+        } else if (packets[0].ip.p === 17) {
+          const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.p === 132) {
+          const { err, results } = Pcap.reassemble_sctp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.p === 50) {
+          const { err, results } = Pcap.reassemble_esp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.p === 58) {
+          const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.data !== undefined) {
           const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
           session._err = err;
           SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         } else {
-          const key = ipaddr.parse(session.source.ip).toString();
-          const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+          session._err = 'Unknown ip.p=' + packets[0].ip.p;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, []);
         }
-      } else if (packets[0].ip.p === 17) {
-        const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.p === 132) {
-        const { err, results } = Pcap.reassemble_sctp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.p === 50) {
-        const { err, results } = Pcap.reassemble_esp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.p === 58) {
-        const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.data !== undefined) {
-        const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else {
-        session._err = 'Unknown ip.p=' + packets[0].ip.p;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
+      } catch (e) {
+        console.log('ERROR - localSessionDetail', util.inspect(e, false, 50));
+        if (!res.headersSent) {
+          res.type('text/plain').end('Problem decoding packets for ' + ArkimeUtil.safeStr(req.params.id));
+        }
       }
     },
     // *2 because the packets can be out of order, we truncate again
@@ -1694,10 +1703,10 @@ class SessionAPIs {
     // path and again via their async.eachLimit completion callback
     const origEndCb = endCb;
     let endCbCalled = false;
-    endCb = (err, fields) => {
+    endCb = (err, fields, cutOff) => {
       if (endCbCalled) { return undefined; }
       endCbCalled = true;
-      return origEndCb(err, fields);
+      return origEndCb(err, fields, cutOff);
     };
 
     let extra;
@@ -1729,8 +1738,11 @@ class SessionAPIs {
         return endCb(null, fields);
       }
 
+      // endCb is told when not all the packets were read, the last datagram can be missing fragments
+      let cutOff = false;
       if (maxPackets && fields.packetPos.length > maxPackets) {
         fields.packetPos.length = maxPackets;
+        cutOff = true;
       }
 
       /* Go through the list of packets and prefetch the id to file name mapping */
@@ -1769,7 +1781,7 @@ class SessionAPIs {
           psidFields.tags = [];
         }
 
-        return endCb(null, psidFields);
+        return endCb(null, psidFields, cutOff);
       }, limit, extra);
     } catch (err) {
       console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50));
@@ -1935,14 +1947,14 @@ class SessionAPIs {
         }
         packets[i] = obj;
         cb(null);
-      }, async (err, session) => {
+      }, async (err, session, cutOff) => {
         // A throw in here would leave the promise pending forever
         try {
           if (err) {
             console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
             return reject(err);
           }
-          packets = packets.filter(Boolean);
+          packets = Pcap.defrag(packets.filter(Boolean), cutOff);
           if (packets.length === 0) {
             return resolve({ session, packets: [] });
           } else if (packets[0].ip === undefined) {

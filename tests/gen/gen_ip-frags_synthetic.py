@@ -7,9 +7,17 @@ Layout, one UDP/53 DNS query per case, each from its own source ip,
 the qname is <case>.frag.test:
   - 10.77.0.1-11 ip4: in order, reverse, duplicate first, duplicate middle,
     overlap, hole (never completes), 50, 51, 128 and 129 (over the limit) fragments,
-    overlap with different bytes (dropped)
-  - fd77::1-6 ip6: atomic fragment, in order, reverse, duplicate,
-    destination options before the fragment header, hole (never completes)
+    overlap with different bytes (dropped), a fragment past the last one and a
+    second last fragment that ends later (both dropped, the ends don't agree)
+  - fd77::1-7 ip6: atomic fragment, in order, reverse, duplicate,
+    destination options before the fragment header, hole (never completes),
+    a fragment past the last one (dropped)
+  - 10.77.0.14-15, fd77::8: the ip header comes from the first fragment like hosts, later
+    fragments with another protocol, ip options and ip6 destination options only in the first
+  - 10.77.0.16: time going backwards, a duplicate seen before the last fragment but with a
+    later time, it must still be saved before the last fragment
+  - fd77::9 ip6: an atomic fragment header with its reserved byte set, then destination
+    options, before the fragment header
 
 Run from the tests directory:  python3 gen/gen_ip-frags_synthetic.py
 """
@@ -54,24 +62,46 @@ def udp(src, dst, payload, v6):
     return hdr[:6] + struct.pack('>H', c) + payload
 
 
-def v4frag(src, dst, ipid, off, data, more):
-    ip = struct.pack('>BBHHHBBH4s4s', 0x45, 0, 20 + len(data), ipid, (0x2000 if more else 0) | (off // 8), 64, 17, 0, src, dst)
+def v4frag(src, dst, ipid, off, data, more, proto=17, opts=b''):
+    hlen = 20 + len(opts)
+    ip = struct.pack('>BBHHHBBH4s4s', 0x40 | (hlen // 4), 0, hlen + len(data), ipid, (0x2000 if more else 0) | (off // 8), 64, proto, 0, src, dst) + opts
     ip = ip[:10] + struct.pack('>H', csum(ip)) + ip[12:]
     return SMAC + CMAC + b'\x08\x00' + ip + data
 
 
-def v6frag(src, dst, fid, off, data, more, destopt=False):
+def v6frag(src, dst, fid, off, data, more, destopt=False, atomicres=None):
     frag = struct.pack('>BBHI', 17, 0, (off // 8) << 3 | (1 if more else 0), fid)
     ext = (struct.pack('>BB', 44, 0) + b'\x01\x04\0\0\0\0' if destopt else b'') + frag
-    ip = struct.pack('>IHBB', 0x60000000, len(ext) + len(data), 60 if destopt else 44, 64) + src + dst
+    nxt = 60 if destopt else 44
+    if atomicres is not None:
+        # An atomic fragment header first, atomicres is its reserved byte which hosts ignore
+        ext = struct.pack('>BBHI', nxt, atomicres, 0, fid ^ 0xffff) + ext
+        nxt = 44
+    ip = struct.pack('>IHBB', 0x60000000, len(ext) + len(data), nxt, 64) + src + dst
     return SMAC + CMAC + b'\x86\xdd' + ip + ext + data
+
+
+def padded_query(name, extra):
+    # Pad the udp datagram to a multiple of 8 so an extra fragment can start right at its end
+    if not extra:
+        return dns_query(name)
+    base = 8 + len(dns_query(name, 1)) - 1
+    return dns_query(name, (-base) % 8 or 8)
+
+
+def with_extra(frags, extra, mkfrag, end):
+    # Put a fragment with 8 junk bytes right past the end of the datagram before the last
+    # fragment, 'past' has more fragments set, 'end' is a second last fragment
+    if extra:
+        frags.insert(len(frags) - 1, mkfrag(end, b'\xee' * 8, extra == 'past'))
+    return frags
 
 
 def chunks(data, size):
     return [(off, data[off:off + size]) for off in range(0, len(data), size)]
 
 
-def v4case(n, case, size=16, nfrags=None, order=None, dup=None, overlap=False, drop=None):
+def v4case(n, case, size=16, nfrags=None, order=None, dup=None, overlap=False, drop=None, extra=None, first=None, later=None):
     src, dst = bytes([10, 77, 0, n]), bytes([10, 77, 1, 1])
     name = case + '.frag.test'
     if nfrags:
@@ -80,9 +110,10 @@ def v4case(n, case, size=16, nfrags=None, order=None, dup=None, overlap=False, d
         data = udp(src, dst, dns_query(name, nfrags * 8 - base), False)
         assert len(data) == nfrags * 8
     else:
-        data = udp(src, dst, dns_query(name), False)
+        data = udp(src, dst, padded_query(name, extra), False)
     cs = chunks(data, size)
-    frags = [v4frag(src, dst, 0x4000 + n, off, c, off + len(c) < len(data)) for off, c in cs]
+    frags = [v4frag(src, dst, 0x4000 + n, off, c, off + len(c) < len(data), **((first if off == 0 else later) or {})) for off, c in cs]
+    frags = with_extra(frags, extra, lambda off, c, more: v4frag(src, dst, 0x4000 + n, off, c, more), len(data))
     if overlap:
         # second fragment restarts 8 bytes early with the same bytes, or different ones for 'diff'
         off = cs[1][0] - 8
@@ -97,12 +128,13 @@ def v4case(n, case, size=16, nfrags=None, order=None, dup=None, overlap=False, d
     return order(frags) if order else frags
 
 
-def v6case(n, case, size=16, order=None, dup=None, drop=None, destopt=False, atomic=False):
+def v6case(n, case, size=16, order=None, dup=None, drop=None, destopt=False, atomic=False, extra=None, firstdestopt=False, atomicres=None):
     src, dst = ip6addr(n), bytes.fromhex('fd77' + '00' * 11) + b'\x01\x00\x01'
-    data = udp(src, dst, dns_query(case + '.frag.test'), True)
+    data = udp(src, dst, padded_query(case + '.frag.test', extra), True)
     if atomic:
         return [v6frag(src, dst, 0x6000 + n, 0, data, False)]
-    frags = [v6frag(src, dst, 0x6000 + n, off, c, off + len(c) < len(data), destopt) for off, c in chunks(data, size)]
+    frags = [v6frag(src, dst, 0x6000 + n, off, c, off + len(c) < len(data), destopt or (firstdestopt and off == 0), atomicres) for off, c in chunks(data, size)]
+    frags = with_extra(frags, extra, lambda off, c, more: v6frag(src, dst, 0x6000 + n, off, c, more, destopt), len(data))
     if drop is not None:
         del frags[drop]
     if dup is not None:
@@ -134,12 +166,26 @@ def main():
     pkts += v6case(4, 'v6-dup', dup=1)
     pkts += v6case(5, 'v6-destopt', destopt=True)
     pkts += v6case(6, 'v6-hole', drop=1)
+    pkts += v4case(12, 'v4-past-end', extra='past')
+    pkts += v4case(13, 'v4-two-ends', extra='end')
+    pkts += v6case(7, 'v6-past-end', extra='past')
+    pkts += v4case(14, 'v4-proto-mismatch', later={'proto': 6})
+    pkts += v4case(15, 'v4-options-first', first={'opts': b'\x01\x01\x01\x01'})
+    pkts += v6case(8, 'v6-destopt-first', firstdestopt=True)
+    pkts += v6case(9, 'v6-atomic-reserved', destopt=True, atomicres=1)
+    f = v4case(16, 'v4-dup-time-back')
+    pkts += f[:-1] + [(f[0], 0.003)] + f[-1:]
 
     out = struct.pack('<IHHiIII', 0xa1b2c3d4, 2, 4, 0, 0, 65535, 1)
     ts = 1700000000.0
     for p in pkts:
-        sec = int(ts)
-        usec = int(round((ts - sec) * 1e6))
+        # A (packet, seconds) pair is written that much later than its place in the file
+        t = ts
+        if isinstance(p, tuple):
+            p, dt = p
+            t += dt
+        sec = int(t)
+        usec = int(round((t - sec) * 1e6))
         out += struct.pack('<IIII', sec, usec, len(p), len(p)) + p
         ts += 0.001
     with open(outpath, 'wb') as f:

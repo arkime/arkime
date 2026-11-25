@@ -826,7 +826,10 @@ LOCAL void writer_simple_write(const ArkimeSession_t *const session, ArkimePacke
         // SSSS SSSS SSSS MMMM MMMM MMMM MMMM MMMM
         uint32_t t;
         if (sfile->firstPacket > packet->ts.tv_sec) {
-            LOG("WARNING - timing moving backwards, simpleShortHeader should be disabled");
+            // A fragment is saved when its datagram completes, which can be in a file that was
+            // started after the fragment was seen, that isn't time moving backwards
+            if (!packet->isfrag)
+                LOG("WARNING - timing moving backwards, simpleShortHeader should be disabled");
             // Time stamp is too early, just pretend it's at firstPacket time
             t = packet->ts.tv_usec;
         } else {
