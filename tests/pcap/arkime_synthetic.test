@@ -44252,6 +44252,239 @@
      "_index" : "tests_sessions3-26m05"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 2585
+    },
+    "destination" : {
+     "bytes" : 1859,
+     "ip" : "10.9.81.2",
+     "mac" : [
+      "02:aa:00:00:51:01",
+      "02:aa:00:00:51:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 3,
+     "port" : 443
+    },
+    "dstPayload8" : "c1000000010008b1",
+    "dstTTL" : [
+     57
+    ],
+    "dstTTLCnt" : 1,
+    "encrypted" : [
+     "quic"
+    ],
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1778363514000,
+    "http" : {
+     "host" : [
+      "quic-ja4l.example"
+     ],
+     "hostCnt" : 1
+    },
+    "ipProtocol" : 17,
+    "lastPacket" : 1778363514016,
+    "length" : 16,
+    "network" : {
+     "bytes" : 4612,
+     "community_id" : "1:aUJSzIPXYpHKMwl7C0QD5ltcjRw=",
+     "packets" : 7
+    },
+    "node" : "test",
+    "packetLen" : [
+     1258,
+     1113,
+     675,
+     1258,
+     194,
+     107,
+     119
+    ],
+    "packetPos" : [
+     387116,
+     388374,
+     389487,
+     390162,
+     391420,
+     391614,
+     391721
+    ],
+    "packetRange" : {
+     "gte" : 1778363514000,
+     "lte" : 1778363514016
+    },
+    "protocol" : [
+     "quic",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1733
+    },
+    "source" : {
+     "bytes" : 2753,
+     "ip" : "10.9.81.1",
+     "mac" : [
+      "02:aa:00:00:51:01",
+      "02:aa:00:00:51:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 4,
+     "port" : 52105
+    },
+    "srcPayload8" : "c900000001087c1f",
+    "srcTTL" : [
+     128
+    ],
+    "srcTTLCnt" : 1,
+    "tls" : {
+     "clientAlpn" : [
+      "h3"
+     ],
+     "clientAlpnCnt" : 1,
+     "ja3" : [
+      "fae6e50c51b5f776cc014eaa49090fcd"
+     ],
+     "ja3Cnt" : 1,
+     "ja3string" : [
+      "771,4865-4866-4867-49195-49199-49196-49200-156,0-10-11-13-16-43-51-21,29-23,0"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "q13d0808h3_a572d5f12f44_df741e2b4edf"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "q13d0808h3_009c,1301,1302,1303,c02b,c02c,c02f,c030_000a,000b,000d,0015,002b,0033_0403,0804"
+     ],
+     "ja4_rCnt" : 1
+    },
+    "totDataBytes" : 4318
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m05"
+    }
+   }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 1346
+    },
+    "destination" : {
+     "bytes" : 1179,
+     "ip" : "2001:db8:9:82::2",
+     "mac" : [
+      "02:aa:00:00:52:01",
+      "02:aa:00:00:52:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 2,
+     "port" : 443
+    },
+    "dstPayload8" : "d36b3343cf0008c8",
+    "dstTTL" : [
+     50
+    ],
+    "dstTTLCnt" : 1,
+    "ethertype" : 34525,
+    "fileId" : [],
+    "firstPacket" : 1778363524000,
+    "http" : {
+     "host" : [
+      "quic-ja4l-v2.example"
+     ],
+     "hostCnt" : 1
+    },
+    "ipProtocol" : 17,
+    "lastPacket" : 1778363524032,
+    "length" : 32,
+    "network" : {
+     "bytes" : 2711,
+     "community_id" : "1:8srsZkGp9npgGwHAaiXK7kwjBfY=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     1278,
+     216,
+     995,
+     175,
+     127
+    ],
+    "packetPos" : [
+     391840,
+     393118,
+     393334,
+     394329,
+     394504
+    ],
+    "packetRange" : {
+     "gte" : 1778363524000,
+     "lte" : 1778363524032
+    },
+    "protocol" : [
+     "quic",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 1055
+    },
+    "source" : {
+     "bytes" : 1532,
+     "ip" : "2001:db8:9:82::1",
+     "mac" : [
+      "02:aa:00:00:52:01",
+      "02:aa:00:00:52:02"
+     ],
+     "mac-cnt" : 2,
+     "packets" : 3,
+     "port" : 52106
+    },
+    "srcPayload8" : "d76b3343cf082d4b",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "tls" : {
+     "clientAlpn" : [
+      "h3"
+     ],
+     "clientAlpnCnt" : 1,
+     "ja3" : [
+      "fae6e50c51b5f776cc014eaa49090fcd"
+     ],
+     "ja3Cnt" : 1,
+     "ja3string" : [
+      "771,4865-4866-4867-49195-49199-49196-49200-156,0-10-11-13-16-43-51-21,29-23,0"
+     ],
+     "ja3stringCnt" : 1,
+     "ja4" : [
+      "q13d0808h3_a572d5f12f44_df741e2b4edf"
+     ],
+     "ja4Cnt" : 1,
+     "ja4_r" : [
+      "q13d0808h3_009c,1301,1302,1303,c02b,c02c,c02f,c030_000a,000b,000d,0015,002b,0033_0403,0804"
+     ],
+     "ja4_rCnt" : 1
+    },
+    "totDataBytes" : 2401
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-26m05"
+    }
+   }
   }
  ]
 }
