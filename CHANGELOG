@@ -50,6 +50,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4464 saveUnknownPackets now defaults to all;corrupt so unknown ether, unknown ip and corrupt packets are saved as sessions, set saveUnknownPackets= for the old behavior
   - #4472 DNS, mDNS and LLMNR names that are valid UTF-8 are saved as is instead of cat -v escaped (andy’s macbook pro instead of andym-bm-^@m-^ys macbook pro), so searches for the escaped form won't match new sessions; the name is saved as sent, only lowercased; invalid bytes, control characters and invisible characters such as bidi overrides and zero width spaces are still escaped and plain DNS names with raw UTF-8 get the dns:raw-utf8 tag
   - #4498 The new default rule "Stop saving pcap once encrypted" stops saving pcap 2 packets after a TLS, QUIC or SSH handshake finishes, SPI data is still saved for the whole session; turn it off with disabled: true in your own rules file if you decrypt saved pcap
+  - #4501 IP fragments are saved to pcap as they were seen on the wire instead of as the reassembled packet, so session packet and byte counts include every fragment and firstPacket is the first fragment's time; older viewers show the fragments without putting them back together
+  - #4501 Removed the disableIp4Defrag setting, fragments are always reassembled
 ## All
   - #4490 db.pl and ch.pl now skip the cert check for localhost, 127.x.x.x or ::1, matching capture and the node tools. ch.pl didn't skip it at all and db.pl only matched localhost and 127.0.0.1
   - #4490 Shark tab tshark minimum is now per release series, 4.4.19 on the 4.4 line and 4.6.4 on 4.6, up from a flat 4.4.15. Per series because a 4.6.0 is numerically above the 4.4 floor but was released before it
@@ -77,7 +79,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4459 Fix pcapng files with many sections attributing packets to the wrong file
   - #4459 Fix the saved pcapng file size and the add-file --notify byte count counting the file header twice
   - #4459 Fix duplicate, or identical overlapping, IPv4 fragments dropping the whole datagram
-  - #4459 IPv6 fragments are now reassembled instead of dropped, set disableIp6Defrag=true to turn it off; like hosts, datagrams with overlapping IPv6 fragments are dropped
+  - #4459 IPv6 fragments are now reassembled instead of dropped; like hosts, datagrams with overlapping IPv6 fragments are dropped
   - #4459 Datagrams of up to 128 fragments are reassembled (was 50), and held fragments are limited to 5 times maxFrags
   - #4459 Fix crafted IP fragments being able to slow down reassembly
   - #4459 Fix a crash when _flipSrcDst is set on a session with a corrupt TCP packet
@@ -97,6 +99,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4498 Fix _maxPacketsToSave starting over after a tcpSaveTimeout save, so a long session could save more packets than the limit
   - #4498 Fix sessions that stopped saving pcap, from _maxPacketsToSave or a full disk, losing every later part of a long session, the later parts are now saved with their SPI data and no pcap
   - #4499 Add the udp_raw_packet named func, called for every UDP packet after classify with the payload and the packet, like tcp_raw_packet, so plugins can see the IP header and timestamp
+  - #4501 Like hosts, datagrams whose fragments don't agree where the datagram ends are dropped, a second last fragment with a different end or data past the end
+  - #4501 Fix reassembled IP fragments using the IP header of the last fragment seen instead of the first one, so a different protocol in a later fragment could change how capture parsed the datagram
+  - #4501 With enablePacketDedup, reading files goes by packet time instead of the clock, so packets sent again minutes later in a file are no longer dropped as duplicates
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type, hosts on a ring with an arc between each talking pair, colored by protocol or a chosen field
   - #4456 Fix the settings editor resetting a connections widget or graph sample size to 100 when opened
@@ -124,6 +129,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4483 Add a disableCron user permission, the user can't see or change Periodic Queries and the ones they own don't run, needs db.pl upgrade
   - #4495 Unique values return an error when the search fails on some shards and the rest find no values, instead of an empty list
   - #4497 Add an icicle (flame graph) widget and SPI Graph type, a row per field with each value as wide as its share of its parent, click a value to zoom into it
+  - #4501 Saved IP fragments are put back together before a session's packets are shown or searched by a reassembled hunt; raw hunts search each fragment and pcap downloads keep the fragments as saved
 ## Cont3xt
   - #4488 New VPNDetection integration for IPs, shows VPN, Tor exit, privacy relay and proxy flags (thanks @UmanShahzad)
   - #4494 New SourceIP.io integration for IPs, shows the operators that publish an IP and how they use it, plus its ASN origins with RPKI status and registry allocation; works without a key at 100 lookups a day (thanks @AlanKK)

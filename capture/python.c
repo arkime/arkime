@@ -1393,7 +1393,8 @@ LOCAL PyObject *arkime_python_packet_get(PyObject UNUSED(*self), PyObject *args)
         break;
     case 'r':
         if (strcmp(field, "readerFilePos") == 0) {
-            return PyLong_FromUnsignedLong(packet->readerFilePos);
+            // A reassembled packet wasn't read from the file, the space holds its fragPackets
+            return PyLong_FromUnsignedLong(packet->wasfrag ? 0 : packet->readerFilePos);
         }
         if (strcmp(field, "readerPos") == 0) {
             return PyLong_FromUnsignedLong(packet->readerPos);

@@ -47,9 +47,7 @@ LOCAL int                    dscpField[2];
 LOCAL int                    ttlField[2];
 
 LOCAL uint64_t               droppedFrags;
-LOCAL uint32_t               fragsPackets;  // packets held across all frags, under the frags lock
-LOCAL gboolean               disableIp4Defrag;
-LOCAL gboolean               disableIp6Defrag;
+LOCAL uint32_t               fragsPackets;  // packets from the wire held across all frags, under the frags lock
 LOCAL gboolean               trimEthernetPadding;
 
 LOCAL patricia_tree_t       *ipTree4 = 0;
@@ -117,7 +115,11 @@ typedef struct arkimefrags_t {
     uint32_t               fragh_bucket;
     uint32_t               fragh_hash;
     uint8_t                key[ARKIME_FRAG_KEY_LEN];
+    ArkimePacket_t        *dups;        // exact duplicate fragments, only kept so they can be saved
     uint32_t               secs;
+    uint32_t               dataEnd;     // where the last fragment says the datagram ends, if haveNoFlags
+    uint32_t               held;        // packets from the wire held in packets and dups, this datagram's share of fragsPackets
+    uint16_t               dupCount;
     char                   haveNoFlags;
 } ArkimeFrags_t;
 
@@ -165,6 +167,15 @@ LOCAL void arkime_packet_freelist_init()
 /******************************************************************************/
 void arkime_packet_free(ArkimePacket_t *packet)
 {
+    // fragPackets shares space with readerFilePos, it is only a list when wasfrag is set
+    if (unlikely(packet->wasfrag)) {
+        ArkimePacket_t *fpacket;
+        while ((fpacket = packet->fragPackets)) {
+            packet->fragPackets = fpacket->packet_next;
+            arkime_packet_free(fpacket);
+        }
+    }
+
     if (packet->copied) {
         free(packet->pkt);
     }
@@ -240,6 +251,62 @@ void arkime_packet_flush()
     }
 }
 /******************************************************************************/
+// Count a packet as it was seen on the wire, and write it to disk if save is set
+LOCAL void arkime_packet_save(ArkimeSession_t *session, ArkimePacket_t *packet, int direction, int thread, gboolean save)
+{
+    session->packets[direction]++;
+    session->bytes[direction] += packet->pktlen;
+
+    uint32_t packets = session->packets[0] + session->packets[1];
+
+    if (save) {
+        arkime_writer_write(session, packet);
+
+        // If writerFilePos is 0, then the writer couldn't save the packet
+        if (packet->writerFilePos == 0) {
+            if (!session->diskOverload) {
+                arkime_session_add_tag(session, "pcap-disk-overload");
+                session->diskOverload = 1;
+            }
+            packetThreadData[thread].unwrittenBytes += packet->pktlen;
+        } else {
+
+            packetThreadData[thread].writtenBytes += packet->pktlen;
+
+            // If the last fileNum used in the session isn't the same as the
+            // latest packets fileNum then we need to add to the filePos and
+            // fileNum arrays.
+            uint16_t len;
+            if (session->lastFileNum != packet->writerFileNum) {
+                session->lastFileNum = packet->writerFileNum;
+                g_array_append_val(session->fileNumArray, packet->writerFileNum);
+                int64_t pos = -1LL * packet->writerFileNum;
+                g_array_append_val(session->filePosArray, pos);
+
+                if (config.enablePacketLen) {
+                    len = 0;
+                    g_array_append_val(session->fileLenArray, len);
+                }
+            }
+
+            g_array_append_val(session->filePosArray, packet->writerFilePos);
+
+            if (config.enablePacketLen) {
+                len = 16 + packet->pktlen;
+                g_array_append_val(session->fileLenArray, len);
+            }
+        }
+    } else {
+        // If we hit stopSaving for this session and try and save 1 more packet then
+        // add truncated-pcap tag to the session. A stopSaving of 0 is checked too, a mid save
+        // that lands right on the limit leaves 0 before any packet has been skipped
+        if (packets - 1 == session->stopSaving) {
+            arkime_session_set_stop_saving(session);
+        }
+        packetThreadData[thread].unwrittenBytes += packet->pktlen;
+    }
+}
+/******************************************************************************/
 SUPPRESS_ALIGNMENT
 LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 {
@@ -271,7 +338,14 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
 
         if (isNew) {
             session->saveTime = packet->ts.tv_sec + mProtocols[packet->mProtocol].saveTimeout;
+            // The first packet on the wire of a reassembled packet is earlier than the reassembled one
             session->firstPacket = packet->ts;
+            if (packet->wasfrag) {
+                for (const ArkimePacket_t *fpacket = packet->fragPackets; fpacket; fpacket = fpacket->packet_next) {
+                    if (timercmp(&fpacket->ts, &session->firstPacket, <))
+                        session->firstPacket = fpacket->ts;
+                }
+            }
             session->thread = thread;
 
             if (packet->ipProtocol) {
@@ -328,67 +402,41 @@ LOCAL void arkime_packet_process(ArkimePacket_t *packet, int thread)
         arkime_rules_run_session_setup(session, packet);
     }
 
-    session->packets[packet->direction]++;
-    session->bytes[packet->direction] += packet->pktlen;
+    // A reassembled packet counts every packet it was made from, so remember where we were
+    const uint32_t prevPackets = session->packets[packet->direction];
 
-    uint32_t packets = session->packets[0] + session->packets[1];
+    // Packets are saved until stopSaving of them have been
+    const gboolean save = session->packets[0] + session->packets[1] < session->stopSaving;
 
-    if (packets <= session->stopSaving) {
-        arkime_writer_write(session, packet);
-
-        // If writerFilePos is 0, then the writer couldn't save the packet
-        if (packet->writerFilePos == 0) {
-            if (!session->diskOverload) {
-                arkime_session_add_tag(session, "pcap-disk-overload");
-                session->diskOverload = 1;
-            }
-            packetThreadData[thread].unwrittenBytes += packet->pktlen;
-        } else {
-
-            packetThreadData[thread].writtenBytes += packet->pktlen;
-
-            // If the last fileNum used in the session isn't the same as the
-            // latest packets fileNum then we need to add to the filePos and
-            // fileNum arrays.
-            uint16_t len;
-            if (session->lastFileNum != packet->writerFileNum) {
-                session->lastFileNum = packet->writerFileNum;
-                g_array_append_val(session->fileNumArray, packet->writerFileNum);
-                int64_t pos = -1LL * packet->writerFileNum;
-                g_array_append_val(session->filePosArray, pos);
-
-                if (config.enablePacketLen) {
-                    len = 0;
-                    g_array_append_val(session->fileLenArray, len);
-                }
-            }
-
-            g_array_append_val(session->filePosArray, packet->writerFilePos);
-
-            if (config.enablePacketLen) {
-                len = 16 + packet->pktlen;
-                g_array_append_val(session->fileLenArray, len);
-            }
+    if (unlikely(packet->wasfrag)) {
+        // A reassembled packet never existed on the wire, count and save the packets it was made
+        // from. Part of a datagram can't be put back together, so they are all saved or none are.
+        ArkimePacket_t *fpacket;
+        while ((fpacket = packet->fragPackets)) {
+            packet->fragPackets = fpacket->packet_next;
+            arkime_packet_save(session, fpacket, packet->direction, thread, save);
+            packet->writerFileNum = fpacket->writerFileNum;
+            packet->writerFilePos = fpacket->writerFilePos;
+            arkime_packet_free(fpacket);
         }
 
-        if (packets >= session->maxPackets || session->midSave) {
-            arkime_session_mid_save(session, packet->ts.tv_sec);
+        // Saving them all can go past the limit, move it to where we are so the next
+        // packet is still the first one not saved. 0xffff is no limit.
+        const uint32_t packets = session->packets[0] + session->packets[1];
+        if (save && session->stopSaving != 0xffff && packets > session->stopSaving) {
+            session->stopSaving = MIN(packets, 0xfffe);
         }
     } else {
-        // If we hit stopSaving for this session and try and save 1 more packet then
-        // add truncated-pcap tag to the session. A stopSaving of 0 is checked too, a mid save
-        // that lands right on the limit leaves 0 before any packet has been skipped
-        if (packets - 1 == session->stopSaving) {
-            arkime_session_set_stop_saving(session);
-        }
-        if (packets >= session->maxPackets || session->midSave) {
-            arkime_session_mid_save(session, packet->ts.tv_sec);
-        }
-        packetThreadData[thread].unwrittenBytes += packet->pktlen;
+        arkime_packet_save(session, packet, packet->direction, thread, save);
+    }
+
+    // Done after all the packets of a reassembled packet are saved so they stay in the same session doc
+    if (session->packets[0] + session->packets[1] >= session->maxPackets || session->midSave) {
+        arkime_session_mid_save(session, packet->ts.tv_sec);
     }
 
     // Check the first 10 packets for dscp, vlans, tunnels, and macs
-    if (session->packets[packet->direction] <= 10) {
+    if (prevPackets < 10) {
         const uint8_t *pcapData = packet->pkt;
         const int dlt = arkime_packet_dlt(packet);
 
@@ -620,13 +668,68 @@ LOCAL void arkime_packet_frags_free(ArkimeFrags_t *const frags)
 {
     ArkimePacket_t *packet;
 
-    fragsPackets -= DLL_COUNT(packet_, &frags->packets);
+    fragsPackets -= frags->held;
     while (DLL_POP_HEAD(packet_, &frags->packets, packet)) {
+        arkime_packet_free(packet);
+    }
+    while ((packet = frags->dups)) {
+        frags->dups = packet->packet_next;
         arkime_packet_free(packet);
     }
     HASH_REMOVE(fragh_, fragsHash, frags);
     DLL_REMOVE(fragl_, &fragsList, frags);
     ARKIME_TYPE_FREE(ArkimeFrags_t, frags);
+}
+/******************************************************************************/
+// How many packets from the wire a held packet is. A packet reassembled at an outer layer
+// still has all the packets it was made from, so it is that many.
+LOCAL uint32_t arkime_packet_frags_held(const ArkimePacket_t *packet)
+{
+    if (!packet->wasfrag)
+        return 1;
+
+    uint32_t held = 0;
+    for (const ArkimePacket_t *fpacket = packet->fragPackets; fpacket; fpacket = fpacket->packet_next) {
+        held++;
+    }
+    return held;
+}
+/******************************************************************************/
+// A packet that was kept as the list of packets from the wire it is. A packet reassembled
+// at an outer layer is the list it was made from, which is already in order.
+LOCAL ArkimePacket_t *arkime_packet_frags_block(ArkimePacket_t *add)
+{
+    if (add->wasfrag) {
+        ArkimePacket_t *list = add->fragPackets;
+        add->fragPackets = NULL;
+        arkime_packet_free(add);
+        return list;
+    }
+
+    add->packet_next = NULL;
+    add->packet_prev = NULL;
+    add->isfrag = 1;
+    return add;
+}
+/******************************************************************************/
+// Merge two packet_next lists into time order without changing the order inside either
+// list, a goes first when packets have the same time.
+LOCAL ArkimePacket_t *arkime_packet_frags_merge(ArkimePacket_t *a, ArkimePacket_t *b)
+{
+    ArkimePacket_t *head = NULL;
+    ArkimePacket_t **tail = &head;
+    while (a && b) {
+        if (timercmp(&b->ts, &a->ts, <)) {
+            *tail = b;
+            b = b->packet_next;
+        } else {
+            *tail = a;
+            a = a->packet_next;
+        }
+        tail = &(*tail)->packet_next;
+    }
+    *tail = a ? a : b;
+    return head;
 }
 /******************************************************************************/
 // Fragment offset in 8 byte units and the more fragments flag, from the ip4 header or
@@ -647,9 +750,25 @@ LOCAL void arkime_packet_frag_info(const ArkimePacket_t *const packet, int v6, u
     }
 }
 /******************************************************************************/
-// nxtPos is the offset in pkt of the ip6 next header byte that points at the fragment header
+// Offset in pkt of the ip6 next header byte that points at the fragment header, from
+// walking the extension headers before it, which arkime_packet_ip6 already checked
+LOCAL int arkime_packet_frag_ip6_nxtpos(const ArkimePacket_t *const packet)
+{
+    const int fragPos = packet->payloadOffset - 8;
+    int nxtPos = packet->ipOffset + offsetof(struct ip6_hdr, ip6_nxt);
+    int pos = packet->ipOffset + sizeof(struct ip6_hdr);
+    while (pos < fragPos) {
+        // pkt[nxtPos] is what the header at pos is. An atomic fragment header is always
+        // 8 bytes, its second byte is reserved and hosts ignore it, it isn't a length.
+        const int len = packet->pkt[nxtPos] == IPPROTO_FRAGMENT ? 8 : (packet->pkt[pos + 1] + 1) << 3;
+        nxtPos = pos;
+        pos += len;
+    }
+    return nxtPos;
+}
+/******************************************************************************/
 SUPPRESS_ALIGNMENT
-LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6, int nxtPos)
+LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6)
 {
     ArkimePacket_t  *fpacket;
     ArkimeFrags_t   *frags;
@@ -673,6 +792,7 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6,
     uint16_t ip_off;
     int      more;
     arkime_packet_frag_info(packet, v6, &ip_off, &more);
+    const uint32_t held = arkime_packet_frags_held(packet);
 
     HASH_FIND(fragh_, fragsHash, key, frags);
 
@@ -683,12 +803,14 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6,
         // The last fragment (MF clear) may be the first one seen
         if (!more) {
             frags->haveNoFlags = 1;
+            frags->dataEnd = ip_off * 8 + packet->payloadLen;
         }
         HASH_ADD(fragh_, fragsHash, key, frags);
         DLL_PUSH_TAIL(fragl_, &fragsList, frags);
         DLL_INIT(packet_, &frags->packets);
         DLL_PUSH_TAIL(packet_, &frags->packets, packet);
-        fragsPackets++;
+        frags->held = held;
+        fragsPackets += held;
 
         if (DLL_COUNT(fragl_, &fragsList) > config.maxFrags) {
             droppedFrags++;
@@ -710,10 +832,20 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6,
         if (start >= fstart + fpacket->payloadLen || fstart >= end)
             continue;
 
-        // An exact duplicate is a retransmit, don't let it count against the datagram
-        if (start == fstart && packet->payloadLen == fpacket->payloadLen &&
+        // An exact duplicate, more fragments flag too, is a retransmit, don't let it count against the datagram.
+        // It isn't used for reassembly but was on the wire, so unless duplicate packets
+        // are being dropped hold on to it to be saved.
+        if (start == fstart && packet->payloadLen == fpacket->payloadLen && more == fmore &&
             memcmp(packet->pkt + packet->payloadOffset, fpacket->pkt + fpacket->payloadOffset, packet->payloadLen) == 0) {
-            arkime_packet_free(packet);
+            if (!config.enablePacketDedup && frags->dupCount < ARKIME_FRAG_MAX_PER_DATAGRAM) {
+                packet->packet_next = frags->dups;
+                frags->dups = packet;
+                frags->dupCount++;
+                frags->held += held;
+                fragsPackets += held;
+            } else {
+                arkime_packet_free(packet);
+            }
             return FALSE;
         }
 
@@ -730,9 +862,33 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6,
         }
     }
 
-    // Last fragment = MF clear; ignore DF/reserved bits
+    // Last fragment = MF clear; ignore DF/reserved bits. Like hosts drop the datagram when
+    // the fragments don't agree where it ends, a second last fragment with a different end
+    // or data past the end, otherwise we would parse bytes the host never sees.
+    gboolean badEnd = FALSE;
     if (!more) {
+        if (frags->haveNoFlags && frags->dataEnd != (uint32_t)end) {
+            badEnd = TRUE;
+        } else {
+            DLL_FOREACH(packet_, &frags->packets, fpacket) {
+                arkime_packet_frag_info(fpacket, v6, &fip_off, &fmore);
+                if (fip_off * 8 + fpacket->payloadLen > end) {
+                    badEnd = TRUE;
+                    break;
+                }
+            }
+        }
         frags->haveNoFlags = 1;
+        frags->dataEnd = end;
+    } else if (frags->haveNoFlags && (uint32_t)end > frags->dataEnd) {
+        badEnd = TRUE;
+    }
+
+    if (badEnd) {
+        droppedFrags++;
+        arkime_packet_free(packet);
+        arkime_packet_frags_free(frags);
+        return FALSE;
     }
 
     // Insert this packet in correct location sorted by offset
@@ -746,7 +902,8 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6,
     if ((void *)fpacket == (void *)&frags->packets) {
         DLL_PUSH_HEAD(packet_, &frags->packets, packet);
     }
-    fragsPackets++;
+    frags->held += held;
+    fragsPackets += held;
 
     if (DLL_COUNT(packet_, &frags->packets) > ARKIME_FRAG_MAX_PER_DATAGRAM) {
         droppedFrags++;
@@ -774,8 +931,12 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6,
         return FALSE;
     }
 
-    // The ip6 fragment header isn't part of the reassembled packet
-    const int hdrLen = v6 ? packet->payloadOffset - 8 : packet->payloadOffset;
+    // Like hosts the ip header, for ip6 everything before the fragment header, comes from the
+    // first fragment (RFC 791, RFC 8200). The link layer is packet's, the viewer does the same
+    // when it puts the saved fragments back together.
+    const ArkimePacket_t *first = DLL_PEEK_HEAD(packet_, &frags->packets);
+    const int ipHdrLen = (v6 ? first->payloadOffset - 8 : first->payloadOffset) - first->ipOffset;
+    const int hdrLen = packet->ipOffset + ipHdrLen;
 
     // Packet is too large, hacker
     if (payloadLen + hdrLen > ARKIME_PACKET_MAX_LEN) {
@@ -784,23 +945,24 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6,
         return FALSE;
     }
 
-    // Now alloc the full packet
-    packet->pktlen = hdrLen + payloadLen;
-    uint8_t *pkt = malloc(packet->pktlen);
+    // Now alloc the full packet. packet->pktlen is left alone until packet is copied below,
+    // that copy is what was on the wire and must be saved with the length it was read with
+    const int pktlen = hdrLen + payloadLen;
+    uint8_t *pkt = malloc(pktlen);
 
-    // Copy packet header
-    memcpy(pkt, packet->pkt, hdrLen);
+    // Copy the link layer and ip header
+    memcpy(pkt, packet->pkt, packet->ipOffset);
+    memcpy(pkt + packet->ipOffset, first->pkt + first->ipOffset, ipHdrLen);
 
     // Fix header of new packet
     if (v6) {
         struct ip6_hdr *fip6 = (struct ip6_hdr *)(pkt + packet->ipOffset);
-        fip6->ip6_plen = htons(hdrLen - packet->ipOffset - sizeof(struct ip6_hdr) + payloadLen);
-        // The upper layer protocol comes from the first fragment's fragment header (RFC 8200)
-        const ArkimePacket_t *first = DLL_PEEK_HEAD(packet_, &frags->packets);
-        pkt[nxtPos] = first->pkt[first->payloadOffset - 8];
+        fip6->ip6_plen = htons(ipHdrLen - sizeof(struct ip6_hdr) + payloadLen);
+        // The upper layer protocol comes from the first fragment's fragment header
+        pkt[packet->ipOffset + arkime_packet_frag_ip6_nxtpos(first) - first->ipOffset] = first->pkt[first->payloadOffset - 8];
     } else {
         struct ip *fip4 = (struct ip *)(pkt + packet->ipOffset);
-        fip4->ip_len = htons(payloadLen + 4 * ip4->ip_hl);
+        fip4->ip_len = htons(ipHdrLen + payloadLen);
         fip4->ip_off = 0;
     }
 
@@ -808,27 +970,79 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6,
     DLL_FOREACH(packet_, &frags->packets, fpacket) {
         arkime_packet_frag_info(fpacket, v6, &fip_off, &fmore);
 
-        if (hdrLen + (fip_off * 8) + fpacket->payloadLen <= packet->pktlen)
+        if (hdrLen + (fip_off * 8) + fpacket->payloadLen <= pktlen)
             memcpy(pkt + hdrLen + (fip_off * 8), fpacket->pkt + fpacket->payloadOffset, fpacket->payloadLen);
         else
-            LOG("WARNING - Not enough room for frag %d > %d", hdrLen + (fip_off * 8) + fpacket->payloadLen, packet->pktlen);
+            LOG("WARNING - Not enough room for frag %d > %d", hdrLen + (fip_off * 8) + fpacket->payloadLen, pktlen);
+    }
+
+    // The reassembled packet is what gets parsed, the packets it was made from are what
+    // was on the wire and what gets saved, so move them all from frags to fragPackets.
+    // They go in time order, except a list reassembled at an outer layer keeps its order and
+    // the packet that completed the datagram goes last. The viewer puts the fragments back
+    // together where the last one is, so a duplicate with a later time, from time going
+    // backwards, can't end up after it. Both are at most ARKIME_FRAG_MAX_PER_DATAGRAM.
+    ArkimePacket_t *blocks[2 * ARKIME_FRAG_MAX_PER_DATAGRAM];
+    int             nblocks = 0;
+    fragsPackets -= frags->held;
+    frags->held = 0;
+    DLL_REMOVE(packet_, &frags->packets, packet); // packet is reused for the reassembled packet
+    while (DLL_POP_HEAD(packet_, &frags->packets, fpacket)) {
+        blocks[nblocks++] = arkime_packet_frags_block(fpacket);
+    }
+
+    // dups has the newest first, turn it around so they are in the order they were seen
+    ArkimePacket_t *dups = NULL;
+    while ((fpacket = frags->dups)) {
+        frags->dups = fpacket->packet_next;
+        fpacket->packet_next = dups;
+        dups = fpacket;
+    }
+    while ((fpacket = dups)) {
+        dups = fpacket->packet_next;
+        blocks[nblocks++] = arkime_packet_frags_block(fpacket);
+    }
+    frags->dupCount = 0;
+
+    // Merge neighbors until there is one list
+    while (nblocks > 1) {
+        int n = 0;
+        for (int i = 0; i < nblocks; i += 2) {
+            blocks[n++] = (i + 1 < nblocks) ? arkime_packet_frags_merge(blocks[i], blocks[i + 1]) : blocks[i];
+        }
+        nblocks = n;
+    }
+    ArkimePacket_t *origs = nblocks ? blocks[0] : NULL;
+    ArkimePacket_t **otail = &origs;
+    while (*otail) {
+        otail = &(*otail)->packet_next;
+    }
+
+    if (packet->wasfrag) {
+        // Was already reassembled at an outer layer, that list is what was on the wire
+        *otail = packet->fragPackets;
+        packet->fragPackets = NULL;
+        free(packet->pkt);
+    } else {
+        // Takes over the pkt that packet had
+        fpacket = arkime_packet_alloc();
+        *fpacket = *packet;
+        *otail = arkime_packet_frags_block(fpacket);
     }
 
     // Set all the vars in the current packet to new defragged packet
-    if (packet->copied)
-        free(packet->pkt);
     packet->pkt = pkt;
+    packet->pktlen = pktlen;
     packet->copied = 1;
     packet->wasfrag = 1;
     packet->payloadOffset = hdrLen;
     packet->payloadLen = payloadLen;
-    DLL_REMOVE(packet_, &frags->packets, packet); // Remove from list so we don't get freed in frags_free
-    fragsPackets--;
+    packet->fragPackets = origs;
     arkime_packet_frags_free(frags);
     return TRUE;
 }
 /******************************************************************************/
-LOCAL void arkime_packet_frags(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, int v6, int nxtPos)
+LOCAL void arkime_packet_frags(ArkimePacketBatch_t *batch, ArkimePacket_t *const packet, int v6)
 {
     ArkimeFrags_t *frags;
 
@@ -853,7 +1067,7 @@ LOCAL void arkime_packet_frags(ArkimePacketBatch_t *batch, ArkimePacket_t *const
         arkime_packet_frags_free(frags);
     }
 
-    gboolean process = arkime_packet_frags_process(packet, v6, nxtPos);
+    gboolean process = arkime_packet_frags_process(packet, v6);
     ARKIME_UNLOCK(frags);
 
     if (process)
@@ -1089,8 +1303,8 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
     ip_off &= IP_OFFMASK;
 
 
-    if (!disableIp4Defrag && ((ip_flags & IP_MF) || ip_off > 0)) {
-        arkime_packet_frags(batch, packet, 0, -1);
+    if ((ip_flags & IP_MF) || ip_off > 0) {
+        arkime_packet_frags(batch, packet, 0);
         return ARKIME_PACKET_DONT_PROCESS_OR_FREE;
     }
 
@@ -1275,7 +1489,6 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
     packet->mProtocol = 0;
     int nxt = ip6->ip6_nxt;
-    int nxtPos = offsetof(struct ip6_hdr, ip6_nxt); // where nxt came from, relative to data
     int done = 0;
     int extHdrCount = 0;
 
@@ -1316,7 +1529,6 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
             }
 
             nxt = data[ip_hdr_len];
-            nxtPos = ip_hdr_len;
             ip_hdr_len = newHdrLen;
 
             packet->payloadOffset = packet->ipOffset + ip_hdr_len;
@@ -1338,10 +1550,8 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
             const uint8_t *fh = data + ip_hdr_len;
             const uint16_t offFlags = (fh[2] << 8) | fh[3];
-            const int fragNxtPos = packet->ipOffset + nxtPos;
 
             nxt = fh[0];
-            nxtPos = ip_hdr_len;
             ip_hdr_len += 8;
             packet->payloadOffset = packet->ipOffset + ip_hdr_len;
             packet->payloadLen = ip_len + sizeof(struct ip6_hdr) - ip_hdr_len;
@@ -1355,11 +1565,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
                 break;
             }
 
-            if (disableIp6Defrag) {
-                return ARKIME_PACKET_UNKNOWN_IP;
-            }
-
-            arkime_packet_frags(batch, packet, 1, fragNxtPos);
+            arkime_packet_frags(batch, packet, 1);
             return ARKIME_PACKET_DONT_PROCESS_OR_FREE;
         }
 
@@ -2129,8 +2335,6 @@ void arkime_packet_init()
 
     arkimeCounters.nextLogPackets = config.logEveryXPackets;
 
-    disableIp4Defrag = arkime_config_boolean(NULL, "disableIp4Defrag", FALSE);
-    disableIp6Defrag = arkime_config_boolean(NULL, "disableIp6Defrag", FALSE);
     trimEthernetPadding = arkime_config_boolean(NULL, "trimEthernetPadding", FALSE);
 
     arkime_packet_thread_init_func = arkime_get_named_func("arkime_packet_thread_init");
