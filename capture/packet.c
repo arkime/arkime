@@ -776,14 +776,16 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6)
 
     memset(key, 0, sizeof(key));
     struct ip *const ip4 = (struct ip *)(packet->pkt + packet->ipOffset);
+    // Like hosts, which reassemble a tunnel's inner datagrams apart from the outer ones, only
+    // fragments at the same ip layer go together, an outer and inner header can have the same id
     if (v6) {
         const struct ip6_hdr *ip6 = (struct ip6_hdr *)(packet->pkt + packet->ipOffset);
-        key[0] = 6;
+        key[0] = 6 | (packet->ipDepth << 4);
         memcpy(key + 1, &ip6->ip6_src, 16);
         memcpy(key + 17, &ip6->ip6_dst, 16);
         memcpy(key + 33, packet->pkt + packet->payloadOffset - 4, 4); // identification
     } else {
-        key[0] = 4;
+        key[0] = 4 | (packet->ipDepth << 4);
         memcpy(key + 1, &ip4->ip_src.s_addr, 4);
         memcpy(key + 5, &ip4->ip_dst.s_addr, 4);
         memcpy(key + 9, &ip4->ip_id, 2);
@@ -1035,6 +1037,8 @@ LOCAL gboolean arkime_packet_frags_process(ArkimePacket_t *const packet, int v6)
     packet->pktlen = pktlen;
     packet->copied = 1;
     packet->wasfrag = 1;
+    packet->tunnelDepth = 0; // it is parsed again from the start
+    packet->ipDepth = 0;
     packet->payloadOffset = hdrLen;
     packet->payloadLen = payloadLen;
     packet->fragPackets = origs;
@@ -1234,6 +1238,7 @@ LOCAL ArkimePacketRC arkime_packet_ip4(ArkimePacketBatch_t *batch, ArkimePacket_
 
     if (++packet->tunnelDepth > ARKIME_PACKET_MAX_TUNNEL_DEPTH)
         return ARKIME_PACKET_CORRUPT;
+    packet->ipDepth++; // can't wrap, tunnelDepth stops it first
 
     if (len < (int)sizeof(struct ip)) {
 #ifdef DEBUG_PACKET
@@ -1421,6 +1426,7 @@ LOCAL ArkimePacketRC arkime_packet_ip6(ArkimePacketBatch_t *batch, ArkimePacket_
 
     if (++packet->tunnelDepth > ARKIME_PACKET_MAX_TUNNEL_DEPTH)
         return ARKIME_PACKET_CORRUPT;
+    packet->ipDepth++; // can't wrap, tunnelDepth stops it first
 
     if (len < (int)sizeof(struct ip6_hdr)) {
         return ARKIME_PACKET_CORRUPT;

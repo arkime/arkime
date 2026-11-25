@@ -22,6 +22,10 @@ const ArkimeUtil = cjsRequire('../common/arkimeUtil.js');
 const ArkimeDb = cjsRequire('../common/arkimeDb.js');
 const ESConnection = cjsRequire('../common/arkimeDb.es.js');
 
+// New $regex patterns get so many ms of compile time a second, measured by the clock. On a busy
+// machine a compile takes long enough to use that up and the next pattern here would be refused.
+ArkimeDb.REGEX_COMPILE_MS = Infinity;
+
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'arkimedb-unit-'));
 const run = Date.now().toString(36);
 

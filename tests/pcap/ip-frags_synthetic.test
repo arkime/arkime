@@ -2021,6 +2021,123 @@
      "_index" : "tests_sessions3-23m11"
     }
    }
+  },
+  {
+   "body" : {
+    "@timestamp" : "SET",
+    "client" : {
+     "bytes" : 45
+    },
+    "destination" : {
+     "bytes" : 0,
+     "ip" : "10.77.1.1",
+     "mac" : [
+      "02:00:00:00:77:02"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 0,
+     "port" : 53
+    },
+    "dns" : [
+     {
+      "host" : [
+       "v4-nested-same-id.frag.test"
+      ],
+      "hostCnt" : 1,
+      "opcode" : "QUERY",
+      "qc" : "IN",
+      "qt" : "A",
+      "queryHost" : "v4-nested-same-id.frag.test"
+     }
+    ],
+    "dnsCnt" : 1,
+    "dstOuterASN" : [
+     "---"
+    ],
+    "dstOuterGEO" : [
+     "---"
+    ],
+    "dstOuterIp" : [
+     "10.77.1.1"
+    ],
+    "dstOuterIpCnt" : 1,
+    "dstOuterRIR" : [
+     ""
+    ],
+    "ethertype" : 2048,
+    "fileId" : [],
+    "firstPacket" : 1700000000433,
+    "ipProtocol" : 17,
+    "lastPacket" : 1700000000437,
+    "length" : 4,
+    "network" : {
+     "bytes" : 263,
+     "community_id" : "1:iOuh/jWZ+loxRtrTm17KxXDJEa8=",
+     "packets" : 5
+    },
+    "node" : "test",
+    "packetLen" : [
+     74,
+     74,
+     54,
+     74,
+     67
+    ],
+    "packetPos" : [
+     26624,
+     26698,
+     26772,
+     26826,
+     26900
+    ],
+    "packetRange" : {
+     "gte" : 1700000000433,
+     "lte" : 1700000000437
+    },
+    "protocol" : [
+     "dns",
+     "udp"
+    ],
+    "protocolCnt" : 2,
+    "segmentCnt" : 1,
+    "server" : {
+     "bytes" : 0
+    },
+    "source" : {
+     "bytes" : 263,
+     "ip" : "10.77.0.17",
+     "mac" : [
+      "02:00:00:00:77:01"
+     ],
+     "mac-cnt" : 1,
+     "packets" : 5,
+     "port" : 40000
+    },
+    "srcOuterASN" : [
+     "---"
+    ],
+    "srcOuterGEO" : [
+     "---"
+    ],
+    "srcOuterIp" : [
+     "10.77.0.17"
+    ],
+    "srcOuterIpCnt" : 1,
+    "srcOuterRIR" : [
+     ""
+    ],
+    "srcPayload8" : "1234010000010000",
+    "srcTTL" : [
+     64
+    ],
+    "srcTTLCnt" : 1,
+    "totDataBytes" : 45
+   },
+   "header" : {
+    "index" : {
+     "_index" : "tests_sessions3-23m11"
+    }
+   }
   }
  ]
 }

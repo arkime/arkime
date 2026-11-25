@@ -18,6 +18,8 @@ the qname is <case>.frag.test:
     later time, it must still be saved before the last fragment
   - fd77::9 ip6: an atomic fragment header with its reserved byte set, then destination
     options, before the fragment header
+  - 10.77.0.17: ip4 in ip4 where the outer and inner headers have the same addresses and id,
+    both inner fragments are in fragmented outer packets, each layer is reassembled on its own
 
 Run from the tests directory:  python3 gen/gen_ip-frags_synthetic.py
 """
@@ -142,6 +144,17 @@ def v6case(n, case, size=16, order=None, dup=None, drop=None, destopt=False, ato
     return order(frags) if order else frags
 
 
+def v4nested(n, case):
+    src, dst = bytes([10, 77, 0, n]), bytes([10, 77, 1, 1])
+    data = udp(src, dst, dns_query(case + '.frag.test'), False)
+    ipid = 0x4000 + n
+    pkts = []
+    for off, c in chunks(data, 32):
+        inner = v4frag(src, dst, ipid, off, c, off + len(c) < len(data))[14:]
+        pkts += [v4frag(src, dst, ipid, ooff, oc, ooff + len(oc) < len(inner), proto=4) for ooff, oc in chunks(inner, 24)]
+    return pkts
+
+
 def main():
     outpath = sys.argv[1] if len(sys.argv) > 1 else 'pcap/ip-frags_synthetic.pcap'
 
@@ -175,6 +188,7 @@ def main():
     pkts += v6case(9, 'v6-atomic-reserved', destopt=True, atomicres=1)
     f = v4case(16, 'v4-dup-time-back')
     pkts += f[:-1] + [(f[0], 0.003)] + f[-1:]
+    pkts += v4nested(17, 'v4-nested-same-id')
 
     out = struct.pack('<IHHiIII', 0xa1b2c3d4, 2, 4, 0, 0, 65535, 1)
     ts = 1700000000.0

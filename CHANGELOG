@@ -102,6 +102,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4501 Like hosts, datagrams whose fragments don't agree where the datagram ends are dropped, a second last fragment with a different end or data past the end
   - #4501 Fix reassembled IP fragments using the IP header of the last fragment seen instead of the first one, so a different protocol in a later fragment could change how capture parsed the datagram
   - #4501 With enablePacketDedup, reading files goes by packet time instead of the clock, so packets sent again minutes later in a file are no longer dropped as duplicates
+  - #4502 Like hosts, IP fragments are only reassembled with fragments from the same tunnel layer, so an outer and inner header with the same addresses and id no longer drop the datagram
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type, hosts on a ring with an arc between each talking pair, colored by protocol or a chosen field
   - #4456 Fix the settings editor resetting a connections widget or graph sample size to 100 when opened
@@ -130,6 +131,12 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4495 Unique values return an error when the search fails on some shards and the rest find no values, instead of an empty list
   - #4497 Add an icicle (flame graph) widget and SPI Graph type, a row per field with each value as wide as its share of its parent, click a value to zoom into it
   - #4501 Saved IP fragments are put back together before a session's packets are shown or searched by a reassembled hunt; raw hunts search each fragment and pcap downloads keep the fragments as saved
+  - #4502 Sessions show the packets inside IPv4-in-IPv4 and IPv6-in-IPv6 tunnels, and pcap files with link type 229 (raw IPv6)
+  - #4502 Fix IPv6 packets with extension headers showing extra bytes after the packet, and UDP showing bytes past the UDP length
+  - #4502 Fix a malformed packet in a session leaving hunts, body downloads and other packet requests waiting forever, packets that can't be decoded are skipped
+  - #4502 Fix scrubbing leaving some packets unscrubbed: ICMPv6 and ESP keep their first 8 bytes, a packet with no transport header to keep, like one cut short, keeps through its IP header, and a packet with no IP header or that can't be decoded is scrubbed whole
+  - #4502 Sessions show the packets inside NSH, and PPP in GRE without the address, control or full protocol fields
+  - #4502 Unknown GRE, PPP, PPPoE, MPLS and link types are logged at most once a minute instead of for every packet
 ## Cont3xt
   - #4488 New VPNDetection integration for IPs, shows VPN, Tor exit, privacy relay and proxy flags (thanks @UmanShahzad)
   - #4494 New SourceIP.io integration for IPs, shows the operators that publish an IP and how they use it, plus its ASN origins with RPKI status and registry allocation; works without a key at 100 lookups a day (thanks @AlanKK)

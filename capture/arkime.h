@@ -621,6 +621,7 @@ struct arkimepacket_t {
     uint32_t        outerIpOffset: 11;    // offset to outer ip header from start
     uint32_t        vni: 24;              // vxlan id
     uint32_t        isfrag: 1;            // in the fragPackets of a wasfrag packet
+    uint32_t        ipDepth: 4;           // which ip header, 1 is the outermost, part of the frags key
 };
 
 // Maximum tunnel/encapsulation nesting depth across IP-in-IP, GRE, ERSPAN,
