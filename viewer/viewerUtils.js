@@ -112,10 +112,34 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
-  // The aggregation for one percentile of a field. Every backend answers it as
-  // ES does ({ values: { '95.0': n } }) or, for ClickHouse, as a single value.
-  static percentileAgg (field, percent) {
-    return { percentiles: { field, percents: [percent] } };
+  // The aggregation for one or more percentiles of a field, as one digest.
+  // Every backend answers it as ES does ({ values: { '95.0': n, ... } }) or,
+  // for ClickHouse and a single percent, as a single value. ES and OpenSearch
+  // use an HDR histogram rather than their default t-digest: several times
+  // faster on a large search, each value within 1% (2 significant digits;
+  // 4 trips the request circuit breaker on a few million sessions). Its
+  // values are bucket bounds, so readers clamp them to the bucket's min and
+  // max (percentileAggs adds them), which keeps one session's value exact.
+  static PERCENTILE_HDR_DIGITS = 2;
+  static percentileAgg (field, percents) {
+    return {
+      percentiles: {
+        field,
+        percents: [...new Set([].concat(percents))],
+        hdr: { number_of_significant_value_digits: ViewerUtils.PERCENTILE_HDR_DIGITS }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------------
+  // A percentile aggregation named aggName, plus the min and max of the field
+  // (aggName + 'Mn', aggName + 'Mx') that percentileIn clamps it with.
+  static percentileAggs (aggName, field, percents) {
+    return {
+      [aggName]: ViewerUtils.percentileAgg(field, percents),
+      [`${aggName}Mn`]: { min: { field } },
+      [`${aggName}Mx`]: { max: { field } }
+    };
   }
 
   // ----------------------------------------------------------------------------
@@ -126,11 +150,39 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // What a percentile aggregation answered for a percent, as the backend gave it
+  static #percentileRaw (result, percent) {
+    if (!result?.values) { return result?.value; }
+    const key = percent === undefined ? undefined : Number(percent).toFixed(1);
+    return key !== undefined && Object.hasOwn(result.values, key) ? result.values[key] : Object.values(result.values)[0];
+  }
+
+  // ----------------------------------------------------------------------------
+  // True when a percentile aggregation has a value: a bucket none of whose
+  // sessions has the field answers null (percentileValue makes that 0).
+  static percentileHasValue (result, percent) {
+    const v = ViewerUtils.#percentileRaw(result, percent);
+    return typeof v === 'number' && Number.isFinite(v);
+  }
+
+  // ----------------------------------------------------------------------------
   // A percentile aggregation's value: ES's values map (null for a bucket with
-  // no values), or a plain value; 0 when there is none.
-  static percentileValue (result) {
-    const v = result?.values ? Object.values(result.values)[0] : result?.value;
-    return typeof v === 'number' && Number.isFinite(v) ? v : 0;
+  // no values), or a plain value; 0 when there is none. percent picks one of
+  // several (the first when not given). min and max, when finite, bound it:
+  // an HDR value is its bucket's bound, which can fall just outside them.
+  static percentileValue (result, percent, min, max) {
+    let v = ViewerUtils.#percentileRaw(result, percent);
+    if (typeof v !== 'number' || !Number.isFinite(v)) { return 0; }
+    if (typeof min === 'number' && Number.isFinite(min) && v < min) { v = min; }
+    if (typeof max === 'number' && Number.isFinite(max) && v > max) { v = max; }
+    return v;
+  }
+
+  // ----------------------------------------------------------------------------
+  // A percentile of the aggregation aggName in a bucket (or aggregations) built
+  // by percentileAggs, clamped to its min and max.
+  static percentileIn (container, aggName, percent) {
+    return ViewerUtils.percentileValue(container?.[aggName], percent, container?.[`${aggName}Mn`]?.value, container?.[`${aggName}Mx`]?.value);
   }
 
   // ----------------------------------------------------------------------------
@@ -153,6 +205,24 @@ class ViewerUtils {
       return [...filters, metricField];
     }
     return filters;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The series a request's timeline carries besides sessions: the user's
+   * timeline data filters (old names made new) and the metric field, or with
+   * metricOnly (a dashboard widget, which draws only its metric) just the
+   * metric field. Each is a sum per time bucket, so a series not drawn costs
+   * the database work and the response bytes of one, per bucket, per value.
+   * @param {object} req - the request (its user's settings)
+   * @param {object} [reqQuery] - the query it runs (req.query by default)
+   * @returns {string[]}
+   */
+  static timelineFilters (req, reqQuery = req.query) {
+    const filterNameMap = { totPackets: 'network.packets', totBytes: 'network.bytes' };
+    const metricOnly = reqQuery?.metricOnly === true || reqQuery?.metricOnly === 'true';
+    const filters = metricOnly ? [] : (req.user?.settings?.timelineDataFilters || internals.settingDefaults.timelineDataFilters);
+    return ViewerUtils.withMetricField(filters.map(x => filterNameMap[x] ?? x), reqQuery);
   }
 
   // ----------------------------------------------------------------------------
@@ -266,13 +336,7 @@ class ViewerUtils {
 
   // ----------------------------------------------------------------------------
   static graphMerge (req, query, aggregations) {
-    const filterNameMap = { totPackets: 'network.packets', totBytes: 'network.bytes' };
-    let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
-
-    // Convert old names to new names locally
-    filters = filters.map(x => filterNameMap[x] ?? x);
-
-    filters = ViewerUtils.withMetricField(filters, req.query);
+    const filters = ViewerUtils.timelineFilters(req);
 
     const graph = {
       xmin: req.query.startTime * 1000 || null,
@@ -308,7 +372,7 @@ class ViewerUtils {
     const pct = req.metricPercentile;
     if (pct) {
       graph[pct.key + 'Histo'] = [];
-      graph[pct.key + 'Total'] = ViewerUtils.percentileValue(aggregations?.[pct.key]);
+      graph[pct.key + 'Total'] = ViewerUtils.percentileIn(aggregations, pct.key, pct.percent);
     }
 
     // the hour of week fold: hour buckets become a week of slots, placed once
@@ -327,7 +391,7 @@ class ViewerUtils {
       // always add session information
       graph.sessionsHisto.push([key, item.doc_count]);
       graph.sessionsTotal += item.doc_count;
-      if (pct) { graph[pct.key + 'Histo'].push([key, ViewerUtils.percentileValue(item[pct.key])]); }
+      if (pct) { graph[pct.key + 'Histo'].push([key, ViewerUtils.percentileIn(item, pct.key, pct.percent)]); }
 
       for (const prop in item) {
         // excluding every item prop that isn't a summed up aggregate collection (ie. es keys)

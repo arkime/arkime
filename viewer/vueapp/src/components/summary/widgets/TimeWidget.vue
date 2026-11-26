@@ -9,6 +9,7 @@ for the current search, fed by the host's global stats chunk (no self-fetch).
   <WidgetCard
     :png="false"
     :title="displayTitle"
+    :loading="loading"
     :has-data="hasData"
     :info-items="infoItems"
     :link="link"
@@ -47,6 +48,8 @@ const store = useStore();
 
 const props = defineProps({
   stats: { type: Object, default: () => null },
+  // the stats chunk is still on its way
+  loading: { type: Boolean, default: false },
   title: { type: String, default: '' },
   infoItems: { type: Array, default: () => [] },
   link: { type: Object, default: null }

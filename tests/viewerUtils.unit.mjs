@@ -42,3 +42,74 @@ describe('ViewerUtils.isSafeSegment', () => {
     }
   });
 });
+
+describe('ViewerUtils percentiles', () => {
+  test('percentileAgg asks for one HDR digest of every percent, once each', () => {
+    assert.deepEqual(ViewerUtils.percentileAgg('length', 95), {
+      percentiles: { field: 'length', percents: [95], hdr: { number_of_significant_value_digits: ViewerUtils.PERCENTILE_HDR_DIGITS } }
+    });
+    assert.deepEqual(ViewerUtils.percentileAgg('length', [50, 25, 50, 75]).percentiles.percents, [50, 25, 75]);
+  });
+
+  test('percentileAggs adds the field min and max', () => {
+    assert.deepEqual(Object.keys(ViewerUtils.percentileAggs('m0', 'length', 95)), ['m0', 'm0Mn', 'm0Mx']);
+    assert.deepEqual(ViewerUtils.percentileAggs('m0', 'length', 95).m0Mx, { max: { field: 'length' } });
+  });
+
+  test('percentileValue picks the percent asked for, else the first', () => {
+    const result = { values: { '25.0': 10, '50.0': 20, '95.0': 90 } };
+    assert.equal(ViewerUtils.percentileValue(result, 50), 20);
+    assert.equal(ViewerUtils.percentileValue(result, 95), 90);
+    assert.equal(ViewerUtils.percentileValue(result), 10);
+    assert.equal(ViewerUtils.percentileValue(result, 99), 10, 'a percent not asked for is the first');
+    assert.equal(ViewerUtils.percentileValue({ value: 7 }), 7, 'ClickHouse answers one percent as a value');
+    assert.equal(ViewerUtils.percentileValue({ values: { '95.0': null } }, 95), 0, 'a bucket without values');
+    assert.equal(ViewerUtils.percentileValue(undefined), 0);
+    assert.equal(ViewerUtils.percentileHasValue({ values: { '95.0': null } }, 95), false, 'a bucket without values has none');
+    assert.equal(ViewerUtils.percentileHasValue({ values: { '95.0': 0 } }, 95), true, 'a 0 is a value');
+    assert.equal(ViewerUtils.percentileHasValue({ value: 7 }, 95), true);
+    assert.equal(ViewerUtils.percentileHasValue(undefined, 95), false);
+  });
+
+  test('an HDR value outside the min and max is clamped to them', () => {
+    // one session of 123969 bytes: HDR at 2 digits says 123904
+    assert.equal(ViewerUtils.percentileValue({ values: { '95.0': 123904 } }, 95, 123969, 123969), 123969);
+    assert.equal(ViewerUtils.percentileValue({ values: { '95.0': 1200 } }, 95, 0, 1100), 1100);
+    assert.equal(ViewerUtils.percentileValue({ values: { '95.0': 500 } }, 95, 100, 1000), 500);
+    assert.equal(ViewerUtils.percentileValue({ values: { '95.0': 500 } }, 95, null, undefined), 500, 'no bounds, no clamp');
+  });
+
+  test('percentileIn reads an aggregation and its bounds from a bucket', () => {
+    const bucket = { m0: { values: { '95.0': 123904, '25.0': 123904 } }, m0Mn: { value: 123969 }, m0Mx: { value: 123969 } };
+    assert.equal(ViewerUtils.percentileIn(bucket, 'm0', 95), 123969);
+    assert.equal(ViewerUtils.percentileIn(bucket, 'm0', 25), 123969);
+    assert.equal(ViewerUtils.percentileIn({}, 'm0', 95), 0);
+  });
+});
+
+describe('ViewerUtils.timelineFilters', () => {
+  const req = (query, timelineDataFilters) => ({ query, user: { settings: timelineDataFilters ? { timelineDataFilters } : {} } });
+
+  test("the user's filters, old names made new, and the metric field", () => {
+    assert.deepEqual(ViewerUtils.timelineFilters(req({}, ['totPackets', 'totBytes', 'totDataBytes'])), ['network.packets', 'network.bytes', 'totDataBytes']);
+    assert.deepEqual(ViewerUtils.timelineFilters(req({ metricField: 'tcpflags.syn' }, ['network.packets'])), ['network.packets', 'tcpflags.syn']);
+    assert.deepEqual(ViewerUtils.timelineFilters(req({ metricField: 'network.packets' }, ['network.packets'])), ['network.packets']);
+  });
+
+  test('the defaults when the user has none', () => {
+    assert.deepEqual(ViewerUtils.timelineFilters(req({})), ['network.packets', 'network.bytes', 'totDataBytes']);
+  });
+
+  test('metricOnly: just the metric field, or nothing besides sessions', () => {
+    for (const metricOnly of [true, 'true']) {
+      assert.deepEqual(ViewerUtils.timelineFilters(req({ metricOnly, metricField: 'network.bytes' }, ['network.packets'])), ['network.bytes']);
+      assert.deepEqual(ViewerUtils.timelineFilters(req({ metricOnly })), []);
+    }
+    assert.deepEqual(ViewerUtils.timelineFilters(req({ metricOnly: 'false' })), ['network.packets', 'network.bytes', 'totDataBytes']);
+  });
+
+  test('the query it runs, when not the request\'s own', () => {
+    const r = req({}, ['network.packets']);
+    assert.deepEqual(ViewerUtils.timelineFilters(r, { metricOnly: true, metricField: 'tcpflags.syn' }), ['tcpflags.syn']);
+  });
+});

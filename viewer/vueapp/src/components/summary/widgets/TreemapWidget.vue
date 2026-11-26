@@ -3,8 +3,9 @@ Copyright Yahoo Inc.
 SPDX-License-Identifier: Apache-2.0
 
 Field widget rendered in "treemap" view mode: the field's top-N values as nested
-rectangles sized by session count. Self-fetches /api/spigraph (global search AND
-the widget's local filter) and lays out a squarified treemap (d3) sized to the
+rectangles sized by session count or the widget's metric. Self-fetches the
+values' totals from /api/sessions/summary (global search AND the widget's local
+filter) and lays out a squarified treemap (d3) sized to the
 card; instance-safe (no shared DOM ids). Hover shows the shared chart popover.
 -->
 <template>
@@ -64,7 +65,7 @@ import WidgetCard from './WidgetCard.vue';
 import FieldService from '../../search/FieldService';
 import { colorRange } from './chartColors';
 import { useSpigraphWidget } from './useSpigraphWidget';
-import { metricHistoKey, formatMetricValue } from './widgetData';
+import { fetchSummaryWidget, formatMetricValue } from './widgetData';
 
 const props = defineProps({
   widget: { type: Object, required: true },
@@ -83,19 +84,31 @@ const container = ref(null);
 let ro;
 let d3lib;
 
+// a treemap draws each value's total, never its timeline: the summary
+// endpoint's one terms aggregation, not SPI Graph's search per value with a
+// graph each. Its parts add up and it has no order of its own, so it is
+// always the top values by the metric's sum, whatever order or aggregation
+// the widget still carries from another type.
+const fetchTotals = async (route, store, widget, opts) =>
+  (await fetchSummaryWidget(route, store, { ...widget, order: 'desc', orderBy: 'value', metricAgg: 'sum' }, opts)).data;
+
 const { loading, error, fetchData } = useSpigraphWidget(
   () => props.widget,
   () => props.reloadNonce,
-  (res) => { items.value = (res.items || []).filter(i => i.count > 0); setupObserver(); }
+  (rows) => {
+    // a row's value is its metric (the session count when it has none)
+    items.value = rows.filter(r => r.sessions > 0).map(r => ({ name: r.item, count: r.sessions, value: r.value || 0 }));
+    setupObserver();
+  },
+  fetchTotals
 );
 
 const fieldObj = computed(() => FieldService.getField(props.widget.field, true));
 const title = computed(() => props.widget.title || fieldObj.value?.friendlyName || props.widget.field);
 
 // metric drives rectangle size: session count by default, else the chosen
-// numeric field's per-value total (the <dbField>Histo sum from spigraph)
-const metricKey = computed(() => metricHistoKey(props.widget));
-const itemValue = (i) => (metricKey.value === 'sessionsHisto' ? i.count : (i[metricKey.value] || 0));
+// metric's total per value
+const itemValue = (i) => i.value;
 const formatValue = (v) => formatMetricValue(props.widget.metricType, v);
 
 // only positive-metric values can be sized/drawn; drives hasData so an all-zero
