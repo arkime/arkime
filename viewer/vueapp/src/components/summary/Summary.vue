@@ -326,7 +326,8 @@ SPDX-License-Identifier: Apache-2.0
             @remove="removeWidgetLocal(w)" />
           <StatsWidget
             v-else-if="w.viewMode === 'stats'"
-            :stats="summary"
+            :stats="statsChunk"
+            :loading="streaming && !statsChunk"
             :title="w.title"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
@@ -334,7 +335,8 @@ SPDX-License-Identifier: Apache-2.0
             @remove="removeWidgetLocal(w)" />
           <TimeWidget
             v-else-if="w.viewMode === 'time'"
-            :stats="summary"
+            :stats="statsChunk"
+            :loading="streaming && !statsChunk"
             :title="w.title"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
@@ -411,6 +413,7 @@ import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare, isBoxMode, boxMetric, boxRank } from './widgets/viewModes';
 import { summaryRequestWidget, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle, dashboardPageQuery, circleColorDbField } from './widgets/widgetData';
 import { DEFAULT_CIRCLE_MAX_NODES } from './widgets/connectionCircle';
+import { setVisibilityProbe } from './widgets/dashboardRequests';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -548,6 +551,8 @@ const startResize = (w, evt, axis) => {
 
 // Reactive state
 const summary = ref(null);
+// the stats chunk (sessions, bytes, first and last packet), null until it's in
+const statsChunk = computed(() => (summary.value?.sessions !== undefined ? summary.value : null));
 const loading = ref(true);
 const error = ref('');
 const widgetContainer = ref(null);
@@ -999,7 +1004,11 @@ const generateSummary = async () => {
 
   loading.value = true;
   error.value = '';
-  summary.value = null; // Reset for progressive display
+  // The widgets are up right away, so the ones that fetch for themselves
+  // start without waiting for the stats; the stats and time widgets, and
+  // the stream-fed ones, show their loading state until their chunk is in.
+  // The entries keep their ids, so a reload refreshes the widgets in place.
+  summary.value = { fields: props.widgets.map(makeEntry) };
 
   const query = startQuery({ url: 'api/sessions/summary', method: 'POST' });
   let serverMs;
@@ -1045,9 +1054,8 @@ const generateSummary = async () => {
       // First chunk has summary stats (sessions, packets, bytes, etc.) + map/graph
       // which now feed the stats/time/timeline/map widgets directly.
       if (chunk.sessions !== undefined) {
-        // Initialize render entries for all configured widgets (loading state)
-        chunk.fields = props.widgets.map(makeEntry);
-        summary.value = chunk;
+        // the render entries were made when the load started
+        summary.value = { ...chunk, fields: summary.value?.fields ?? props.widgets.map(makeEntry) };
 
         // Hide loading overlay once we have summary stats (widgets show their own loading)
         loading.value = false;
@@ -1424,6 +1432,17 @@ watch(streaming, (val) => { emit('streaming-state', val); });
 watch(canceled, (val) => { emit('canceled-state', val); });
 
 // On mount
+// The request planner sends the requests of the widgets on screen first and
+// holds the rest back a little. A widget not found is taken as on screen.
+const widgetOnScreen = (id) => {
+  if (id === undefined || id === null) { return true; }
+  const el = document.querySelector(`[data-widget-id="${CSS.escape(String(id))}"]`);
+  if (!el) { return true; }
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth;
+};
+setVisibilityProbe(widgetOnScreen);
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   generateSummary();
@@ -1432,6 +1451,7 @@ onMounted(() => {
 // On unmount
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
+  setVisibilityProbe(null);
 
   // Cancel any pending request on unmount
   if (pendingPromise) {

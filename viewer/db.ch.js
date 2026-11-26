@@ -115,6 +115,84 @@ function metricOrderName (orderKey) {
   return String(orderKey).replace(/\[[^\]]*\]$/, '');
 }
 
+// The viewer asks for several percentiles of one field in one aggregation (a
+// box plot's quartiles beside its ranking percentile), which metricExpression
+// answers one at a time: split such an aggregation into one per percent (and
+// an order by one of them, name[95.0], onto its part) before translating, and
+// join the answers back into ES's values map after. Returns the query to run
+// and the function that fixes up its response (the same query and an identity
+// when nothing needs splitting).
+function splitPercentiles (query) {
+  const parts = new Map(); // part name -> [aggregation name, percent key]
+  const percentKey = (p) => Number(p).toFixed(1);
+
+  // returns the split aggregations and, for the level above, which of its
+  // percentile aggregations were split into which parts
+  const splitWithOrders = (levelAggs) => {
+    const out = {};
+    const split = new Map();
+    if (!levelAggs || typeof levelAggs !== 'object') { return { aggs: levelAggs, split }; }
+    for (const [aggName, agg] of Object.entries(levelAggs)) {
+      const percents = agg?.percentiles?.percents;
+      if (Array.isArray(percents) && percents.length > 1) {
+        const byPercent = {};
+        [...new Set(percents.map(Number))].forEach((p, i) => {
+          const part = `${aggName}__pct${i}`;
+          parts.set(part, [aggName, percentKey(p)]);
+          byPercent[percentKey(p)] = part;
+          out[part] = { percentiles: { ...agg.percentiles, percents: [p] } };
+        });
+        split.set(aggName, byPercent);
+        continue;
+      }
+      const subKey = agg?.aggregations ? 'aggregations' : (agg?.aggs ? 'aggs' : undefined);
+      if (!subKey) { out[aggName] = agg; continue; }
+      const { aggs: sub, split: subSplit } = splitWithOrders(agg[subKey]);
+      const copy = { ...agg, [subKey]: sub };
+      const bucketType = ['terms', 'histogram', 'date_histogram'].find(t => agg[t]?.order);
+      if (bucketType && subSplit.size) {
+        const fix = (entry) => Object.fromEntries(Object.entries(entry).map(([key, dir]) => {
+          const m = /^(.+)\[([^\]]*)\]$/.exec(key);
+          const part = m && subSplit.get(m[1])?.[percentKey(m[2])];
+          return [part ?? key, dir];
+        }));
+        const order = agg[bucketType].order;
+        copy[bucketType] = { ...agg[bucketType], order: Array.isArray(order) ? order.map(fix) : fix(order) };
+      }
+      out[aggName] = copy;
+    }
+    return { aggs: out, split };
+  };
+
+  const aggsKey = query?.aggregations ? 'aggregations' : (query?.aggs ? 'aggs' : undefined);
+  if (!aggsKey) { return { query, join: (response) => response }; }
+  const { aggs } = splitWithOrders(query[aggsKey]);
+  if (!parts.size) { return { query, join: (response) => response }; }
+
+  // put each part's value back under its aggregation's values map, in every
+  // bucket of every level
+  const joinIn = (node) => {
+    if (Array.isArray(node)) { node.forEach(joinIn); return; }
+    if (!node || typeof node !== 'object') { return; }
+    for (const key of Object.keys(node)) {
+      const part = parts.get(key);
+      if (part) {
+        const [aggName, pkey] = part;
+        const target = (node[aggName] ??= { values: {} });
+        const v = node[key]?.value;
+        target.values[pkey] = typeof v === 'number' && Number.isFinite(v) ? v : null;
+        delete node[key];
+      } else {
+        joinIn(node[key]);
+      }
+    }
+  };
+  return {
+    query: { ...query, [aggsKey]: aggs },
+    join: (response) => { joinIn(response?.aggregations); return response; }
+  };
+}
+
 function quoteIdent (ident) {
   return '`' + String(ident).replace(/\\/g, '\\\\').replace(/`/g, '``') + '`';
 }
@@ -1444,7 +1522,8 @@ class DbCHImpl {
   }
 
   async searchSessions (index, query, options = {}) {
-    return this.#tagged(options, () => this.#searchSessions(index, query, options));
+    const split = splitPercentiles(query);
+    return split.join(await this.#tagged(options, () => this.#searchSessions(index, split.query, options)));
   }
 
   async #searchSessions (index, query, options) {
@@ -1546,12 +1625,13 @@ class DbCHImpl {
   // spigraph's msearch is one search per top value of a field, run as a single GROUP BY
   // scan when the searches allow it, otherwise each search on its own a few at a time
   async msearchSessions (index, queries, options = {}) {
-    const parsed = queries.map(query => typeof query === 'string' ? JSON.parse(query) : query);
+    const splits = queries.map(query => splitPercentiles(typeof query === 'string' ? JSON.parse(query) : query));
+    const parsed = splits.map(split => split.query);
     const batch = this.#termBatch(parsed);
     const responses = batch
       ? await this.#tagged(options, () => this.#batchedSearch(index, parsed[0], batch))
       : await async.mapLimit(parsed, MSEARCH_CONCURRENCY, async (query) => this.searchSessions(index, query, options));
-    return { body: { responses } };
+    return { body: { responses: responses.map((response, i) => splits[i].join(response)) } };
   }
 
   // The field and values when the searches differ only in a last term filter on one field,

@@ -459,8 +459,7 @@ class BuildQuery {
       if (reqQuery.facets === 'true' || parseInt(reqQuery.facets) === 1) {
         query.aggregations.dbHisto = { aggregations: {} };
 
-        const baseFilters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
-        const filters = ViewerUtils.withMetricField([...baseFilters], reqQuery);
+        const filters = ViewerUtils.timelineFilters(req, reqQuery);
         for (let i = 0; i < filters.length; i++) {
           const filter = filters[i];
 
@@ -488,7 +487,7 @@ class BuildQuery {
         // a SPI Graph percentile of its metric, one per time bucket
         if (req.metricPercentile) {
           const pct = req.metricPercentile;
-          query.aggregations.dbHisto.aggregations[pct.key] = ViewerUtils.percentileAgg(pct.field, pct.percent);
+          Object.assign(query.aggregations.dbHisto.aggregations, ViewerUtils.percentileAggs(pct.key, pct.field, pct.percent));
         }
 
         let histoField;

@@ -583,4 +583,82 @@ describe('ClickHouse msearch on a real ClickHouse', { skip: !process.env.ARKIME_
       assert.deepEqual(responses, own.map(response => ({ hits: response.hits, aggregations: response.aggregations })));
     });
   }
+
+  test('several percentiles in one aggregation answer as each one alone, ranked by the one asked for', async () => {
+    const pctAgg = (percents) => ({ percentiles: { field: 'source.bytes', percents, hdr: { number_of_significant_value_digits: 2 } } });
+    const search = (aggs, order) => ({ size: 0, query: { match_all: {} }, aggregations: { t: { terms: { field: 'node', size: 3, ...(order ? { order } : {}) }, aggregations: aggs } } });
+    const all = await ch.searchSessions('t_sessions3-*', search({ m0: pctAgg([95, 25, 50, 75]) }, { 'm0[95.0]': 'asc' }));
+    const buckets = all.aggregations.t.buckets;
+    assert.equal(buckets.length, 3);
+    const p95s = buckets.map(b => b.m0.values['95.0']);
+    assert.deepEqual(p95s, [...p95s].sort((a, b) => a - b), 'ranked by the p95 ascending');
+    for (const p of [25, 50, 75, 95]) {
+      const alone = await ch.searchSessions('t_sessions3-*', search({ m0: pctAgg([p]) }));
+      const byNode = Object.fromEntries(alone.aggregations.t.buckets.map(b => [b.key, b.m0.value]));
+      for (const b of buckets) { assert.equal(b.m0.values[p.toFixed(1)], byNode[b.key], `p${p} of ${b.key}`); }
+    }
+  });
+});
+
+// a box plot asks for its quartiles beside the percentile it ranks by, in one
+// percentiles aggregation; the translator answers one percent at a time
+class PercentileCH extends DbCHImpl {
+  sqls = [];
+  async query (sql) {
+    this.sqls.push(sql);
+    if (sql.startsWith('SELECT count() AS count')) { return { data: [{ count: 3 }] }; }
+    if (sql.includes('GROUP BY key')) {
+      return { data: [{ key: 'tcp', doc_count: 2, m0__pct0: 900, m0__pct1: 100, m0__pct2: 300, m0__pct3: 700, m0Mn: 50, m0Mx: 1000 }], totals: { doc_count: 2 } };
+    }
+    if (sql.includes('quantileTDigest')) { return { data: [{ all__pct0: 10, all__pct1: 20 }] }; }
+    return { data: [] };
+  }
+}
+
+describe('ClickHouse several percentiles in one aggregation', () => {
+  const newCHp = async () => {
+    const ch = new PercentileCH({ sessionsDbUrl: 'clickhouse://127.0.0.1:1/arkime', prefix: 'tests_' });
+    await ch.schemaReady;
+    ch.sqls = [];
+    return ch;
+  };
+  const pct = (percents) => ({ percentiles: { field: 'network.bytes', percents, hdr: { number_of_significant_value_digits: 2 } } });
+
+  test('each percent is its own quantile, ordered by the one asked for, answered as ES values', async () => {
+    const ch = await newCHp();
+    const query = {
+      size: 0,
+      query: { match_all: {} },
+      aggregations: {
+        t: {
+          terms: { field: 'protocol', size: 5, order: { 'm0[95.0]': 'desc' } },
+          aggregations: { m0: pct([95, 25, 50, 75]), m0Mn: { min: { field: 'network.bytes' } }, m0Mx: { max: { field: 'network.bytes' } } }
+        }
+      }
+    };
+    const before = JSON.stringify(query);
+    const res = await ch.searchSessions('tests_sessions3-*', query);
+    assert.equal(JSON.stringify(query), before, 'the caller\'s query is left as it was');
+    const sql = ch.sqls.find(s => s.includes('GROUP BY key'));
+    for (const [i, level] of [[0, 0.95], [1, 0.25], [2, 0.5], [3, 0.75]]) {
+      assert.ok(sql.includes(`quantileTDigest(${level})`) && sql.includes(`AS \`m0__pct${i}\``), `percent ${level}`);
+    }
+    assert.ok(sql.includes('ORDER BY `m0__pct0` DESC'));
+    assert.deepEqual(res.aggregations.t.buckets[0], {
+      key: 'tcp',
+      doc_count: 2,
+      m0: { values: { '95.0': 900, '25.0': 100, '50.0': 300, '75.0': 700 } },
+      m0Mn: { value: 50 },
+      m0Mx: { value: 1000 }
+    });
+  });
+
+  test('a top level one and a single percent', async () => {
+    const ch = await newCHp();
+    const res = await ch.searchSessions('tests_sessions3-*', { size: 0, query: { match_all: {} }, aggregations: { all: pct([50, 99.9]) } });
+    assert.deepEqual(res.aggregations.all, { values: { '50.0': 10, '99.9': 20 } });
+    ch.sqls = [];
+    await ch.searchSessions('tests_sessions3-*', { size: 0, query: { match_all: {} }, aggregations: { one: pct([95]) } });
+    assert.ok(ch.sqls.some(s => s.includes('AS `one`')), 'a single percent is not split');
+  });
 });

@@ -1,4 +1,4 @@
-use Test::More tests => 214;
+use Test::More tests => 223;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -32,6 +32,13 @@ sub noTook {
 }
 
 # Helper function to test both single and multi viewer responses
+# The widget chunks stream as their searches finish, so two responses are
+# compared by id (the stats chunk and terminator have none, and keep their places)
+sub chunksById {
+    my ($chunks) = @_;
+    return [sort { ($a->{id} // '') cmp ($b->{id} // '') } @{$chunks}];
+}
+
 sub getSummary {
     my ($url, $fields) = @_;
     $fields //= $defaultFields;  # Use default fields if not provided
@@ -44,7 +51,7 @@ sub getSummary {
 
     noTook($json);
     noTook($mjson);
-    eq_or_diff($mjson, $json, "single doesn't match multi for $url", { context => 3 });
+    eq_or_diff(chunksById($mjson), chunksById($json), "single doesn't match multi for $url", { context => 3 });
 
     # Normalize into single JSON
     my $njson = $json->[0];
@@ -234,7 +241,7 @@ sub postSummary {
     my $mjson = multiPost($url, $postData);
     noTook($json);
     noTook($mjson);
-    eq_or_diff($mjson, $json, "single doesn't match multi for $url widgets body", { context => 3 });
+    eq_or_diff(chunksById($mjson), chunksById($json), "single doesn't match multi for $url widgets body", { context => 3 });
     return $json;
 }
 
@@ -493,6 +500,52 @@ ok($medSorted && $medIsBox, "a box widget ranked by its median sorts by the box'
 ok(!exists getChunk($chunks, 'wBoxText')->{data}->[0]->{box}, "a box of a unique count has no spread");
 ok(!exists getChunk($chunks, 'wNoBox')->{data}->[0]->{box}, "no box without box");
 is(getChunk(multiPost("/api/sessions/summary?date=-1", $boxBody), 'wBox')->{error}, 'Percentiles are not supported across clusters', "multi viewer refuses a box widget");
+
+# a box ranked by a percentile of its own metric shares the one digest with
+# its quartiles: ranked by the p95, which sits between the box's q3 and max;
+# one session's p95 and box are exactly its bytes on every backend (an HDR
+# digest is clamped to the bucket's min and max)
+my $singleExp = '(file=*/pcap/socks-http-example.pcap||file=*/pcap/socks-http-pass.pcap||file=*/pcap/socks-https-example.pcap||file=*/pcap/socks5-http-302.pcap||file=*/pcap/socks5-rdp.pcap||file=*/pcap/socks5-reverse.pcap||file=*/pcap/socks5-smtp-503.pcap||file=*/pcap/modbus.pcap) && ip.src == 10.1.1.234';
+$chunks = viewerPost("/api/sessions/summary?date=-1", to_json({
+    widgets => [
+        { id => 'wBoxP95', field => 'ip.src', length => 5, metricType => 'bytes', metrics => ['bytes'], sortMetric => 'bytes', metricAgg => 'p95', box => JSON::true },
+        { id => 'wBoxP95Asc', field => 'ip.src', length => 5, order => 'asc', metricType => 'bytes', metrics => ['bytes'], sortMetric => 'bytes', metricAgg => 'p95', box => JSON::true },
+        { id => 'wBoxP95One', field => 'ip.src', length => 5, metricType => 'bytes', metrics => ['bytes'], sortMetric => 'bytes', metricAgg => 'p95', box => JSON::true, expression => $singleExp },
+        { id => 'wP95One', total => JSON::true, metricType => 'bytes', metricAgg => 'p95', expression => $singleExp }
+    ]
+}));
+my ($p95Sorted, $p95InBox) = (1, 1);
+$prev = undef;
+foreach my $item (@{getChunk($chunks, 'wBoxP95')->{data}}) {
+    my $b = $item->{box};
+    $p95Sorted = 0 if defined $prev && $item->{value} > $prev;
+    $prev = $item->{value};
+    $p95InBox = 0 if $item->{value} < $b->{q3} - 0.5 || $item->{value} > $b->{max} + 0.5 ||
+                     $b->{min} > $b->{q1} + 0.5 || $b->{q1} > $b->{median} + 0.5 || $b->{median} > $b->{q3} + 0.5;
+}
+ok(@{getChunk($chunks, 'wBoxP95')->{data}} == 5 && $p95Sorted, "a box widget ranked by its p95 sorts by it");
+ok($p95InBox, "its p95 is between the box's q3 and max, the box in order");
+my $p95AscSorted = 1;
+$prev = undef;
+foreach my $item (@{getChunk($chunks, 'wBoxP95Asc')->{data}}) {
+    $p95AscSorted = 0 if defined $prev && $item->{value} < $prev;
+    $prev = $item->{value};
+}
+ok(@{getChunk($chunks, 'wBoxP95Asc')->{data}} == 5 && $p95AscSorted, "a box widget ranked by its p95 ascending sorts by it");
+eq_or_diff([map { [$_->{item}, $_->{sessions}, $_->{value}, @{$_->{box}}{qw(min q1 median q3 max)}] } @{getChunk($chunks, 'wBoxP95One')->{data}}],
+    [['10.1.1.234', 1, 104190, 104190, 104190, 104190, 104190, 104190]], "a single session's p95 and box are exactly its bytes");
+is(getChunk($chunks, 'wP95One')->{data}->[0]->{value}, 104190, "a single session's p95 over the whole search is exactly its bytes");
+
+# the widget searches run a few at a time and stream as they finish: every
+# widget comes back once, after the stats chunk and before the terminator
+my @manyIds = map { "wMany$_" } (1..12);
+$chunks = viewerPost("/api/sessions/summary?date=-1", to_json({
+    widgets => [map { { id => $_, field => ($_ =~ /[02468]$/ ? 'protocols' : 'ip.src'), length => 3 } } @manyIds]
+}));
+ok(exists $chunks->[0]->{sessions}, "a many widget response starts with the stats chunk");
+is(scalar(keys %{$chunks->[-1]}), 0, "and ends with the terminator");
+eq_or_diff([sort map { $_->{id} } grep { $_->{id} } @{$chunks}], [sort @manyIds], "every widget of a many widget request comes back once");
+ok((grep { $_->{id} && @{$_->{data}} > 0 && !$_->{error} } @{$chunks}) == 12, "and each has data");
 
 # splitField - each value carries its top sub-values with the same metric
 $chunks = postSummary("/api/sessions/summary?date=-1", {

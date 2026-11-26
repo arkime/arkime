@@ -185,6 +185,8 @@ class PcapOutput {
 class SessionAPIs {
   // spigraph runs a query per value, so cap how many values one request asks for
   static #spigraphMaxSize = 10000;
+  // how many of a summary request's widget searches run at once
+  static #summaryWidgetConcurrency = 4;
 
   static #scriptAggs = {
     'ip.dst:port': {
@@ -2431,6 +2433,8 @@ class SessionAPIs {
    * @param {string} field=node - The database field to return data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} metric - Optional numeric (integer) field exp (dashboard widgets). When set, its per-value sum is added as a <dbField>Histo timeline series and per-item total (drives heatmap intensity / treemap size). 'sessions' and non-numeric fields are ignored (doc_count is used).
    * @param {string} metricAgg - Optional percentile of the metric instead of its sum: 'p50' (the median), 'p90', 'p95' or 'p99'. The graph and each item then carry a <dbField>:p<N>Histo series, the percentile of each time bucket, and the item's <dbField>:p<N>Histo total is the percentile over the whole time range (sort by it to rank the values). Not with interval=hourOfWeek, and refused by a multi viewer.
+   * @param {boolean} graphOnly=false - Only the search's own graph and map: no per-value items (items is empty), so no search per value
+   * @param {boolean} metricOnly=false - The graphs carry only sessions and the metric's series, not the user's timeline data filters (each a sum per time bucket and value)
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
@@ -2494,26 +2498,31 @@ class SessionAPIs {
 
       if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
-      if (field === 'ip.dst:port') {
-        query.aggregations.field = { terms: { field: 'destination.ip', size }, aggregations: { sub: { terms: { field: 'destination.port', size } } } };
-      } else if (field === 'fileand') {
-        query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size } } } };
-      } else {
-        query.aggregations.field = { terms: { field, size: size * 2 } };
+      // just the search's own graph (a dashboard timeline or sparkline): no
+      // values to rank, so no terms aggregation and no search per value
+      const graphOnly = req.query.graphOnly === true || req.query.graphOnly === 'true';
+      if (!graphOnly) {
+        if (field === 'ip.dst:port') {
+          query.aggregations.field = { terms: { field: 'destination.ip', size }, aggregations: { sub: { terms: { field: 'destination.port', size } } } };
+        } else if (field === 'fileand') {
+          query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size } } } };
+        } else {
+          query.aggregations.field = { terms: { field, size: size * 2 } };
+        }
       }
 
       // each value's percentile over the whole range (its total)
-      if (pct) { query.aggregations[pct.key] = ViewerUtils.percentileAgg(pct.field, pct.percent); }
+      if (pct) { Object.assign(query.aggregations, ViewerUtils.percentileAggs(pct.key, pct.field, pct.percent)); }
 
       // Rank the candidate Top-N pool by the sort metric. Without this the terms agg
       // returns the top size*2 BY SESSION COUNT (ES default) before the metric sort
       // runs, dropping high-metric/low-count values. Order by the <dbField>Histo sum.
-      const sortPercentile = pct && req.query.sort === `${pct.key}Histo`;
-      const sortMetricField = !sortPercentile && /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
+      const sortPercentile = !graphOnly && pct && req.query.sort === `${pct.key}Histo`;
+      const sortMetricField = !graphOnly && !sortPercentile && /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
         ? req.query.sort.replace(/Histo$/, '')
         : undefined;
       if (sortPercentile && !query.aggregations.field.aggregations) {
-        query.aggregations.field.aggregations = { metricValue: ViewerUtils.percentileAgg(pct.field, pct.percent) };
+        query.aggregations.field.aggregations = ViewerUtils.percentileAggs('metricValue', pct.field, pct.percent);
         query.aggregations.field.terms.order = { [ViewerUtils.percentileOrderKey('metricValue', pct.percent)]: 'desc' };
       } else if (sortMetricField && !query.aggregations.field.aggregations) {
         query.aggregations.field.aggregations = { metricValue: { sum: { field: sortMetricField } } };
@@ -2531,6 +2540,8 @@ class SessionAPIs {
 
         results.graph = ViewerUtils.graphMerge(req, query, result.aggregations);
         results.map = ViewerUtils.mapMerge(result.aggregations);
+
+        if (graphOnly) { return res.send(results); }
 
         if (!result.aggregations) {
           result.aggregations = { field: { buckets: [] } };
@@ -3865,6 +3876,8 @@ class SessionAPIs {
     // a bucketInterval widget's histogram has no size (ES builds every range
     // in the field's span), so a widget whose span/width is past this fails
     const MAX_HISTOGRAM_BUCKETS = 10000;
+    // a box plot's quartiles
+    const BOX_PERCENTS = [25, 50, 75];
 
     // Normalize each requested widget into an aggregation spec
     const widgetSpecs = [];
@@ -3986,7 +3999,7 @@ class SessionAPIs {
           const count = bucket[`${m.aggKey}c`]?.value ?? 0;
           metricValues[m.exp] = count ? (bucket[m.aggKey]?.value ?? 0) / count : 0;
         } else if (spec.percent) {
-          metricValues[m.exp] = ViewerUtils.percentileValue(bucket[m.aggKey]);
+          metricValues[m.exp] = ViewerUtils.percentileIn(bucket, m.aggKey, spec.percent);
         } else {
           metricValues[m.exp] = bucket[m.aggKey]?.value ?? 0;
         }
@@ -3994,34 +4007,43 @@ class SessionAPIs {
       return metricValues;
     }
 
+    // the aggregation that holds a box plot's quartiles: the ranking
+    // percentile's own when it is of the same field, so one digest serves both
+    function boxPctKey (spec) {
+      return spec.percent && spec.metrics[0]?.dbField === spec.boxDbField ? spec.metrics[0].aggKey : 'bxq';
+    }
+
     // a box plot's aggregations per bucket: the metric's extremes, mean and
-    // count, and its quartiles one percentile each (as every backend asks)
+    // count, and its quartiles from one digest (with the ranking percentile
+    // when it can share it, see metricAggsFor)
     function boxAggsFor (spec) {
       if (!spec.boxDbField) { return {}; }
       const field = spec.boxDbField;
-      return {
+      const aggs = {
         bxmin: { min: { field } },
         bxmax: { max: { field } },
         bxavg: { avg: { field } },
-        bxcnt: { value_count: { field } },
-        bxq1: ViewerUtils.percentileAgg(field, 25),
-        bxq2: ViewerUtils.percentileAgg(field, 50),
-        bxq3: ViewerUtils.percentileAgg(field, 75)
+        bxcnt: { value_count: { field } }
       };
+      if (boxPctKey(spec) === 'bxq') { aggs.bxq = ViewerUtils.percentileAgg(field, BOX_PERCENTS); }
+      return aggs;
     }
 
     // a bucket's box: { count: 0 } when none of its sessions has the metric
-    function bucketBox (bucket) {
+    function bucketBox (bucket, spec) {
       const count = bucket.bxcnt?.value ?? 0;
       if (!count) { return { count: 0 }; }
       const num = (r) => (typeof r?.value === 'number' && Number.isFinite(r.value) ? r.value : 0);
+      const min = num(bucket.bxmin);
+      const max = num(bucket.bxmax);
+      const pcts = bucket[boxPctKey(spec)];
       return {
         count,
-        min: num(bucket.bxmin),
-        q1: ViewerUtils.percentileValue(bucket.bxq1),
-        median: ViewerUtils.percentileValue(bucket.bxq2),
-        q3: ViewerUtils.percentileValue(bucket.bxq3),
-        max: num(bucket.bxmax),
+        min,
+        q1: ViewerUtils.percentileValue(pcts, 25, min, max),
+        median: ViewerUtils.percentileValue(pcts, 50, min, max),
+        q3: ViewerUtils.percentileValue(pcts, 75, min, max),
+        max,
         mean: num(bucket.bxavg)
       };
     }
@@ -4035,7 +4057,9 @@ class SessionAPIs {
           aggs[`${m.aggKey}c`] = { value_count: { field: m.dbField } };
           if (m.aggKey === spec.sortAggKey) { aggs[`${m.aggKey}o`] = { avg: { field: m.dbField } }; }
         } else if (spec.percent) {
-          aggs[m.aggKey] = ViewerUtils.percentileAgg(m.dbField, spec.percent);
+          // the box plot's quartiles ride along on the first metric's digest
+          const percents = m === spec.metrics[0] && boxPctKey(spec) === m.aggKey ? [spec.percent, ...BOX_PERCENTS] : spec.percent;
+          Object.assign(aggs, ViewerUtils.percentileAggs(m.aggKey, m.dbField, percents));
         } else {
           aggs[m.aggKey] = { [spec.metricAgg]: { field: m.dbField } };
         }
@@ -4069,8 +4093,14 @@ class SessionAPIs {
           value: spec.sortExp ? metricValues[spec.sortExp] : bucket.doc_count,
           metricValues,
           ...(split ? { split } : {}),
-          ...(spec.boxDbField ? { box: bucketBox(bucket) } : {})
+          ...(spec.boxDbField ? { box: bucketBox(bucket, spec) } : {})
         });
+      }
+      // ES ranked by the raw HDR percentile, which is then clamped to each
+      // value's min and max: put any value that moved back in order
+      if (spec.percent && spec.orderAggKey && spec.orderBy !== 'key') {
+        const dir = spec.order === 'asc' ? 1 : -1;
+        results.sort((a, b) => dir * (a.value - b.value));
       }
       return results;
     }
@@ -4172,40 +4202,58 @@ class SessionAPIs {
       // ignores the stats chunk — recomputing them here would be wasted work.
       const noStats = req.query.noStats === true || req.query.noStats === 'true';
 
-      if (!noStats) {
-        // Top level aggregations
-        const aggregations = {
-          firstPacket: { min: { field: 'firstPacket' } },
-          lastPacket: { max: { field: 'lastPacket' } },
-          bytes: { sum: { field: 'network.bytes' } },
-          dataBytes: { sum: { field: 'totDataBytes' } },
-          packets: { sum: { field: 'network.packets' } }
-        };
-        query.aggregations ??= {};
-        query.aggregations = { ...query.aggregations, ...aggregations };
+      // The stats search runs beside the widgets' (Phase 2), on its own copy
+      // of the query. The stats chunk still goes first: a widget's chunk
+      // waits for it, and none goes out once the stream has ended (no data,
+      // or the stats search failed).
+      let ended = false;
+      const statsSent = noStats
+        ? Promise.resolve()
+        : (async () => {
+          try {
+            // Top level aggregations
+            const statsQuery = structuredClone(query);
+            statsQuery.aggregations = {
+              ...statsQuery.aggregations,
+              firstPacket: { min: { field: 'firstPacket' } },
+              lastPacket: { max: { field: 'lastPacket' } },
+              bytes: { sum: { field: 'network.bytes' } },
+              dataBytes: { sum: { field: 'totDataBytes' } },
+              packets: { sum: { field: 'network.packets' } }
+            };
 
-        const phase1 = await Db.searchSessions(indices, query, options);
-        const map = ViewerUtils.mapMerge(phase1.aggregations);
-        const graph = ViewerUtils.graphMerge(req, query, phase1.aggregations);
+            const phase1 = await Db.searchSessions(indices, statsQuery, options);
 
-        // Handle case where there's no data
-        if (!phase1.aggregations) {
-          return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
-        }
+            // Handle case where there's no data
+            if (!phase1.aggregations) {
+              ended = true;
+              return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
+            }
 
-        const response = {
-          firstPacket: phase1.aggregations.firstPacket.value,
-          lastPacket: phase1.aggregations.lastPacket.value,
-          sessions: phase1.hits.total,
-          bytes: phase1.aggregations.bytes.value,
-          dataBytes: phase1.aggregations.dataBytes.value,
-          packets: phase1.aggregations.packets.value,
-          map,
-          graph
-        };
-        response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
-        await send(response, false);
-      }
+            const response = {
+              firstPacket: phase1.aggregations.firstPacket.value,
+              lastPacket: phase1.aggregations.lastPacket.value,
+              sessions: phase1.hits.total,
+              bytes: phase1.aggregations.bytes.value,
+              dataBytes: phase1.aggregations.dataBytes.value,
+              packets: phase1.aggregations.packets.value,
+              map: ViewerUtils.mapMerge(phase1.aggregations),
+              graph: ViewerUtils.graphMerge(req, statsQuery, phase1.aggregations)
+            };
+            response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
+            await send(response, false);
+          } catch (err) {
+            ended = true;
+            await send({ bsqErr: ViewerUtils.errorString(err) }, true);
+          }
+        })();
+
+      // a widget's chunk, after the stats chunk and while the stream is open
+      const sendWidget = async (msg) => {
+        await statsSent;
+        if (ended || res.destroyed) { return; }
+        await send(msg, false);
+      };
 
       /*****************************************/
       /* Phase 2 Requested widget aggregations */
@@ -4216,35 +4264,34 @@ class SessionAPIs {
       const queryCache = new Map();
       const globalExpression = req.query.expression;
 
-      const widgetBaseQuery = async (expression) => {
+      // the base query (shared, never changed) for a widget's local filter;
+      // widgets with the same filter share one build
+      const widgetBaseQuery = (expression) => {
         if (!expression) { return query; } // reuse the global base query
         const combined = globalExpression ? `(${globalExpression}) && (${expression})` : expression;
-        if (queryCache.has(combined)) { return queryCache.get(combined); }
-        const override = { ...req.query, expression: combined };
-        const built = await BuildQuery.buildPromise(req, override);
-        queryCache.set(combined, built.query);
-        return built.query;
+        if (!queryCache.has(combined)) {
+          const override = { ...req.query, expression: combined };
+          queryCache.set(combined, BuildQuery.buildPromise(req, override).then(built => built.query));
+        }
+        return queryCache.get(combined);
       };
 
-      // INVARIANT: this loop runs strictly sequentially (it awaits each search
-      // before the next). Each iteration mutates its base query in place
-      // (aggregations/size/_source) — both the shared no-expression `query` and
-      // the cached per-expression queries are reused across widgets. Do NOT
-      // parallelize without cloning the query per iteration.
-      for (const spec of widgetSpecs) {
-        if (clientDisconnected || res.destroyed) { break; }
+      // A few widget searches run at once (and beside the stats search), each
+      // on its own copy of its base query; their chunks go out as they finish.
+      await async.eachLimit(widgetSpecs, SessionAPIs.#summaryWidgetConcurrency, async (spec) => {
+        if (clientDisconnected || res.destroyed || ended) { return; }
         const specStart = Date.now();
         try {
           if (spec.unknown) {
-            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart }, false);
-            continue;
+            await sendWidget({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart });
+            return;
           }
           if (spec.unsupported) {
-            await send({ id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart }, false);
-            continue;
+            await sendWidget({ id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart });
+            return;
           }
 
-          const wquery = await widgetBaseQuery(spec.expression);
+          const wquery = structuredClone(await widgetBaseQuery(spec.expression));
           wquery._source = false;
           wquery.size = 0;
           delete wquery.sort;
@@ -4359,13 +4406,14 @@ class SessionAPIs {
           field.data = data;
           if (spec.other) { field.other = otherBucket(phase2.aggregations, spec); }
           field.took = Date.now() - specStart;
-          await send(field, false);
+          await sendWidget(field);
         } catch (fieldErr) {
           // Send error for this specific widget, continue with others
-          await send({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart }, false);
+          await sendWidget({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart });
         }
-      }
-      if (!res.destroyed) {
+      });
+      await statsSent;
+      if (!ended && !res.destroyed) {
         await send({}, true);
       }
     });

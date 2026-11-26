@@ -22,6 +22,7 @@ const STUBS = {
     let n = 0;
     export default { createRandomString: () => 'rand' + (++n) };`),
   '@common/fetchWrapper.js': stub('export const fetchWrapper = async () => ({});'),
+  '/dashboardRequests': stub('export const dashboardRequest = async () => ({});'),
   '@common/queryTimes.js': stub('export const startQuery = () => undefined; export const finishQuery = () => {};'),
   '@common/vueFilters.js': stub(`
     export const commaString = String;

@@ -7,7 +7,7 @@ dashboard's take on a saved-search document table. Its columns are field exps
 resolved to field objects; its rows come from /api/sessions, the endpoint and
 params the Sessions page lists with, narrowed to the columns' db fields.
 */
-import { fetchWrapper } from '@common/fetchWrapper.js';
+import { dashboardRequest } from './dashboardRequests';
 import { timezoneDateString, protocol, ethertype, extractIPv6String } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 import { lengthOptions, defaultLength } from './viewModes';
@@ -144,6 +144,6 @@ export async function fetchSessions (route, store, widget, { signal } = {}) {
   const columns = sessionsColumns(widgetFields(widget));
   if (!columns.length) { throw { i18n: 'sessions.summary.widget.fieldRequired' }; }
   const data = buildWidgetParams(route, store, widget, sessionsRequestParams(columns, widget));
-  const res = await fetchWrapper({ url: 'api/sessions', method: 'POST', data, signal, ...queryInfo(widget) });
+  const res = await dashboardRequest({ url: 'api/sessions', data, signal, ...queryInfo(widget) });
   return { rows: Array.isArray(res?.data) ? res.data : [], total: res?.recordsFiltered || 0 };
 }

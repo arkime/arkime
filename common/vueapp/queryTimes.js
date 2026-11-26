@@ -25,6 +25,8 @@ export function enableQueryTimes () {
 
 // a time that counts: a cancelled request's result was thrown away
 const counts = (entry) => entry.serverMs !== undefined && entry.status !== 'cancelled';
+// a time that adds to the batch's sum: one request that served several
+// widgets (a dashboard's shared response) counts once
 
 // the owner's time is the longest of its requests in the newest batch it is in
 function ownerStarted (owner, batch) {
@@ -90,10 +92,11 @@ export function startQuery ({ url, method, label, owner }) {
  * Finishes a tracked request. A successful request the server did not time
  * (no response time header) is dropped.
  * @param {object} handle - What startQuery returned (undefined is ignored)
- * @param {object} result - { serverMs, error } (error: what the request threw,
- *                          or true when it failed without throwing)
+ * @param {object} result - { serverMs, error, shared } (error: what the request threw,
+ *                          or true when it failed without throwing; shared: the
+ *                          response was another request's, its time not added again)
  */
-export function finishQuery (handle, { serverMs, error } = {}) {
+export function finishQuery (handle, { serverMs, error, shared } = {}) {
   if (!handle) { return; }
   const result = !error ? 'ok' : (error.name === 'AbortError' ? 'cancelled' : 'error');
   const batch = queryTimes.batches.find(b => b.id === handle.batchId);
@@ -113,6 +116,7 @@ export function finishQuery (handle, { serverMs, error } = {}) {
   entry.serverMs = isNaN(ms) ? undefined : ms;
   entry.clientMs = now - entry.start;
   entry.status = result;
+  if (shared) { entry.shared = true; }
   if (result === 'cancelled') {
     // what a cancelled stream already delivered was thrown away with it
     for (const part of batch.entries) {
@@ -167,7 +171,7 @@ export function batchLongest (batch) {
 
 /** The sum of the server times of a batch's finished requests. */
 export function batchSum (batch) {
-  return batch.entries.reduce((total, e) => total + (counts(e) ? e.serverMs : 0), 0);
+  return batch.entries.reduce((total, e) => total + (counts(e) && !e.shared ? e.serverMs : 0), 0);
 }
 
 /** The longest server time of the owner's requests in the newest batch it was

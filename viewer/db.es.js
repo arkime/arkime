@@ -126,8 +126,13 @@ class DbESImpl {
     const internals = this.#internals;
     if (!internals.multiES) { rankEmptyMetricsLast(query?.aggregations ?? query?.aggs); }
 
-    // external scrolling, or multiES or (not regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
-    if (options?.scroll !== undefined || internals.multiES || (!internals.regressionTests && (query.size ?? 0) + (parseInt(query.from ?? 0, 10)) <= 10000)) {
+    // external scrolling, or multiES, or no hits wanted (an aggregation only
+    // search has nothing to page through, and a scroll holds a context per
+    // shard: a few at once over many indices hit search.max_open_scroll_context,
+    // and the failed shards silently drop out of the aggregations), or (not
+    // regressionTests AND lesseq 10000), do a normal search which does its own Promise conversion
+    const wanted = (query.size ?? 0) + (parseInt(query.from ?? 0, 10) || 0);
+    if (options?.scroll !== undefined || internals.multiES || wanted === 0 || (!internals.regressionTests && wanted <= 10000)) {
       if (!cb) {
         return Db.search(index, query, options);
       }
