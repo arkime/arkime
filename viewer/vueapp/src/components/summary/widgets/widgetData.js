@@ -706,7 +706,12 @@ async function postSummary (route, store, body, signal, excludeVariable, timeShi
 
   // the planner may send it with other widgets' summary requests over the
   // same search, and times it by its own chunks (these bodies skip the stats)
-  return await dashboardRequest({ url: 'api/sessions/summary', data: body, signal, ...(widget ? queryInfo(widget) : {}) });
+  const res = await dashboardRequest({ url: 'api/sessions/summary', data: body, signal, ...(widget ? queryInfo(widget) : {}) });
+  // the search itself failed (a time limit, a bad expression): its one chunk
+  // has no widget's id, so say so rather than hand back no data
+  const failed = (Array.isArray(res) ? res : []).find(c => c?.bsqErr);
+  if (failed) { throw new Error(String(failed.bsqErr)); }
+  return res;
 }
 
 /**

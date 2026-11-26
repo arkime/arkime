@@ -4072,6 +4072,10 @@ class SessionAPIs {
         return [];
       }
 
+      // ES ranks by the raw HDR percentile, which is then clamped to each
+      // value's min and max, so the values that have one are ranked again
+      const rerank = !!(spec.percent && spec.orderAggKey && spec.orderBy !== 'key');
+      const unranked = []; // the values with no percentile: ES ranked them last
       const results = [];
       for (let i = 0; i < Math.min(agg.buckets.length, limit); i++) {
         const bucket = agg.buckets[i];
@@ -4084,7 +4088,8 @@ class SessionAPIs {
           : undefined;
         // a histogram bucket's key is the range's lower bound
         const range = spec.bucketInterval ? [bucket.key, bucket.key + spec.bucketInterval - 1] : undefined;
-        results.push({
+        const ranked = !rerank || ViewerUtils.percentileHasValue(bucket[spec.sortAggKey], spec.percent);
+        (ranked ? results : unranked).push({
           item: range ? (spec.bucketInterval > 1 ? `${range[0]}-${range[1]}` : String(range[0])) : bucket.key,
           ...(range ? { range } : {}),
           sessions: bucket.doc_count,
@@ -4096,11 +4101,12 @@ class SessionAPIs {
           ...(spec.boxDbField ? { box: bucketBox(bucket, spec) } : {})
         });
       }
-      // ES ranked by the raw HDR percentile, which is then clamped to each
-      // value's min and max: put any value that moved back in order
-      if (spec.percent && spec.orderAggKey && spec.orderBy !== 'key') {
+      // put any value the clamp moved back in order, the ones without a
+      // percentile still last (as 0 they would lead a bottom N)
+      if (rerank) {
         const dir = spec.order === 'asc' ? 1 : -1;
         results.sort((a, b) => dir * (a.value - b.value));
+        results.push(...unranked);
       }
       return results;
     }
@@ -4248,11 +4254,15 @@ class SessionAPIs {
           }
         })();
 
-      // a widget's chunk, after the stats chunk and while the stream is open
-      const sendWidget = async (msg) => {
-        await statsSent;
-        if (ended || res.destroyed) { return; }
-        await send(msg, false);
+      // A widget's chunk goes out after the stats chunk, in the order the
+      // widgets finish, while the stream is open. Its search doesn't wait for
+      // that (the stats search may still be running), so the next one starts.
+      let chunksSent = statsSent;
+      const sendWidget = (msg) => {
+        chunksSent = chunksSent.then(async () => {
+          if (ended || res.destroyed) { return; }
+          await send(msg, false);
+        });
       };
 
       /*****************************************/
@@ -4283,11 +4293,11 @@ class SessionAPIs {
         const specStart = Date.now();
         try {
           if (spec.unknown) {
-            await sendWidget({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart });
+            sendWidget({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart });
             return;
           }
           if (spec.unsupported) {
-            await sendWidget({ id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart });
+            sendWidget({ id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart });
             return;
           }
 
@@ -4406,13 +4416,13 @@ class SessionAPIs {
           field.data = data;
           if (spec.other) { field.other = otherBucket(phase2.aggregations, spec); }
           field.took = Date.now() - specStart;
-          await sendWidget(field);
+          sendWidget(field);
         } catch (fieldErr) {
           // Send error for this specific widget, continue with others
-          await sendWidget({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart });
+          sendWidget({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart });
         }
       });
-      await statsSent;
+      await chunksSent;
       if (!ended && !res.destroyed) {
         await send({}, true);
       }

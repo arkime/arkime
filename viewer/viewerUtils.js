@@ -150,18 +150,28 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // What a percentile aggregation answered for a percent, as the backend gave it
+  static #percentileRaw (result, percent) {
+    if (!result?.values) { return result?.value; }
+    const key = percent === undefined ? undefined : Number(percent).toFixed(1);
+    return key !== undefined && Object.hasOwn(result.values, key) ? result.values[key] : Object.values(result.values)[0];
+  }
+
+  // ----------------------------------------------------------------------------
+  // True when a percentile aggregation has a value: a bucket none of whose
+  // sessions has the field answers null (percentileValue makes that 0).
+  static percentileHasValue (result, percent) {
+    const v = ViewerUtils.#percentileRaw(result, percent);
+    return typeof v === 'number' && Number.isFinite(v);
+  }
+
+  // ----------------------------------------------------------------------------
   // A percentile aggregation's value: ES's values map (null for a bucket with
   // no values), or a plain value; 0 when there is none. percent picks one of
   // several (the first when not given). min and max, when finite, bound it:
   // an HDR value is its bucket's bound, which can fall just outside them.
   static percentileValue (result, percent, min, max) {
-    let v;
-    if (result?.values) {
-      const key = percent === undefined ? undefined : Number(percent).toFixed(1);
-      v = key !== undefined && Object.hasOwn(result.values, key) ? result.values[key] : Object.values(result.values)[0];
-    } else {
-      v = result?.value;
-    }
+    let v = ViewerUtils.#percentileRaw(result, percent);
     if (typeof v !== 'number' || !Number.isFinite(v)) { return 0; }
     if (typeof min === 'number' && Number.isFinite(min) && v < min) { v = min; }
     if (typeof max === 'number' && Number.isFinite(max) && v > max) { v = max; }

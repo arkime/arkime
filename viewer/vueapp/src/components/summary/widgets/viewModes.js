@@ -111,8 +111,8 @@ export const METRIC_SLOTS = {
 
 // Types whose metric can use an aggregation other than sum (avg/min/max/unique
 // count). Only the /api/sessions/summary paths take one; the spigraph-backed
-// modes (heatmap/treemap/timeline) always sum into their histo series. A
-// waffle's squares are shares of a whole, so it only sums.
+// modes (heatmap/timeline) always sum into their histo series. A waffle's
+// squares and a treemap's rectangles are shares of a whole, so they only sum.
 export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'gauge', 'tagcloud', 'map', 'combo', 'scatter'];
 
 // The per-bucket aggregations a metric field can use (server: ViewerUtils.METRIC_AGGS):

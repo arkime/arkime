@@ -143,7 +143,8 @@ const { loading, error, fetchData } = useSpigraphWidget(
     const sum = (series) => series.reduce((total, p) => total + (p[1] || 0), 0);
     const sessions = sum(now.graph?.sessionsHisto || []);
     const value = sum(metricSeries(now.graph, metricHistoKey(widget)));
-    return { rows: sessions ? [{ item: '', sessions, value }] : [], previous: previousValue, graph: now.graph };
+    // one row even with no sessions (a 0, as the summary endpoint's total is)
+    return { rows: [{ item: '', sessions, value }], previous: previousValue, graph: now.graph };
   }
 );
 

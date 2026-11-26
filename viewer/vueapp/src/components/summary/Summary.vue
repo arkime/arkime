@@ -10,26 +10,6 @@ SPDX-License-Identifier: Apache-2.0
       :message="error"
       class="mt-5 mb-5" />
 
-    <!-- Skeleton stats (shown while loading, before first chunk) -->
-    <div
-      v-if="loading && !summary && !error"
-      class="summary-content m-2">
-      <!-- Skeleton Field Widgets -->
-      <div class="charts-container charts-grid">
-        <div
-          v-for="w in widgets"
-          :key="w.id"
-          class="widget-wrapper"
-          :style="spanStyle(w)">
-          <SummaryWidget
-            :title="w.title || defaultWidgetTitle(w)"
-            :data="[]"
-            :loading="true"
-            :field="w.field" />
-        </div>
-      </div>
-    </div>
-
     <!-- Summary content (shows progressively as data streams in) -->
     <div
       v-if="!error && summary"
@@ -466,6 +446,7 @@ const emit = defineEmits(['widget-config-changed', 'streaming-state', 'canceled-
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
+let loadSeq = 0; // numbers the loads, so one a newer load replaced can tell
 
 // Sortable instance for drag-and-drop reordering
 let sortableInstance = null;
@@ -553,7 +534,6 @@ const startResize = (w, evt, axis) => {
 const summary = ref(null);
 // the stats chunk (sessions, bytes, first and last packet), null until it's in
 const statsChunk = computed(() => (summary.value?.sessions !== undefined ? summary.value : null));
-const loading = ref(true);
 const error = ref('');
 const widgetContainer = ref(null);
 // scroll container provided by the page shell (PageLayout)
@@ -788,7 +768,6 @@ const cancelLoading = () => {
   // Update state
   canceled.value = true;
   streaming.value = false;
-  loading.value = false;
 
   // Mark still-loading widgets as cancelled
   if (summary.value?.fields) {
@@ -990,6 +969,7 @@ const retryAllFailed = () => {
 const generateSummary = async () => {
   // signal self-fetching view modes (e.g. heatmap) to refetch on every reload
   reloadNonce.value++;
+  const seq = ++loadSeq;
 
   // Note: an empty dashboard still requests (widgets: []) so the capture-stats
   // band shows real numbers, consistent with a dashboard of only self-fetch widgets.
@@ -1002,7 +982,6 @@ const generateSummary = async () => {
     pendingPromise = null;
   }
 
-  loading.value = true;
   error.value = '';
   // The widgets are up right away, so the ones that fetch for themselves
   // start without waiting for the stats; the stats and time widgets, and
@@ -1056,9 +1035,6 @@ const generateSummary = async () => {
       if (chunk.sessions !== undefined) {
         // the render entries were made when the load started
         summary.value = { ...chunk, fields: summary.value?.fields ?? props.widgets.map(makeEntry) };
-
-        // Hide loading overlay once we have summary stats (widgets show their own loading)
-        loading.value = false;
       } else if (chunk.id) {
         // Widget chunks have an id - find and update the placeholder
         mergeFieldChunk(chunk);
@@ -1099,15 +1075,16 @@ const generateSummary = async () => {
   } catch (err) {
     finishQuery(query, { serverMs, error: err });
     if (err.name === 'AbortError') {
-      // Request was cancelled, don't show as error
-      streaming.value = false;
+      // Request was cancelled, don't show as error. A reload cancels the
+      // load before it, which finds out here after the new one has started:
+      // that one is streaming.
+      if (seq === loadSeq) { streaming.value = false; }
       return;
     }
     pendingPromise = null;
     streaming.value = false;
     console.error('Error generating summary:', err);
     error.value = err.text || err.message || String(err);
-    loading.value = false;
   }
 };
 

@@ -25,8 +25,6 @@ export function enableQueryTimes () {
 
 // a time that counts: a cancelled request's result was thrown away
 const counts = (entry) => entry.serverMs !== undefined && entry.status !== 'cancelled';
-// a time that adds to the batch's sum: one request that served several
-// widgets (a dashboard's shared response) counts once
 
 // the owner's time is the longest of its requests in the newest batch it is in
 function ownerStarted (owner, batch) {

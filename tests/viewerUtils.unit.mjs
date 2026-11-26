@@ -65,6 +65,10 @@ describe('ViewerUtils percentiles', () => {
     assert.equal(ViewerUtils.percentileValue({ value: 7 }), 7, 'ClickHouse answers one percent as a value');
     assert.equal(ViewerUtils.percentileValue({ values: { '95.0': null } }, 95), 0, 'a bucket without values');
     assert.equal(ViewerUtils.percentileValue(undefined), 0);
+    assert.equal(ViewerUtils.percentileHasValue({ values: { '95.0': null } }, 95), false, 'a bucket without values has none');
+    assert.equal(ViewerUtils.percentileHasValue({ values: { '95.0': 0 } }, 95), true, 'a 0 is a value');
+    assert.equal(ViewerUtils.percentileHasValue({ value: 7 }, 95), true);
+    assert.equal(ViewerUtils.percentileHasValue(undefined, 95), false);
   });
 
   test('an HDR value outside the min and max is clamped to them', () => {

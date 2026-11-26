@@ -12,8 +12,9 @@ and sends fewer, sooner, before any of them goes out:
   connection graph, tree and circle of one field pair) go out once, carrying
   every field any of them asked for;
 - summary requests with the same search and time window go out as one, its
-  widgets renamed apart, and the streamed response is handed back to each
-  widget as soon as its own chunks are in;
+  widgets renamed apart (a widget two of them ask for goes once), and the
+  streamed response is handed back to each widget as soon as its own chunks
+  are in;
 - the widgets on screen go first, the rest right behind them: being on screen
   only sets the order, nothing waits for an answer before it goes, so a fast
   database answers the whole page in about the time of its slowest request;
@@ -78,7 +79,8 @@ export function connectionFields (data) {
  * The groups a batch of requests goes out as, in the order they were asked
  * for. A summary group holds at most MAX_SUMMARY_WIDGETS widgets.
  * @param {object[]} reqs - { url, data, ... }
- * @returns {object[]} { kind, url, data, members: [req, ...] }
+ * @returns {object[]} { kind, url, data, members: [req, ...] } (a merged
+ *                     summary group also has routes, see below)
  */
 export function groupRequests (reqs) {
   const groups = [];
@@ -102,11 +104,26 @@ export function groupRequests (reqs) {
       const fields = [...new Set(group.members.flatMap(m => connectionFields(m.data)))];
       group.data = { ...first, fields: fields.join(',') };
     } else if (group.kind === 'summary' && group.members.length > 1) {
-      // each member's widgets renamed apart: <member index>:<widget id>
-      group.data = {
-        ...first,
-        widgets: group.members.flatMap((m, i) => m.data.widgets.map(w => ({ ...w, id: `${i}:${w.id}` })))
-      };
+      // each member's widgets renamed apart, <member index>:<widget id>; a
+      // widget asked for again (the same but for its id) isn't sent again,
+      // its chunk goes to everyone who asked: routes has who, by the id sent
+      const widgets = [];
+      const sentIds = new Map(); // a widget less its id -> the id it was sent with
+      group.routes = new Map(); // id sent -> [[member index, the member's id for it], ...]
+      group.members.forEach((m, i) => {
+        for (const w of m.data.widgets) {
+          const spec = stableJson(withoutKey(w, 'id'));
+          let sentId = sentIds.get(spec);
+          if (sentId === undefined) {
+            sentId = `${i}:${w.id}`;
+            sentIds.set(spec, sentId);
+            group.routes.set(sentId, []);
+            widgets.push({ ...w, id: sentId });
+          }
+          group.routes.get(sentId).push([i, w.id]);
+        }
+      });
+      group.data = { ...first, widgets };
     } else {
       group.data = first;
     }
@@ -153,11 +170,15 @@ export function createPlanner ({
     try {
       const res = await send(group.url, group.data, group.controller.signal);
       serverMs = res.serverMs;
-      group.members.forEach((m, i) => {
-        // a shared response's time counts once in the batch's sum
-        track.finish(m.handle, { serverMs, shared: i > 0 });
+      // a shared response's time counts once in the batch's sum: with the
+      // first widget still waiting for it (one that let go has no time)
+      let counted = false;
+      for (const m of group.members) {
+        const waiting = live(m);
+        track.finish(m.handle, { serverMs, shared: waiting && counted });
+        counted ||= waiting;
         resolveMember(m, res.data);
-      });
+      }
     } catch (err) {
       for (const m of group.members) {
         track.finish(m.handle, { serverMs: err.serverMs ?? serverMs, error: err });
@@ -171,16 +192,20 @@ export function createPlanner ({
     // each member's chunks, and how many of its widgets are still to come
     const chunks = group.members.map(() => []);
     const left = group.members.map(m => m.data.widgets.length);
+    // how many of a member's chunks another member's time already counts
+    const copies = group.members.map(() => 0);
     const done = (i, error) => {
       const m = group.members[i];
       if (m.settled) { return; }
       m.settled = true;
       const timed = chunks[i].filter(c => Number.isFinite(c?.took));
       // the stream's time header only covers its first chunk: time a member
-      // by its own chunks
+      // by its own chunks (a member all of whose chunks were another's too
+      // adds nothing to the batch's sum)
       track.finish(m.handle, {
         serverMs: timed.length ? timed.reduce((total, c) => total + c.took, 0) : undefined,
-        error: error || chunks[i].some(c => c?.error || c?.bsqErr)
+        error: error || chunks[i].some(c => c?.error || c?.bsqErr),
+        shared: timed.length > 0 && copies[i] >= timed.length
       });
       if (error) { rejectMember(m, error); } else { resolveMember(m, chunks[i]); }
     };
@@ -196,11 +221,15 @@ export function createPlanner ({
         }
         return;
       }
-      const sep = chunk.id.indexOf(':');
-      const i = Number(chunk.id.slice(0, sep));
-      if (!(i >= 0 && i < chunks.length)) { return; }
-      chunks[i].push({ ...chunk, id: chunk.id.slice(sep + 1) });
-      if (--left[i] === 0) { done(i); }
+      // to each member that asked for this widget, under the member's own
+      // id; its time counts with the first of them still waiting for it
+      let counted = false;
+      for (const [i, id] of (group.routes.get(chunk.id) || [])) {
+        chunks[i].push({ ...chunk, id });
+        if (counted) { copies[i]++; }
+        counted ||= live(group.members[i]);
+        if (--left[i] === 0) { done(i); }
+      }
     };
     try {
       await stream(group.url, group.data, group.controller.signal, onChunk);

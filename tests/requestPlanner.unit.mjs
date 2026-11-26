@@ -85,14 +85,24 @@ describe('groupRequests', () => {
   test('summary widgets are renamed apart, and a group stays under the widget limit', () => {
     const many = Array.from({ length: MAX_SUMMARY_WIDGETS - 1 }, (_, i) => ({ id: `w${i}` }));
     const groups = groupRequests([
-      { url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'm' }] } },
-      { url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'm' }] } },
+      { url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'm', metricType: 'bytes' }] } },
+      { url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'm', metricType: 'packets' }] } },
       { url: 'api/sessions/summary', data: { noStats: true, widgets: many } }
     ]);
     assert.equal(groups.length, 2);
     assert.deepEqual(groups[0].data.widgets.map(w => w.id), ['0:m', '1:m']);
     assert.equal(groups[1].members.length, 1);
     assert.equal(groups[1].data.widgets.length, MAX_SUMMARY_WIDGETS - 1);
+  });
+
+  test('a summary widget asked for more than once is sent once', () => {
+    const total = { field: '', total: true, metricType: 'bytes' };
+    const [group] = groupRequests([
+      { url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'm', ...total }] } },
+      { url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'lo', field: 'ip.src' }, { ...total, id: 'g' }] } }
+    ]);
+    assert.deepEqual(group.data.widgets, [{ id: '0:m', ...total }, { id: '1:lo', field: 'ip.src' }]);
+    assert.deepEqual(group.routes.get('0:m'), [[0, 'm'], [1, 'g']]);
   });
 });
 
@@ -120,8 +130,8 @@ describe('createPlanner', () => {
 
   test('summary requests over one search stream as one, each widget answered when its chunks are in', async () => {
     const h = harness();
-    const a = settled(h.planner.request({ url: 'api/sessions/summary', data: { noStats: true, expression: 'x', widgets: [{ id: 'lo' }, { id: 'hi' }] }, owner: 'a' }));
-    const b = settled(h.planner.request({ url: 'api/sessions/summary', data: { noStats: true, expression: 'x', widgets: [{ id: 'm' }] }, owner: 'b' }));
+    const a = settled(h.planner.request({ url: 'api/sessions/summary', data: { noStats: true, expression: 'x', widgets: [{ id: 'lo', metricAgg: 'min' }, { id: 'hi', metricAgg: 'max' }] }, owner: 'a' }));
+    const b = settled(h.planner.request({ url: 'api/sessions/summary', data: { noStats: true, expression: 'x', widgets: [{ id: 'm', metricAgg: 'sum' }] }, owner: 'b' }));
     await h.flush();
     assert.equal(h.streams.length, 1);
     assert.deepEqual(h.streams[0].data.widgets.map(w => w.id), ['0:lo', '0:hi', '1:m']);
@@ -137,6 +147,35 @@ describe('createPlanner', () => {
     assert.deepEqual(h.tracked.map(t => t.result.serverMs), [16, 7]);
     s.onChunk({});
     s.resolve({});
+  });
+
+  test('a summary widget two widgets asked for is answered to both, its time counted once', async () => {
+    const h = harness();
+    const a = settled(h.planner.request({ url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'm', total: true }] }, owner: 'a' }));
+    const b = settled(h.planner.request({ url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'g', total: true }] }, owner: 'b' }));
+    await h.flush();
+    assert.deepEqual(h.streams[0].data.widgets, [{ id: '0:m', total: true }]);
+    h.streams[0].onChunk({ id: '0:m', data: [4], took: 9 });
+    await tick();
+    assert.deepEqual(a.value, [{ id: 'm', data: [4], took: 9 }]);
+    assert.deepEqual(b.value, [{ id: 'g', data: [4], took: 9 }]);
+    assert.deepEqual(h.tracked.map(t => [t.result.serverMs, t.result.shared]), [[9, false], [9, true]]);
+    h.streams[0].resolve({});
+  });
+
+  test('a shared response counts with the first widget still waiting for it', async () => {
+    const h = harness();
+    const ca = new AbortController();
+    h.planner.request({ url: 'api/spigraph', data: { exp: 'p' }, signal: ca.signal, owner: 'a' }).catch(() => {});
+    const b = settled(h.planner.request({ url: 'api/spigraph', data: { exp: 'p' }, owner: 'b' }));
+    await h.flush();
+    ca.abort();
+    await tick();
+    h.sends[0].resolve({ data: { items: [] }, serverMs: '42' });
+    await tick();
+    assert.deepEqual(b.value, { items: [] });
+    assert.equal(h.tracked[0].result.error.name, 'AbortError');
+    assert.deepEqual(h.tracked[1].result, { serverMs: '42', shared: false });
   });
 
   test('a summary error for the whole search reaches every widget of the stream', async () => {

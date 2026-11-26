@@ -86,8 +86,11 @@ let d3lib;
 
 // a treemap draws each value's total, never its timeline: the summary
 // endpoint's one terms aggregation, not SPI Graph's search per value with a
-// graph each
-const fetchTotals = async (route, store, widget, opts) => (await fetchSummaryWidget(route, store, widget, opts)).data;
+// graph each. Its parts add up and it has no order of its own, so it is
+// always the top values by the metric's sum, whatever order or aggregation
+// the widget still carries from another type.
+const fetchTotals = async (route, store, widget, opts) =>
+  (await fetchSummaryWidget(route, store, { ...widget, order: 'desc', orderBy: 'value', metricAgg: 'sum' }, opts)).data;
 
 const { loading, error, fetchData } = useSpigraphWidget(
   () => props.widget,
