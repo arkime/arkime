@@ -240,8 +240,10 @@ watch(picked, () => { if (!menuOpen.value) { apply(); } });
   max-height: 72px;
   overflow-y: auto;
 }
+/* a slider thumb's hover halo is 40px, 4px taller than the slider and 20px
+   either side of the thumb's center, room for it inside the card's clipped body */
 .control-range {
-  padding: 0 8px;
+  padding: 4px 12px 0;
 }
 .control-range__text {
   display: flex;
