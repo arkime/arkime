@@ -1,4 +1,4 @@
-use Test::More tests => 223;
+use Test::More tests => 255;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -456,14 +456,19 @@ my $boxBody = to_json({
         { id => 'wBox', field => 'ip.src', length => 5, metricType => 'bytes', metrics => ['bytes'], sortMetric => 'sessions', box => JSON::true },
         { id => 'wBoxFew', field => 'ip.src', length => 5, order => 'asc', metricType => 'bytes', metrics => ['bytes'], sortMetric => 'sessions', box => JSON::true },
         { id => 'wBoxMed', field => 'ip.src', length => 5, metricType => 'bytes', metrics => ['bytes'], sortMetric => 'bytes', metricAgg => 'p50', box => JSON::true },
-        { id => 'wBoxMin', field => 'ip.src', length => 1000, metricType => 'bytes', metricAgg => 'min' },
+        { id => 'wBoxMin', field => 'ip.src', length => 5, metricType => 'bytes', metrics => ['bytes'], sortMetric => 'sessions', metricAgg => 'min' },
+        { id => 'wBoxMax', field => 'ip.src', length => 5, metricType => 'bytes', metrics => ['bytes'], sortMetric => 'sessions', metricAgg => 'max' },
         { id => 'wBoxText', field => 'ip.src', length => 5, metricType => 'ip.dst', metrics => ['ip.dst'], metricAgg => 'cardinality', box => JSON::true },
         { id => 'wNoBox', field => 'ip.src', length => 5, metricType => 'bytes' }
     ]
 });
 $chunks = viewerPost("/api/sessions/summary?date=-1", $boxBody);
 my $boxChunk = getChunk($chunks, 'wBox');
-my %minByIp = map { $_->{item} => $_->{value} } @{getChunk($chunks, 'wBoxMin')->{data}};
+# the min and max widgets are ranked as the box is: over many indices the
+# database's top values are each shard's own top ones, so a value's sessions
+# are only the same ones in a search that ranks the same way
+my %boxMinByIp = map { $_->{item} => $_->{metricValues}->{bytes} } @{getChunk($chunks, 'wBoxMin')->{data}};
+my %boxMaxByIp = map { $_->{item} => $_->{metricValues}->{bytes} } @{getChunk($chunks, 'wBoxMax')->{data}};
 ok(!$boxChunk->{error} && @{$boxChunk->{data}} == 5, "box widget has 5 values");
 my ($boxInOrder, $boxExtremes, $boxCount, $boxSingle) = (1, 1, 1, 1);
 ($sorted, $prev) = (1, undef);
@@ -473,7 +478,7 @@ foreach my $item (@{$boxChunk->{data}}) {
     $prev = $item->{sessions};
     $boxInOrder = 0 if $b->{min} > $b->{q1} + 0.5 || $b->{q1} > $b->{median} + 0.5 || $b->{median} > $b->{q3} + 0.5 || $b->{q3} > $b->{max} + 0.5 ||
                        $b->{mean} < $b->{min} - 0.5 || $b->{mean} > $b->{max} + 0.5;
-    $boxExtremes = 0 if $b->{min} != $minByIp{$item->{item}} || $b->{max} != $maxByIp{$item->{item}};
+    $boxExtremes = 0 if !defined $boxMinByIp{$item->{item}} || $b->{min} != $boxMinByIp{$item->{item}} || $b->{max} != $boxMaxByIp{$item->{item}};
     $boxCount = 0 if $b->{count} != $item->{sessions};
 }
 # the values with the fewest sessions, so some have just the one
@@ -744,6 +749,87 @@ my $goodChunk = getChunk($chunks, 'wGood');
 ok(defined $badChunk && exists $badChunk->{error}, "unknown widget field returns a per-widget error chunk");
 like($badChunk->{error}, qr/Unknown field/, "unknown field error names the problem");
 ok(defined $goodChunk && @{$goodChunk->{data}} > 0, "widgets after an unknown-field widget still return data");
+
+# Twins: the same widget asked for twice (a ${var} widget with nothing picked
+# is its unfiltered twin) is searched once, each id getting the chunk, the copy
+# marked shared
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    noStats => JSON::true,
+    widgets => [
+        { id => 'wTwinA', field => 'ip.dst:port', length => 5, metrics => ['sessions', 'bytes'] },
+        { id => 'wTwinB', field => 'ip.dst:port', length => 5, metrics => ['sessions', 'bytes'] },
+        { id => 'wTwinOther', field => 'ip.dst:port', length => 4, metrics => ['sessions', 'bytes'] }
+    ]
+});
+my %twinA = %{getChunk($chunks, 'wTwinA')};
+my %twinB = %{getChunk($chunks, 'wTwinB')};
+ok(!exists $twinA{shared} && $twinB{shared}, "a twin's copy is marked shared, the searched one isn't");
+delete $twinA{id}; delete $twinB{id}; delete $twinB{shared};
+eq_or_diff(\%twinB, \%twinA, "twins get the same chunk");
+ok(!exists getChunk($chunks, 'wTwinOther')->{shared}, "a widget that differs is searched itself");
+
+# Top IPs (the ip field: each session under both its addresses) are each
+# value's exact total of the sessions with it on either side, and its metric
+# over them, whatever the ranking
+my %ipWidgets = (
+    wIpCount => { length => 5 },
+    wIpBytes => { length => 3, metricType => 'bytes' },
+    wIpAvg => { length => 3, metricType => 'bytes', metricAgg => 'avg' }
+);
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    noStats => JSON::true,
+    widgets => [map { { id => $_, field => 'ip', %{$ipWidgets{$_}} } } sort keys %ipWidgets]
+});
+my %ipTop = map { $_ => getChunk($chunks, $_)->{data} } keys %ipWidgets;
+my @ipSessions = map { $_->{sessions} } @{$ipTop{wIpCount}};
+eq_or_diff(\@ipSessions, [sort { $b <=> $a } @ipSessions], "top IPs are ranked by their session count");
+my @ipChecks;
+foreach my $id (sort keys %ipWidgets) {
+    foreach my $row (@{$ipTop{$id}}) {
+        push @ipChecks, { id => $id, item => $row->{item}, sessions => $row->{sessions}, value => $row->{value},
+            total => { id => "t" . scalar(@ipChecks), total => JSON::true, expression => "ip.src == $row->{item} || ip.dst == $row->{item}", %{$ipWidgets{$id}}{qw(metricType metricAgg)} } };
+    }
+}
+delete $_->{total}->{length} foreach @ipChecks;
+$_->{total}->{metricType} //= 'sessions' foreach @ipChecks;
+delete $_->{total}->{metricAgg} foreach grep { !defined $_->{total}->{metricAgg} } @ipChecks;
+$chunks = postSummary("/api/sessions/summary?date=-1", { noStats => JSON::true, widgets => [map { $_->{total} } @ipChecks] });
+foreach my $check (@ipChecks) {
+    my $exact = getChunk($chunks, $check->{total}->{id})->{data}->[0];
+    is($check->{sessions}, $exact->{sessions}, "$check->{id} $check->{item}: sessions on either side");
+    if ($check->{id} ne 'wIpCount') {
+        cmp_ok(abs($check->{value} - $exact->{value}), '<', 1e-6, "$check->{id} $check->{item}: the metric over them");
+    }
+}
+
+# ip.srcdst (Src or Dst IP) is what a widget's ip counts, and searching it
+# finds just the sessions a value's bar counts (ip itself searches every IP field)
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    noStats => JSON::true,
+    widgets => [
+        { id => 'wIpOld', field => 'ip', length => 5 },
+        { id => 'wIpSrcDst', field => 'ip.srcdst', length => 5 }
+    ]
+});
+my $srcDstTop = getChunk($chunks, 'wIpSrcDst')->{data};
+eq_or_diff($srcDstTop, getChunk($chunks, 'wIpOld')->{data}, "ip.srcdst counts what a widget's ip does");
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    noStats => JSON::true,
+    widgets => [map { { id => "s$_", total => JSON::true, expression => "ip.srcdst == $srcDstTop->[$_]->{item}" } } 0..1]
+});
+is(getChunk($chunks, "s$_")->{data}->[0]->{sessions}, $srcDstTop->[$_]->{sessions}, "searching ip.srcdst == $srcDstTop->[$_]->{item} finds its bar's sessions") foreach 0..1;
+my $srcDstField = viewerGet("/api/fields?array=true");
+ok((grep { $_->{exp} eq 'ip.srcdst' && $_->{friendlyName} eq 'Src or Dst IP' } @{$srcDstField}), "ip.srcdst is a field");
+
+# A total widget is the whole result set's totals, whatever field it carries
+$chunks = postSummary("/api/sessions/summary?date=-1", {
+    noStats => JSON::true,
+    widgets => [
+        { id => 'tAll', total => JSON::true, metricType => 'bytes' },
+        { id => 'tIp', total => JSON::true, field => 'ip', metricType => 'bytes' }
+    ]
+});
+eq_or_diff(getChunk($chunks, 'tIp')->{data}, getChunk($chunks, 'tAll')->{data}, "a total widget with the ip field has the same totals");
 
 # the summary widget chunks checked above all had a took
 ok($tookOk, "every widget chunk has a took");

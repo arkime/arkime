@@ -76,10 +76,12 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
  * Ensures a saved widget has an id and all expected fields
  */
 export const normalizeWidget = (w) => {
-  // fields[] is the source of truth; field stays = fields[0] for back-compat
-  const fields = Array.isArray(w.fields) && w.fields.length
+  // fields[] is the source of truth; field stays = fields[0] for back-compat.
+  // A widget's ip has always counted a session's two endpoints, which
+  // ip.srcdst names (ip searches every IP field), so its click filters on them
+  const fields = (Array.isArray(w.fields) && w.fields.length
     ? w.fields.filter(f => typeof f === 'string').slice(0, MAX_FIELDS)
-    : (str(w.field) ? [w.field] : []);
+    : (str(w.field) ? [w.field] : [])).map(f => (f === 'ip' ? 'ip.srcdst' : f));
   // the text widget of earlier 7.0 builds is the markdown widget
   const savedMode = str(w.viewMode) === 'text' ? 'markdown' : str(w.viewMode);
   const viewMode = savedMode || DEFAULT_VIEW_MODES[str(w.field)] || 'bar';
@@ -139,7 +141,7 @@ export const defaultWidgets = () => [
   makeWidgetDef('', { viewMode: 'timeline', width: 4, height: 2 }),
   // geo distribution + all-IP top talkers (bar)
   makeWidgetDef('country.src', { viewMode: 'map', width: 2, height: 3 }),
-  makeWidgetDef('ip', { viewMode: 'bar', width: 2, height: 3, length: 15 }),
+  makeWidgetDef('ip.srcdst', { viewMode: 'bar', width: 2, height: 3, length: 15 }),
   // protocols breakdown (pie)
   makeWidgetDef('protocols', { viewMode: 'pie', width: 2, height: 3, length: 8 }),
   // multi-metric table: Dst IP:Port ranked by bytes, with session/packet columns

@@ -85,6 +85,7 @@ e
 %%
 const util = require('util');
 const moment = require('moment');
+const net = require('net');
 const RE2 = require('re2');
 
 /* Given a field name, if prefixed with 'db:' return dbFieldsMap entry (i.e., looked up according to
@@ -116,8 +117,9 @@ function getIpInfoList (yy, needPort) {
   for (const field in yy.fieldsMap) {
     const info = yy.fieldsMap[field];
 
-    // If ip itself or not an ip field stop
-    if (field === 'ip' || info.type !== 'ip') { continue; }
+    // If ip itself or not an ip field stop; a shorthand for other ip fields
+    // (ip.srcdst, ip.dns.all) has no column of its own, its fields are here
+    if (field === 'ip' || info.type !== 'ip' || info.regex) { continue; }
 
     // Already completed
     if (completed[info.dbField]) { continue; }
@@ -172,15 +174,17 @@ function parseIpPort (yy, field, ipPortStr) {
   function parseSingleIp (exp, singleDbField, singleIp, singlePort) {
     let singleObj;
 
-    if (typeof (singlePort) === 'string' && singlePort.match(/[^0-9]/)) {
+    if (singlePort !== -1 && !(/^\d+$/.test(String(singlePort)) && +singlePort <= 65535)) {
       throw singlePort + ' not a valid port';
     }
 
     if (singleIp !== undefined) {
-      const colon = singleIp.indexOf(':');
-      if ((colon === -1 && singleIp.match(/[^.0-9/]/)) || // IP4
-          (colon !== -1 && singleIp.match(/[^a-fA-F:0-9/]/)) || // IP6
-          singleIp.match(/\/.*[^0-9]/)) { // CIDR
+      // an address, or a block of them (its prefix no longer than the address);
+      // net.isIPv6 takes a zone (fe80::1%eth0), which the database doesn't
+      const [addr, prefix, extra] = singleIp.split('/');
+      const v4 = net.isIPv4(addr);
+      if (extra !== undefined || addr.includes('%') || !(v4 || net.isIPv6(addr)) ||
+          (prefix !== undefined && !(/^\d+$/.test(prefix) && +prefix <= (v4 ? 32 : 128)))) {
         throw singleIp + ' not a valid ip';
       }
 
@@ -259,6 +263,7 @@ function parseIpPort (yy, field, ipPortStr) {
   // Support ':80' and '.80'
   if ((ipPortStr[0] === ':' && ipPortStr[1] !== ':') ||
       (ipPortStr[0] === '.')) {
+    if (!/^\d+$/.test(ipPortStr.slice(1))) { throw ipPortStr.slice(1) + ' not a valid port'; }
     if (dbField !== 'ipall') {
       return parseSingleIp(field, dbField, undefined, +ipPortStr.slice(1));
     } else {
@@ -393,6 +398,12 @@ function formatExists (yy, field, op) {
     }
   }
 
+  // ip is every ip field, it has no column of its own
+  if (field === 'ip') {
+    const obj = getIpInfoList(yy, false).map(ipInfo => formatExists(yy, ipInfo.exp, 'eq'));
+    return op === 'ne' ? { bool: { must_not: obj } } : { bool: { should: obj } };
+  }
+
   if (op === 'ne') {
     return { bool: { must_not: { exists: { field: field2Raw(yy, field) } } } };
   }
@@ -479,8 +490,10 @@ function formatShortcutsQuery (yy, field, op, value, shortcutParent) {
 
     switch (type) {
     case 'ip':
-      if (field === 'ip') {
-        const infos = getIpInfoList(yy, false);
+      // every ip field, or a shorthand's own (ip.srcdst, ip.dns.all), each
+      // looking the shortcut up; a shorthand has no column of its own
+      if (field === 'ip' || info.regex) {
+        const infos = field === 'ip' ? getIpInfoList(yy, false) : getRegexInfoList(yy, info);
         for (const ipInfo of infos) {
           formatShortcutsQuery(yy, ipInfo.exp, op, '$' + value, obj);
         }
@@ -584,9 +597,17 @@ function formatNormalQuery (yy, field, op, value, completed) {
 
     if (isArrayStart(value)) { throw value + ' - List queries not supported for gt/lt queries - ' + value; }
 
+    // a range compares single addresses, not a block or a port
+    if (!net.isIP(stripQuotes(value))) { throw value + ' not a valid ip, a range takes a single address'; }
+
+    // ip is every ip field, it has no column of its own
+    if (field === 'ip') {
+      return { bool: { should: getIpInfoList(yy, false).map(ipInfo => formatNormalQuery(yy, ipInfo.exp, op, value, completed)) } };
+    }
+
     obj = { range: {} };
     obj.range[info.dbField] = {};
-    obj.range[info.dbField][op] = value;
+    obj.range[info.dbField][op] = stripQuotes(value);
     return obj;
   case 'integer':
     if (value[0] === '/') { throw value + ' - Regex queries not supported for integer queries'; }
@@ -946,6 +967,37 @@ function isArrayFull(value) {
 }
 
 
+// A list's items: split at its commas, but not an escaped one (\,) or one in
+// a quoted item ("a,b"), each without the space around it (a quoted item keeps
+// what is inside its quotes); \, and \\ are made , and \. A quote that never
+// closes isn't one: from its item on every comma splits (quotes false)
+function splitListItems (text, quotes = true) {
+  const items = [];
+  let item = '';
+  let quoted = false;
+  let itemStart = 0;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (c === '\\' && i + 1 < text.length) {
+      const next = text[++i];
+      item += (next === ',' || next === '\\') ? next : c + next;
+      continue;
+    }
+    // a quote opens a quoted item where the item starts, and closes it
+    if (quotes && c === '"' && (quoted || item.trim() === '')) { quoted = !quoted; }
+    if (c === ',' && !quoted) {
+      items.push(item.trim());
+      item = '';
+      itemStart = i + 1;
+      continue;
+    }
+    item += c;
+  }
+  if (quoted) { return items.concat(splitListItems(text.slice(itemStart), false)); }
+  items.push(item.trim());
+  return items;
+}
+
 function ListToArray (text, always) {
   if (isArrayFull(text)) {
     text = text.substring(1, text.length - 1);
@@ -953,12 +1005,7 @@ function ListToArray (text, always) {
     return text;
   }
 
-  // JS doesn't have negative look behind
-  const strs = text.replace(/\\\\/g, '**BACKSLASH**').replace(/\\,/g, '**COMMA**').split(/\s*,\s*/).filter(part => part.trim()[0] !== '$');
-  for (let i = 0; i < strs.length; i++) {
-    strs[i] = strs[i].replace(/\*\*COMMA\*\*/g, ',').replace(/\*\*BACKSLASH\*\*/g, '\\');
-  }
-  return strs;
+  return splitListItems(text).filter(part => part.trim()[0] !== '$');
 }
 
 // Field docs, and so transform, can come from sensors, only use our own functions
@@ -980,11 +1027,10 @@ function ListToArrayShortcuts (yy, text) {
     text = text.substring(1, text.length - 1);
   }
 
-  // JS doesn't have negative look behind
-  const strs = text.replace(/\\\\/g, '**BACKSLASH**').replace(/\\,/g, '**COMMA**').split(/\s*,\s*/).filter(part => part.trim()[0] === '$');
+  const strs = splitListItems(text).filter(part => part.trim()[0] === '$');
   const nstrs = [];
   for (let i = 0; i < strs.length; i++) {
-    const str = strs[i].replace(/\*\*COMMA\*\*/g, ',').replace(/\*\*BACKSLASH\*\*/g, '\\');
+    const str = strs[i];
 
     if (str.match(/[*?]/)) {
       const re = new RE2('^' + str.substring(1).replace(/\*/g, '.*').replace(/\?/g, '.') + '$');
@@ -1180,5 +1226,7 @@ function parseSeconds (str) {
 
   // The UI display format can end in a timezone abbreviation (2026/07/27 09:33:05 UTC),
   // which moment can't parse but Date.parse can
-  return Math.floor(Date.parse(str) / 1000);
+  const ms = Date.parse(str);
+  if (Number.isNaN(ms)) { throw str + ' is not a valid date'; }
+  return Math.floor(ms / 1000);
 }

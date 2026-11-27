@@ -11,6 +11,7 @@ so the edit modal can gray out inapplicable inputs and the host can dispatch.
 // Default chart view mode per field expression (mirrors the server's fieldMetadata)
 export const DEFAULT_VIEW_MODES = {
   ip: 'bar',
+  'ip.srcdst': 'bar',
   'ip.src': 'bar',
   'ip.dst': 'bar',
   'port.src': 'bar',
@@ -221,11 +222,11 @@ export const OTHER_VIEW_MODES = ['pie', 'waffle', 'icicle'];
 export const SAMPLE_SIZE_VIEW_MODES = ['connections', 'tree', 'circle'];
 
 // Types whose fetch resolves fields through the server's dbFieldsMap, which
-// Config.loadFields builds while skipping noFacet fields (All IP Fields, Arkime
-// ID, Payload Src/Dst UTF8, View Name) — so those can't be resolved however
-// they are spelled. Every other mode resolves through fieldsMap, which keeps
-// them: All IP Fields drives a working bar/pie/table widget, because
-// /api/sessions/summary aggregates it with a script instead of a db field.
+// Config.loadFields builds while skipping noFacet fields (Src or Dst IP, All
+// IP fields, Arkime ID, Payload Src/Dst UTF8, View Name) — so those can't be
+// resolved however they are spelled. Every other mode resolves through
+// fieldsMap, which keeps them: Src or Dst IP drives a working bar/pie/table
+// widget, because /api/sessions/summary aggregates it itself.
 export const DB_FIELD_VIEW_MODES = ['connections', 'tree', 'circle'];
 
 // Types whose fields are an ordered source -> destination pair rather than an

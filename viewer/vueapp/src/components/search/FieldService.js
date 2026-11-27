@@ -18,19 +18,35 @@ const ipDstPortField = {
   help: 'Destination IP:Destination Port'
 };
 
+// every IP field, as a search's ip means
 const allIpField = {
   category: 'ip',
   group: 'general',
   exp: 'ip',
   dbField: 'ip',
   friendlyName: 'All IP Fields',
-  help: 'All source and destination IP addresses combined'
+  help: 'Search all ip fields'
+};
+
+// a session's two endpoints, a base field (db/fields.json) the fields list has
+// once db.pl or a viewer's start has written it; a summary widget's ip has
+// always counted these, not every IP field
+const srcDstIpField = {
+  category: 'ip',
+  group: 'general',
+  exp: 'ip.srcdst',
+  dbField: 'ip.srcdst',
+  type: 'ip',
+  noFacet: true,
+  friendlyName: 'Src or Dst IP',
+  help: "Shorthand for ip.src or ip.dst, a session's two endpoints (ip searches every IP field)"
 };
 
 export default {
 
   ipDstPortField,
   allIpField,
+  srcDstIpField,
 
   addIpDstPortField (fields) {
     let result;
@@ -47,7 +63,9 @@ export default {
   },
 
   /**
-   * Adds the special summary fields (All IP Fields, Dst IP:Dst Port) to the field list
+   * The field list a dashboard widget picks from: with the special summary
+   * fields (Src or Dst IP, Dst IP:Dst Port), and without ip (every IP field),
+   * which a widget would count as Src or Dst IP
    * @param {Array|Object} fields The fields array or map to add to
    * @returns {Array|Object} A new array/object with the special fields added
    */
@@ -55,15 +73,16 @@ export default {
     let result;
 
     if (Array.isArray(fields)) {
-      result = [...fields]; // shallow copy so we don't mutate data
-      // skip a special field the list already defines — the built-in "All IP fields"
-      // (exp 'ip') collides with allIpField, dupe exps break the editor's multi-select
+      result = fields.filter(f => f.exp !== 'ip'); // a copy, so we don't mutate data
+      // skip a special field the list already defines (db.pl's ip.srcdst), dupe
+      // exps break the editor's multi-select
       const exps = new Set(result.map(f => f.exp));
       if (!exps.has(ipDstPortField.exp)) { result.unshift(ipDstPortField); } // add at beginning for visibility
-      if (!exps.has(allIpField.exp)) { result.unshift(allIpField); }
+      if (!exps.has(srcDstIpField.exp)) { result.unshift(srcDstIpField); }
     } else {
       result = { ...fields }; // shallow copy so we don't mutate data
-      if (!(allIpField.exp in result)) { result[allIpField.exp] = allIpField; }
+      delete result.ip;
+      if (!(srcDstIpField.exp in result)) { result[srcDstIpField.exp] = srcDstIpField; }
       if (!(ipDstPortField.exp in result)) { result[ipDstPortField.exp] = ipDstPortField; }
     }
 
@@ -124,6 +143,8 @@ export default {
     if (!ignoreAliases && Object.hasOwn(store.state.fieldsAliasMap, search)) {
       return store.state.fieldsAliasMap[search];
     }
+    // a cluster db.pl hasn't added Src or Dst IP to yet
+    if (search === srcDstIpField.exp) { return srcDstIpField; }
     // lastly, check the super special ip.dst:port field
     if (search === ipDstPortField.exp ||
       search === ipDstPortField.dbField ||

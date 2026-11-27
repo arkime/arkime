@@ -106,7 +106,7 @@ export default {
       type: Number,
       default: 200
     },
-    // Include special summary fields (All IP Fields, Dst IP:Dst Port)
+    // Include special summary fields (Src or Dst IP, Dst IP:Dst Port)
     includeSummaryFields: {
       type: Boolean,
       default: false

@@ -3831,6 +3831,7 @@ class SessionAPIs {
     // Field metadata configuration with default viewMode and metricType for each field
     const fieldMetadata = {
       ip: { viewMode: 'bar', metricType: 'sessions' },
+      'ip.srcdst': { viewMode: 'bar', metricType: 'sessions' },
       'ip.dst:port': { viewMode: 'table', metricType: 'sessions' },
       protocols: { viewMode: 'pie', metricType: 'sessions' },
       tags: { viewMode: 'pie', metricType: 'sessions' },
@@ -3846,7 +3847,10 @@ class SessionAPIs {
     const fieldsMap = Config.getFieldsMap();
 
     // Special fields that don't have a direct database field mapping
-    const specialFields = ['ip', 'ip.dst:port'];
+    // ip.srcdst is a session's two endpoints; a widget's ip (saved before
+    // ip.srcdst) has always counted the same, not every IP field as a search does
+    const SRCDST_IP_FIELDS = ['ip.srcdst', 'ip'];
+    const specialFields = [...SRCDST_IP_FIELDS, 'ip.dst:port'];
 
     // Build the list of widgets to aggregate. The modular dashboard sends a
     // `widgets` array of per-widget specs ({id, field, length, order, expression,
@@ -4128,6 +4132,88 @@ class SessionAPIs {
       return { sessions, value };
     }
 
+    // ip.srcdst (and a widget's ip) is each session's two addresses. Its script builds them
+    // for every session, which is slow on OpenSearch/Elasticsearch (ClickHouse
+    // reads both columns, so it keeps it). A widget whose ranking and metrics
+    // add up across the two sides is instead searched twice: each side's own
+    // top values, ranked the widget's way, name the candidates, then just the
+    // candidates are counted on both sides and the sides added together, less
+    // the sessions with the one address on both sides (so they count once, as
+    // the script's do). The values shown have exact totals; a value only
+    // middling on both sides can miss the candidates. The script is no check
+    // on that: its terms are each shard's own top values, so over many
+    // indices its totals can come up short, which these never do.
+    const IP_SIDES = ['source.ip', 'destination.ip'];
+    // the candidates (at most 6 * length) are counted by pair, source by
+    // destination: 14,400 buckets at the most, under the database's limit
+    const IP_BOTH_SIDES_MAX_LENGTH = 20;
+    function ipBothSides (spec) {
+      return !spec.total && SRCDST_IP_FIELDS.includes(spec.field) && Db.sessionsOnEs() && spec.orderBy !== 'key' && spec.order === 'desc' &&
+        spec.length <= IP_BOTH_SIDES_MAX_LENGTH && !spec.splitDbField && !spec.boxDbField && !spec.percent &&
+        ['sum', 'avg', 'min', 'max'].includes(spec.metricAgg);
+    }
+
+    // a sub aggregation's value over two sets of sessions (op 1: the sets
+    // joined, -1: the second taken out of the first), by its kind: sums and
+    // counts add (an average is recomputed from them, see bucketMetrics); a
+    // min or max over a join is the smaller or larger, and taking out sessions
+    // the first holds twice leaves it as it was
+    function combineSides (def, a, b, op) {
+      if (!a) { return op > 0 ? b : a; }
+      if (!b) { return a; }
+      const num = (r) => (typeof r?.value === 'number' && Number.isFinite(r.value) ? r.value : undefined);
+      const [x, y] = [num(a), num(b)];
+      if (def.min || def.max) {
+        if (op < 0) { return a; }
+        if (x === undefined || y === undefined) { return { value: x ?? y ?? null }; }
+        return { value: def.min ? Math.min(x, y) : Math.max(x, y) };
+      }
+      return { value: (x ?? 0) + op * (y ?? 0) };
+    }
+
+    async function searchIpBothSides (indices, options, wquery, spec, widgetAggs, termsOrder) {
+      const perSide = spec.length * 3;
+      const sideAggs = (terms, sub = {}) => Object.fromEntries(IP_SIDES.map((field, i) => [
+        `side${i}`, { terms: { field, order: termsOrder, ...terms }, aggs: { ...widgetAggs, ...(i === 0 ? sub : {}) } }
+      ]));
+      const first = await Db.searchSessions(indices, { ...wquery, aggregations: sideAggs({ size: perSide }) }, options);
+      // a multi viewer returns every value its clusters did, ranked: each
+      // side's top ones are the candidates there too
+      const sides = IP_SIDES.map((f, i) => (first.aggregations?.[`side${i}`]?.buckets ?? []).slice(0, perSide));
+      const candidates = [...new Set(sides.flatMap(side => side.map(b => String(b.key))))];
+      if (!candidates.length) { return { ...first, aggregations: { [spec.aggName]: { buckets: [] } } }; }
+
+      const only = { size: candidates.length, include: candidates };
+      // each source's sessions by destination, for the ones to itself. A
+      // filter of a src and dst clause per candidate counts the same sessions
+      // but is much slower: it runs every candidate's two term queries
+      const pairs = { pair: { terms: { field: IP_SIDES[1], ...only }, aggs: widgetAggs } };
+      const exact = await Db.searchSessions(indices, { ...wquery, aggregations: sideAggs(only, pairs) }, options);
+      const byKey = new Map();
+      const combine = (into, bucket, op) => {
+        into.doc_count += op * bucket.doc_count;
+        for (const [aggKey, def] of Object.entries(widgetAggs)) { into[aggKey] = combineSides(def, into[aggKey], bucket[aggKey], op); }
+      };
+      for (let i = 0; i < IP_SIDES.length; i++) {
+        for (const bucket of exact.aggregations?.[`side${i}`]?.buckets ?? []) {
+          const key = String(bucket.key);
+          const { pair, ...side } = bucket;
+          if (byKey.has(key)) { combine(byKey.get(key), side, 1); } else { byKey.set(key, { ...side, key }); }
+          // the sessions from this address to itself, now counted on both sides
+          const self = pair?.buckets?.find(p => String(p.key) === key);
+          if (self) { byKey.get(key).self = self; }
+        }
+      }
+      for (const bucket of byKey.values()) {
+        if (bucket.self) { combine(bucket, bucket.self, -1); }
+        delete bucket.self;
+      }
+      // ranked as the script's terms were: by the widget's value, ties by key
+      const rank = (bucket) => (spec.sortExp ? bucketMetrics(bucket, spec)[spec.sortExp] : bucket.doc_count);
+      const buckets = [...byKey.values()].sort((a, b) => (rank(b) - rank(a)) || (a.key < b.key ? -1 : (a.key > b.key ? 1 : 0)));
+      return { ...exact, aggregations: { [spec.aggName]: { buckets: buckets.slice(0, spec.length) } } };
+    }
+
     function ipDstPortProcessor(ipPortItem) {
       if (ipPortItem.item.indexOf(':') === -1) {
         // IPv4: replace _ with :
@@ -4286,18 +4372,37 @@ class SessionAPIs {
         return queryCache.get(combined);
       };
 
+      // A widget asked for twice (the same search but for its id: a ${var}
+      // widget with nothing picked is its unfiltered twin) is searched once,
+      // its chunk going to each id; the twins' copies say shared, so a footer
+      // adds its time once
+      const twins = new Map(); // the spec less its names -> [spec, ...]
+      for (const spec of widgetSpecs) {
+        const search = { ...spec };
+        delete search.id;
+        delete search.aggName;
+        const key = JSON.stringify(search);
+        if (twins.has(key)) { twins.get(key).push(spec); } else { twins.set(key, [spec]); }
+      }
+      const sendSpec = (spec, msg) => {
+        for (const [i, twin] of twins.get(spec.twinKey).entries()) {
+          sendWidget(i === 0 ? msg : { ...msg, id: twin.id, shared: true });
+        }
+      };
+      const searchedSpecs = [...twins.entries()].map(([key, specs]) => Object.assign(specs[0], { twinKey: key }));
+
       // A few widget searches run at once (and beside the stats search), each
       // on its own copy of its base query; their chunks go out as they finish.
-      await async.eachLimit(widgetSpecs, SessionAPIs.#summaryWidgetConcurrency, async (spec) => {
+      await async.eachLimit(searchedSpecs, SessionAPIs.#summaryWidgetConcurrency, async (spec) => {
         if (clientDisconnected || res.destroyed || ended) { return; }
         const specStart = Date.now();
         try {
           if (spec.unknown) {
-            sendWidget({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart });
+            sendSpec(spec, { id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart });
             return;
           }
           if (spec.unsupported) {
-            sendWidget({ id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart });
+            sendSpec(spec, { id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart });
             return;
           }
 
@@ -4329,9 +4434,11 @@ class SessionAPIs {
           if (spec.total) {
             // whole result set: the metric aggregations alone, as one item
             wquery.aggregations = widgetAggs;
+          } else if (ipBothSides(spec)) {
+            // searchIpBothSides builds its own aggregations
           } else if (spec.isSpecial) {
             // Special fields use Painless scripts (no direct dbField mapping)
-            const source = spec.field === 'ip'
+            const source = SRCDST_IP_FIELDS.includes(spec.field)
               ? "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];"
               : "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];";
             wquery.aggregations[spec.aggName] = {
@@ -4379,7 +4486,9 @@ class SessionAPIs {
             wquery.aggregations.othertotal = { filter: { exists: { field: spec.dbField } }, aggs: { total: { sum: { field: sortDbField } } } };
           }
 
-          const phase2 = await Db.searchSessions(indices, wquery, options);
+          const phase2 = ipBothSides(spec)
+            ? await searchIpBothSides(indices, options, wquery, spec, widgetAggs, termsOrder)
+            : await Db.searchSessions(indices, wquery, options);
           const field = {
             id: spec.id,
             field: spec.field,
@@ -4416,10 +4525,10 @@ class SessionAPIs {
           field.data = data;
           if (spec.other) { field.other = otherBucket(phase2.aggregations, spec); }
           field.took = Date.now() - specStart;
-          sendWidget(field);
+          sendSpec(spec, field);
         } catch (fieldErr) {
           // Send error for this specific widget, continue with others
-          sendWidget({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart });
+          sendSpec(spec, { id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart });
         }
       });
       await chunksSent;

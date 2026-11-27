@@ -77,7 +77,7 @@
       },
       {
         "id": "w9",
-        "field": "ip",
+        "field": "ip.srcdst",
         "viewMode": "bar",
         "width": 2,
         "height": 3,

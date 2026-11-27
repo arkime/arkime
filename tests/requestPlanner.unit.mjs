@@ -163,6 +163,34 @@ describe('createPlanner', () => {
     h.streams[0].resolve({});
   });
 
+  test("the server's copy of a twin widget's search counts once", async () => {
+    const h = harness();
+    const a = settled(h.planner.request({ url: 'api/sessions/summary', data: { noStats: true, widgets: [{ id: 'm', field: 'ip' }, { id: 'n', field: 'ip' }] }, owner: 'a' }));
+    const b = settled(h.planner.request({ url: 'api/spigraph', data: { exp: 'x' }, owner: 'b' }));
+    const c = settled(h.planner.request({ url: 'api/sessions/summary', data: { noStats: true, expression: 'y', widgets: [{ id: 'p', field: 'ip' }, { id: 'q', field: 'ip' }] }, owner: 'c' }));
+    await h.flush();
+    // a lone stream: the member with one widget searched and one copied isn't all copies
+    const lone = h.streams.find(s => s.data.widgets[0].id === 'm');
+    lone.onChunk({ id: 'm', data: [1], took: 7 });
+    lone.onChunk({ id: 'n', data: [1], took: 7, shared: true });
+    await tick();
+    assert.equal(a.value.length, 2);
+    // and its time is the one search's, not the copy's again
+    assert.deepEqual(h.tracked[0].result, { serverMs: 7, error: false, shared: false });
+    h.sends[0].resolve({ data: {} });
+    // all of its chunks copies: shared
+    const other = h.streams.find(s => s.data.widgets[0].id === 'p');
+    other.onChunk({ id: 'p', data: [2], took: 3, shared: true });
+    other.onChunk({ id: 'q', data: [2], took: 3, shared: true });
+    await tick();
+    assert.equal(c.value.length, 2);
+    assert.equal(h.tracked[2].result.shared, true);
+    lone.resolve({});
+    other.resolve({});
+    await tick();
+    assert.ok(b.done);
+  });
+
   test('a shared response counts with the first widget still waiting for it', async () => {
     const h = harness();
     const ca = new AbortController();

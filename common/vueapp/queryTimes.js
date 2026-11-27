@@ -129,9 +129,10 @@ export function finishQuery (handle, { serverMs, error, shared } = {}) {
  * Adds an already finished part of a tracked request, such as one widget of
  * a streamed dashboard response.
  * @param {object} handle - The parent request's handle
- * @param {object} info - { label, owner, serverMs, status }
+ * @param {object} info - { label, owner, serverMs, status, shared } (shared: the
+ *                      part is another part's result, its time not added again)
  */
-export function addQueryPart (handle, { label, owner, serverMs, status: result = 'ok' }) {
+export function addQueryPart (handle, { label, owner, serverMs, status: result = 'ok', shared }) {
   const batch = handle && queryTimes.batches.find(b => b.id === handle.batchId);
   const main = batch?.entries.find(e => e.id === handle.entryId);
   const ms = parseInt(serverMs, 10);
@@ -146,7 +147,8 @@ export function addQueryPart (handle, { label, owner, serverMs, status: result =
     start: Date.now() - ms,
     status: result,
     serverMs: ms,
-    clientMs: undefined
+    clientMs: undefined,
+    ...(shared ? { shared: true } : {})
   });
   ownerFinished(owner, batch, ms);
 }
