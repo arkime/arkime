@@ -1060,6 +1060,10 @@ export default {
 
       const tasks = [];
       let category;
+      // kept in pendingPromises until every field has been requested, so the
+      // page doesn't look done between fields; canceling removes it, which
+      // stops the fields that haven't been requested yet
+      const queue = {};
 
       // get each field from the spi query parameter and issue
       // a query for one field at a time
@@ -1086,28 +1090,34 @@ export default {
           spiData.error = false;
           spiData.loading = true;
 
-          const promise = () => {
-            return new Promise((resolve, reject) => {
-              resolve(this.getSingleSpiData(field, count).promise);
-            });
-          };
-
-          tasks.push(promise);
+          // waits for the field's request to finish before the next one starts
+          tasks.push(() => {
+            if (!pendingPromises.includes(queue)) { return; }
+            return this.getSingleSpiData(field, count).then((pending) => pending?.promise);
+          });
         }
       }
 
       if (!openedCategories) { this.openCategories(); }
 
       if (tasks.length) {
+        pendingPromises.push(queue);
         // start processing tasks serially
         this.serial(tasks).then((response) => { // returns the last result in the series
           if (response && response.error) {
             this.error = resolveMessage(response.error, this.$t);
           }
-          // Note: dataLoading is set to false when all individual requests complete
         }).catch((error) => {
           this.error = resolveMessage(error, this.$t);
-          // Note: dataLoading is set to false when all individual requests complete
+        }).finally(() => {
+          const index = pendingPromises.indexOf(queue);
+          if (index > -1) { pendingPromises.splice(index, 1); }
+
+          // Check if all requests are done
+          if (pendingPromises.length === 0 && this.dataLoading) {
+            this.dataLoading = false;
+            this.spiviewFieldTransition = 'list';
+          }
         });
       } else {
         // No tasks to process, immediately set loading to false
@@ -1143,7 +1153,8 @@ export default {
       const currentPromise = { controller };
       pendingPromises.push(currentPromise);
 
-      fetcher.then((response) => {
+      // settles when the request is done, so the fields can load one at a time
+      currentPromise.promise = fetcher.then((response) => {
         // Remove this promise from pending array when it completes
         const index = pendingPromises.indexOf(currentPromise);
         if (index > -1) {

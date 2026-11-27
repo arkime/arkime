@@ -593,7 +593,13 @@ class SessionAPIs {
         nextCb('Error');
         break;
       default:
-        packetCb(pcap, packet, nextCb, i);
+        // processFile isn't awaited, a throw here would leave the session waiting forever
+        try {
+          packetCb(pcap, packet, nextCb, i);
+        } catch (err) {
+          console.log('ERROR - processSessionIdDisk -', util.inspect(err, false, 50));
+          nextCb(err);
+        }
         break;
       }
       pcap.unref();
@@ -1517,10 +1523,19 @@ class SessionAPIs {
       // fullSession=false: decode/reassembly only reads ipProtocol and
       // source ip/port, all of which are in processSessionId's narrow field
       // list; the full-field fetch is expensive per session
+      let decodeErrors = 0;
       SessionAPIs.processSessionId(id, false, null, (pcap, buffer, cb, i) => {
         let obj = {};
         if (buffer.length > 16) {
-          pcap.decode(buffer, obj);
+          try {
+            pcap.decode(buffer, obj);
+          } catch (e) {
+            // A packet that can't be decoded is left out, filtered below
+            if (!decodeErrors++) {
+              console.log('ERROR - processSessionIdAndDecode decode', ArkimeUtil.sanitizeStr(e.stack));
+            }
+            return cb(null);
+          }
         } else {
           obj = { ip: { p: '' } };
         }

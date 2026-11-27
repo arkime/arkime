@@ -105,8 +105,13 @@ class HuntAPIs {
           // strip the 16 byte pcap record header, only packet data should be searched
           packets.push(buffer.slice(16));
         } else {
-          const packet = {};
-          pcap.decode(buffer, packet);
+          // A packet that can't be decoded is still searched, it just has no side
+          let packet = {};
+          try {
+            pcap.decode(buffer, packet);
+          } catch (e) {
+            packet = { undecoded: true };
+          }
           packet.data = buffer.slice(16);
           packets.push(packet);
         }
@@ -126,6 +131,10 @@ class HuntAPIs {
           // If searching src OR dst (not both) need to check key
           const skey = Pcap.keyFromSession(session);
           for (let i = 0; i < len; i++) {
+            if (packets[i].undecoded) {
+              if (HuntAPIs.#packetSearch(packets[i].data, options)) { return cb(null, true); }
+              continue;
+            }
             const key = Pcap.key(packets[i]);
             const isSrc = key === skey;
             if (options.src && isSrc) {
