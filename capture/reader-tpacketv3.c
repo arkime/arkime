@@ -217,7 +217,10 @@ void reader_tpacketv3_init(const char *UNUSED(name))
         arkime_readers_compile_bpf("TPacketV3", DLT_EN10MB, config.snapLen, config.bpf, &bpf);
     }
 
-    int fanout_group_id = arkime_config_int(NULL, "tpacketv3ClusterId", 8005, 0x0001, 0xffff);
+    // 0 has the kernel assign an unused fanout group id per interface,
+    // otherwise interface N uses tpacketv3ClusterId + N
+    uint32_t clusterId = arkime_config_int(NULL, "tpacketv3ClusterId", 0, 0, 0xffff);
+    gboolean uniqueClusterId = (clusterId == 0);
 
     tpacketv3OldVlan = arkime_config_boolean(NULL, "tpacketv3OldVlan", FALSE);
 
@@ -225,6 +228,10 @@ void reader_tpacketv3_init(const char *UNUSED(name))
     int reserve = 4;
     for (int i = 0; config.interface[i]; i++) {
         int ifindex = if_nametoindex(config.interface[i]);
+
+        uint32_t fanout_group_id = uniqueClusterId ? 0 : clusterId + i;
+        if (fanout_group_id > 0xffff)
+            CONFIGEXIT("tpacketv3ClusterId=%u gives %s (interface %d) fanout group id %u which is over the max of 65535, use a lower tpacketv3ClusterId", clusterId, config.interface[i], i, fanout_group_id);
 
         for (int t = 0; t < numThreads; t++) {
             infos[i][t].fd = socket(AF_PACKET, SOCK_RAW, 0);
@@ -283,15 +290,27 @@ void reader_tpacketv3_init(const char *UNUSED(name))
             if (bind(infos[i][t].fd, (struct sockaddr *) &ll, sizeof(ll)) < 0)
                 CONFIGEXIT("Error binding %s: %s", config.interface[i], strerror(errno));
 
+            // First socket of an interface asks the kernel for an unused id, the rest join it
+            gboolean assignId = uniqueClusterId && t == 0;
             int fanout_type = PACKET_FANOUT_HASH;
-            if (fanout_group_id > 0xffff)
-                CONFIGEXIT("Fanout group id %d is too large, you must use a lower tpacketv3ClusterId", fanout_group_id);
-            int fanout_arg = (fanout_group_id | (fanout_type << 16));
-            if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0)
-                CONFIGEXIT("Error setting packet fanout parameters: tpacketv3ClusterId: %d (%s)", fanout_group_id, strerror(errno));
-        }
+            if (assignId)
+                fanout_type |= PACKET_FANOUT_FLAG_UNIQUEID;
 
-        fanout_group_id++;
+            int fanout_arg = (fanout_group_id | (fanout_type << 16));
+            if (setsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, sizeof(fanout_arg)) < 0) {
+                if (assignId)
+                    CONFIGEXIT("Error setting packet fanout with a kernel assigned id on %s, requires Linux 4.12 or later, or set tpacketv3ClusterId: %s", config.interface[i], strerror(errno));
+                CONFIGEXIT("Error setting packet fanout parameters on %s: fanout group id %u (%s)", config.interface[i], fanout_group_id, strerror(errno));
+            }
+
+            if (assignId) {
+                socklen_t len = sizeof(fanout_arg);
+                if (getsockopt(infos[i][t].fd, SOL_PACKET, PACKET_FANOUT, &fanout_arg, &len) < 0)
+                    CONFIGEXIT("Error getting packet fanout parameters on %s: %s", config.interface[i], strerror(errno));
+                fanout_group_id = fanout_arg & 0xffff;
+                LOG("%s using kernel assigned fanout group id %u", config.interface[i], fanout_group_id);
+            }
+        }
     }
 
     arkime_reader_start         = reader_tpacketv3_start;
