@@ -662,3 +662,202 @@ describe('ClickHouse several percentiles in one aggregation', () => {
     assert.ok(ch.sqls.some(s => s.includes('AS `one`')), 'a single percent is not split');
   });
 });
+
+// a terms aggregation's include list (the summary's Top IPs counting just its
+// candidates) limits the buckets to those values
+describe('ClickHouse terms include', () => {
+  const newCHi = async () => {
+    const ch = new PercentileCH({ sessionsDbUrl: 'clickhouse://127.0.0.1:1/arkime', prefix: 'tests_' });
+    await ch.schemaReady;
+    ch.sqls = [];
+    return ch;
+  };
+  const termsSql = (ch) => ch.sqls.find(s => s.includes('GROUP BY key'));
+
+  test("a field's values: its own IN predicate, an address normalized like its ip queries", async () => {
+    const ch = await newCHi();
+    await ch.searchSessions('tests_sessions3-*', { size: 0, query: { match_all: {} }, aggregations: { t: { terms: { field: 'source.ip', size: 2, include: ['10.0.0.1', '2001:db8::1'] } } } });
+    const sql = termsSql(ch);
+    const where = sql.slice(sql.indexOf(' WHERE '), sql.indexOf(' GROUP BY '));
+    assert.ok(where.includes("'10.0.0.1'"), where);
+    assert.ok(where.includes("toIPv6OrNull('2001:db8:0:0:0:0:0:1')"), 'an IPv6 address compares normalized');
+    assert.ok(!sql.includes('key IN'), 'not as a key filter');
+  });
+
+  test("a script's keys: filtered once made", async () => {
+    const ch = await newCHi();
+    const script = "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];";
+    await ch.searchSessions('tests_sessions3-*', { size: 0, query: { match_all: {} }, aggregations: { t: { terms: { script: { source: script, lang: 'painless' }, size: 2, include: ['10.0.0.1'] } } } });
+    assert.ok(termsSql(ch).includes("AND key IN ('10.0.0.1')"));
+    assert.ok(/arrayJoin\(\[`source\.ip`, if\(`destination\.ip` = `source\.ip`, '', `destination\.ip`\)\]\)/.test(termsSql(ch)), 'a session from an address to itself counts once');
+  });
+
+  test('an empty list matches nothing, a pattern is refused', async () => {
+    const ch = await newCHi();
+    await ch.searchSessions('tests_sessions3-*', { size: 0, query: { match_all: {} }, aggregations: { t: { terms: { field: 'tags', size: 2, include: [] } } } });
+    assert.ok(termsSql(ch).includes('AND 0'));
+    await assert.rejects(ch.searchSessions('tests_sessions3-*', { size: 0, query: { match_all: {} }, aggregations: { t: { terms: { field: 'protocol', size: 2, include: 'tc.*' } } } }), /include pattern/);
+  });
+});
+
+// a terms sub-aggregation of listed values (the summary's Top IPs counting
+// each source's sessions by destination) is one grouped query for every
+// bucket, not a query per bucket
+class PairCH extends DbCHImpl {
+  sqls = [];
+  async query (sql) {
+    this.sqls.push(sql);
+    if (sql.startsWith('SELECT count() AS count')) { return { data: [{ count: 9 }] }; }
+    if (sql.includes('GROUP BY key, subkey')) {
+      return {
+        data: [
+          { key: '10.0.0.1', subkey: '10.0.0.2', doc_count: 3, m0: 30 },
+          { key: '10.0.0.1', subkey: '10.0.0.1', doc_count: 1, m0: 10 },
+          { key: '10.0.0.2', subkey: '10.0.0.1', doc_count: 2, m0: 20 },
+          { key: '10.0.0.9', subkey: '10.0.0.1', doc_count: 5, m0: 50 }
+        ]
+      };
+    }
+    if (sql.includes('GROUP BY key')) {
+      return { data: [{ key: '10.0.0.1', doc_count: 4, m0: 40 }, { key: '10.0.0.2', doc_count: 2, m0: 20 }, { key: '10.0.0.3', doc_count: 1, m0: 5 }], totals: { doc_count: 7 } };
+    }
+    return { data: [] };
+  }
+}
+
+describe('ClickHouse terms of listed values under terms', () => {
+  const ips = ['10.0.0.1', '10.0.0.2', '10.0.0.3'];
+  const bytes = { m0: { sum: { field: 'network.bytes' } } };
+  const search = async (pair, fieldsMap) => {
+    const ch = new PairCH({ sessionsDbUrl: 'clickhouse://127.0.0.1:1/arkime', prefix: 'tests_', ...(fieldsMap ? { fieldsMap: () => fieldsMap } : {}) });
+    await ch.schemaReady;
+    ch.sqls = [];
+    const res = await ch.searchSessions('tests_sessions3-*', {
+      size: 0,
+      query: { match_all: {} },
+      aggregations: { side0: { terms: { field: 'source.ip', size: 3, include: ips }, aggs: { ...bytes, pair } } }
+    });
+    return { ch, buckets: res.aggregations.side0.buckets, grouped: ch.sqls.filter(s => s.includes('GROUP BY key')) };
+  };
+
+  test('one query for every bucket, its rows handed to their buckets in order', async () => {
+    const { buckets, grouped } = await search({ terms: { field: 'destination.ip', size: 3, include: ips }, aggs: bytes });
+    assert.equal(grouped.length, 2, 'the terms and its pairs');
+    const sql = grouped.find(s => s.includes('GROUP BY key, subkey'));
+    assert.ok(sql.includes('`source.ip` AS key, `destination.ip` AS subkey, count() AS doc_count, '), sql);
+    const where = sql.slice(sql.indexOf(' WHERE '), sql.indexOf(' GROUP BY '));
+    for (const col of ['`source.ip`', '`destination.ip`']) {
+      assert.ok(ips.every(ip => new RegExp(`${col}[^\`]*'${ip}'`).test(where)), `${col} is limited to the listed values`);
+    }
+    assert.ok(sql.includes('ORDER BY doc_count DESC, toIPv6OrNull(subkey) ASC'), 'ordered as a terms aggregation of its own');
+    assert.deepEqual(buckets.map(b => b.pair.buckets), [
+      [{ key: '10.0.0.2', doc_count: 3, m0: { value: 30 } }, { key: '10.0.0.1', doc_count: 1, m0: { value: 10 } }],
+      [{ key: '10.0.0.1', doc_count: 2, m0: { value: 20 } }],
+      []
+    ]);
+    assert.ok(buckets.every(b => b.pair.sum_other_doc_count === 0 && b.m0.value > 0));
+  });
+
+  test('ordered by a metric or by key when asked', async () => {
+    const byMetric = await search({ terms: { field: 'destination.ip', size: 3, include: ips, order: { m0: 'asc' } }, aggs: bytes });
+    assert.ok(byMetric.grouped[1].includes('ORDER BY `m0` ASC, toIPv6OrNull(subkey) ASC'));
+    const byKey = await search({ terms: { field: 'destination.port', size: 2, include: [80, 443], order: { _key: 'desc' } } });
+    assert.ok(byKey.grouped[1].includes('ORDER BY subkey DESC, subkey ASC'));
+  });
+
+  test('an empty list has no buckets and no query', async () => {
+    const { buckets, grouped } = await search({ terms: { field: 'destination.ip', size: 3, include: [] }, aggs: bytes });
+    assert.equal(grouped.length, 1);
+    assert.ok(buckets.every(b => b.pair.buckets.length === 0));
+  });
+
+  test('anything else is still a query per bucket', async () => {
+    const cases = {
+      'no list': { terms: { field: 'destination.ip', size: 3 }, aggs: bytes },
+      'no room for the list': { terms: { field: 'destination.ip', size: 2, include: ips }, aggs: bytes },
+      'a field with several values a session': { terms: { field: 'tags', size: 3, include: ['a', 'b'] }, aggs: bytes },
+      'a sub-aggregation that is not a metric': { terms: { field: 'destination.ip', size: 3, include: ips }, aggs: { t: { terms: { field: 'node', size: 2 } } } }
+    };
+    for (const [what, pair] of Object.entries(cases)) {
+      const { grouped } = await search(pair);
+      assert.ok(!grouped.some(s => s.includes('GROUP BY key, subkey')), what);
+      assert.ok(grouped.length >= 4, `${what}: the terms and a query for each of its 3 buckets`);
+    }
+  });
+});
+
+// The one grouped query's pairs are what each bucket's own search counts, on ARKIME_TEST_CH_URL
+describe('ClickHouse terms of listed values under terms on a real ClickHouse', { skip: !process.env.ARKIME_TEST_CH_URL }, () => {
+  const url = process.env.ARKIME_TEST_CH_URL;
+  const db = `arkime_unit_pairs_${process.pid}`;
+  const q = async (sql) => {
+    const res = await fetch(url, { method: 'POST', body: sql });
+    const text = await res.text();
+    if (!res.ok) { throw new Error(text); }
+    return text.trim();
+  };
+  const ips = ['10.0.0.1', '10.0.0.2', 'fe80::1', '2001:db8::1', '10.0.1.7'];
+  const rows = Array.from({ length: 90 }, (_, i) => ({
+    _id: `id${i}`,
+    lastPacket: 1700000000000 + i * 17000,
+    'network.bytes': 10 + (i * 7) % 50,
+    'source.ip': ips[i % 5],
+    ...(i % 11 ? { 'destination.ip': ips[(i * 3 + (i % 4)) % 5] } : {})
+  }));
+  const listed = ['10.0.0.1', '10.0.0.2', 'fe80::1', '2001:db8::1'];
+  const metrics = { m0: { sum: { field: 'network.bytes' } }, m0Mn: { min: { field: 'network.bytes' } } };
+  let ch;
+  let sqls;
+
+  beforeAll(async () => {
+    await q(`CREATE DATABASE ${db}`);
+    await q(`CREATE TABLE ${db}.t_sessions3 (
+      fields JSON(\`_id\` String, lastPacket Nullable(Int64), \`network.bytes\` Nullable(Int64)),
+      \`_id\` String DEFAULT fields.\`_id\`,
+      lastPacket DateTime64(3, 'UTC') DEFAULT fromUnixTimestamp64Milli(ifNull(fields.lastPacket, 0)),
+      \`source.ip\` String MATERIALIZED ifNull(fields.\`source.ip\`, ''),
+      \`destination.ip\` String MATERIALIZED ifNull(fields.\`destination.ip\`, '')
+    ) ENGINE = MergeTree ORDER BY lastPacket`);
+    await q(`INSERT INTO ${db}.t_sessions3 (fields) FORMAT JSONEachRow\n${rows.map(fields => JSON.stringify({ fields })).join('\n')}`);
+    ch = new DbCHImpl({ sessionsDbUrl: `${url}/${db}`, prefix: 't_' });
+    await ch.schemaReady;
+    const query = ch.query.bind(ch);
+    ch.query = (sql, ...args) => { sqls.push(sql); return query(sql, ...args); };
+  });
+  afterAll(async () => {
+    ch?.close();
+    await q(`DROP DATABASE IF EXISTS ${db}`);
+  });
+
+  for (const order of [undefined, { m0: 'desc' }, { _key: 'asc' }]) {
+    test(`each source's pairs match its own search, order ${JSON.stringify(order) ?? 'by sessions'}`, async () => {
+      sqls = [];
+      const pairTerms = { field: 'destination.ip', size: listed.length, include: listed, ...(order ? { order } : {}) };
+      const res = await ch.searchSessions('t_sessions3-*', {
+        size: 0,
+        query: { match_all: {} },
+        aggregations: { side0: { terms: { field: 'source.ip', size: listed.length, include: listed }, aggs: { ...metrics, pair: { terms: pairTerms, aggs: metrics } } } }
+      });
+      assert.equal(sqls.filter(s => s.includes('GROUP BY key')).length, 2, 'the terms and its pairs');
+      const buckets = res.aggregations.side0.buckets;
+      assert.equal(buckets.length, listed.length);
+      let pairs = 0;
+      for (const bucket of buckets) {
+        const own = await ch.searchSessions('t_sessions3-*', {
+          size: 0,
+          query: { term: { 'source.ip': bucket.key } },
+          aggregations: { pair: { terms: pairTerms, aggs: metrics } }
+        });
+        assert.deepEqual(bucket.pair.buckets, own.aggregations.pair.buckets, `source ${bucket.key}`);
+        pairs += bucket.pair.buckets.length;
+        // and they are the rows' own counts
+        for (const p of bucket.pair.buckets) {
+          const mine = rows.filter(r => r['source.ip'] === bucket.key && r['destination.ip'] === p.key);
+          assert.equal(p.doc_count, mine.length);
+          assert.equal(p.m0.value, mine.reduce((sum, r) => sum + r['network.bytes'], 0));
+        }
+      }
+      assert.ok(pairs > listed.length, 'several pairs a source');
+    });
+  }
+});

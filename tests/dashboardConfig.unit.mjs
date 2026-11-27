@@ -136,6 +136,17 @@ describe('widgetsFromConfig', () => {
 });
 
 describe('normalizeWidget', () => {
+  test("a widget's ip is ip.srcdst, the two endpoints it has always counted", () => {
+    const one = normalizeWidget({ id: 'a', viewMode: 'bar', field: 'ip', length: 15 });
+    assert.equal(one.field, 'ip.srcdst');
+    assert.deepEqual(one.fields, ['ip.srcdst']);
+    assert.equal(one.viewMode, 'bar');
+    const many = normalizeWidget({ id: 'b', viewMode: 'table', fields: ['ip', 'port.dst'] });
+    assert.deepEqual(many.fields, ['ip.srcdst', 'port.dst']);
+    assert.equal(normalizeWidget({ id: 'c', viewMode: 'bar', field: 'ip.src' }).field, 'ip.src', 'other ip fields stay');
+    assert.ok(defaultWidgets().some(w => w.field === 'ip.srcdst') && !defaultWidgets().some(w => w.field === 'ip'), 'the starter dashboard too');
+  });
+
   test('keeps bar orientation and timeline style, defaults the rest', () => {
     const bar = normalizeWidget({ id: 'b', viewMode: 'bar', field: 'ip.src', orientation: 'horizontal' });
     assert.equal(bar.orientation, 'horizontal');

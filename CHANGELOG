@@ -137,6 +137,10 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4502 Fix scrubbing leaving some packets unscrubbed: ICMPv6 and ESP keep their first 8 bytes, a packet with no transport header to keep, like one cut short, keeps through its IP header, and a packet with no IP header or that can't be decoded is scrubbed whole
   - #4502 Sessions show the packets inside NSH, and PPP in GRE without the address, control or full protocol fields
   - #4502 Unknown GRE, PPP, PPPoE, MPLS and link types are logged at most once a minute instead of for every packet
+  - #4504 Add an ip.srcdst field (Src or Dst IP) that searches a session's source or destination IP; ip still searches every IP field. Dashboard widgets on ip become ip.srcdst, which is what they always counted
+  - #4504 Fix ip == EXISTS! and ranges on ip, like ip < 10.0.0.0, matching no sessions, they now check every IP field
+  - #4504 Fix a comma in a quoted list item splitting it, http.uri == ["a,b",c] searches for a,b and c
+  - #4504 Search expressions with a date that can't be parsed, or an IP, CIDR prefix or port that isn't valid, show an error instead of failing the search; a range on an IP field (<, >) takes a single IP, not a CIDR
 ## Cont3xt
   - #4488 New VPNDetection integration for IPs, shows VPN, Tor exit, privacy relay and proxy flags (thanks @UmanShahzad)
   - #4494 New SourceIP.io integration for IPs, shows the operators that publish an IP and how they use it, plus its ASN origins with RPKI status and registry allocation; works without a key at 100 lookups a day (thanks @AlanKK)

@@ -199,11 +199,14 @@ export function createPlanner ({
       if (m.settled) { return; }
       m.settled = true;
       const timed = chunks[i].filter(c => Number.isFinite(c?.took));
+      // a twin's copy is the server's one search over again: its time is the
+      // member's only when the member has no search of its own
+      const searched = timed.filter(c => c.shared !== true);
       // the stream's time header only covers its first chunk: time a member
       // by its own chunks (a member all of whose chunks were another's too
       // adds nothing to the batch's sum)
       track.finish(m.handle, {
-        serverMs: timed.length ? timed.reduce((total, c) => total + c.took, 0) : undefined,
+        serverMs: timed.length ? (searched.length ? searched : timed).reduce((total, c) => total + c.took, 0) : undefined,
         error: error || chunks[i].some(c => c?.error || c?.bsqErr),
         shared: timed.length > 0 && copies[i] >= timed.length
       });
@@ -214,6 +217,8 @@ export function createPlanner ({
       if (typeof chunk.id !== 'string' || !merged) {
         if (!merged) {
           chunks[0].push(chunk);
+          // the server's copy of a twin widget's search
+          if (chunk.shared === true) { copies[0]++; }
           if (typeof chunk.id === 'string' && --left[0] === 0) { done(0); }
         } else {
           // a chunk for the whole search (a bsqErr): every member's
@@ -226,7 +231,7 @@ export function createPlanner ({
       let counted = false;
       for (const [i, id] of (group.routes.get(chunk.id) || [])) {
         chunks[i].push({ ...chunk, id });
-        if (counted) { copies[i]++; }
+        if (counted || chunk.shared === true) { copies[i]++; }
         counted ||= live(group.members[i]);
         if (--left[i] === 0) { done(i); }
       }

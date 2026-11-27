@@ -238,7 +238,7 @@ D['overview'] = plain('Overview', 'The starter dashboard: capture statistics, to
     timeofday('Sessions by hour of the week'),
     area('protocols', 'Protocol share over time', length=10, w=2, h=3, percent=True),
     geomap('country.src', title='Source countries'),
-    bar('ip', length=15, title='Top IPs'),
+    bar('ip.srcdst', length=15, title='Top IPs'),
     bar('protocols', length=12, title='Protocols'),
     table('ip.dst:port', w=2, h=3, metrics=['sessions', 'bytes', 'packets'], sortMetric='bytes', title='Destinations by bytes'),
     heatmap('ip.dst', metricType='packets'),

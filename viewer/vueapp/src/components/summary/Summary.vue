@@ -850,7 +850,9 @@ const trackChunk = (query, chunk) => {
     label: def?.title || defaultWidgetTitle(def),
     owner: chunk.id,
     serverMs: chunk.took,
-    status: chunk.error ? 'error' : 'ok'
+    status: chunk.error ? 'error' : 'ok',
+    // a twin widget's copy of another's search (the server ran it once)
+    shared: chunk.shared === true
   });
 };
 

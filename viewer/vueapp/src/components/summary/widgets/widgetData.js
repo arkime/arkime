@@ -182,8 +182,8 @@ export function combinedExpression (route, store, widget) {
 export function widgetFullPageLink (route, store, widget) {
   const mode = widget?.viewMode;
   const fields = widgetFields(widget);
-  // SPI Graph aggregates a real column, so the "All X fields" groups (All IP
-  // fields and friends, which the summary endpoint handles with a script)
+  // SPI Graph aggregates a real column, so the "All X fields" groups (Src or
+  // Dst IP and friends, which the summary endpoint handles itself)
   // have no full page; the Sessions page targets don't aggregate at all
   const usable = (fieldExp) => {
     if (fieldExp === 'ip.dst:port' || fieldExp === 'destination.ip:port') { return true; }
@@ -473,7 +473,7 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
   const fields = widgetFields(widget);
   // the endpoint resolves srcField/dstField through Config.getDBField, which
   // reads dbFieldsMap — and Config.loadFields deliberately keeps noFacet fields
-  // (All IP Fields, Arkime ID, Payload Src/Dst UTF8, View Name) out of that map,
+  // (Src or Dst IP, Arkime ID, Payload Src/Dst UTF8, View Name) out of that map,
   // so no spelling of them resolves. Return undefined for those rather than a
   // dbField the server will map to undefined and hand Elasticsearch as an empty
   // field, which comes back as an x_content_parse_exception. 'ip.dst:port' is
@@ -492,7 +492,7 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
     throw { i18n: 'sessions.summary.widget.exactFieldsRequired', i18nParams: { count: 2 } };
   }
   // both picked, but one has no database field the endpoint can read (eg a
-  // noFacet field like All IP Fields, which Config.loadFields keeps out of
+  // noFacet field like Src or Dst IP, which Config.loadFields keeps out of
   // dbFieldsMap) — name it instead of failing inside Elasticsearch
   if (!srcField || !dstField) {
     const bad = !srcField ? fields[0] : fields[1];

@@ -760,6 +760,10 @@ Db.search = async (index, query, options) => {
 // Whether the sessions db cancels a search itself, without OpenSearch/Elasticsearch tasks
 Db.cancelsSearches = () => typeof internals.sessionsImpl?.cancelByOpaqueId === 'function';
 
+// Whether sessions are searched on OpenSearch/Elasticsearch (a multi viewer's
+// clusters included), not ClickHouse or a dbPlugins scheme
+Db.sessionsOnEs = () => internals.sessionsImpl === internals.esImpl;
+
 Db.cancelByOpaqueId = async (cancelId, cluster) => {
   // Searches run on the sessions db, a non ES one cancels them itself
   if (Db.cancelsSearches()) {
