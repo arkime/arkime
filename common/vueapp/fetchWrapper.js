@@ -33,6 +33,7 @@ export class ArkimeError extends Error {
  * @param {boolean} [options.background] - A poll or typeahead request, left out of the footer's query times.
  * @param {string} [options.queryLabel] - The name the footer's query times show instead of the URL.
  * @param {string} [options.queryOwner] - The dashboard widget the request is for.
+ * @param {function} [options.onResponse] - Called with the fetch Response before it is read (eg for its headers).
  * @returns {Promise<Object>} The response data parsed as JSON.
  * @throws {Error} If the URL is missing, the response status is not in the range 200-299, or if there is a bsq error (bsq = build session query).
  */
@@ -78,15 +79,17 @@ export async function fetchWrapper (options) {
     delete options.data;
   }
 
-  const { background, queryLabel, queryOwner } = options;
+  const { background, queryLabel, queryOwner, onResponse } = options;
   delete options.background;
   delete options.queryLabel;
   delete options.queryOwner;
+  delete options.onResponse;
   const query = background ? undefined : startQuery({ url, method: options.method, label: queryLabel, owner: queryOwner });
 
   let response;
   try {
     response = await fetch(url, options); // fetch the data!
+    onResponse?.(response);
     const data = await checkResponse(response, options);
     finishQuery(query, { serverMs: response.headers.get('x-arkime-response-time') });
     return data; // done!

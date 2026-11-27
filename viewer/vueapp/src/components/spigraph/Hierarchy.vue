@@ -139,6 +139,22 @@ SPDX-License-Identifier: Apache-2.0
         @hide-tooltip="barTooltip.visible = false" />
     </div> <!-- /mosaic area -->
 
+    <!-- icicle area: a row per field, each value as wide as its share of
+         its parent, click a value to zoom into it -->
+    <div
+      v-show="spiGraphType === 'icicle' && icicleData"
+      class="bar-area">
+      <summary-icicle
+        v-if="spiGraphType === 'icicle' && icicleData && baseFieldObj"
+        :data="icicleData"
+        svg-id="spigraph-icicle"
+        :field-configs="fieldList"
+        :width="barWidth"
+        :height="barHeight"
+        @show-tooltip="showBarTooltip"
+        @hide-tooltip="barTooltip.visible = false" />
+    </div> <!-- /icicle area -->
+
     <!-- waffle area: the first field's values as 100 squares, each 1% of
          the sessions (and a gray "Other" for the rest when shown), or with a
          second field one waffle of it per value of the first -->
@@ -389,6 +405,7 @@ import SummaryTagCloud from '../summary/SummaryTagCloud.vue';
 import SummaryMatrix from '../summary/SummaryMatrix.vue';
 import SummaryMosaic from '../summary/SummaryMosaic.vue';
 import SummaryWaffle from '../summary/SummaryWaffle.vue';
+import SummaryIcicle from '../summary/SummaryIcicle.vue';
 import { waffleGroups } from '../utils/waffleLayout';
 import SummaryChartTooltip from '../summary/SummaryChartTooltip.vue';
 import { OTHER_COLOR } from '../summary/widgets/chartColors';
@@ -407,9 +424,10 @@ let sankey, sankeyLinkHorizontal; // lazy load d3-sankey
 let init = true;
 // the graph types split by exactly one more field (a bar's segments, a
 // matrix's columns, a mosaic's cells, a waffle per value), and with the tag
-// cloud the types the bar area draws from the hierarchy (sized to the window)
+// cloud and the icicle the types the bar area draws from the hierarchy (sized
+// to the window)
 const ONE_SUBFIELD_TYPES = ['bar', 'matrix', 'mosaic', 'waffle'];
-const BAR_AREA_TYPES = [...ONE_SUBFIELD_TYPES, 'tagcloud'];
+const BAR_AREA_TYPES = [...ONE_SUBFIELD_TYPES, 'tagcloud', 'icicle'];
 
 // common page variables --------------------------------------------------- //
 let pendingPromise; // save a pending promise to be able to cancel it
@@ -580,6 +598,7 @@ export default {
     SummaryMatrix,
     SummaryMosaic,
     SummaryWaffle,
+    SummaryIcicle,
     SummaryChartTooltip
   },
   props: {
@@ -815,11 +834,12 @@ export default {
     matrixData: function () {
       return this.vizData?.children?.length ? { ...this.vizData, children: this.vizData.children.filter(c => !c.other) } : null;
     },
-    // a pie draws "Other" (its parts add up to a whole), the matrix reads it
-    // to know which of a row's missing values are really zero, and a mosaic's
-    // columns and cells add up to their sessions with it
+    // a pie, waffle or icicle draws "Other" (its parts add up to a whole) when
+    // shown, the matrix reads it to know which of a row's missing values are
+    // really zero, and a mosaic's columns and cells add up to their sessions
+    // with it
     wantsOther: function () {
-      return ((this.spiGraphType === 'pie' || this.spiGraphType === 'waffle') && this.showOther) || (this.spiGraphType === 'matrix' && this.fieldTypeaheadList.length > 0) ||
+      return (['pie', 'waffle', 'icicle'].includes(this.spiGraphType) && this.showOther) || (this.spiGraphType === 'matrix' && this.fieldTypeaheadList.length > 0) ||
         this.spiGraphType === 'mosaic';
     },
     // a split pie: one pie per value of the first field, of the fields after it
@@ -832,6 +852,11 @@ export default {
     },
     waffleGroupsData: function () {
       return waffleGroups(this.vizData);
+    },
+    // an icicle draws its "Other" only when it is shown
+    icicleData: function () {
+      if (!this.vizData?.children?.length) { return null; }
+      return this.showOther ? this.vizData : withoutOther(this.vizData);
     },
     // a unique table: with one field it's the same as the intersection
     uniqueTable: function () {

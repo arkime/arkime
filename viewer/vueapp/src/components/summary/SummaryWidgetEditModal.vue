@@ -824,7 +824,7 @@ const blankForm = () => ({
 
 const form = ref(blankForm());
 
-// Field list (includes the special summary fields like All IP / Dst IP:Dst Port)
+// Field list (includes the special summary fields Src or Dst IP / Dst IP:Dst Port)
 const fields = computed(() => FieldService.addSummarySpecialFields(store.state.fieldsArr || []));
 
 const fieldFriendlyName = computed(() => {
@@ -856,7 +856,7 @@ const onPairFieldSelected = (i, field) => {
   form.value.fields = next;
 };
 // a sessions list's columns are the Sessions page's: real fields, text ones
-// included, without the summary's All IP / Dst IP:Port aggregation fields
+// included, without the summary's Src or Dst IP / Dst IP:Port aggregation fields
 // (the same test the widget renders its cells by)
 const columnFields = computed(() => (store.state.fieldsArr || []).filter(fieldHasColumn));
 const fieldItems = computed(() => (listMode.value ? columnFields.value : usableFields.value)

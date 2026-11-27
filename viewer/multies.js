@@ -194,7 +194,7 @@ function node2SessionsDbUrl (node) {
 // is one, else the entry's url
 function node2Url (node) {
   for (const url of [node2SessionsDbUrl(node), node2DbUrl(node, 'dbUrl')]) {
-    if (url && ArkimeConfig.isEsUrl(url)) { return ArkimeConfig.esUrl(url).replace(/\/+$/, ''); }
+    if (url && ArkimeConfig.isEsUrl(url)) { return ArkimeUtil.removeTrailingSlashes(ArkimeConfig.esUrl(url)); }
   }
   return node2EntryUrl(node);
 }
@@ -1658,13 +1658,13 @@ async function premain () {
 
     // The cluster's own ES is used unless its dbUrl keeps capture's metadata, hunts and history elsewhere
     let clusterDbUrl = node2DbUrl(node, 'dbUrl');
-    if (clusterDbUrl && ArkimeConfig.isEsUrl(clusterDbUrl) && ArkimeConfig.esUrl(clusterDbUrl).replace(/\/+$/, '') === node2Url(node)) {
+    if (clusterDbUrl && ArkimeConfig.isEsUrl(clusterDbUrl) && ArkimeUtil.removeTrailingSlashes(ArkimeConfig.esUrl(clusterDbUrl)) === node2Url(node)) {
       clusterDbUrl = null;
     }
     if (clusterDbUrl) {
       if (ArkimeConfig.isEsUrl(clusterDbUrl)) {
         // Another OpenSearch/Elasticsearch with the cluster's credentials, its requests pass straight through
-        const esUrl = ArkimeConfig.esUrl(clusterDbUrl).replace(/\/+$/, '');
+        const esUrl = ArkimeUtil.removeTrailingSlashes(ArkimeConfig.esUrl(clusterDbUrl));
         clusterDbs[node] = { esUrl, client: new Client({ ...esClientOptions, node: esUrl }) };
       } else if (ArkimeUtil.dbHoldsCluster(clusterDbUrl)) {
         clusterDbs[node] = { conn: ArkimeUtil.dbConnect(clusterDbUrl, { prefix: node2ClusterPrefix(node) }) };

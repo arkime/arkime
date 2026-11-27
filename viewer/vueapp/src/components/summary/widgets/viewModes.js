@@ -11,6 +11,7 @@ so the edit modal can gray out inapplicable inputs and the host can dispatch.
 // Default chart view mode per field expression (mirrors the server's fieldMetadata)
 export const DEFAULT_VIEW_MODES = {
   ip: 'bar',
+  'ip.srcdst': 'bar',
   'ip.src': 'bar',
   'ip.dst': 'bar',
   'port.src': 'bar',
@@ -30,6 +31,7 @@ export const VIEW_MODE_LABEL_KEYS = {
   intersection: 'sessions.summary.intersectionView',
   heatmap: 'sessions.summary.heatmapView',
   treemap: 'sessions.summary.treemapView',
+  icicle: 'sessions.summary.icicleView',
   sankey: 'sessions.summary.sankeyView',
   connections: 'sessions.summary.connectionsView',
   tree: 'sessions.summary.treeView',
@@ -58,7 +60,7 @@ export const VIEW_MODE_LABEL_KEYS = {
 export const viewModeLabelKey = (viewMode) => (Object.hasOwn(VIEW_MODE_LABEL_KEYS, viewMode) ? VIEW_MODE_LABEL_KEYS[viewMode] : undefined);
 
 // Field-bound types: aggregate one field's top-N values (require a field).
-export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
+export const FIELD_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'icicle', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
 
 // Session-wide types: describe the whole result set (no field, fed by the host's
 // global stats chunk). (map is field-bound — it plots a chosen geo field.)
@@ -110,8 +112,8 @@ export const METRIC_SLOTS = {
 
 // Types whose metric can use an aggregation other than sum (avg/min/max/unique
 // count). Only the /api/sessions/summary paths take one; the spigraph-backed
-// modes (heatmap/treemap/timeline) always sum into their histo series. A
-// waffle's squares are shares of a whole, so it only sums.
+// modes (heatmap/timeline) always sum into their histo series. A waffle's
+// squares and a treemap's rectangles are shares of a whole, so they only sum.
 export const METRIC_AGG_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'gauge', 'tagcloud', 'map', 'combo', 'scatter'];
 
 // The per-bucket aggregations a metric field can use (server: ViewerUtils.METRIC_AGGS):
@@ -203,7 +205,7 @@ export const Y_SCALES = ['linear', 'log', 'percent'];
 // Types that honor a result limit. bar/pie/table/heatmap/treemap/sankey/
 // intersection cap their top-N values; connections uses it as a session sample
 // size (see SAMPLE_SIZE_VIEW_MODES).
-export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
+export const LENGTH_VIEW_MODES = ['bar', 'pie', 'table', 'heatmap', 'treemap', 'icicle', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'metric', 'sessions', 'tagcloud', 'waffle', 'combo', 'scatter', 'boxplot', 'control'];
 
 // Types that also honor an order (direction). Only the /api/sessions/summary
 // paths pass one through; /api/spigraph, /api/spigraphhierarchy and
@@ -213,18 +215,18 @@ export const ORDER_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'sessions', 't
 
 // Types that can show an "Other" share for what falls outside the top N (a
 // share only means something where the parts add up to a whole).
-export const OTHER_VIEW_MODES = ['pie', 'waffle'];
+export const OTHER_VIEW_MODES = ['pie', 'waffle', 'icicle'];
 
 // Types whose limit is a session sample size rather than a top-N cut, so they
 // get their own (much larger) scale.
 export const SAMPLE_SIZE_VIEW_MODES = ['connections', 'tree', 'circle'];
 
 // Types whose fetch resolves fields through the server's dbFieldsMap, which
-// Config.loadFields builds while skipping noFacet fields (All IP Fields, Arkime
-// ID, Payload Src/Dst UTF8, View Name) — so those can't be resolved however
-// they are spelled. Every other mode resolves through fieldsMap, which keeps
-// them: All IP Fields drives a working bar/pie/table widget, because
-// /api/sessions/summary aggregates it with a script instead of a db field.
+// Config.loadFields builds while skipping noFacet fields (Src or Dst IP, All
+// IP fields, Arkime ID, Payload Src/Dst UTF8, View Name) — so those can't be
+// resolved however they are spelled. Every other mode resolves through
+// fieldsMap, which keeps them: Src or Dst IP drives a working bar/pie/table
+// widget, because /api/sessions/summary aggregates it itself.
 export const DB_FIELD_VIEW_MODES = ['connections', 'tree', 'circle'];
 
 // Types whose fields are an ordered source -> destination pair rather than an
@@ -250,10 +252,10 @@ export const BUCKET_INTERVAL_VIEW_MODES = ['bar', 'pie', 'table', 'metric', 'tag
 // Types that fetch their own endpoint (spigraph / spigraphhierarchy / summary).
 // table self-fetches (one summary sub-widget per field) so it can carry multiple
 // fields and multiple metric columns.
-export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'map', 'table', 'metric', 'combo', 'scatter', 'boxplot', 'control'];
+export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'icicle', 'sankey', 'connections', 'tree', 'circle', 'intersection', 'matrix', 'mosaic', 'map', 'table', 'metric', 'combo', 'scatter', 'boxplot', 'control'];
 
 // [min, max] fields each view mode accepts — nested combinations (pie/treemap/
-// sankey/intersection via spigraphhierarchy), side-by-side columns (table via
+// icicle/sankey/intersection via spigraphhierarchy), side-by-side columns (table via
 // summary), or a source + destination pair (connections). bar is
 // single-dimension; heatmap has no combination-over-time data path. Modes not
 // listed take a single field (or none, for the session-wide ones).
@@ -263,6 +265,7 @@ export const SELF_FETCH_VIEW_MODES = ['heatmap', 'treemap', 'sankey', 'connectio
 export const FIELD_COUNT_LIMITS = {
   pie: [1, 7],
   treemap: [1, 7],
+  icicle: [1, 7],
   sankey: [1, 7],
   table: [1, 7],
   intersection: [1, 7],

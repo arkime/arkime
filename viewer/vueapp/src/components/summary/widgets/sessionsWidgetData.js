@@ -7,7 +7,7 @@ dashboard's take on a saved-search document table. Its columns are field exps
 resolved to field objects; its rows come from /api/sessions, the endpoint and
 params the Sessions page lists with, narrowed to the columns' db fields.
 */
-import { fetchWrapper } from '@common/fetchWrapper.js';
+import { dashboardRequest } from './dashboardRequests';
 import { timezoneDateString, protocol, ethertype, extractIPv6String } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 import { lengthOptions, defaultLength } from './viewModes';
@@ -18,9 +18,9 @@ export const DEFAULT_SORT_DB_FIELD = 'firstPacket';
 
 const getFieldDefault = (exp) => FieldService.getField(exp, true);
 
-// the db fields with no column of their own: All IP fields and Dst IP:Dst Port
-// are summary-only groupings
-const NO_COLUMN_DB_FIELDS = ['ip', 'destination.ip:port'];
+// the db fields with no column of their own: All IP fields, Src or Dst IP and
+// Dst IP:Dst Port are summary-only groupings
+const NO_COLUMN_DB_FIELDS = ['ip', 'ip.srcdst', 'destination.ip:port'];
 
 /** True when a field is a real session column: not an "All X" regex group, a
  *  noFacet pseudo-field (All IP fields' ipall, the view) or a summary-only
@@ -144,6 +144,6 @@ export async function fetchSessions (route, store, widget, { signal } = {}) {
   const columns = sessionsColumns(widgetFields(widget));
   if (!columns.length) { throw { i18n: 'sessions.summary.widget.fieldRequired' }; }
   const data = buildWidgetParams(route, store, widget, sessionsRequestParams(columns, widget));
-  const res = await fetchWrapper({ url: 'api/sessions', method: 'POST', data, signal, ...queryInfo(widget) });
+  const res = await dashboardRequest({ url: 'api/sessions', data, signal, ...queryInfo(widget) });
   return { rows: Array.isArray(res?.data) ? res.data : [], total: res?.recordsFiltered || 0 };
 }

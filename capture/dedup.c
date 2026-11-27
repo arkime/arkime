@@ -71,10 +71,19 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
         return 0;
     }
 
-    struct timespec currentTime;
-    clock_gettime(CLOCK_MONOTONIC_COARSE, &currentTime);
+    // Live, packets show up as they happen so the cheap clock is good enough. Reading files
+    // has to go by the packet times, a whole file is read in less than the dedup window
+    // and anything sent again, even minutes later in the file, would look like a duplicate.
+    uint32_t now;
+    if (config.pcapReadOffline) {
+        now = packet->ts.tv_sec;
+    } else {
+        struct timespec currentTime;
+        clock_gettime(CLOCK_MONOTONIC_COARSE, &currentTime);
+        now = currentTime.tv_sec;
+    }
 
-    uint32_t secondSlot = (uint32_t)currentTime.tv_sec % dedupSeconds;
+    uint32_t secondSlot = now % dedupSeconds;
 
     // Create hash, headerLen should be length of ip & tcp/udp header
     uint8_t md[16];
@@ -153,9 +162,9 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
 
     // First see if we need to clean up old slot, and block all new folks while we do
     // In theory no one should be using this slot because we hadn't been searching it for a second.
-    if (ARKIME_THREAD_ATOMIC_LOAD(seconds[secondSlot].tv_sec) != currentTime.tv_sec) {
+    if (ARKIME_THREAD_ATOMIC_LOAD(seconds[secondSlot].tv_sec) != now) {
         ARKIME_LOCK(seconds[secondSlot].lock);
-        if (seconds[secondSlot].tv_sec != currentTime.tv_sec) { // Check critical section again inside the lock
+        if (seconds[secondSlot].tv_sec != now) { // Check critical section again inside the lock
             if (seconds[secondSlot].error) {
                 uint32_t pcount = 0;
                 for (uint32_t i = 0; i < dedupSlots; i++)
@@ -167,7 +176,7 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
             // this slot until the wipe is done and published
             ARKIME_THREAD_ATOMIC_STORE(seconds[secondSlot].tv_sec, 0);
             memset(seconds[secondSlot].counts, 0, dedupSlots);
-            ARKIME_THREAD_ATOMIC_STORE(seconds[secondSlot].tv_sec, (uint32_t)currentTime.tv_sec);
+            ARKIME_THREAD_ATOMIC_STORE(seconds[secondSlot].tv_sec, now);
         }
         ARKIME_UNLOCK(seconds[secondSlot].lock);
     }
@@ -175,8 +184,10 @@ int arkime_dedup_should_drop(const ArkimePacket_t *packet, int headerLen)
     // Search all valid slots
     for (uint32_t s = 0; s < dedupSeconds; s++) {
 
-        // If slot is too old, or mid wipe (tv_sec 0), just skip it
-        if (currentTime.tv_sec - dedupSeconds + 1 >= ARKIME_THREAD_ATOMIC_LOAD(seconds[s].tv_sec)) {
+        // If slot is too old, or mid wipe (tv_sec 0), just skip it. Packet times in files can
+        // also go backwards, the next file or a merged capture, so skip slots too far ahead.
+        const int64_t slotAge = (int64_t)now - (int64_t)ARKIME_THREAD_ATOMIC_LOAD(seconds[s].tv_sec);
+        if (slotAge + 1 >= (int64_t)dedupSeconds || slotAge <= 1 - (int64_t)dedupSeconds) {
             continue;
         }
 

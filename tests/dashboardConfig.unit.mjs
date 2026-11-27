@@ -22,6 +22,7 @@ const STUBS = {
     let n = 0;
     export default { createRandomString: () => 'rand' + (++n) };`),
   '@common/fetchWrapper.js': stub('export const fetchWrapper = async () => ({});'),
+  '/dashboardRequests': stub('export const dashboardRequest = async () => ({});'),
   '@common/queryTimes.js': stub('export const startQuery = () => undefined; export const finishQuery = () => {};'),
   '@common/vueFilters.js': stub(`
     export const commaString = String;
@@ -135,6 +136,17 @@ describe('widgetsFromConfig', () => {
 });
 
 describe('normalizeWidget', () => {
+  test("a widget's ip is ip.srcdst, the two endpoints it has always counted", () => {
+    const one = normalizeWidget({ id: 'a', viewMode: 'bar', field: 'ip', length: 15 });
+    assert.equal(one.field, 'ip.srcdst');
+    assert.deepEqual(one.fields, ['ip.srcdst']);
+    assert.equal(one.viewMode, 'bar');
+    const many = normalizeWidget({ id: 'b', viewMode: 'table', fields: ['ip', 'port.dst'] });
+    assert.deepEqual(many.fields, ['ip.srcdst', 'port.dst']);
+    assert.equal(normalizeWidget({ id: 'c', viewMode: 'bar', field: 'ip.src' }).field, 'ip.src', 'other ip fields stay');
+    assert.ok(defaultWidgets().some(w => w.field === 'ip.srcdst') && !defaultWidgets().some(w => w.field === 'ip'), 'the starter dashboard too');
+  });
+
   test('keeps bar orientation and timeline style, defaults the rest', () => {
     const bar = normalizeWidget({ id: 'b', viewMode: 'bar', field: 'ip.src', orientation: 'horizontal' });
     assert.equal(bar.orientation, 'horizontal');
@@ -324,6 +336,8 @@ describe('spigraphQueryFromGraph', () => {
       graph({ viewMode: 'pie', fields: ['protocols'], splitField: 'ip.dst', splitLength: 10 }),
       graph({ viewMode: 'intersection', fields: ['ip.src', 'ip.dst', 'port.dst', 'protocols', 'bytes', 'packets', 'ip.src'] }),
       graph({ viewMode: 'treemap', fields: ['ip.src', 'ip.dst'] }),
+      graph({ viewMode: 'icicle', fields: ['protocols', 'port.dst', 'ip.dst'], length: 10 }),
+      graph({ viewMode: 'icicle', fields: ['protocols'], other: true }),
       graph({ viewMode: 'sankey', fields: ['ip.src', 'ip.dst', 'port.dst'] }),
       graph({ viewMode: 'table', field: 'protocols', length: 50 }),
       graph({ viewMode: 'table', fields: ['ip.src', 'ip.dst', 'port.dst', 'protocols', 'bytes', 'packets', 'ip.src'], length: 50 }),
@@ -670,6 +684,14 @@ describe('widgetFullPageLink', () => {
     assert.equal(link.query.subFields, 'port.dst');
   });
 
+  test('an icicle opens SPI Graph\'s icicle of all its fields, with its "Other"', () => {
+    const link = widgetFullPageLink({ query: {} }, store, { ...graph({ viewMode: 'icicle', fields: ['protocols', 'port.dst', 'ip.dst'], other: true }), id: 'w9' });
+    assert.equal(link.query.spiGraphType, 'icicle');
+    assert.equal(link.query.exp, 'protocols');
+    assert.equal(link.query.subFields, 'port.dst,ip.dst');
+    assert.equal(link.query.other, 'true');
+  });
+
   test('a mosaic opens SPI Graph\'s mosaic of its two fields', () => {
     const link = widgetFullPageLink({ query: {} }, store, { ...graph({ viewMode: 'mosaic', fields: ['ip.dst', 'protocols'], length: 10 }), id: 'w9' });
     assert.equal(link.query.spiGraphType, 'mosaic');
@@ -704,7 +726,7 @@ describe('widget fields', () => {
   test('each view mode takes up to its own limit', () => {
     assert.equal(fieldCountLimits('intersection')[1], 7);
     assert.equal(fieldCountLimits('table')[1], 7);
-    for (const mode of ['pie', 'treemap', 'sankey']) { assert.equal(fieldCountLimits(mode)[1], 7, mode); }
+    for (const mode of ['pie', 'treemap', 'icicle', 'sankey']) { assert.equal(fieldCountLimits(mode)[1], 7, mode); }
     assert.deepEqual(widgetFields({ viewMode: 'intersection', fields }), fields);
     assert.deepEqual(widgetFields({ viewMode: 'pie', fields: [...fields, 'f8'] }), fields);
     assert.deepEqual(widgetFields({ viewMode: 'sessions', fields: [...fields, 'f8'] }), [...fields, 'f8']);
@@ -725,6 +747,7 @@ describe('widget fields', () => {
     assert.equal(defaultWidgetTitle({ viewMode: 'waffle', field: 'protocols', fields: ['protocols'], splitField: 'ip.dst' }), 'ip.dst / protocols');
     assert.equal(defaultWidgetTitle({ viewMode: 'pie', field: 'protocols', fields: ['protocols'], splitField: 'ip.dst' }), 'ip.dst / protocols');
     assert.equal(defaultWidgetTitle({ viewMode: 'treemap', field: 'ip.src', fields: ['ip.src', 'ip.dst'] }), 'ip.src / ip.dst');
+    assert.equal(defaultWidgetTitle({ viewMode: 'icicle', field: 'protocols', fields: ['protocols', 'port.dst'] }), 'protocols / port.dst');
     assert.equal(defaultWidgetTitle({ viewMode: 'mosaic', field: 'ip.dst', fields: ['ip.dst', 'protocols'] }), 'ip.dst × protocols');
     assert.equal(defaultWidgetTitle({ viewMode: 'matrix', field: 'ip.src', fields: ['ip.src', 'port.dst'] }), 'ip.src × port.dst');
   });

@@ -185,6 +185,8 @@ class PcapOutput {
 class SessionAPIs {
   // spigraph runs a query per value, so cap how many values one request asks for
   static #spigraphMaxSize = 10000;
+  // how many of a summary request's widget searches run at once
+  static #summaryWidgetConcurrency = 4;
 
   static #scriptAggs = {
     'ip.dst:port': {
@@ -610,92 +612,102 @@ class SessionAPIs {
       console.log('localSessionDetail query', req.query);
     }
 
-    const packets = [];
+    let packets = [];
+    let decodeErrors = 0;
     SessionAPIs.processSessionId(req.params.id, !req.packetsOnly, null, (pcap, buffer, cb, i) => {
-      let obj = {};
+      // A packet that can't be decoded is left out, the rest of the session can still be shown
       if (buffer.length > 16) {
         try {
+          const obj = {};
           pcap.decode(buffer, obj);
+          packets[i] = obj;
         } catch (e) {
-          obj = { ip: { p: 'Error decoding ' + e } };
-          console.trace('loadSessionDetail error', ArkimeUtil.sanitizeStr(e.stack));
+          if (!decodeErrors++) {
+            console.log('ERROR - localSessionDetail decode', ArkimeUtil.sanitizeStr(e.stack));
+          }
         }
-      } else {
-        obj = { ip: { p: 'Empty' } };
       }
-      packets[i] = obj;
       cb(null);
-    }, async (err, session) => {
+    }, async (err, session, cutOff) => {
       if (err) {
         return res.type('text/plain').end('Problem loading packets for ' + ArkimeUtil.safeStr(req.params.id) + ' Error: ' + err);
       }
-      session.id = req.params.id;
-      SessionAPIs.#sortFields(session);
+      // A throw in here would leave the request waiting forever
+      try {
+        session.id = req.params.id;
+        SessionAPIs.#sortFields(session);
+        packets = Pcap.defrag(packets.filter(Boolean), cutOff);
 
-      if (session.source?.ip) {
-        const sep = session.source.ip.includes(':') ? '.' : ':';
-        session.sourceKey = `${session.source.ip}${sep}${session.source.port}`;
-        session.destinationKey = `${session.destination.ip}${sep}${session.destination.port}`;
-      } else {
-        session.sourceKey = 'Fix 1';
-        session.destinationKey = 'Fix 2';
-      }
+        if (session.source?.ip) {
+          const sep = session.source.ip.includes(':') ? '.' : ':';
+          session.sourceKey = `${session.source.ip}${sep}${session.source.port}`;
+          session.destinationKey = `${session.destination.ip}${sep}${session.destination.port}`;
+        } else {
+          session.sourceKey = 'Fix 1';
+          session.destinationKey = 'Fix 2';
+        }
 
-      if (req.query.showFrames && packets.length !== 0) {
-        const { dKey, sKey, results } = Pcap.packetFlow(session, packets, +req.query.packets || 200);
-        session.sourceKey = sKey;
-        session.destinationKey = dKey;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets.length === 0) {
-        session._err = 'No pcap data found';
-        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
-      } else if (packets[0].ether !== undefined && packets[0].ether.data !== undefined) {
-        const { err, results } = Pcap.reassemble_generic_ether(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip === undefined) {
-        session._err = "Couldn't decode pcap file, check viewer log";
-        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
-      } else if (packets[0].ip.p === 1) {
-        const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.p === 6) {
-        // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
-        const hasFragments = packets.some(p => !p.tcp);
-        if (hasFragments) {
+        if (req.query.showFrames && packets.length !== 0) {
+          const { dKey, sKey, results } = Pcap.packetFlow(session, packets, +req.query.packets || 200);
+          session.sourceKey = sKey;
+          session.destinationKey = dKey;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets.length === 0) {
+          session._err = 'No pcap data found';
+          SessionAPIs.#localSessionDetailReturn(req, res, session, []);
+        } else if (packets[0].ether !== undefined && packets[0].ether.data !== undefined) {
+          const { err, results } = Pcap.reassemble_generic_ether(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip === undefined) {
+          session._err = "Couldn't decode pcap file, check viewer log";
+          SessionAPIs.#localSessionDetailReturn(req, res, session, []);
+        } else if (packets[0].ip.p === 1) {
+          const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.p === 6) {
+          // Check if any packets are fragments (p=0 due to pcap.js fragment handling)
+          const hasFragments = packets.some(p => !p.tcp);
+          if (hasFragments) {
+            const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
+            session._err = err;
+            SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+          } else {
+            const key = ipaddr.parse(session.source.ip).toString();
+            const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
+            session._err = err;
+            SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+          }
+        } else if (packets[0].ip.p === 17) {
+          const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.p === 132) {
+          const { err, results } = Pcap.reassemble_sctp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.p === 50) {
+          const { err, results } = Pcap.reassemble_esp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.p === 58) {
+          const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
+          session._err = err;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+        } else if (packets[0].ip.data !== undefined) {
           const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
           session._err = err;
           SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
         } else {
-          const key = ipaddr.parse(session.source.ip).toString();
-          const { err, results } = await Pcap.reassemble_tcp(packets, +req.query.packets || 200, key + ':' + session.source.port);
-          session._err = err;
-          SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
+          session._err = 'Unknown ip.p=' + packets[0].ip.p;
+          SessionAPIs.#localSessionDetailReturn(req, res, session, []);
         }
-      } else if (packets[0].ip.p === 17) {
-        const { err, results } = Pcap.reassemble_udp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.p === 132) {
-        const { err, results } = Pcap.reassemble_sctp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.p === 50) {
-        const { err, results } = Pcap.reassemble_esp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.p === 58) {
-        const { err, results } = Pcap.reassemble_icmp(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else if (packets[0].ip.data !== undefined) {
-        const { err, results } = Pcap.reassemble_generic_ip(packets, +req.query.packets || 200);
-        session._err = err;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, results || []);
-      } else {
-        session._err = 'Unknown ip.p=' + packets[0].ip.p;
-        SessionAPIs.#localSessionDetailReturn(req, res, session, []);
+      } catch (e) {
+        console.log('ERROR - localSessionDetail', util.inspect(e, false, 50));
+        if (!res.headersSent) {
+          res.type('text/plain').end('Problem decoding packets for ' + ArkimeUtil.safeStr(req.params.id));
+        }
       }
     },
     // *2 because the packets can be out of order, we truncate again
@@ -722,7 +734,13 @@ class SessionAPIs {
         nextCb('Error');
         break;
       default:
-        packetCb(pcap, packet, nextCb, i);
+        // processFile isn't awaited, a throw here would leave the session waiting forever
+        try {
+          packetCb(pcap, packet, nextCb, i);
+        } catch (err) {
+          console.log('ERROR - processSessionIdDisk -', util.inspect(err, false, 50));
+          nextCb(err);
+        }
         break;
       }
       pcap.unref();
@@ -1551,7 +1569,13 @@ class SessionAPIs {
         if (packet.length > 16) {
           try {
             const obj = {};
-            pcap.decode(packet, obj);
+            try {
+              pcap.decode(packet, obj);
+            } catch (e) {
+              // Without knowing where its headers end all of the packet is scrubbed
+              console.log(`ERROR - Couldn't decode packet at ${pos}, scrubbing all of it -`, util.inspect(e, false, 50));
+              delete obj.ip;
+            }
             pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[0], whatToRemove === 'all');
             pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[1], whatToRemove === 'all');
             pcap.scrubPacket(obj, pos, SessionAPIs.#scrubbingBuffers[2], whatToRemove === 'all');
@@ -1694,10 +1718,10 @@ class SessionAPIs {
     // path and again via their async.eachLimit completion callback
     const origEndCb = endCb;
     let endCbCalled = false;
-    endCb = (err, fields) => {
+    endCb = (err, fields, cutOff) => {
       if (endCbCalled) { return undefined; }
       endCbCalled = true;
-      return origEndCb(err, fields);
+      return origEndCb(err, fields, cutOff);
     };
 
     let extra;
@@ -1729,8 +1753,11 @@ class SessionAPIs {
         return endCb(null, fields);
       }
 
+      // endCb is told when not all the packets were read, the last datagram can be missing fragments
+      let cutOff = false;
       if (maxPackets && fields.packetPos.length > maxPackets) {
         fields.packetPos.length = maxPackets;
+        cutOff = true;
       }
 
       /* Go through the list of packets and prefetch the id to file name mapping */
@@ -1769,7 +1796,7 @@ class SessionAPIs {
           psidFields.tags = [];
         }
 
-        return endCb(null, psidFields);
+        return endCb(null, psidFields, cutOff);
       }, limit, extra);
     } catch (err) {
       console.log('ERROR - session get error in processSessionId', util.inspect(err, false, 50));
@@ -1926,23 +1953,29 @@ class SessionAPIs {
       // fullSession=false: decode/reassembly only reads ipProtocol and
       // source ip/port, all of which are in processSessionId's narrow field
       // list; the full-field fetch is expensive per session
+      let decodeErrors = 0;
       SessionAPIs.processSessionId(id, false, null, (pcap, buffer, cb, i) => {
-        let obj = {};
+        // A packet that can't be decoded is left out, filtered below
         if (buffer.length > 16) {
-          pcap.decode(buffer, obj);
-        } else {
-          obj = { ip: { p: '' } };
+          try {
+            const obj = {};
+            pcap.decode(buffer, obj);
+            packets[i] = obj;
+          } catch (e) {
+            if (!decodeErrors++) {
+              console.log('ERROR - processSessionIdAndDecode decode', ArkimeUtil.sanitizeStr(e.stack));
+            }
+          }
         }
-        packets[i] = obj;
         cb(null);
-      }, async (err, session) => {
+      }, async (err, session, cutOff) => {
         // A throw in here would leave the promise pending forever
         try {
           if (err) {
             console.log('ERROR - processSessionIdAndDecode', util.inspect(err, false, 50));
             return reject(err);
           }
-          packets = packets.filter(Boolean);
+          packets = Pcap.defrag(packets.filter(Boolean), cutOff);
           if (packets.length === 0) {
             return resolve({ session, packets: [] });
           } else if (packets[0].ip === undefined) {
@@ -2400,6 +2433,8 @@ class SessionAPIs {
    * @param {string} field=node - The database field to return data for. Either exp or field is required, field is given priority if both are present.
    * @param {string} metric - Optional numeric (integer) field exp (dashboard widgets). When set, its per-value sum is added as a <dbField>Histo timeline series and per-item total (drives heatmap intensity / treemap size). 'sessions' and non-numeric fields are ignored (doc_count is used).
    * @param {string} metricAgg - Optional percentile of the metric instead of its sum: 'p50' (the median), 'p90', 'p95' or 'p99'. The graph and each item then carry a <dbField>:p<N>Histo series, the percentile of each time bucket, and the item's <dbField>:p<N>Histo total is the percentile over the whole time range (sort by it to rank the values). Not with interval=hourOfWeek, and refused by a multi viewer.
+   * @param {boolean} graphOnly=false - Only the search's own graph and map: no per-value items (items is empty), so no search per value
+   * @param {boolean} metricOnly=false - The graphs carry only sessions and the metric's series, not the user's timeline data filters (each a sum per time bucket and value)
    * @returns {object} map - The data to populate the main/aggregate spigraph sessions map
    * @returns {object} graph - The data to populate the main/aggregate spigraph sessions timeline graph
    * @returns {array} items - The list of field values with their corresponding timeline graph and map data
@@ -2463,26 +2498,31 @@ class SessionAPIs {
 
       if (req.query.exp === 'ip.dst:port') { field = 'ip.dst:port'; }
 
-      if (field === 'ip.dst:port') {
-        query.aggregations.field = { terms: { field: 'destination.ip', size }, aggregations: { sub: { terms: { field: 'destination.port', size } } } };
-      } else if (field === 'fileand') {
-        query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size } } } };
-      } else {
-        query.aggregations.field = { terms: { field, size: size * 2 } };
+      // just the search's own graph (a dashboard timeline or sparkline): no
+      // values to rank, so no terms aggregation and no search per value
+      const graphOnly = req.query.graphOnly === true || req.query.graphOnly === 'true';
+      if (!graphOnly) {
+        if (field === 'ip.dst:port') {
+          query.aggregations.field = { terms: { field: 'destination.ip', size }, aggregations: { sub: { terms: { field: 'destination.port', size } } } };
+        } else if (field === 'fileand') {
+          query.aggregations.field = { terms: { field: 'node', size: 1000 }, aggregations: { sub: { terms: { field: 'fileId', size } } } };
+        } else {
+          query.aggregations.field = { terms: { field, size: size * 2 } };
+        }
       }
 
       // each value's percentile over the whole range (its total)
-      if (pct) { query.aggregations[pct.key] = ViewerUtils.percentileAgg(pct.field, pct.percent); }
+      if (pct) { Object.assign(query.aggregations, ViewerUtils.percentileAggs(pct.key, pct.field, pct.percent)); }
 
       // Rank the candidate Top-N pool by the sort metric. Without this the terms agg
       // returns the top size*2 BY SESSION COUNT (ES default) before the metric sort
       // runs, dropping high-metric/low-count values. Order by the <dbField>Histo sum.
-      const sortPercentile = pct && req.query.sort === `${pct.key}Histo`;
-      const sortMetricField = !sortPercentile && /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
+      const sortPercentile = !graphOnly && pct && req.query.sort === `${pct.key}Histo`;
+      const sortMetricField = !graphOnly && !sortPercentile && /Histo$/.test(req.query.sort || '') && req.query.sort !== 'sessionsHisto'
         ? req.query.sort.replace(/Histo$/, '')
         : undefined;
       if (sortPercentile && !query.aggregations.field.aggregations) {
-        query.aggregations.field.aggregations = { metricValue: ViewerUtils.percentileAgg(pct.field, pct.percent) };
+        query.aggregations.field.aggregations = ViewerUtils.percentileAggs('metricValue', pct.field, pct.percent);
         query.aggregations.field.terms.order = { [ViewerUtils.percentileOrderKey('metricValue', pct.percent)]: 'desc' };
       } else if (sortMetricField && !query.aggregations.field.aggregations) {
         query.aggregations.field.aggregations = { metricValue: { sum: { field: sortMetricField } } };
@@ -2500,6 +2540,8 @@ class SessionAPIs {
 
         results.graph = ViewerUtils.graphMerge(req, query, result.aggregations);
         results.map = ViewerUtils.mapMerge(result.aggregations);
+
+        if (graphOnly) { return res.send(results); }
 
         if (!result.aggregations) {
           result.aggregations = { field: { buckets: [] } };
@@ -2986,9 +3028,23 @@ class SessionAPIs {
 
       const options = ViewerUtils.addCluster(req.query.cluster);
       Db.searchSessions(indices, query, options, (err, result) => {
+        let msg;
         if (err) {
           const esError = err.meta?.body?.error;
-          const msg = String(esError?.root_cause?.[0]?.reason ?? esError?.reason ?? err.message ?? err);
+          msg = String(esError?.root_cause?.[0]?.reason ?? esError?.reason ?? err.message ?? err);
+        } else if (result?._shards?.failed > 0) {
+          const reason = result._shards.failures?.[0]?.reason;
+          const failure = `${result._shards.failed} of ${result._shards.total} shards failed: ${reason?.reason ?? reason?.type ?? 'unknown reason'}`;
+          // No values from the shards that answered can't be told apart from a
+          // field with no values, so it is an error. Values are a partial answer,
+          // often just an empty index mapped differently, so they are kept.
+          if (!result.aggregations?.field?.buckets?.length) {
+            msg = failure;
+          } else {
+            console.log(`WARNING - ${req.method} /api/unique partial result,`, failure);
+          }
+        }
+        if (msg !== undefined) {
           console.log(`ERROR - ${req.method} /api/unique`, msg);
           if (req.query.autocomplete !== undefined) {
             return res.serverError(400, msg);
@@ -3775,6 +3831,7 @@ class SessionAPIs {
     // Field metadata configuration with default viewMode and metricType for each field
     const fieldMetadata = {
       ip: { viewMode: 'bar', metricType: 'sessions' },
+      'ip.srcdst': { viewMode: 'bar', metricType: 'sessions' },
       'ip.dst:port': { viewMode: 'table', metricType: 'sessions' },
       protocols: { viewMode: 'pie', metricType: 'sessions' },
       tags: { viewMode: 'pie', metricType: 'sessions' },
@@ -3790,7 +3847,10 @@ class SessionAPIs {
     const fieldsMap = Config.getFieldsMap();
 
     // Special fields that don't have a direct database field mapping
-    const specialFields = ['ip', 'ip.dst:port'];
+    // ip.srcdst is a session's two endpoints; a widget's ip (saved before
+    // ip.srcdst) has always counted the same, not every IP field as a search does
+    const SRCDST_IP_FIELDS = ['ip.srcdst', 'ip'];
+    const specialFields = [...SRCDST_IP_FIELDS, 'ip.dst:port'];
 
     // Build the list of widgets to aggregate. The modular dashboard sends a
     // `widgets` array of per-widget specs ({id, field, length, order, expression,
@@ -3820,6 +3880,8 @@ class SessionAPIs {
     // a bucketInterval widget's histogram has no size (ES builds every range
     // in the field's span), so a widget whose span/width is past this fails
     const MAX_HISTOGRAM_BUCKETS = 10000;
+    // a box plot's quartiles
+    const BOX_PERCENTS = [25, 50, 75];
 
     // Normalize each requested widget into an aggregation spec
     const widgetSpecs = [];
@@ -3941,7 +4003,7 @@ class SessionAPIs {
           const count = bucket[`${m.aggKey}c`]?.value ?? 0;
           metricValues[m.exp] = count ? (bucket[m.aggKey]?.value ?? 0) / count : 0;
         } else if (spec.percent) {
-          metricValues[m.exp] = ViewerUtils.percentileValue(bucket[m.aggKey]);
+          metricValues[m.exp] = ViewerUtils.percentileIn(bucket, m.aggKey, spec.percent);
         } else {
           metricValues[m.exp] = bucket[m.aggKey]?.value ?? 0;
         }
@@ -3949,34 +4011,43 @@ class SessionAPIs {
       return metricValues;
     }
 
+    // the aggregation that holds a box plot's quartiles: the ranking
+    // percentile's own when it is of the same field, so one digest serves both
+    function boxPctKey (spec) {
+      return spec.percent && spec.metrics[0]?.dbField === spec.boxDbField ? spec.metrics[0].aggKey : 'bxq';
+    }
+
     // a box plot's aggregations per bucket: the metric's extremes, mean and
-    // count, and its quartiles one percentile each (as every backend asks)
+    // count, and its quartiles from one digest (with the ranking percentile
+    // when it can share it, see metricAggsFor)
     function boxAggsFor (spec) {
       if (!spec.boxDbField) { return {}; }
       const field = spec.boxDbField;
-      return {
+      const aggs = {
         bxmin: { min: { field } },
         bxmax: { max: { field } },
         bxavg: { avg: { field } },
-        bxcnt: { value_count: { field } },
-        bxq1: ViewerUtils.percentileAgg(field, 25),
-        bxq2: ViewerUtils.percentileAgg(field, 50),
-        bxq3: ViewerUtils.percentileAgg(field, 75)
+        bxcnt: { value_count: { field } }
       };
+      if (boxPctKey(spec) === 'bxq') { aggs.bxq = ViewerUtils.percentileAgg(field, BOX_PERCENTS); }
+      return aggs;
     }
 
     // a bucket's box: { count: 0 } when none of its sessions has the metric
-    function bucketBox (bucket) {
+    function bucketBox (bucket, spec) {
       const count = bucket.bxcnt?.value ?? 0;
       if (!count) { return { count: 0 }; }
       const num = (r) => (typeof r?.value === 'number' && Number.isFinite(r.value) ? r.value : 0);
+      const min = num(bucket.bxmin);
+      const max = num(bucket.bxmax);
+      const pcts = bucket[boxPctKey(spec)];
       return {
         count,
-        min: num(bucket.bxmin),
-        q1: ViewerUtils.percentileValue(bucket.bxq1),
-        median: ViewerUtils.percentileValue(bucket.bxq2),
-        q3: ViewerUtils.percentileValue(bucket.bxq3),
-        max: num(bucket.bxmax),
+        min,
+        q1: ViewerUtils.percentileValue(pcts, 25, min, max),
+        median: ViewerUtils.percentileValue(pcts, 50, min, max),
+        q3: ViewerUtils.percentileValue(pcts, 75, min, max),
+        max,
         mean: num(bucket.bxavg)
       };
     }
@@ -3990,7 +4061,9 @@ class SessionAPIs {
           aggs[`${m.aggKey}c`] = { value_count: { field: m.dbField } };
           if (m.aggKey === spec.sortAggKey) { aggs[`${m.aggKey}o`] = { avg: { field: m.dbField } }; }
         } else if (spec.percent) {
-          aggs[m.aggKey] = ViewerUtils.percentileAgg(m.dbField, spec.percent);
+          // the box plot's quartiles ride along on the first metric's digest
+          const percents = m === spec.metrics[0] && boxPctKey(spec) === m.aggKey ? [spec.percent, ...BOX_PERCENTS] : spec.percent;
+          Object.assign(aggs, ViewerUtils.percentileAggs(m.aggKey, m.dbField, percents));
         } else {
           aggs[m.aggKey] = { [spec.metricAgg]: { field: m.dbField } };
         }
@@ -4003,6 +4076,10 @@ class SessionAPIs {
         return [];
       }
 
+      // ES ranks by the raw HDR percentile, which is then clamped to each
+      // value's min and max, so the values that have one are ranked again
+      const rerank = !!(spec.percent && spec.orderAggKey && spec.orderBy !== 'key');
+      const unranked = []; // the values with no percentile: ES ranked them last
       const results = [];
       for (let i = 0; i < Math.min(agg.buckets.length, limit); i++) {
         const bucket = agg.buckets[i];
@@ -4015,7 +4092,8 @@ class SessionAPIs {
           : undefined;
         // a histogram bucket's key is the range's lower bound
         const range = spec.bucketInterval ? [bucket.key, bucket.key + spec.bucketInterval - 1] : undefined;
-        results.push({
+        const ranked = !rerank || ViewerUtils.percentileHasValue(bucket[spec.sortAggKey], spec.percent);
+        (ranked ? results : unranked).push({
           item: range ? (spec.bucketInterval > 1 ? `${range[0]}-${range[1]}` : String(range[0])) : bucket.key,
           ...(range ? { range } : {}),
           sessions: bucket.doc_count,
@@ -4024,8 +4102,15 @@ class SessionAPIs {
           value: spec.sortExp ? metricValues[spec.sortExp] : bucket.doc_count,
           metricValues,
           ...(split ? { split } : {}),
-          ...(spec.boxDbField ? { box: bucketBox(bucket) } : {})
+          ...(spec.boxDbField ? { box: bucketBox(bucket, spec) } : {})
         });
+      }
+      // put any value the clamp moved back in order, the ones without a
+      // percentile still last (as 0 they would lead a bottom N)
+      if (rerank) {
+        const dir = spec.order === 'asc' ? 1 : -1;
+        results.sort((a, b) => dir * (a.value - b.value));
+        results.push(...unranked);
       }
       return results;
     }
@@ -4045,6 +4130,88 @@ class SessionAPIs {
         value = Math.max(0, (aggs.othertotal?.total?.value ?? 0) - inTop);
       }
       return { sessions, value };
+    }
+
+    // ip.srcdst (and a widget's ip) is each session's two addresses. Its script builds them
+    // for every session, which is slow on OpenSearch/Elasticsearch (ClickHouse
+    // reads both columns, so it keeps it). A widget whose ranking and metrics
+    // add up across the two sides is instead searched twice: each side's own
+    // top values, ranked the widget's way, name the candidates, then just the
+    // candidates are counted on both sides and the sides added together, less
+    // the sessions with the one address on both sides (so they count once, as
+    // the script's do). The values shown have exact totals; a value only
+    // middling on both sides can miss the candidates. The script is no check
+    // on that: its terms are each shard's own top values, so over many
+    // indices its totals can come up short, which these never do.
+    const IP_SIDES = ['source.ip', 'destination.ip'];
+    // the candidates (at most 6 * length) are counted by pair, source by
+    // destination: 14,400 buckets at the most, under the database's limit
+    const IP_BOTH_SIDES_MAX_LENGTH = 20;
+    function ipBothSides (spec) {
+      return !spec.total && SRCDST_IP_FIELDS.includes(spec.field) && Db.sessionsOnEs() && spec.orderBy !== 'key' && spec.order === 'desc' &&
+        spec.length <= IP_BOTH_SIDES_MAX_LENGTH && !spec.splitDbField && !spec.boxDbField && !spec.percent &&
+        ['sum', 'avg', 'min', 'max'].includes(spec.metricAgg);
+    }
+
+    // a sub aggregation's value over two sets of sessions (op 1: the sets
+    // joined, -1: the second taken out of the first), by its kind: sums and
+    // counts add (an average is recomputed from them, see bucketMetrics); a
+    // min or max over a join is the smaller or larger, and taking out sessions
+    // the first holds twice leaves it as it was
+    function combineSides (def, a, b, op) {
+      if (!a) { return op > 0 ? b : a; }
+      if (!b) { return a; }
+      const num = (r) => (typeof r?.value === 'number' && Number.isFinite(r.value) ? r.value : undefined);
+      const [x, y] = [num(a), num(b)];
+      if (def.min || def.max) {
+        if (op < 0) { return a; }
+        if (x === undefined || y === undefined) { return { value: x ?? y ?? null }; }
+        return { value: def.min ? Math.min(x, y) : Math.max(x, y) };
+      }
+      return { value: (x ?? 0) + op * (y ?? 0) };
+    }
+
+    async function searchIpBothSides (indices, options, wquery, spec, widgetAggs, termsOrder) {
+      const perSide = spec.length * 3;
+      const sideAggs = (terms, sub = {}) => Object.fromEntries(IP_SIDES.map((field, i) => [
+        `side${i}`, { terms: { field, order: termsOrder, ...terms }, aggs: { ...widgetAggs, ...(i === 0 ? sub : {}) } }
+      ]));
+      const first = await Db.searchSessions(indices, { ...wquery, aggregations: sideAggs({ size: perSide }) }, options);
+      // a multi viewer returns every value its clusters did, ranked: each
+      // side's top ones are the candidates there too
+      const sides = IP_SIDES.map((f, i) => (first.aggregations?.[`side${i}`]?.buckets ?? []).slice(0, perSide));
+      const candidates = [...new Set(sides.flatMap(side => side.map(b => String(b.key))))];
+      if (!candidates.length) { return { ...first, aggregations: { [spec.aggName]: { buckets: [] } } }; }
+
+      const only = { size: candidates.length, include: candidates };
+      // each source's sessions by destination, for the ones to itself. A
+      // filter of a src and dst clause per candidate counts the same sessions
+      // but is much slower: it runs every candidate's two term queries
+      const pairs = { pair: { terms: { field: IP_SIDES[1], ...only }, aggs: widgetAggs } };
+      const exact = await Db.searchSessions(indices, { ...wquery, aggregations: sideAggs(only, pairs) }, options);
+      const byKey = new Map();
+      const combine = (into, bucket, op) => {
+        into.doc_count += op * bucket.doc_count;
+        for (const [aggKey, def] of Object.entries(widgetAggs)) { into[aggKey] = combineSides(def, into[aggKey], bucket[aggKey], op); }
+      };
+      for (let i = 0; i < IP_SIDES.length; i++) {
+        for (const bucket of exact.aggregations?.[`side${i}`]?.buckets ?? []) {
+          const key = String(bucket.key);
+          const { pair, ...side } = bucket;
+          if (byKey.has(key)) { combine(byKey.get(key), side, 1); } else { byKey.set(key, { ...side, key }); }
+          // the sessions from this address to itself, now counted on both sides
+          const self = pair?.buckets?.find(p => String(p.key) === key);
+          if (self) { byKey.get(key).self = self; }
+        }
+      }
+      for (const bucket of byKey.values()) {
+        if (bucket.self) { combine(bucket, bucket.self, -1); }
+        delete bucket.self;
+      }
+      // ranked as the script's terms were: by the widget's value, ties by key
+      const rank = (bucket) => (spec.sortExp ? bucketMetrics(bucket, spec)[spec.sortExp] : bucket.doc_count);
+      const buckets = [...byKey.values()].sort((a, b) => (rank(b) - rank(a)) || (a.key < b.key ? -1 : (a.key > b.key ? 1 : 0)));
+      return { ...exact, aggregations: { [spec.aggName]: { buckets: buckets.slice(0, spec.length) } } };
     }
 
     function ipDstPortProcessor(ipPortItem) {
@@ -4127,40 +4294,62 @@ class SessionAPIs {
       // ignores the stats chunk — recomputing them here would be wasted work.
       const noStats = req.query.noStats === true || req.query.noStats === 'true';
 
-      if (!noStats) {
-        // Top level aggregations
-        const aggregations = {
-          firstPacket: { min: { field: 'firstPacket' } },
-          lastPacket: { max: { field: 'lastPacket' } },
-          bytes: { sum: { field: 'network.bytes' } },
-          dataBytes: { sum: { field: 'totDataBytes' } },
-          packets: { sum: { field: 'network.packets' } }
-        };
-        query.aggregations ??= {};
-        query.aggregations = { ...query.aggregations, ...aggregations };
+      // The stats search runs beside the widgets' (Phase 2), on its own copy
+      // of the query. The stats chunk still goes first: a widget's chunk
+      // waits for it, and none goes out once the stream has ended (no data,
+      // or the stats search failed).
+      let ended = false;
+      const statsSent = noStats
+        ? Promise.resolve()
+        : (async () => {
+          try {
+            // Top level aggregations
+            const statsQuery = structuredClone(query);
+            statsQuery.aggregations = {
+              ...statsQuery.aggregations,
+              firstPacket: { min: { field: 'firstPacket' } },
+              lastPacket: { max: { field: 'lastPacket' } },
+              bytes: { sum: { field: 'network.bytes' } },
+              dataBytes: { sum: { field: 'totDataBytes' } },
+              packets: { sum: { field: 'network.packets' } }
+            };
 
-        const phase1 = await Db.searchSessions(indices, query, options);
-        const map = ViewerUtils.mapMerge(phase1.aggregations);
-        const graph = ViewerUtils.graphMerge(req, query, phase1.aggregations);
+            const phase1 = await Db.searchSessions(indices, statsQuery, options);
 
-        // Handle case where there's no data
-        if (!phase1.aggregations) {
-          return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
-        }
+            // Handle case where there's no data
+            if (!phase1.aggregations) {
+              ended = true;
+              return await send({ firstPacket: 0, lastPacket: 0, sessions: 0, bytes: 0, dataBytes: 0, packets: 0, downloadBytes: 0 }, true);
+            }
 
-        const response = {
-          firstPacket: phase1.aggregations.firstPacket.value,
-          lastPacket: phase1.aggregations.lastPacket.value,
-          sessions: phase1.hits.total,
-          bytes: phase1.aggregations.bytes.value,
-          dataBytes: phase1.aggregations.dataBytes.value,
-          packets: phase1.aggregations.packets.value,
-          map,
-          graph
-        };
-        response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
-        await send(response, false);
-      }
+            const response = {
+              firstPacket: phase1.aggregations.firstPacket.value,
+              lastPacket: phase1.aggregations.lastPacket.value,
+              sessions: phase1.hits.total,
+              bytes: phase1.aggregations.bytes.value,
+              dataBytes: phase1.aggregations.dataBytes.value,
+              packets: phase1.aggregations.packets.value,
+              map: ViewerUtils.mapMerge(phase1.aggregations),
+              graph: ViewerUtils.graphMerge(req, statsQuery, phase1.aggregations)
+            };
+            response.downloadBytes = 24 + response.bytes + 16 * response.packets; // pcap global header is 24 bytes
+            await send(response, false);
+          } catch (err) {
+            ended = true;
+            await send({ bsqErr: ViewerUtils.errorString(err) }, true);
+          }
+        })();
+
+      // A widget's chunk goes out after the stats chunk, in the order the
+      // widgets finish, while the stream is open. Its search doesn't wait for
+      // that (the stats search may still be running), so the next one starts.
+      let chunksSent = statsSent;
+      const sendWidget = (msg) => {
+        chunksSent = chunksSent.then(async () => {
+          if (ended || res.destroyed) { return; }
+          await send(msg, false);
+        });
+      };
 
       /*****************************************/
       /* Phase 2 Requested widget aggregations */
@@ -4171,35 +4360,53 @@ class SessionAPIs {
       const queryCache = new Map();
       const globalExpression = req.query.expression;
 
-      const widgetBaseQuery = async (expression) => {
+      // the base query (shared, never changed) for a widget's local filter;
+      // widgets with the same filter share one build
+      const widgetBaseQuery = (expression) => {
         if (!expression) { return query; } // reuse the global base query
         const combined = globalExpression ? `(${globalExpression}) && (${expression})` : expression;
-        if (queryCache.has(combined)) { return queryCache.get(combined); }
-        const override = { ...req.query, expression: combined };
-        const built = await BuildQuery.buildPromise(req, override);
-        queryCache.set(combined, built.query);
-        return built.query;
+        if (!queryCache.has(combined)) {
+          const override = { ...req.query, expression: combined };
+          queryCache.set(combined, BuildQuery.buildPromise(req, override).then(built => built.query));
+        }
+        return queryCache.get(combined);
       };
 
-      // INVARIANT: this loop runs strictly sequentially (it awaits each search
-      // before the next). Each iteration mutates its base query in place
-      // (aggregations/size/_source) — both the shared no-expression `query` and
-      // the cached per-expression queries are reused across widgets. Do NOT
-      // parallelize without cloning the query per iteration.
+      // A widget asked for twice (the same search but for its id: a ${var}
+      // widget with nothing picked is its unfiltered twin) is searched once,
+      // its chunk going to each id; the twins' copies say shared, so a footer
+      // adds its time once
+      const twins = new Map(); // the spec less its names -> [spec, ...]
       for (const spec of widgetSpecs) {
-        if (clientDisconnected || res.destroyed) { break; }
+        const search = { ...spec };
+        delete search.id;
+        delete search.aggName;
+        const key = JSON.stringify(search);
+        if (twins.has(key)) { twins.get(key).push(spec); } else { twins.set(key, [spec]); }
+      }
+      const sendSpec = (spec, msg) => {
+        for (const [i, twin] of twins.get(spec.twinKey).entries()) {
+          sendWidget(i === 0 ? msg : { ...msg, id: twin.id, shared: true });
+        }
+      };
+      const searchedSpecs = [...twins.entries()].map(([key, specs]) => Object.assign(specs[0], { twinKey: key }));
+
+      // A few widget searches run at once (and beside the stats search), each
+      // on its own copy of its base query; their chunks go out as they finish.
+      await async.eachLimit(searchedSpecs, SessionAPIs.#summaryWidgetConcurrency, async (spec) => {
+        if (clientDisconnected || res.destroyed || ended) { return; }
         const specStart = Date.now();
         try {
           if (spec.unknown) {
-            await send({ id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart }, false);
-            continue;
+            sendSpec(spec, { id: spec.id, field: spec.field, error: `Unknown field: ${spec.unknownFields.join(', ')}`, took: Date.now() - specStart });
+            return;
           }
           if (spec.unsupported) {
-            await send({ id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart }, false);
-            continue;
+            sendSpec(spec, { id: spec.id, field: spec.field, error: spec.unsupported, took: Date.now() - specStart });
+            return;
           }
 
-          const wquery = await widgetBaseQuery(spec.expression);
+          const wquery = structuredClone(await widgetBaseQuery(spec.expression));
           wquery._source = false;
           wquery.size = 0;
           delete wquery.sort;
@@ -4227,9 +4434,11 @@ class SessionAPIs {
           if (spec.total) {
             // whole result set: the metric aggregations alone, as one item
             wquery.aggregations = widgetAggs;
+          } else if (ipBothSides(spec)) {
+            // searchIpBothSides builds its own aggregations
           } else if (spec.isSpecial) {
             // Special fields use Painless scripts (no direct dbField mapping)
-            const source = spec.field === 'ip'
+            const source = SRCDST_IP_FIELDS.includes(spec.field)
               ? "if (doc['source.ip'].size() == 0) { return []; } return [doc['source.ip'].value, doc['destination.ip'].value];"
               : "if (doc['destination.port'].size() == 0) { return []; } return [doc['destination.ip'].value + '_' + doc['destination.port'].value];";
             wquery.aggregations[spec.aggName] = {
@@ -4277,7 +4486,9 @@ class SessionAPIs {
             wquery.aggregations.othertotal = { filter: { exists: { field: spec.dbField } }, aggs: { total: { sum: { field: sortDbField } } } };
           }
 
-          const phase2 = await Db.searchSessions(indices, wquery, options);
+          const phase2 = ipBothSides(spec)
+            ? await searchIpBothSides(indices, options, wquery, spec, widgetAggs, termsOrder)
+            : await Db.searchSessions(indices, wquery, options);
           const field = {
             id: spec.id,
             field: spec.field,
@@ -4314,13 +4525,14 @@ class SessionAPIs {
           field.data = data;
           if (spec.other) { field.other = otherBucket(phase2.aggregations, spec); }
           field.took = Date.now() - specStart;
-          await send(field, false);
+          sendSpec(spec, field);
         } catch (fieldErr) {
           // Send error for this specific widget, continue with others
-          await send({ id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart }, false);
+          sendSpec(spec, { id: spec.id, field: spec.field, error: fieldErr.message || String(fieldErr), took: Date.now() - specStart });
         }
-      }
-      if (!res.destroyed) {
+      });
+      await chunksSent;
+      if (!ended && !res.destroyed) {
         await send({}, true);
       }
     });

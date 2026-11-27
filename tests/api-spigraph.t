@@ -1,4 +1,4 @@
-use Test::More tests => 163;
+use Test::More tests => 180;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -229,6 +229,39 @@ cmp_ok ($json->{recordsFiltered}, '==', 6);
     is ($howSort->{items}->[1]->{name}, "10.180.156.185", "percentile sort: an hour of week fold ranks the second by its sum");
     my $otherPct = viewerGet("/spigraph.json?date=-1&field=source.ip&size=2&metric=bytes&metricAgg=p95&sort=" . uri_escape("network.bytes:p50Histo") . "&expression=" . uri_escape($sortfiles));
     is ($otherPct->{items}->[0]->{name}, "10.1.1.234", "percentile sort: another percentile than metricAgg ranks by the sum");
+
+# graphOnly: just the search's own graph and map, the same as without it, and
+# no items (no search per value)
+    my $goUrl = "/spigraph.json?date=-1&exp=node&size=1&metric=bytes&expression=" . uri_escape($sortfiles);
+    my $goFull = viewerGet($goUrl);
+    my $go = viewerGet("$goUrl&graphOnly=true");
+    is (scalar @{$go->{items}}, 0, "graphOnly: no items");
+    eq_or_diff ($go->{graph}, $goFull->{graph}, "graphOnly: the same graph", { context => 3 });
+    eq_or_diff ($go->{map}, $goFull->{map}, "graphOnly: the same map", { context => 3 });
+    is ($go->{recordsFiltered}, $goFull->{recordsFiltered}, "graphOnly: the same count");
+    eq_or_diff (multiGet("$goUrl&graphOnly=true")->{graph}, $go->{graph}, "graphOnly: the multi viewer's graph matches", { context => 3 });
+    my $goSort = viewerGet("$goUrl&graphOnly=true&sort=network.bytesHisto");
+    eq_or_diff ($goSort->{graph}, $goFull->{graph}, "graphOnly: a metric sort is ignored", { context => 3 });
+    my $goPctUrl = "/spigraph.json?date=-1&exp=node&size=1&metric=bytes&metricAgg=p95&expression=" . uri_escape($sortfiles);
+    my $goPct = viewerGet("$goPctUrl&graphOnly=true&sort=" . uri_escape("network.bytes:p95Histo"));
+    is (scalar @{$goPct->{items}}, 0, "graphOnly percentile: no items");
+    eq_or_diff ($goPct->{graph}, viewerGet($goPctUrl)->{graph}, "graphOnly percentile: the same graph", { context => 3 });
+    is ($goPct->{graph}->{'network.bytes:p95Total'}, $pct->{graph}->{'network.bytes:p95Total'}, "graphOnly percentile: the same p95 over the range");
+
+# metricOnly: the graphs carry only sessions and the metric's series, each the
+# same as without it, and the values rank the same
+    my $moUrl = "/spigraph.json?date=-1&field=source.ip&size=2&metric=bytes&sort=network.bytesHisto&expression=" . uri_escape($sortfiles);
+    my $moFull = viewerGet($moUrl);
+    my $mo = viewerGet("$moUrl&metricOnly=true");
+    eq_or_diff ([sort grep { /Histo$/ } keys %{$mo->{graph}}], ['destination.bytesHisto', 'sessionsHisto', 'source.bytesHisto'], "metricOnly: only the sessions and metric series");
+    eq_or_diff ([map { $mo->{graph}->{$_} } qw(sessionsHisto source.bytesHisto destination.bytesHisto)], [map { $moFull->{graph}->{$_} } qw(sessionsHisto source.bytesHisto destination.bytesHisto)], "metricOnly: the same series", { context => 3 });
+    eq_or_diff ([map { [$_->{name}, $_->{count}, $_->{'network.bytesHisto'}] } @{$mo->{items}}], [map { [$_->{name}, $_->{count}, $_->{'network.bytesHisto'}] } @{$moFull->{items}}], "metricOnly: the same values, counts and totals");
+    is ($mo->{items}->[0]->{'network.bytesHisto'}, 104190, "metricOnly: the metric total");
+    ok (!exists $mo->{items}->[0]->{graph}->{'client.bytesHisto'}, "metricOnly: an item's graph has no other series");
+    eq_or_diff (multiGet("$moUrl&metricOnly=true")->{graph}, $mo->{graph}, "metricOnly: the multi viewer's graph matches", { context => 3 });
+    my $moNone = viewerGet("/spigraph.json?date=-1&field=node&metricOnly=true&expression=" . uri_escape($sortfiles));
+    eq_or_diff ([grep { /Histo$/ } keys %{$moNone->{graph}}], ['sessionsHisto'], "metricOnly without a metric: just sessions");
+    is ($moNone->{recordsFiltered}, $moFull->{recordsFiltered}, "metricOnly: the same count");
 
 # a fractional size is used as a whole number; it used to hang the multi viewer's
 # nested terms merge (ip.dst:port is the nested branch)

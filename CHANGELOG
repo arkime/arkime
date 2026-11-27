@@ -50,6 +50,9 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4464 saveUnknownPackets now defaults to all;corrupt so unknown ether, unknown ip and corrupt packets are saved as sessions, set saveUnknownPackets= for the old behavior
   - #4472 DNS, mDNS and LLMNR names that are valid UTF-8 are saved as is instead of cat -v escaped (andy’s macbook pro instead of andym-bm-^@m-^ys macbook pro), so searches for the escaped form won't match new sessions; the name is saved as sent, only lowercased; invalid bytes, control characters and invisible characters such as bidi overrides and zero width spaces are still escaped and plain DNS names with raw UTF-8 get the dns:raw-utf8 tag
   - #4492 tpacketv3ClusterId now defaults to 0, which has the kernel pick an unused fanout group id, set to 8005 for the old behavior (thanks @DresslerFrank)
+  - #4498 The new default rule "Stop saving pcap once encrypted" stops saving pcap 2 packets after a TLS, QUIC or SSH handshake finishes, SPI data is still saved for the whole session; turn it off with disabled: true in your own rules file if you decrypt saved pcap
+  - #4501 IP fragments are saved to pcap as they were seen on the wire instead of as the reassembled packet, so session packet and byte counts include every fragment and firstPacket is the first fragment's time; older viewers show the fragments without putting them back together
+  - #4501 Removed the disableIp4Defrag setting, fragments are always reassembled
 ## All
   - #4490 db.pl and ch.pl now skip the cert check for localhost, 127.x.x.x or ::1, matching capture and the node tools. ch.pl didn't skip it at all and db.pl only matched localhost and 127.0.0.1
   - #4490 Shark tab tshark minimum is now per release series, 4.4.19 on the 4.4 line and 4.6.4 on 4.6, up from a flat 4.4.15. Per series because a 4.6.0 is numerically above the 4.4 floor but was released before it
@@ -77,7 +80,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4459 Fix pcapng files with many sections attributing packets to the wrong file
   - #4459 Fix the saved pcapng file size and the add-file --notify byte count counting the file header twice
   - #4459 Fix duplicate, or identical overlapping, IPv4 fragments dropping the whole datagram
-  - #4459 IPv6 fragments are now reassembled instead of dropped, set disableIp6Defrag=true to turn it off; like hosts, datagrams with overlapping IPv6 fragments are dropped
+  - #4459 IPv6 fragments are now reassembled instead of dropped; like hosts, datagrams with overlapping IPv6 fragments are dropped
   - #4459 Datagrams of up to 128 fragments are reassembled (was 50), and held fragments are limited to 5 times maxFrags
   - #4459 Fix crafted IP fragments being able to slow down reassembly
   - #4459 Fix a crash when _flipSrcDst is set on a session with a corrupt TCP packet
@@ -90,6 +93,17 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4472 Fix DNS names from punycode with uppercase letters being saved with the uppercase letters, which lowercased searches couldn't match
   - #4472 dns.answer.name, dns.answer.cname, dns.answer.ns, dns.answer.mx, dns.answer.ptr and dns.answer.srv are now lotermfield, so searches on them ignore case
   - #4472 Capture now updates a field's type in the db on startup when it only changed between termfield, lotermfield and uptermfield, other type changes still just warn
+  - #4498 Add the encrypted field, set to tls, quic or ssh once both sides of the handshake have switched to encrypted traffic, tls includes SMTP STARTTLS, MySQL, SOCKS and HTTP CONNECT
+  - #4498 _maxPacketsToSave: +N saves N more packets than the session has now, and only ever lowers the limit
+  - #4498 Fix ssh.key only being saved for diffie-hellman-group-exchange, it is now saved for curve25519, ecdh, mlkem, sntrup and the other key exchanges too
+  - #4498 Fix SSH sessions missing ssh.hasshServer and the negotiated algorithms when the server's version line and KEXINIT arrive in the same packet
+  - #4498 Fix _maxPacketsToSave starting over after a tcpSaveTimeout save, so a long session could save more packets than the limit
+  - #4498 Fix sessions that stopped saving pcap, from _maxPacketsToSave or a full disk, losing every later part of a long session, the later parts are now saved with their SPI data and no pcap
+  - #4499 Add the udp_raw_packet named func, called for every UDP packet after classify with the payload and the packet, like tcp_raw_packet, so plugins can see the IP header and timestamp
+  - #4501 Like hosts, datagrams whose fragments don't agree where the datagram ends are dropped, a second last fragment with a different end or data past the end
+  - #4501 Fix reassembled IP fragments using the IP header of the last fragment seen instead of the first one, so a different protocol in a later fragment could change how capture parsed the datagram
+  - #4501 With enablePacketDedup, reading files goes by packet time instead of the clock, so packets sent again minutes later in a file are no longer dropped as duplicates
+  - #4502 Like hosts, IP fragments are only reassembled with fragments from the same tunnel layer, so an outer and inner header with the same addresses and id no longer drop the datagram
 ## Viewer
   - #4456 Add a connection circle widget and SPI Graph type, hosts on a ring with an arc between each talking pair, colored by protocol or a chosen field
   - #4456 Fix the settings editor resetting a connections widget or graph sample size to 100 when opened
@@ -115,6 +129,24 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4471 Non-IP sessions show their ethertype name (arp, lldp, ...) on the Sessions page instead of not-ip, not-ip is clickable, and ip.protocol == not-ip and ethertype == arp (names or 0x hex) can be searched
   - #4472 Search expressions accept non ASCII characters in unquoted values, host.dns==café.example.com no longer needs quotes
   - #4483 Add a disableCron user permission, the user can't see or change Periodic Queries and the ones they own don't run, needs db.pl upgrade
+  - #4495 Unique values return an error when the search fails on some shards and the rest find no values, instead of an empty list
+  - #4497 Add an icicle (flame graph) widget and SPI Graph type, a row per field with each value as wide as its share of its parent, click a value to zoom into it
+  - #4501 Saved IP fragments are put back together before a session's packets are shown or searched by a reassembled hunt; raw hunts search each fragment and pcap downloads keep the fragments as saved
+  - #4502 Sessions show the packets inside IPv4-in-IPv4 and IPv6-in-IPv6 tunnels, and pcap files with link type 229 (raw IPv6)
+  - #4502 Fix IPv6 packets with extension headers showing extra bytes after the packet, and UDP showing bytes past the UDP length
+  - #4502 Fix a malformed packet in a session leaving hunts, body downloads and other packet requests waiting forever, packets that can't be decoded are skipped
+  - #4502 Fix scrubbing leaving some packets unscrubbed: ICMPv6 and ESP keep their first 8 bytes, a packet with no transport header to keep, like one cut short, keeps through its IP header, and a packet with no IP header or that can't be decoded is scrubbed whole
+  - #4502 Sessions show the packets inside NSH, and PPP in GRE without the address, control or full protocol fields
+  - #4502 Unknown GRE, PPP, PPPoE, MPLS and link types are logged at most once a minute instead of for every packet
+  - #4504 Add an ip.srcdst field (Src or Dst IP) that searches a session's source or destination IP; ip still searches every IP field. Dashboard widgets on ip become ip.srcdst, which is what they always counted
+  - #4504 Fix ip == EXISTS! and ranges on ip, like ip < 10.0.0.0, matching no sessions, they now check every IP field
+  - #4504 Fix a comma in a quoted list item splitting it, http.uri == ["a,b",c] searches for a,b and c
+  - #4504 Search expressions with a date that can't be parsed, or an IP, CIDR prefix or port that isn't valid, show an error instead of failing the search; a range on an IP field (<, >) takes a single IP, not a CIDR
+## Cont3xt
+  - #4488 New VPNDetection integration for IPs, shows VPN, Tor exit, privacy relay and proxy flags (thanks @UmanShahzad)
+  - #4494 New SourceIP.io integration for IPs, shows the operators that publish an IP and how they use it, plus its ASN origins with RPKI status and registry allocation; works without a key at 100 lookups a day (thanks @AlanKK)
+## ch.pl
+  - #4493 Schema version 3 gives only the 256 most used session fields their own subcolumns instead of 4096, so parts have far fewer files and inserts and merges keep up on busy sites; upgrade changes an existing table in place, then ClickHouse rewrites the whole sessions table once in the background; --max-dynamic-paths picks a different number
 ## ESProxy
   - #4462 A sensor can no longer change a pcap file's scheme or S3 location after creating its file record
 ## Multies
@@ -128,6 +160,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4462 Fix one bad request being able to stop Parliament
 ## WISE
   - #4459 Built in source views label values by field name, OpenDNS Security Cat/Content Cat are now Security/Content and VirusTotal Links is now Link
+  - #4494 New sourceip source fills sourceip.provider with the operators of public IPs from sourceip.io; it sends every public IP it is asked about to sourceip.io, so it only loads with a [sourceip] section (thanks @AlanKK)
 
 7.0.0-rc1 2026/11/12
 ## Breaking
@@ -468,6 +501,7 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
   - #4487 Fix a capture node being able to write sessions for other nodes through esProxy
 ## Viewer
   - #4478 Fix the remote node proxy sending some crafted requests to a different host
+  - #4500 Fix a crafted IPv6 packet, saved by capture as a plain GTP udp packet, hanging viewer when its session was viewed
 
 6.9.2 2026/11/12
 ## Breaking

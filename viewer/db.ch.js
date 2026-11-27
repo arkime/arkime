@@ -115,6 +115,84 @@ function metricOrderName (orderKey) {
   return String(orderKey).replace(/\[[^\]]*\]$/, '');
 }
 
+// The viewer asks for several percentiles of one field in one aggregation (a
+// box plot's quartiles beside its ranking percentile), which metricExpression
+// answers one at a time: split such an aggregation into one per percent (and
+// an order by one of them, name[95.0], onto its part) before translating, and
+// join the answers back into ES's values map after. Returns the query to run
+// and the function that fixes up its response (the same query and an identity
+// when nothing needs splitting).
+function splitPercentiles (query) {
+  const parts = new Map(); // part name -> [aggregation name, percent key]
+  const percentKey = (p) => Number(p).toFixed(1);
+
+  // returns the split aggregations and, for the level above, which of its
+  // percentile aggregations were split into which parts
+  const splitWithOrders = (levelAggs) => {
+    const out = {};
+    const split = new Map();
+    if (!levelAggs || typeof levelAggs !== 'object') { return { aggs: levelAggs, split }; }
+    for (const [aggName, agg] of Object.entries(levelAggs)) {
+      const percents = agg?.percentiles?.percents;
+      if (Array.isArray(percents) && percents.length > 1) {
+        const byPercent = {};
+        [...new Set(percents.map(Number))].forEach((p, i) => {
+          const part = `${aggName}__pct${i}`;
+          parts.set(part, [aggName, percentKey(p)]);
+          byPercent[percentKey(p)] = part;
+          out[part] = { percentiles: { ...agg.percentiles, percents: [p] } };
+        });
+        split.set(aggName, byPercent);
+        continue;
+      }
+      const subKey = agg?.aggregations ? 'aggregations' : (agg?.aggs ? 'aggs' : undefined);
+      if (!subKey) { out[aggName] = agg; continue; }
+      const { aggs: sub, split: subSplit } = splitWithOrders(agg[subKey]);
+      const copy = { ...agg, [subKey]: sub };
+      const bucketType = ['terms', 'histogram', 'date_histogram'].find(t => agg[t]?.order);
+      if (bucketType && subSplit.size) {
+        const fix = (entry) => Object.fromEntries(Object.entries(entry).map(([key, dir]) => {
+          const m = /^(.+)\[([^\]]*)\]$/.exec(key);
+          const part = m && subSplit.get(m[1])?.[percentKey(m[2])];
+          return [part ?? key, dir];
+        }));
+        const order = agg[bucketType].order;
+        copy[bucketType] = { ...agg[bucketType], order: Array.isArray(order) ? order.map(fix) : fix(order) };
+      }
+      out[aggName] = copy;
+    }
+    return { aggs: out, split };
+  };
+
+  const aggsKey = query?.aggregations ? 'aggregations' : (query?.aggs ? 'aggs' : undefined);
+  if (!aggsKey) { return { query, join: (response) => response }; }
+  const { aggs } = splitWithOrders(query[aggsKey]);
+  if (!parts.size) { return { query, join: (response) => response }; }
+
+  // put each part's value back under its aggregation's values map, in every
+  // bucket of every level
+  const joinIn = (node) => {
+    if (Array.isArray(node)) { node.forEach(joinIn); return; }
+    if (!node || typeof node !== 'object') { return; }
+    for (const key of Object.keys(node)) {
+      const part = parts.get(key);
+      if (part) {
+        const [aggName, pkey] = part;
+        const target = (node[aggName] ??= { values: {} });
+        const v = node[key]?.value;
+        target.values[pkey] = typeof v === 'number' && Number.isFinite(v) ? v : null;
+        delete node[key];
+      } else {
+        joinIn(node[key]);
+      }
+    }
+  };
+  return {
+    query: { ...query, [aggsKey]: aggs },
+    join: (response) => { joinIn(response?.aggregations); return response; }
+  };
+}
+
 function quoteIdent (ident) {
   return '`' + String(ident).replace(/\\/g, '\\\\').replace(/`/g, '``') + '`';
 }
@@ -1151,7 +1229,10 @@ class DbCHImpl {
       if (src.includes("doc['source.ip']") && src.includes("doc['destination.ip']") && !src.includes('_')) {
         const sCol = this.columnForField('source.ip');
         const dCol = this.columnForField('destination.ip');
-        keyExpr = `arrayJoin([${sCol}, ${dCol}])`;
+        // a session with one address on both sides counts once, as ES does:
+        // its destination is blanked, and a blank key is no bucket (cheaper
+        // than arrayDistinct)
+        keyExpr = `arrayJoin([${sCol}, if(${dCol} = ${sCol}, '', ${dCol})])`;
         bucketWhereFn = (key) => {
           const lit = sqlLiteral(key, 'source.ip');
           return `(${sCol} = ${lit} OR ${dCol} = ${lit})`;
@@ -1189,12 +1270,27 @@ class DbCHImpl {
       keyExpr = this.isJsonArrayField(field) ? `arrayJoin(arrayDistinct(${baseCol}))` : baseCol;
     }
 
-    // Split sub-aggs: metrics fold into the bucket GROUP BY, histograms run as
-    // one grouped query for ALL buckets; anything else falls back to per-bucket.
+    // ES include, a list of values: only those are buckets (a field's own IN
+    // predicate, which normalizes an address like its ip queries; a script's
+    // or an array field's keys after they are made). A pattern isn't done.
+    let includeHaving = '';
+    if (Array.isArray(terms.include)) {
+      if (field && !terms.script && !this.isJsonArrayField(field)) {
+        where = `(${where}) AND (${this.predicateForFieldValue(field, 'IN', terms.include)})`;
+      } else {
+        includeHaving = terms.include.length ? ` AND key IN (${terms.include.map(v => sqlLiteral(v, field)).join(', ')})` : ' AND 0';
+      }
+    } else if (terms.include !== undefined) {
+      throw chError('terms include pattern');
+    }
+
+    // Split sub-aggs: metrics fold into the bucket GROUP BY, histograms and
+    // terms of listed values run as one grouped query for ALL buckets;
+    // anything else falls back to per-bucket.
     const subAggs = agg.aggregations || agg.aggs || {};
-    const metricSubs = []; const histoSubs = []; const otherSubs = [];
+    const metricSubs = []; const histoSubs = []; const listedSubs = []; const otherSubs = [];
     for (const [subName, subAgg] of Object.entries(subAggs)) {
-      if (this.isMetricAgg(subAgg)) { metricSubs.push([subName, subAgg]); } else if (subAgg.histogram || subAgg.date_histogram) { histoSubs.push([subName, subAgg]); } else { otherSubs.push([subName, subAgg]); }
+      if (this.isMetricAgg(subAgg)) { metricSubs.push([subName, subAgg]); } else if (subAgg.histogram || subAgg.date_histogram) { histoSubs.push([subName, subAgg]); } else if (this.isListedTermsSub(subAgg)) { listedSubs.push([subName, subAgg]); } else { otherSubs.push([subName, subAgg]); }
     }
     const metricSelect = metricSubs.map(([subName, subAgg]) => `${this.metricExpression(subAgg)} AS ${quoteIdent(subName)}`);
 
@@ -1210,7 +1306,7 @@ class DbCHImpl {
     // Like ES, rows without the field aren't a bucket: HAVING drops their
     // null/empty key before the LIMIT (so it can't take a top N slot) and
     // keeps them out of the totals behind sum_other_doc_count
-    const result = await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key WITH TOTALS HAVING isNotNull(key) AND toString(key) != '' ORDER BY ${orderExpr} ${orderDir}, ${tieExpr} ASC LIMIT ${size}`);
+    const result = await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE ${where} GROUP BY key WITH TOTALS HAVING isNotNull(key) AND toString(key) != ''${includeHaving} ORDER BY ${orderExpr} ${orderDir}, ${tieExpr} ASC LIMIT ${size}`);
     const rows = result.data || [];
     const totalDocCount = Number(result.totals?.doc_count ?? 0);
     const buckets = rows
@@ -1227,6 +1323,8 @@ class DbCHImpl {
     await Promise.all([
       ...histoSubs.map(([subName, subAgg]) =>
         this.runTermsHistogramSub(buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where, budget)),
+      ...listedSubs.map(([subName, subAgg]) =>
+        this.runTermsListedSub(buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where, budget)),
       otherSubs.length === 0
         ? undefined
         : async.eachLimit(buckets, BUCKET_QUERY_CONCURRENCY, async (bucket) => {
@@ -1254,10 +1352,7 @@ class DbCHImpl {
     const hfield = histo.field === '@timestamp' ? 'timestamp' : histo.field;
     const slotExpr = `toUnixTimestamp(${this.histogramKeyExpr(this.columnForField(hfield), intervalSeconds, histo.offset)}) * 1000`;
 
-    const keys = buckets.map(b => b.key);
-    const keyFilter = bucketWhereFn
-      ? '(' + keys.map(key => bucketWhereFn(key)).join(' OR ') + ')'
-      : this.predicateForFieldValue(field, 'IN', keys);
+    const keyFilter = this.bucketsKeyFilter(buckets, bucketWhereFn, field);
 
     const subSubs = subAgg.aggregations || subAgg.aggs || {};
     const metricSelect = Object.entries(subSubs).map(([subSubName, a]) => `${this.metricExpression(a)} AS ${quoteIdent(subSubName)}`);
@@ -1272,6 +1367,57 @@ class DbCHImpl {
       const hb = { key: Number(row.slot), doc_count: Number(row.doc_count) };
       for (const subSubName of Object.keys(subSubs)) { hb[subSubName] = { value: row[subSubName] ?? 0 }; }
       bucket[subName].buckets.push(hb);
+    }
+  }
+
+  // The rows in any of a terms agg's buckets
+  bucketsKeyFilter (buckets, bucketWhereFn, field) {
+    const keys = buckets.map(b => b.key);
+    return bucketWhereFn
+      ? '(' + keys.map(key => bucketWhereFn(key)).join(' OR ') + ')'
+      : this.predicateForFieldValue(field, 'IN', keys);
+  }
+
+  // A terms sub-agg that lists its values (include) and has room for them all,
+  // over a field with one value a session and with metric sub-aggs only: the
+  // summary's Top IPs counting each source's sessions by destination
+  isListedTermsSub (subAgg) {
+    const terms = subAgg.terms;
+    if (!terms || terms.script || !terms.field || !Array.isArray(terms.include)) { return false; }
+    if (!(Number(terms.size) >= terms.include.length)) { return false; }
+    if (this.isJsonArrayField(terms.field) || this.fieldsMap()[terms.field]?.type?.endsWith('textfield')) { return false; }
+    return Object.values(subAgg.aggregations || subAgg.aggs || {}).every(a => this.isMetricAgg(a) && !a.percentiles);
+  }
+
+  // Such a sub-agg under a terms agg: one grouped query for all buckets
+  // instead of one query per bucket. Every listed value fits, so nothing is
+  // left for sum_other_doc_count.
+  async runTermsListedSub (buckets, keyExpr, bucketWhereFn, field, subName, subAgg, where, budget) {
+    for (const bucket of buckets) { bucket[subName] = { doc_count_error_upper_bound: 0, sum_other_doc_count: 0, buckets: [] }; }
+    const terms = subAgg.terms;
+    if (buckets.length === 0 || terms.include.length === 0) { return; }
+
+    const subSubs = subAgg.aggregations || subAgg.aggs || {};
+    const metricSelect = Object.entries(subSubs).map(([subSubName, a]) => `${this.metricExpression(a)} AS ${quoteIdent(subSubName)}`);
+    // ordered as runTermsAgg orders a terms agg of its own
+    const tieExpr = this.isIpField(terms.field) ? 'toIPv6OrNull(subkey)' : 'subkey';
+    const orderKey = Object.keys(terms.order || {})[0] || '_count';
+    const orderDir = String(terms.order?.[orderKey] || 'desc').toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+    let orderExpr = 'doc_count';
+    if (orderKey === '_key') { orderExpr = tieExpr; } else if (orderKey !== '_count' && Object.hasOwn(subSubs, metricOrderName(orderKey))) { orderExpr = quoteIdent(metricOrderName(orderKey)); }
+
+    const select = [`${keyExpr} AS key`, `${this.columnForField(terms.field)} AS subkey`, 'count() AS doc_count', ...metricSelect].join(', ');
+    const filter = `${this.bucketsKeyFilter(buckets, bucketWhereFn, field)} AND (${this.predicateForFieldValue(terms.field, 'IN', terms.include)})`;
+    const rows = (await this.query(`SELECT ${select} FROM ${this.tableName()} WHERE (${where}) AND ${filter} GROUP BY key, subkey HAVING isNotNull(subkey) AND toString(subkey) != '' ORDER BY ${orderExpr} ${orderDir}, ${tieExpr} ASC LIMIT ${bucketLimit(budget)}`)).data || [];
+    addBuckets(budget, rows.length);
+
+    const byKey = new Map(buckets.map(b => [String(b.key), b]));
+    for (const row of rows) {
+      const bucket = byKey.get(String(row.key));
+      if (!bucket) { continue; }
+      const sb = { key: row.subkey, doc_count: Number(row.doc_count) };
+      for (const subSubName of Object.keys(subSubs)) { sb[subSubName] = { value: row[subSubName] ?? 0 }; }
+      bucket[subName].buckets.push(sb);
     }
   }
 
@@ -1444,7 +1590,8 @@ class DbCHImpl {
   }
 
   async searchSessions (index, query, options = {}) {
-    return this.#tagged(options, () => this.#searchSessions(index, query, options));
+    const split = splitPercentiles(query);
+    return split.join(await this.#tagged(options, () => this.#searchSessions(index, split.query, options)));
   }
 
   async #searchSessions (index, query, options) {
@@ -1546,12 +1693,13 @@ class DbCHImpl {
   // spigraph's msearch is one search per top value of a field, run as a single GROUP BY
   // scan when the searches allow it, otherwise each search on its own a few at a time
   async msearchSessions (index, queries, options = {}) {
-    const parsed = queries.map(query => typeof query === 'string' ? JSON.parse(query) : query);
+    const splits = queries.map(query => splitPercentiles(typeof query === 'string' ? JSON.parse(query) : query));
+    const parsed = splits.map(split => split.query);
     const batch = this.#termBatch(parsed);
     const responses = batch
       ? await this.#tagged(options, () => this.#batchedSearch(index, parsed[0], batch))
       : await async.mapLimit(parsed, MSEARCH_CONCURRENCY, async (query) => this.searchSessions(index, query, options));
-    return { body: { responses } };
+    return { body: { responses: responses.map((response, i) => splits[i].join(response)) } };
   }
 
   // The field and values when the searches differ only in a last term filter on one field,

@@ -16,6 +16,7 @@
 extern ArkimeConfig_t        config;
 
 extern uint32_t              pluginsCbs;
+LOCAL int                    udp_raw_packet_func;
 
 /******************************************************************************/
 SUPPRESS_ALIGNMENT
@@ -93,11 +94,19 @@ LOCAL int udp_process(ArkimeSession_t *session, ArkimePacket_t *const packet)
     if (pluginsCbs & ARKIME_PLUGIN_UDP)
         arkime_plugins_cb_udp(session, data, len, packet->direction);
 
+    // Called after classify so the protocols are set, the packet gives
+    // access to the ip header and timestamp
+    if (ARKIME_PARSERS_HAS_NAMED_FUNC(udp_raw_packet_func)) {
+        arkime_parsers_call_named_func(udp_raw_packet_func, session, data, len, packet);
+    }
+
     return 1;
 }
 /******************************************************************************/
 void arkime_parser_init()
 {
+    udp_raw_packet_func = arkime_parsers_get_named_func("udp_raw_packet");
+
     mProtocolUdp = arkime_mprotocol_register("udp",
                                              ARKIME_MPROTOCOL_FLAG_COMMUNITYID | ARKIME_MPROTOCOL_FLAG_STREAMS_MED,
                                              udp_create_sessionid,

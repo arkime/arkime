@@ -124,6 +124,15 @@
     ],
     "fieldECS": "destination.ip"
   },
+  "ip.srcdst": {
+    "friendlyName": "Src or Dst IP",
+    "group": "general",
+    "help": "Shorthand for ip.src or ip.dst, a session's two endpoints (ip searches every IP field)",
+    "type": "ip",
+    "dbField2": "srcdstipall",
+    "regex": "^ip\\.(src|dst)$",
+    "noFacet": "true"
+  },
   "port.dst": {
     "friendlyName": "Dst Port",
     "group": "general",

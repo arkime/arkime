@@ -115,21 +115,36 @@ const rows = ref([]); // [{ item, sessions, value, metricValues }]
 // not compared (a split metric, an all time search)
 const previous = ref(null);
 
+// a summed metric with a sparkline is its timeline added up, so the one
+// timeline request gives both the line and the number. Not when the timeline
+// spans each session's whole time range: a session then counts in every
+// bucket it spans.
+const sparkFor = (widget) => !!widget.sparkline && !widget.field &&
+  ((widget.metricType || 'sessions') === 'sessions' || (widget.metricAgg || 'sum') === 'sum');
+const numberFromGraph = (widget, r) => sparkFor(widget) && r.query.spanning !== 'true';
+
 const { loading, error, fetchData } = useSpigraphWidget(
   () => props.widget,
   () => props.reloadNonce,
   (res) => {
     rows.value = Array.isArray(res.rows) ? res.rows : [];
     previous.value = res.previous ?? null;
-    loadSpark();
+    if (res.graph) { setSpark(res.graph); } else { loadSpark(); }
   },
   async (r, s, widget, opts) => {
     const shift = widget.field ? 0 : compareOffset(widget, s);
+    const fromGraph = numberFromGraph(widget, r);
     const [now, prev] = await Promise.all([
-      fetchMetric(r, s, widget, opts),
+      fromGraph ? fetchGraph(r, s, widget, opts) : fetchMetric(r, s, widget, opts),
       shift ? fetchMetric(r, s, widget, { ...opts, timeShift: shift }) : null
     ]);
-    return { rows: now, previous: prev ? (prev[0]?.value ?? 0) : null };
+    const previousValue = prev ? (prev[0]?.value ?? 0) : null;
+    if (!fromGraph) { return { rows: now, previous: previousValue }; }
+    const sum = (series) => series.reduce((total, p) => total + (p[1] || 0), 0);
+    const sessions = sum(now.graph?.sessionsHisto || []);
+    const value = sum(metricSeries(now.graph, metricHistoKey(widget)));
+    // one row even with no sessions (a 0, as the summary endpoint's total is)
+    return { rows: [{ item: '', sessions, value }], previous: previousValue, graph: now.graph };
   }
 );
 
@@ -155,28 +170,30 @@ const valueColor = (value) => {
 // the whole result set
 const spark = ref(null); // [[ms, value], ...] summed over the metric's histo keys
 let sparkController;
-const wantsSpark = computed(() => props.widget.sparkline && !props.widget.field &&
-  ((props.widget.metricType || 'sessions') === 'sessions' || (props.widget.metricAgg || 'sum') === 'sum'));
+const wantsSpark = computed(() => sparkFor(props.widget));
+// the line from a timeline: buckets without sessions aren't returned, so
+// drop to zero across a gap rather than drawing a line over it
+const setSpark = (graph) => {
+  const pts = metricSeries(graph, metricHistoKey(props.widget));
+  const step = (graph?.interval || 0) * 1000;
+  const filled = [];
+  for (const p of pts) {
+    const prev = filled[filled.length - 1];
+    if (step > 0 && prev && p[0] - prev[0] > step) {
+      filled.push([prev[0] + step, 0]);
+      if (p[0] - prev[0] > 2 * step) { filled.push([p[0] - step, 0]); }
+    }
+    filled.push(p);
+  }
+  spark.value = filled;
+};
 const loadSpark = async () => {
   if (sparkController) { sparkController.abort(); }
   if (!wantsSpark.value) { spark.value = null; return; }
   sparkController = new AbortController();
   try {
     const res = await fetchGraph(route, store, props.widget, { signal: sparkController.signal });
-    // buckets without sessions aren't returned: drop to zero across a gap
-    // rather than drawing a line over it
-    const pts = metricSeries(res.graph, metricHistoKey(props.widget));
-    const step = (res.graph?.interval || 0) * 1000;
-    const filled = [];
-    for (const p of pts) {
-      const prev = filled[filled.length - 1];
-      if (step > 0 && prev && p[0] - prev[0] > step) {
-        filled.push([prev[0] + step, 0]);
-        if (p[0] - prev[0] > 2 * step) { filled.push([p[0] - step, 0]); }
-      }
-      filled.push(p);
-    }
-    spark.value = filled;
+    setSpark(res.graph);
   } catch (err) {
     if (err.name !== 'AbortError') { spark.value = null; } // the number still shows
   }

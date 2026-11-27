@@ -8,8 +8,8 @@ Unit tests for the dashboard Sessions List widget's data helpers
 The vueapp modules are written for vite: extensionless relative imports and
 the @common alias. A resolve hook adds the extension and swaps in stubs for
 the modules that need the browser app (FieldService, utils, fetchWrapper,
-vueFilters); the fetchWrapper stub records its request and returns
-globalThis.fetchResult.
+vueFilters, the dashboard request planner); the planner stub records its
+request and returns globalThis.fetchResult.
 */
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,6 +26,8 @@ const STUBS = {
   '@common/queryTimes.js': stub('export const startQuery = () => undefined; export const finishQuery = () => {};'),
   '@common/fetchWrapper.js': stub(`
     export const fetchWrapper = async (opts) => { globalThis.lastFetch = opts; return globalThis.fetchResult; };`),
+  '/dashboardRequests': stub(`
+    export const dashboardRequest = async (opts) => { globalThis.lastFetch = { ...opts, method: 'POST' }; return globalThis.fetchResult; };`),
   '@common/vueFilters.js': stub(`
     export const commaString = String;
     export const humanReadableBytes = String;

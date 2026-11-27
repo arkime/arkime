@@ -76,10 +76,12 @@ export const makeWidgetDef = (fieldExp, overrides = {}) => {
  * Ensures a saved widget has an id and all expected fields
  */
 export const normalizeWidget = (w) => {
-  // fields[] is the source of truth; field stays = fields[0] for back-compat
-  const fields = Array.isArray(w.fields) && w.fields.length
+  // fields[] is the source of truth; field stays = fields[0] for back-compat.
+  // A widget's ip has always counted a session's two endpoints, which
+  // ip.srcdst names (ip searches every IP field), so its click filters on them
+  const fields = (Array.isArray(w.fields) && w.fields.length
     ? w.fields.filter(f => typeof f === 'string').slice(0, MAX_FIELDS)
-    : (str(w.field) ? [w.field] : []);
+    : (str(w.field) ? [w.field] : [])).map(f => (f === 'ip' ? 'ip.srcdst' : f));
   // the text widget of earlier 7.0 builds is the markdown widget
   const savedMode = str(w.viewMode) === 'text' ? 'markdown' : str(w.viewMode);
   const viewMode = savedMode || DEFAULT_VIEW_MODES[str(w.field)] || 'bar';
@@ -139,7 +141,7 @@ export const defaultWidgets = () => [
   makeWidgetDef('', { viewMode: 'timeline', width: 4, height: 2 }),
   // geo distribution + all-IP top talkers (bar)
   makeWidgetDef('country.src', { viewMode: 'map', width: 2, height: 3 }),
-  makeWidgetDef('ip', { viewMode: 'bar', width: 2, height: 3, length: 15 }),
+  makeWidgetDef('ip.srcdst', { viewMode: 'bar', width: 2, height: 3, length: 15 }),
   // protocols breakdown (pie)
   makeWidgetDef('protocols', { viewMode: 'pie', width: 2, height: 3, length: 8 }),
   // multi-metric table: Dst IP:Port ranked by bytes, with session/packet columns
@@ -231,7 +233,7 @@ export const GRAPH_KEYS = ['field', 'fields', 'viewMode', 'metricType', 'metrics
 // view modes a graph can have: the field-bound dashboard types SPI Graph
 // draws, and a timeline, area or time of day grid split by a field (SPI
 // Graph's Timeline, Area and Time of day)
-export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'circle', 'timeline', 'area', 'timeofday', 'combo', 'scatter', 'boxplot'];
+export const GRAPH_VIEW_MODES = ['bar', 'pie', 'table', 'tagcloud', 'intersection', 'treemap', 'icicle', 'sankey', 'heatmap', 'matrix', 'mosaic', 'waffle', 'connections', 'tree', 'circle', 'timeline', 'area', 'timeofday', 'combo', 'scatter', 'boxplot'];
 
 // the session-wide types that are a graph once split by a field
 const SPLIT_GRAPH_VIEW_MODES = ['timeline', 'area', 'timeofday'];
@@ -300,7 +302,7 @@ export const widgetFromGraph = (graph, overrides = {}) => normalizeWidget({ ...(
 
 // SPI Graph's types and the graph each is (its Timeline, one histogram per
 // value, is a timeline split by the field)
-const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', area: 'area', timeofday: 'timeofday', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', sankey: 'sankey', heatmap: 'heatmap', matrix: 'matrix', mosaic: 'mosaic', waffle: 'waffle', connections: 'connections', tree: 'tree', circle: 'circle', table: 'table', combo: 'combo', scatter: 'scatter', boxplot: 'boxplot' };
+const SPIGRAPH_TO_VIEW_MODE = { default: 'timeline', area: 'area', timeofday: 'timeofday', bar: 'bar', pie: 'pie', tagcloud: 'tagcloud', treemap: 'treemap', icicle: 'icicle', sankey: 'sankey', heatmap: 'heatmap', matrix: 'matrix', mosaic: 'mosaic', waffle: 'waffle', connections: 'connections', tree: 'tree', circle: 'circle', table: 'table', combo: 'combo', scatter: 'scatter', boxplot: 'boxplot' };
 
 /**
  * The graph the SPI Graph page is showing, from its url query and the current
@@ -385,6 +387,9 @@ export const graphFromSpigraphQuery = (query, { expression, fieldsArr } = {}) =>
     } else {
       fields = exp ? [exp] : [];
     }
+  } else if (type === 'icicle') {
+    // an icicle nests every field, with or without each level's "Other"
+    overrides = { other: query.other === 'true' || query.other === true };
   } else if (type === 'matrix' || type === 'mosaic') {
     // a matrix (or mosaic) is the first field by the second, the rest are dropped
     fields = exp ? [exp, ...subFields.slice(0, 1)] : [];
@@ -558,6 +563,8 @@ export const spigraphQueryFromGraph = (graph) => {
   case 'treemap':
   case 'sankey':
     return { ...base, spiGraphType: g.viewMode, subFields: fields.slice(1).join(',') || undefined };
+  case 'icicle':
+    return { ...base, spiGraphType: 'icicle', subFields: fields.slice(1).join(',') || undefined, other: g.other ? 'true' : undefined };
   case 'matrix':
   case 'mosaic':
     return { ...base, spiGraphType: g.viewMode, subFields: fields[1] || undefined };
@@ -641,7 +648,7 @@ export const graphOnSpigraph = (saved, page) => {
 
 // map v7-only field view modes to the closest mode a v6 viewer can render
 // (v6 knows only bar/pie/table) for the dual-written legacy fields[] shape
-const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar', sankey: 'table', connections: 'table', tagcloud: 'bar', matrix: 'table', combo: 'bar', scatter: 'table', boxplot: 'bar' };
+const V6_VIEW_MODES = { bar: 'bar', pie: 'pie', table: 'table', intersection: 'table', heatmap: 'bar', treemap: 'bar', icicle: 'bar', sankey: 'table', connections: 'table', tagcloud: 'bar', matrix: 'table', combo: 'bar', scatter: 'table', boxplot: 'bar' };
 
 /**
  * Projects a widget list onto the v6 summaryConfig shape that is dual-written

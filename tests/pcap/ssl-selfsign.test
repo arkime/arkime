@@ -45,6 +45,9 @@
      64
     ],
     "dstTTLCnt" : 1,
+    "encrypted" : [
+     "tls"
+    ],
     "fileId" : [],
     "firstPacket" : 1519400125658,
     "initRTT" : 0,

@@ -5,8 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 Nested field widget, self-fetched from /api/spigraphhierarchy
 (hierarchicalResults). Renders a d3 partition **sunburst** when viewMode is 'pie'
 (one small sunburst per split value when the pie has a split field), a nested d3
-**treemap** when viewMode is 'treemap', or a d3-sankey **flow diagram** when
-viewMode is 'sankey'. Count-based (the hierarchy endpoint carries no metric).
+**treemap** when viewMode is 'treemap', an **icicle** (SummaryIcicle) when
+viewMode is 'icicle', or a d3-sankey **flow diagram** when viewMode is
+'sankey'. Count-based (the hierarchy endpoint carries no metric).
 Colored by the dashboard palette, with a pie's "Other" in gray; hover uses the
 shared chart popover.
 -->
@@ -27,8 +28,17 @@ shared chart popover.
       ref="container"
       class="hierarchy-container">
       <svg
-        v-show="hasData"
+        v-show="hasData && !isIcicle"
         ref="svgEl" />
+      <SummaryIcicle
+        v-if="isIcicle && hasData && size.w > 0"
+        :data="icicleData"
+        :svg-id="`icicle-${widget.id}`"
+        :field-configs="fieldObjs"
+        :width="size.w"
+        :height="size.h"
+        :color-scheme="colorScheme"
+        @show-tooltip="(evt) => emit('show-tooltip', evt)" />
     </div>
   </WidgetCard>
 </template>
@@ -37,6 +47,7 @@ shared chart popover.
 import { ref, computed, watch, onBeforeUnmount, nextTick } from 'vue';
 import { useI18n } from 'vue-i18n';
 import WidgetCard from './WidgetCard.vue';
+import SummaryIcicle from '../SummaryIcicle.vue';
 import FieldService from '../../search/FieldService';
 import { colorRange, OTHER_COLOR } from './chartColors';
 import { useSpigraphWidget } from './useSpigraphWidget';
@@ -74,9 +85,16 @@ const { loading, error, fetchData } = useSpigraphWidget(
 // one per nesting level, outermost first (a split pie's split field leads)
 const fieldExps = computed(() => hierarchyFields(props.widget));
 const isSplitPie = computed(() => props.widget.viewMode === 'pie' && !!props.widget.splitField);
+const isIcicle = computed(() => props.widget.viewMode === 'icicle');
+// the icicle is drawn by its own component, sized to the container by render
+const size = ref({ w: 0, h: 0 });
 const fieldObjs = computed(() => fieldExps.value.map(exp => FieldService.getField(exp, true)));
 const title = computed(() => props.widget.title || defaultWidgetTitle(props.widget));
 const hasData = computed(() => !!hierarchy.value?.children?.length);
+// an icicle draws its "Other" only when shown (a widget switched to it from a
+// type that fetched one may still have it)
+const withoutOther = (node) => (node?.children ? { ...node, children: node.children.filter(c => !c.other).map(withoutOther) } : node);
+const icicleData = computed(() => (props.widget.other ? hierarchy.value : withoutOther(hierarchy.value)));
 
 // a node's label: "Other" (sessions outside a level's top values) is translated
 const nodeName = (d) => (d.data.other ? t('sessions.summary.other') : d.data.name);
@@ -167,6 +185,10 @@ const render = async () => {
   const w = container.value.clientWidth;
   const h = container.value.clientHeight;
   if (!w || !h) { return; }
+  if (isIcicle.value) {
+    size.value = { w, h };
+    return;
+  }
 
   const svg = d3.select(svgEl.value);
   svg.selectAll('*').remove();

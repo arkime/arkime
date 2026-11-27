@@ -9,7 +9,7 @@ Run with `npm run test:unit`.
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
 
-const { isUnderOther, smallMultiplesGrid, splitPieLayout, fitLabel, mosaicLayout, nodeCount, sharePercent } =
+const { isUnderOther, smallMultiplesGrid, splitPieLayout, fitLabel, mosaicLayout, icicleLayout, iciclePathKey, nodeCount, sharePercent } =
   await import('../viewer/vueapp/src/components/utils/hierarchyLayout.js');
 
 describe('nodeCount', () => {
@@ -135,5 +135,78 @@ describe('mosaicLayout', () => {
     assert.equal(mosaicLayout({ children: [] }, 100, 100), null);
     assert.equal(mosaicLayout({ children: [{ name: 'a', size: 0 }] }, 100, 100), null);
     assert.equal(mosaicLayout({ children: [{ name: 'a', size: 5 }] }, 0, 100), null);
+  });
+});
+
+describe('icicleLayout', () => {
+  // protocols, then port: tcp has a top port and an "Other" for the rest
+  const data = {
+    name: 'Top Talkers',
+    children: [
+      { name: 'tcp', sizeValue: 60, children: [{ name: '80', size: 30 }, { name: '443', size: 20 }, { name: 'Other', other: true, size: 10 }] },
+      { name: 'udp', sizeValue: 40, children: [{ name: '53', size: 10 }] }
+    ]
+  };
+  const at = (layout, ...path) => layout.cells.find(c => c.key === iciclePathKey(path));
+
+  test('a row per level, each value as wide as its share of its parent', () => {
+    const l = icicleLayout(data, 100, 40);
+    assert.equal(l.rows, 2);
+    assert.equal(l.rowH, 20);
+    assert.deepEqual(l.focus, []);
+    const tcp = at(l, 'tcp');
+    assert.deepEqual([tcp.x, tcp.y, tcp.w, tcp.h, tcp.depth, tcp.value, tcp.share], [0, 0, 60, 20, 1, 60, 0.6]);
+    const udp = at(l, 'udp');
+    assert.deepEqual([udp.x, udp.w], [60, 40]);
+    const p80 = at(l, 'tcp', '80');
+    assert.deepEqual([p80.x, p80.y, p80.w, p80.depth, p80.top], [0, 20, 30, 2, 'tcp']);
+    // udp's one top port leaves the rest of it empty
+    const p53 = at(l, 'udp', '53');
+    assert.deepEqual([p53.x, p53.w, p53.top], [60, 10, 'udp']);
+  });
+
+  test('an "Other" has its own key and is marked under Other', () => {
+    const l = icicleLayout(data, 100, 40);
+    const other = l.cells.find(c => c.other);
+    assert.equal(other.key, iciclePathKey(['tcp', '\u0000other']));
+    assert.equal(other.underOther, true);
+    assert.equal(at(l, 'tcp', '80').underOther, false);
+  });
+
+  test('children adding up to more than their parent are scaled to fit it', () => {
+    const tags = { children: [{ name: 'a', sizeValue: 10, children: [{ name: 'x', size: 10 }, { name: 'y', size: 10 }] }] };
+    const l = icicleLayout(tags, 100, 20);
+    assert.equal(at(l, 'a').w, 100);
+    assert.equal(at(l, 'a').value, 10);
+    assert.deepEqual([at(l, 'a', 'x').w, at(l, 'a', 'y').x], [50, 50]);
+  });
+
+  test('a focus fills the width, its path as crumb rows above its children', () => {
+    const l = icicleLayout(data, 100, 40, { focus: ['tcp'] });
+    assert.deepEqual(l.focus, ['tcp']);
+    assert.equal(l.rows, 2);
+    const tcp = at(l, 'tcp');
+    assert.deepEqual([tcp.x, tcp.w, tcp.crumb], [0, 100, true]);
+    assert.equal(at(l, 'udp'), undefined);
+    const p80 = at(l, 'tcp', '80');
+    assert.deepEqual([p80.x, p80.y, p80.w, p80.crumb, p80.top], [0, 20, 50, false, 'tcp']);
+  });
+
+  test('a focus not in the tree zooms as deep as it matches', () => {
+    assert.deepEqual(icicleLayout(data, 100, 40, { focus: ['nope'] }).focus, []);
+    // a leaf has nothing below it to zoom into
+    assert.deepEqual(icicleLayout(data, 100, 40, { focus: ['tcp', '80'] }).focus, ['tcp']);
+  });
+
+  test('cells too thin to see are left out', () => {
+    const l = icicleLayout({ children: [{ name: 'big', size: 999 }, { name: 'tiny', size: 1 }] }, 100, 20, { minW: 0.5 });
+    assert.equal(at(l, 'tiny'), undefined);
+  });
+
+  test('nothing to draw is null', () => {
+    assert.equal(icicleLayout(null, 100, 100), null);
+    assert.equal(icicleLayout({ children: [] }, 100, 100), null);
+    assert.equal(icicleLayout({ children: [{ name: 'a', size: 0 }] }, 100, 100), null);
+    assert.equal(icicleLayout(data, 0, 100), null);
   });
 });

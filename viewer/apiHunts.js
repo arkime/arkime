@@ -12,6 +12,7 @@ const Db = require('./db.js');
 const async = require('async');
 const RE2 = require('re2');
 const util = require('util');
+const ipaddr = require('ipaddr.js');
 const Pcap = require('./pcap.js');
 const ArkimeUtil = require('../common/arkimeUtil');
 const Notifier = require('../common/notifier');
@@ -108,8 +109,13 @@ class HuntAPIs {
           // strip the 16 byte pcap record header, only packet data should be searched
           packets.push(buffer.slice(16));
         } else {
+          // A packet that can't be decoded is still searched, it just has no side
           const packet = {};
-          pcap.decode(buffer, packet);
+          try {
+            pcap.decode(buffer, packet);
+          } catch (e) {
+            delete packet.ip;
+          }
           packet.data = buffer.slice(16);
           packets.push(packet);
         }
@@ -128,12 +134,23 @@ class HuntAPIs {
         } else {
           // If searching src OR dst (not both) need to check key
           const skey = Pcap.keyFromSession(session);
+          const srcIp = session.source?.ip ? ipaddr.parse(session.source.ip).toString() : undefined;
+          const dstIp = session.destination?.ip ? ipaddr.parse(session.destination.ip).toString() : undefined;
           for (let i = 0; i < len; i++) {
-            const key = Pcap.key(packets[i]);
-            const isSrc = key === skey;
-            if (options.src && isSrc) {
-              if (HuntAPIs.#packetSearch(packets[i].data, options)) { return cb(null, true); }
-            } else if (options.dst && !isSrc) {
+            let isSrc, isDst;
+            if (!packets[i].ip) {
+              isSrc = isDst = true;
+            } else if (packets[i].ip.frag) {
+              // An ip fragment has no ports, the raw search is still per packet so go by ip. The
+              // outer fragment of a tunnel has neither of the session's ips, it could be either side.
+              const addr = ipaddr.parse(packets[i].ip.addr1).toString();
+              isSrc = addr === srcIp || addr !== dstIp;
+              isDst = addr === dstIp || addr !== srcIp;
+            } else {
+              isSrc = Pcap.key(packets[i]) === skey;
+              isDst = !isSrc;
+            }
+            if ((options.src && isSrc) || (options.dst && isDst)) {
               if (HuntAPIs.#packetSearch(packets[i].data, options)) { return cb(null, true); }
             }
           }

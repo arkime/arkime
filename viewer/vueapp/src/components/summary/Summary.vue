@@ -10,26 +10,6 @@ SPDX-License-Identifier: Apache-2.0
       :message="error"
       class="mt-5 mb-5" />
 
-    <!-- Skeleton stats (shown while loading, before first chunk) -->
-    <div
-      v-if="loading && !summary && !error"
-      class="summary-content m-2">
-      <!-- Skeleton Field Widgets -->
-      <div class="charts-container charts-grid">
-        <div
-          v-for="w in widgets"
-          :key="w.id"
-          class="widget-wrapper"
-          :style="spanStyle(w)">
-          <SummaryWidget
-            :title="w.title || defaultWidgetTitle(w)"
-            :data="[]"
-            :loading="true"
-            :field="w.field" />
-        </div>
-      </div>
-    </div>
-
     <!-- Summary content (shows progressively as data streams in) -->
     <div
       v-if="!error && summary"
@@ -88,9 +68,9 @@ SPDX-License-Identifier: Apache-2.0
             class="widget-resize widget-resize--se"
             :title="$t('sessions.summary.dragToResize')"
             @mousedown.stop.prevent="startResize(w, $event, 'both')" />
-          <!-- multi-field nested pie/treemap, split pie, and sankey (any field count) -->
+          <!-- multi-field nested pie/treemap, split pie, and icicle and sankey (any field count) -->
           <HierarchyWidget
-            v-if="w.viewMode === 'sankey' || isSplitPie(w) || (isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap'))"
+            v-if="w.viewMode === 'sankey' || w.viewMode === 'icicle' || isSplitPie(w) || (isMultiField(w) && (w.viewMode === 'pie' || w.viewMode === 'treemap'))"
             :widget="w"
             :reload-nonce="reloadNonce"
             :color-scheme="colorScheme"
@@ -326,7 +306,8 @@ SPDX-License-Identifier: Apache-2.0
             @remove="removeWidgetLocal(w)" />
           <StatsWidget
             v-else-if="w.viewMode === 'stats'"
-            :stats="summary"
+            :stats="statsChunk"
+            :loading="streaming && !statsChunk"
             :title="w.title"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
@@ -334,7 +315,8 @@ SPDX-License-Identifier: Apache-2.0
             @remove="removeWidgetLocal(w)" />
           <TimeWidget
             v-else-if="w.viewMode === 'time'"
-            :stats="summary"
+            :stats="statsChunk"
+            :loading="streaming && !statsChunk"
             :title="w.title"
             :info-items="widgetInfo(w)"
             :link="widgetLinks[w.id]"
@@ -411,6 +393,7 @@ import SummaryChartTooltip from './SummaryChartTooltip.vue';
 import { isStreamMode, isFieldMode, isGeoFieldMode, isListMode, hasMetric, hasMetricAgg, hasLength, hasOrder, isSampleSize, defaultLength, allowsMultiField, allowsSplit, allowsBucketInterval, isGaugeMode, isTreeMode, isNavMode, isStaticMode, isTimelineMode, metricSlots, slotMetrics, hasLevels, allowsCompare, isBoxMode, boxMetric, boxRank } from './widgets/viewModes';
 import { summaryRequestWidget, pageExpression, widgetFields, metricLabel, widgetFullPageLink, widgetThresholds, defaultWidgetTitle, dashboardPageQuery, circleColorDbField } from './widgets/widgetData';
 import { DEFAULT_CIRCLE_MAX_NODES } from './widgets/connectionCircle';
+import { setVisibilityProbe } from './widgets/dashboardRequests';
 import FieldService from '../search/FieldService';
 import ConfigService from '../utils/ConfigService';
 import Utils from '../utils/utils';
@@ -463,6 +446,7 @@ const emit = defineEmits(['widget-config-changed', 'streaming-state', 'canceled-
 
 // Save a pending promise to be able to cancel it
 let pendingPromise;
+let loadSeq = 0; // numbers the loads, so one a newer load replaced can tell
 
 // Sortable instance for drag-and-drop reordering
 let sortableInstance = null;
@@ -548,7 +532,8 @@ const startResize = (w, evt, axis) => {
 
 // Reactive state
 const summary = ref(null);
-const loading = ref(true);
+// the stats chunk (sessions, bytes, first and last packet), null until it's in
+const statsChunk = computed(() => (summary.value?.sessions !== undefined ? summary.value : null));
 const error = ref('');
 const widgetContainer = ref(null);
 // scroll container provided by the page shell (PageLayout)
@@ -783,7 +768,6 @@ const cancelLoading = () => {
   // Update state
   canceled.value = true;
   streaming.value = false;
-  loading.value = false;
 
   // Mark still-loading widgets as cancelled
   if (summary.value?.fields) {
@@ -866,7 +850,9 @@ const trackChunk = (query, chunk) => {
     label: def?.title || defaultWidgetTitle(def),
     owner: chunk.id,
     serverMs: chunk.took,
-    status: chunk.error ? 'error' : 'ok'
+    status: chunk.error ? 'error' : 'ok',
+    // a twin widget's copy of another's search (the server ran it once)
+    shared: chunk.shared === true
   });
 };
 
@@ -985,6 +971,7 @@ const retryAllFailed = () => {
 const generateSummary = async () => {
   // signal self-fetching view modes (e.g. heatmap) to refetch on every reload
   reloadNonce.value++;
+  const seq = ++loadSeq;
 
   // Note: an empty dashboard still requests (widgets: []) so the capture-stats
   // band shows real numbers, consistent with a dashboard of only self-fetch widgets.
@@ -997,9 +984,12 @@ const generateSummary = async () => {
     pendingPromise = null;
   }
 
-  loading.value = true;
   error.value = '';
-  summary.value = null; // Reset for progressive display
+  // The widgets are up right away, so the ones that fetch for themselves
+  // start without waiting for the stats; the stats and time widgets, and
+  // the stream-fed ones, show their loading state until their chunk is in.
+  // The entries keep their ids, so a reload refreshes the widgets in place.
+  summary.value = { fields: props.widgets.map(makeEntry) };
 
   const query = startQuery({ url: 'api/sessions/summary', method: 'POST' });
   let serverMs;
@@ -1045,12 +1035,8 @@ const generateSummary = async () => {
       // First chunk has summary stats (sessions, packets, bytes, etc.) + map/graph
       // which now feed the stats/time/timeline/map widgets directly.
       if (chunk.sessions !== undefined) {
-        // Initialize render entries for all configured widgets (loading state)
-        chunk.fields = props.widgets.map(makeEntry);
-        summary.value = chunk;
-
-        // Hide loading overlay once we have summary stats (widgets show their own loading)
-        loading.value = false;
+        // the render entries were made when the load started
+        summary.value = { ...chunk, fields: summary.value?.fields ?? props.widgets.map(makeEntry) };
       } else if (chunk.id) {
         // Widget chunks have an id - find and update the placeholder
         mergeFieldChunk(chunk);
@@ -1091,15 +1077,16 @@ const generateSummary = async () => {
   } catch (err) {
     finishQuery(query, { serverMs, error: err });
     if (err.name === 'AbortError') {
-      // Request was cancelled, don't show as error
-      streaming.value = false;
+      // Request was cancelled, don't show as error. A reload cancels the
+      // load before it, which finds out here after the new one has started:
+      // that one is streaming.
+      if (seq === loadSeq) { streaming.value = false; }
       return;
     }
     pendingPromise = null;
     streaming.value = false;
     console.error('Error generating summary:', err);
     error.value = err.text || err.message || String(err);
-    loading.value = false;
   }
 };
 
@@ -1424,6 +1411,17 @@ watch(streaming, (val) => { emit('streaming-state', val); });
 watch(canceled, (val) => { emit('canceled-state', val); });
 
 // On mount
+// The request planner sends the requests of the widgets on screen first and
+// holds the rest back a little. A widget not found is taken as on screen.
+const widgetOnScreen = (id) => {
+  if (id === undefined || id === null) { return true; }
+  const el = document.querySelector(`[data-widget-id="${CSS.escape(String(id))}"]`);
+  if (!el) { return true; }
+  const r = el.getBoundingClientRect();
+  return r.bottom > 0 && r.top < window.innerHeight && r.right > 0 && r.left < window.innerWidth;
+};
+setVisibilityProbe(widgetOnScreen);
+
 onMounted(() => {
   document.addEventListener('click', handleClickOutside);
   generateSummary();
@@ -1432,6 +1430,7 @@ onMounted(() => {
 // On unmount
 onBeforeUnmount(() => {
   document.removeEventListener('click', handleClickOutside);
+  setVisibilityProbe(null);
 
   // Cancel any pending request on unmount
   if (pendingPromise) {

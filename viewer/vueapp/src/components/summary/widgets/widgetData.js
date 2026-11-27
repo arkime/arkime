@@ -7,8 +7,7 @@ which needs per-value time series from /api/spigraph rather than the batched
 summary stream). Combines the global search expression with the widget's local
 filter and the global time window.
 */
-import { fetchWrapper } from '@common/fetchWrapper.js';
-import { startQuery, finishQuery } from '@common/queryTimes.js';
+import { dashboardRequest } from './dashboardRequests';
 import { commaString, humanReadableBytes } from '@common/vueFilters.js';
 import FieldService from '../../search/FieldService';
 import { defaultLength, fieldCountLimits, slotMetrics, isPercentileAgg, PERCENTILE_VIEW_MODES, allowsSplit, allowsOther, allowsBucketInterval, boxMetric, boxRank } from './viewModes';
@@ -183,8 +182,8 @@ export function combinedExpression (route, store, widget) {
 export function widgetFullPageLink (route, store, widget) {
   const mode = widget?.viewMode;
   const fields = widgetFields(widget);
-  // SPI Graph aggregates a real column, so the "All X fields" groups (All IP
-  // fields and friends, which the summary endpoint handles with a script)
+  // SPI Graph aggregates a real column, so the "All X fields" groups (Src or
+  // Dst IP and friends, which the summary endpoint handles itself)
   // have no full page; the Sessions page targets don't aggregate at all
   const usable = (fieldExp) => {
     if (fieldExp === 'ip.dst:port' || fieldExp === 'destination.ip:port') { return true; }
@@ -324,7 +323,7 @@ export function queryInfo (widget) {
  * items come back sorted by doc_count. Returns { items, graph, ... }.
  */
 export async function fetchSpigraph (route, store, widget, { signal } = {}) {
-  const extra = { exp: widget.field, size: widget.length };
+  const extra = { exp: widget.field, size: widget.length, metricOnly: true };
   // a numeric metric drives heatmap intensity / treemap size; the server sums it
   // per value into a <dbField>Histo series and we order Top-N by it
   if (widget.metricType && widget.metricType !== 'sessions') {
@@ -332,23 +331,24 @@ export async function fetchSpigraph (route, store, widget, { signal } = {}) {
     extra.sort = metricHistoKey(widget);
   }
   const data = buildWidgetParams(route, store, widget, extra);
-  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal, ...queryInfo(widget) });
+  return await dashboardRequest({ url: 'api/spigraph', data, signal, ...queryInfo(widget) });
 }
 
 /**
  * Fetch just the timeline graph for a query (the Timeline widget). Reuses the
  * spigraph endpoint, which resolves `metric` into a <dbField>Histo series and
  * honors the widget's local filter (combinedExpression); we read the top-level
- * `graph` and ignore the per-value items. `exp: node` + `size: 1` keeps the
- * terms aggregation minimal. Returns { graph, ... }.
+ * `graph`: graphOnly has the viewer skip the per-value items and their
+ * searches (an older viewer ignores it; `exp: node` + `size: 1` keeps its
+ * terms aggregation minimal). Returns { graph, ... }.
  */
 export async function fetchGraph (route, store, widget, { signal, timeShift } = {}) {
-  const extra = { exp: 'node', size: 1 };
+  const extra = { exp: 'node', size: 1, graphOnly: true, metricOnly: true };
   if (widget.metricType && widget.metricType !== 'sessions') {
     spigraphMetric(widget, extra);
   }
   const data = shiftWindow(buildWidgetParams(route, store, widget, extra), store, timeShift);
-  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal, ...queryInfo(widget) });
+  return await dashboardRequest({ url: 'api/spigraph', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -358,13 +358,13 @@ export async function fetchGraph (route, store, widget, { signal, timeShift } = 
  * bounds. Returns { items, graph, ... }.
  */
 export async function fetchSplitGraph (route, store, widget, { signal } = {}) {
-  const extra = { exp: widget.splitField, size: widget.splitLength || 5 };
+  const extra = { exp: widget.splitField, size: widget.splitLength || 5, metricOnly: true };
   if (widget.metricType && widget.metricType !== 'sessions') {
     spigraphMetric(widget, extra);
     extra.sort = metricHistoKey(widget);
   }
   const data = buildWidgetParams(route, store, widget, extra);
-  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal, ...queryInfo(widget) });
+  return await dashboardRequest({ url: 'api/spigraph', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -388,8 +388,8 @@ export function requestTimezone (setting) {
  */
 export async function fetchTimeOfDay (route, store, widget, { signal } = {}) {
   const extra = widget.splitField
-    ? { exp: widget.splitField, size: widget.splitLength || 5 }
-    : { exp: 'node', size: 1 };
+    ? { exp: widget.splitField, size: widget.splitLength || 5, metricOnly: true }
+    : { exp: 'node', size: 1, graphOnly: true, metricOnly: true };
   if (widget.metricType && widget.metricType !== 'sessions') {
     extra.metric = widget.metricType;
     if (widget.splitField) { extra.sort = metricHistoKey(widget); }
@@ -399,7 +399,7 @@ export async function fetchTimeOfDay (route, store, widget, { signal } = {}) {
     interval: 'hourOfWeek',
     timezone: requestTimezone(store.state.user?.settings?.timezone)
   };
-  return await fetchWrapper({ url: 'api/spigraph', method: 'POST', data, signal, ...queryInfo(widget) });
+  return await dashboardRequest({ url: 'api/spigraph', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -414,7 +414,7 @@ export function hierarchyFields (widget) {
 /**
  * A widget's title when it has none of its own, from its fields' names: a
  * matrix's or mosaic's "Rows × Columns", a nested or split pie's, a treemap's,
- * a sankey's and a split waffle's levels outermost first ("Split / Field"),
+ * an icicle's, a sankey's and a split waffle's levels outermost first ("Split / Field"),
  * else its field's. The dashboard's first-load cards use it too, so a card
  * keeps its title once its data is in.
  */
@@ -422,7 +422,7 @@ export function defaultWidgetTitle (widget) {
   const friendly = (exp) => FieldService.getField(exp, true)?.friendlyName || exp;
   const mode = widget?.viewMode;
   if (mode === 'matrix' || mode === 'mosaic') { return widgetFields(widget).map(friendly).join(' × '); }
-  if (mode === 'pie' || mode === 'treemap' || mode === 'sankey' || (mode === 'waffle' && widget.splitField)) {
+  if (mode === 'pie' || mode === 'treemap' || mode === 'icicle' || mode === 'sankey' || (mode === 'waffle' && widget.splitField)) {
     return hierarchyFields(widget).map(friendly).join(' / ');
   }
   return friendly(widget?.field || '');
@@ -430,7 +430,7 @@ export function defaultWidgetTitle (widget) {
 
 /**
  * Fetch SPIGraph hierarchy data for a widget's nested fields (the
- * "Intersection" table, nested pie/treemap/sankey). For a single field the
+ * "Intersection" table, nested pie/treemap/icicle/sankey). For a single field the
  * endpoint returns `tableResults` as a flat list of { name, size, parents: [] }
  * — one row per unique value. Returns the raw response ({ tableResults,
  * hierarchicalResults }).
@@ -442,11 +442,12 @@ export async function fetchHierarchy (route, store, widget, { signal } = {}) {
   if (fields.length > widgetFields(widget).length) {
     extra.sizes = [widget.splitLength || 5, ...fields.slice(1).map(() => widget.length)].join(',');
   }
-  // a matrix reads a row's "Other" to know which of its missing values are
-  // zero, and a mosaic's columns and cells add up to their sessions with it
-  if (((widget.viewMode === 'pie' || widget.viewMode === 'waffle') && widget.other) || widget.viewMode === 'matrix' || widget.viewMode === 'mosaic') { extra.other = true; }
+  // a pie, waffle or icicle draws its "Other" when shown, a matrix reads a
+  // row's "Other" to know which of its missing values are zero, and a
+  // mosaic's columns and cells add up to their sessions with it
+  if ((['pie', 'waffle', 'icicle'].includes(widget.viewMode) && widget.other) || widget.viewMode === 'matrix' || widget.viewMode === 'mosaic') { extra.other = true; }
   const data = buildWidgetParams(route, store, widget, extra);
-  return await fetchWrapper({ url: 'api/spigraphhierarchy', method: 'POST', data, signal, ...queryInfo(widget) });
+  return await dashboardRequest({ url: 'api/spigraphhierarchy', data, signal, ...queryInfo(widget) });
 }
 
 /** True when a circle can color its arcs by the field: /api/connections lists
@@ -472,7 +473,7 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
   const fields = widgetFields(widget);
   // the endpoint resolves srcField/dstField through Config.getDBField, which
   // reads dbFieldsMap — and Config.loadFields deliberately keeps noFacet fields
-  // (All IP Fields, Arkime ID, Payload Src/Dst UTF8, View Name) out of that map,
+  // (Src or Dst IP, Arkime ID, Payload Src/Dst UTF8, View Name) out of that map,
   // so no spelling of them resolves. Return undefined for those rather than a
   // dbField the server will map to undefined and hand Elasticsearch as an empty
   // field, which comes back as an x_content_parse_exception. 'ip.dst:port' is
@@ -491,7 +492,7 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
     throw { i18n: 'sessions.summary.widget.exactFieldsRequired', i18nParams: { count: 2 } };
   }
   // both picked, but one has no database field the endpoint can read (eg a
-  // noFacet field like All IP Fields, which Config.loadFields keeps out of
+  // noFacet field like Src or Dst IP, which Config.loadFields keeps out of
   // dbFieldsMap) — name it instead of failing inside Elasticsearch
   if (!srcField || !dstField) {
     const bad = !srcField ? fields[0] : fields[1];
@@ -507,7 +508,7 @@ export async function fetchConnections (route, store, widget, { signal } = {}) {
     // the field the circle colors its arcs by comes with the sample
     ...(widget.viewMode === 'circle' ? { fields: circleColorDbField(widget.colorField) } : {})
   });
-  return await fetchWrapper({ url: 'api/connections', method: 'POST', data, signal, ...queryInfo(widget) });
+  return await dashboardRequest({ url: 'api/connections', data, signal, ...queryInfo(widget) });
 }
 
 /**
@@ -703,23 +704,14 @@ async function postSummary (route, store, body, signal, excludeVariable, timeShi
   }
   shiftWindow(body, store, timeShift);
 
-  // the response streams, so its time header only covers the first chunk: time
-  // the request by its chunks' own times instead (these bodies skip the stats)
-  const { queryLabel, queryOwner } = widget ? queryInfo(widget) : {};
-  const query = startQuery({ url: 'api/sessions/summary', method: 'POST', label: queryLabel, owner: queryOwner });
-  try {
-    const res = await fetchWrapper({ url: 'api/sessions/summary', method: 'POST', data: body, signal, background: true });
-    const chunks = Array.isArray(res) ? res : [];
-    const timed = chunks.filter(c => Number.isFinite(c?.took));
-    finishQuery(query, {
-      serverMs: timed.length ? timed.reduce((total, c) => total + c.took, 0) : undefined,
-      error: chunks.some(c => c?.error || c?.bsqErr)
-    });
-    return res;
-  } catch (err) {
-    finishQuery(query, { error: err });
-    throw err;
-  }
+  // the planner may send it with other widgets' summary requests over the
+  // same search, and times it by its own chunks (these bodies skip the stats)
+  const res = await dashboardRequest({ url: 'api/sessions/summary', data: body, signal, ...(widget ? queryInfo(widget) : {}) });
+  // the search itself failed (a time limit, a bad expression): its one chunk
+  // has no widget's id, so say so rather than hand back no data
+  const failed = (Array.isArray(res) ? res : []).find(c => c?.bsqErr);
+  if (failed) { throw new Error(String(failed.bsqErr)); }
+  return res;
 }
 
 /**

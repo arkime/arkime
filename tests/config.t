@@ -1,7 +1,7 @@
 # Test config
 use lib ".";
 use ArkimeTest;
-use Test::More tests => 113;
+use Test::More tests => 114;
 use Test::Differences;
 use Data::Dumper;
 use JSON;
@@ -525,3 +525,4 @@ is($vc->{sections}->{cache}->{redisURL}, "[redacted]", "a wise field marked pass
 is($vc->{sections}->{'splunk:test'}->{password}, "[redacted]", "a wise source password is hidden");
 is($vc->{sections}->{'databricks:test'}->{token}, "[redacted]", "a wise source token is hidden");
 is($vc->{sections}->{'misp:test'}->{key}, "[redacted]", "a wise misp key is hidden");
+is($vc->{sections}->{sourceip}->{key}, "[redacted]", "a wise sourceip key is hidden");

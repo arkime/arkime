@@ -7,7 +7,9 @@
 # prevent one slow client from starving others.
 # Supports: CreateMultipartUpload, UploadPart, CompleteMultipartUpload,
 #           PutObject, GetObject, DeleteObject, HeadObject,
-#           ListBuckets, ListObjects
+#           ListBuckets, ListObjects (v2 paging via continuation-token),
+#           CreateBucket, HeadBucket, DeleteBucket
+# List results carry the S3 XML namespace, which stricter clients require.
 # Also a minimal SQS emulation compatible with Arkime's reader-scheme-sqs:
 #   POST /{account}/{queue}?Action=ReceiveMessage        -- long-poll receive
 #   POST /{account}/{queue}  body Action=DeleteMessage&ReceiptHandle=...
@@ -368,6 +370,18 @@ sub handle_request {
         return delete_object_resp($bucket, $key);
     } elsif ($method eq 'HEAD' && defined $key) {
         return head_object_resp($bucket, $key);
+    } elsif ($method eq 'PUT' && defined $bucket) {
+        # CreateBucket; fine if it is already there
+        $objects{$bucket} //= {};
+        return build_response(200, 'OK', { 'Location' => "/$bucket" }, '');
+    } elsif ($method eq 'HEAD' && defined $bucket) {
+        return build_response(200, 'OK', {}, '') if exists $objects{$bucket};
+        return build_response(404, 'Not Found', {}, '');
+    } elsif ($method eq 'DELETE' && defined $bucket) {
+        return send_s3_error_resp(409, "BucketNotEmpty", "The bucket you tried to delete is not empty")
+            if %{ $objects{$bucket} // {} };
+        delete $objects{$bucket};
+        return build_response(204, 'No Content', {}, '');
     } else {
         return send_s3_error_resp(501, "NotImplemented", "Not implemented: $method $uri?$query");
     }
@@ -591,7 +605,7 @@ sub delete_object_resp {
 
 sub list_buckets_resp {
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
-<ListAllMyBucketsResult>
+<ListAllMyBucketsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
   <Owner>
     <ID>mini-aws</ID>
     <DisplayName>mini-aws</DisplayName>
@@ -644,7 +658,7 @@ sub list_objects_resp {
     my $prefix_x    = xml_escape($prefix);
     my $delimiter_x = xml_escape($delimiter);
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
-<ListBucketResult>
+<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
   <Name>$bucket</Name>
   <Prefix>$prefix_x</Prefix>
   <Delimiter>$delimiter_x</Delimiter>
@@ -956,7 +970,7 @@ sub fire_bucket_notification {
 
 sub send_s3_error_resp {
     my ($status, $code, $message) = @_;
-    my %status_text = (404 => 'Not Found', 500 => 'Internal Server Error', 501 => 'Not Implemented', 416 => 'Range Not Satisfiable');
+    my %status_text = (404 => 'Not Found', 409 => 'Conflict', 500 => 'Internal Server Error', 501 => 'Not Implemented', 416 => 'Range Not Satisfiable');
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <Error>
   <Code>$code</Code>
