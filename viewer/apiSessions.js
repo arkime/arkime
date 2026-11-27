@@ -2323,7 +2323,11 @@ class SessionAPIs {
 
       let protocols;
       let recordsFiltered = 0;
-      const options = ViewerUtils.addCluster(req.query.cluster);
+      let options = {};
+      if (req.query.cancelId) {
+        options.cancelId = `${req.user.userId}::${req.query.cancelId}`;
+      }
+      options = ViewerUtils.addCluster(req.query.cluster, options);
 
       Promise.all([Db.searchSessions(indices, query, options),
         Db.numberOfDocuments(Db.getSessionIndices(), options.cluster ? { cluster: options.cluster } : {})

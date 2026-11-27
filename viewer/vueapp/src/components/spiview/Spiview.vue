@@ -521,6 +521,18 @@ let categoryLoadingCounts = {};
 // save currently executing promises - need to track multiple for proper cancellation
 let pendingPromises = [];
 
+// drops every request in flight: its fetch, and the search it started (the
+// server registered it under the cancelId, so it doesn't run to completion)
+function abortPending (reason) {
+  const pending = pendingPromises;
+  pendingPromises = [];
+  for (const pendingPromise of pending) {
+    if (!pendingPromise?.controller) { continue; }
+    pendingPromise.controller.abort(reason);
+    ConfigService.cancelEsTask(pendingPromise.cancelId).catch(() => {}); // best effort
+  }
+}
+
 let timeout;
 
 export default {
@@ -720,14 +732,7 @@ export default {
     },
     /* Cancels the loading of all server requests */
     cancelLoading: function () {
-      if (pendingPromises.length > 0) {
-        pendingPromises.forEach(pendingPromise => {
-          if (pendingPromise && pendingPromise.controller) {
-            pendingPromise.controller.abort('You canceled the search');
-          }
-        });
-        pendingPromises = [];
-      }
+      abortPending('You canceled the search');
 
       this.canceled = true; // indicate cancellation for future requests
       this.dataLoading = false;
@@ -1020,7 +1025,7 @@ export default {
       query.facets = 1; // Force facets for map/graph data
 
       const { controller, fetcher } = await this.get(query);
-      const vizPromise = { controller };
+      const vizPromise = { controller, cancelId: query.cancelId };
       pendingPromises.push(vizPromise);
 
       fetcher.then((response) => {
@@ -1067,6 +1072,7 @@ export default {
     constructQuery: function (dbField, count) {
       return {
         facets: newQuery ? '1' : '0', // Only get facets for initial query for performance
+        cancelId: Utils.createRandomString(), // so the search can be canceled in the db
         spi: `${dbField}:${count}`,
         date: this.query.date,
         startTime: this.query.startTime,
@@ -1259,7 +1265,7 @@ export default {
       const query = this.constructQuery(field.dbField, count);
 
       const { controller, fetcher } = await this.get(query);
-      const currentPromise = { controller };
+      const currentPromise = { controller, cancelId: query.cancelId };
       pendingPromises.push(currentPromise);
 
       // settles when the request is done, so the fields can load one at a time
@@ -1502,14 +1508,7 @@ export default {
 
     if (timeout) { clearTimeout(timeout); }
 
-    if (pendingPromises.length > 0) { // if there are requests
-      pendingPromises.forEach(pendingPromise => {
-        if (pendingPromise && pendingPromise.controller) {
-          pendingPromise.controller.abort('Closing the SPIView page canceled the search');
-        }
-      });
-      pendingPromises = [];
-    }
+    abortPending('Closing the SPIView page canceled the search');
   }
 };
 </script>
