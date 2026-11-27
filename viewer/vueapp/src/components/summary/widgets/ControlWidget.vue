@@ -72,10 +72,11 @@ the slider is let go and text on Enter, so each reloads the dashboard once.
           color="primary"
           @end="applyRange" />
         <div class="control-range__text">
-          <span>{{ applied.length ? `${commaString(Number(applied[0]))} – ${commaString(Number(applied[1]))}` : $t('sessions.summary.controlAll') }}</span>
+          <span>{{ rangeText }}</span>
           <v-btn
             v-if="applied.length"
             size="x-small"
+            density="comfortable"
             variant="text"
             icon
             :title="$t('common.clear')"
@@ -188,6 +189,13 @@ const resetRange = () => {
   const { min, max } = bounds.value;
   rangePick.value = applied.value.length ? applied.value.map(Number) : [min ?? 0, max ?? 0];
 };
+// the text follows the slider while it is dragged, so it shows what letting go would pick
+const rangeText = computed(() => {
+  const { min, max } = bounds.value;
+  const [lo, hi] = (max === undefined ? applied.value : rangePick.value).map((v) => Math.round(Number(v)));
+  if (lo === undefined || (lo <= min && hi >= max)) { return t('sessions.summary.controlAll'); }
+  return `${commaString(lo)} – ${commaString(hi)}`;
+});
 const applyRange = () => {
   const [lo, hi] = rangePick.value.map(Math.round);
   if (lo <= bounds.value.min && hi >= bounds.value.max) { setPick([]); return; }

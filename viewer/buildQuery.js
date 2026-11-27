@@ -65,25 +65,21 @@ class BuildQuery {
         const field = parts[0];
         if (ArkimeUtil.isPP(field)) { continue; }
 
-        const obj = {};
-        obj[field] = { order: parts[1] };
-
-        let unmappedType = 'string';
+        const sort = { order: parts[1], unmapped_type: 'string' };
         const fieldInfo = Config.getDBFieldsMap()[field];
         if (fieldInfo) {
           if (fieldInfo.type === 'ip') {
-            unmappedType = 'ip';
+            sort.unmapped_type = 'ip';
           } else if (fieldInfo.type === 'integer') {
-            unmappedType = 'long';
+            sort.unmapped_type = 'long';
           }
         }
-        obj[field].unmapped_type = unmappedType;
         // Every session has firstPacket and lastPacket so missing changes nothing for them,
         // and a missing of _first stops the db from skipping shards that can't be in the top hits
         if (field !== 'firstPacket' && field !== 'lastPacket') {
-          obj[field].missing = (parts[1] === 'asc' ? '_last' : '_first');
+          sort.missing = (parts[1] === 'asc' ? '_last' : '_first');
         }
-        query.sort.push(obj);
+        query.sort.push({ [field]: sort });
       }
 
       return;
