@@ -1,4 +1,4 @@
-use Test::More tests => 274;
+use Test::More tests => 277;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -426,6 +426,14 @@ doTimeTest(viewerGet('/api/buildquery?startTime=1386000000&stopTime=1386003600')
 doTimeTest(viewerGet('/api/buildquery?startTime=0&stopTime=0'), '[{"range":{"lastPacket":{"gte":0,"lte":0}}}]', 'stopTime=0 is bounded');
 doTimeTest(viewerGet('/api/buildquery?startTime=1386000000&stopTime=0'), '[{"range":{"lastPacket":{"gte":1386000000000,"lte":0}}}]', 'stopTime before startTime is bounded');
 doTimeTest(viewerPost('/api/buildquery', '{"startTime":0,"stopTime":0}'), '[{"range":{"lastPacket":{"gte":0,"lte":0}}}]', 'POST stopTime 0 is bounded');
+
+# Sorting by a field every session has doesn't set missing, a missing of _first is slow
+$json = viewerGet('/api/buildquery?date=-1&order=lastPacket:desc');
+eq_or_diff($json->{esquery}->{sort}, from_json('[{"lastPacket":{"order":"desc","unmapped_type":"string"}}]'), 'lastPacket desc sort has no missing');
+$json = viewerGet('/api/buildquery?date=-1&order=firstPacket:asc');
+eq_or_diff($json->{esquery}->{sort}, from_json('[{"firstPacket":{"order":"asc","unmapped_type":"string"}}]'), 'firstPacket asc sort has no missing');
+$json = viewerGet('/api/buildquery?date=-1&order=source.port:desc,source.ip:asc');
+eq_or_diff($json->{esquery}->{sort}, from_json('[{"source.port":{"order":"desc","unmapped_type":"long","missing":"_first"}},{"source.ip":{"order":"asc","unmapped_type":"ip","missing":"_last"}}]'), 'other sorts keep missing');
 
 # A view id wins over a view named after that id
 viewerGet("/regressionTests/deleteAllViews");
