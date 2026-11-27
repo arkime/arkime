@@ -1,0 +1,16 @@
+{
+  "name": "Bad folder",
+  "description": "skipped: the folder is longer than 64 characters",
+  "data": {
+    "version": 1,
+    "folder": "fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "stats",
+        "width": 2,
+        "height": 1
+      }
+    ]
+  }
+}

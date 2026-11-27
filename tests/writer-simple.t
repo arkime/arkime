@@ -18,7 +18,7 @@ sub runCapture {
     if (!$pid) {
         open(STDERR, ">&STDOUT");
         my @cmd = ("../capture/capture", "-o", "disablePython=true", "-c", "config.test.ini", "-n", "test", "--tag", $tag,
-                   "-o", "packetThreads=2", "-o", "pcapDir=$pcapDir", "--copy", "-r", "pcap/bt-tcp.pcap");
+                   "-o", "packetThreads=2", "-o", "pcapDir=$pcapDir", "--copy", "-r", "pcap/v6.pcap");
         if ($noWrites) {
             # No regular file is allowed to grow, so the first pcap write fails with EFBIG like a full disk
             $SIG{XFSZ} = 'IGNORE';
@@ -41,11 +41,11 @@ sub dirFiles {
 
 # Normal run, every files doc must be finished and match what is on disk.
 # Only a smoke test, the exit race needs a slow final write so it can't be hit reliably here.
-# With 2 threads the 2 bt-tcp sessions always land on different packet threads, hashSalt is xored in after mixing.
+# v6.pcap has 42 sessions, so both packet threads get a pcap file however the sessions hash.
 my ($out, $rc) = runCapture(0, "$tag-a", $dir);
 is($rc, 0, "capture exited cleanly");
 esGet("/_refresh");
-my $files = esPost("/tests_files/_search?rest_total_hits_as_int=true", to_json({query => {prefix => {name => $dir}}}));
+my $files = clusterSearch(8123, "files", {where => {name => {'$prefix' => "$dir/"}}});
 my @docs = map { $_->{_source} } @{$files->{hits}->{hits}};
 cmp_ok(scalar(@docs), '>=', 2, "a pcap file for each packet thread");
 is_deeply([grep { !($_->{filesize} > 0 && $_->{packets} > 0) } @docs], [], "files docs updated before exit");
@@ -61,6 +61,6 @@ is_deeply([dirFiles($dir2)], [], "no pcap files left behind");
 # Cleanup, the failed run still saved its sessions so refresh first or the delete misses them
 esGet("/_refresh");
 esPost("/tests_sessions3-*/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {tags => $tag}}}));
-esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {name => $dir}}}));
-esPost("/tests_files/_delete_by_query?conflicts=proceed&refresh", to_json({query => {prefix => {name => $dir2}}}));
+clusterDeleteWhere(8123, "files", {name => {'$prefix' => "$dir/"}});
+clusterDeleteWhere(8123, "files", {name => {'$prefix' => "$dir2/"}});
 remove_tree($dir, $dir2);

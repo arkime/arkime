@@ -1,4 +1,7 @@
 /**
+ * Copyright Yahoo Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Resolves a translated message from an object with i18n fields.
  * Falls back to `text`, `message`, the string itself, or '' when nothing resolves.
  *

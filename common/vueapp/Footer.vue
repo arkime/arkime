@@ -20,6 +20,11 @@ const props = defineProps({
   store: {
     type: Object,
     default: null
+  },
+  // components the footer template may use
+  templateComponents: {
+    type: Object,
+    default: () => ({})
   }
 });
 
@@ -33,15 +38,16 @@ const constants = inject('constants');
 // Create a Vue instance for the footer data component using the HTML string from constants
 FooterDataComponent.value = footerData.getVueInstance(
   new DOMParser().parseFromString(constants.FOOTER_CONFIG, 'text/html').documentElement.textContent,
-  props.store
+  props.store,
+  props.templateComponents
 );
 </script>
 
 <style scoped>
 .footer {
   text-align: center;
-  color: var(--color-gray-dark);
-  border-top: 1px solid var(--color-gray-light);
+  color: rgb(var(--v-theme-neutral-dark));
+  border-top: 1px solid rgb(var(--v-theme-neutral-light));
   position: absolute;
   bottom: 0;
   width: 100%;

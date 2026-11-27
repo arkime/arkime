@@ -92,6 +92,12 @@
       "Username=Q&Passwd=B&Section=A",
       "Username=Qggh&Passwd=Bhhhh&Section=Auuu"
      ],
+     "requestBodyLen" : [
+      "0",
+      "29",
+      "39"
+     ],
+     "requestBodyLenCnt" : 3,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -227,6 +233,12 @@
       "wed, 28 jun 2017 06:09:29 gmt"
      ],
      "requestHeaderValueCnt" : 56,
+     "responseBodyLen" : [
+      "0",
+      "575",
+      "708"
+     ],
+     "responseBodyLenCnt" : 3,
      "responseHeader" : [
       "connection",
       "content-encoding",

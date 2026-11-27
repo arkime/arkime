@@ -16,12 +16,16 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 384,
       "notAfter" : 1939812867000,
       "notBefore" : 1466513667000,
+      "pathLen" : 0,
       "publicAlgorithm" : "id-ecPublicKey",
       "remainingDays" : 4002,
       "remainingSeconds" : 345832259,
       "serial" : "029707560cd4a9ebbfe272f1e096d882",
+      "sha256" : "fdc8986cfac4f35f1acd517e0f61b879882ae076e2ba80b77bd3f0fe5cef8862",
+      "signatureAlgorithm" : "sha384WithRSAEncryption",
       "subjectCN" : [
        "digicert ecc extended validation server ca"
       ],
@@ -32,7 +36,8 @@
        "www.digicert.com"
       ],
       "validDays" : 5478,
-      "validSeconds" : 473299200
+      "validSeconds" : 473299200,
+      "version" : 3
      },
      {
       "alt" : [
@@ -51,12 +56,15 @@
       "issuerOU" : [
        "www.digicert.com"
       ],
+      "keyLength" : 256,
       "notAfter" : 1604404800000,
       "notBefore" : 1540857600000,
       "publicAlgorithm" : "id-ecPublicKey",
       "remainingDays" : 120,
       "remainingSeconds" : 10424192,
       "serial" : "0a68bb984a507399f4716e809a44a7b0",
+      "sha256" : "84694645cbd183bf9be472ce702bd189246e1fcd1544ffead466d956a71690bf",
+      "signatureAlgorithm" : "ecdsa-with-SHA256",
       "subjectCN" : [
        "cloudflare.com"
       ],
@@ -64,7 +72,8 @@
        "Cloudflare, Inc."
       ],
       "validDays" : 735,
-      "validSeconds" : 63547200
+      "validSeconds" : 63547200,
+      "version" : 3
      }
     ],
     "certCnt" : 2,
@@ -195,13 +204,26 @@
      "src" : 857026346
     },
     "tls" : {
+     "alpn" : [
+      "h2"
+     ],
+     "alpnCnt" : 1,
      "cipher" : [
       "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "h2",
+      "http/1.1"
+     ],
+     "clientAlpnCnt" : 2,
      "dstSessionId" : [
       "b89ff1ab695278c69b8a73f76242ef755e0b13dc6d459aaaa784fec9c2dfce34"
      ],
+     "group" : [
+      "x25519"
+     ],
+     "groupCnt" : 1,
      "ja3" : [
       "3faa4ad39f690c4ef1c3160caa375465"
      ],

@@ -1,0 +1,5 @@
+{
+  "name": "Duplicate HTTP",
+  "description": "release/dashboards is listed first in dashboardsDir, so this file is ignored (api-dashboards.t)",
+  "data": { "version": 1, "widgets": [ { "id": "w0", "viewMode": "stats", "width": 4, "height": 1 } ] }
+}

@@ -1,0 +1,35 @@
+# Not part of the default build, build it with make -C capture/plugins/mysqldb
+CC            = @CC@
+MKDIR_P       = mkdir -p
+INSTALL       = @INSTALL@
+PLUGINDIR     = $(DESTDIR)@prefix@/plugins
+NPM          ?= npm
+
+INCLUDE_OTHER = -I../.. -I../../thirdparty \
+                @GLIB2_CFLAGS@
+
+# pkg-config's mysqlclient only names the library, mysql_config --libs also names its dependencies
+MYSQL_CONFIG ?= mysql_config
+MYSQL_CFLAGS = $(shell pkg-config --cflags mysqlclient 2>/dev/null || $(MYSQL_CONFIG) --cflags)
+MYSQL_LIBS   = $(shell pkg-config --libs mysqlclient 2>/dev/null || $(MYSQL_CONFIG) --libs)
+
+../mysqldb.so : mysqldb.c ../../arkime.h ../../hash.h ../../dll.h ../../bsb.h
+	$(CC) -pthread @SHARED_FLAGS@ $(EXTRA_CFLAGS) -o $@ @CFLAGS@ -Wall -Wextra -D_GNU_SOURCE -std=gnu99 -fno-strict-aliasing -g -fPIC $(INCLUDE_OTHER) $(MYSQL_CFLAGS) $< $(MYSQL_LIBS)
+
+all:../mysqldb.so
+
+node_modules: package.json package-lock.json
+	$(NPM) ci --omit=dev --ignore-scripts
+
+check: ../mysqldb.so node_modules
+	node --test mysqldb.unit.mjs
+
+install: ../mysqldb.so
+	$(MKDIR_P) "$(PLUGINDIR)/mysqldb"
+	$(INSTALL) ../mysqldb.so $(PLUGINDIR)
+	$(INSTALL) -m 644 mysqldb.js package.json package-lock.json README.md $(PLUGINDIR)/mysqldb
+	(cd "$(PLUGINDIR)/mysqldb" && $(NPM) ci --omit=dev --ignore-scripts)
+
+distclean realclean clean:
+	rm -f *.o ../mysqldb.so
+	rm -rf node_modules

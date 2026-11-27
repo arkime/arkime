@@ -1,0 +1,171 @@
+{
+  "name": "Kerberos",
+  "description": "Kerberos sessions: protocols == krb5",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == krb5",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "krb5.msgType",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Kerberos sessions by krb5.msgType"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Kerberos sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Kerberos bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "krb5.cname",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Clients (cname)"
+      },
+      {
+        "id": "w5",
+        "field": "krb5.etype",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true
+      },
+      {
+        "id": "w6",
+        "field": "krb5.sname",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "title": "Services (sname)"
+      },
+      {
+        "id": "w7",
+        "field": "krb5.realm",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20
+      },
+      {
+        "id": "w8",
+        "field": "krb5.msgType",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Message types"
+      },
+      {
+        "id": "w9",
+        "field": "krb5.error",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "Errors"
+      },
+      {
+        "id": "w10",
+        "field": "krb5.options",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Ticket options"
+      },
+      {
+        "id": "w11",
+        "field": "krb5.ticketEtype",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "Ticket encryption types"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w13",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w14",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "tree",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "treeDepth": 3,
+        "title": "Kerberos tree: clients to KDCs and services (click a host to re-root)"
+      },
+      {
+        "id": "w15",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "krb5.realm",
+          "krb5.cname",
+          "krb5.sname",
+          "krb5.error"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

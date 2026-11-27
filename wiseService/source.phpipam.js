@@ -1,6 +1,10 @@
 /******************************************************************************/
 /* source.phpipam.js  -- WISE source for phpIPAM IP address management
  *
+ * Copyright Yahoo Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Enriches IPs with hostname, subnet, VLAN, and VRF data from phpIPAM.
  *
  * Lookup behaviour:
@@ -70,7 +74,7 @@ class PHPIPAMSource extends WISESource {
     }
 
     // Normalise base URL – strip trailing slash
-    this.url = this.url.replace(/\/+$/, '');
+    this.url = ArkimeUtil.removeTrailingSlashes(this.url);
 
     // ---- Field definitions -------------------------------------------------
     // Base fields: used by WISE when encoding results. The capture plugin

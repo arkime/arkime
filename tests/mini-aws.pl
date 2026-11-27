@@ -7,7 +7,9 @@
 # prevent one slow client from starving others.
 # Supports: CreateMultipartUpload, UploadPart, CompleteMultipartUpload,
 #           PutObject, GetObject, DeleteObject, HeadObject,
-#           ListBuckets, ListObjects
+#           ListBuckets, ListObjects (v2 paging via continuation-token),
+#           CreateBucket, HeadBucket, DeleteBucket
+# List results carry the S3 XML namespace, which stricter clients require.
 # Also a minimal SQS emulation compatible with Arkime's reader-scheme-sqs:
 #   POST /{account}/{queue}?Action=ReceiveMessage        -- long-poll receive
 #   POST /{account}/{queue}  body Action=DeleteMessage&ReceiptHandle=...
@@ -19,6 +21,14 @@
 #   GET /{bucket}?notification
 # Plus a test helper to enqueue an S3-event message directly:
 #   POST /_sqs_enqueue/{account}/{queue}?bucket=B&key=K
+# Plus EKS credential sources, which hand out fixed temporary credentials:
+#   GET  /_eks/credentials  -- Pod Identity agent, Authorization must be $EKS_POD_TOKEN
+#   POST /  body Action=AssumeRoleWithWebIdentity -- STS, WebIdentityToken must be $EKS_WEB_TOKEN
+#   GET  /_ecs/credentials  -- ECS container credentials (AWS_CONTAINER_CREDENTIALS_RELATIVE_URI)
+#   PUT  /latest/api/token  -- 404, only counted so tests can check no IMDSv2 token is requested
+# Plus a record of which access key and session token signed each request:
+#   GET /_auth_seen      -- {"keys":{AccessKeyId:{token:count}},"sts":{RoleSessionName:count},"imdsToken":count}
+#   DELETE /_auth_seen   -- reset it
 
 use strict;
 use warnings;
@@ -31,6 +41,7 @@ use Fcntl qw(F_GETFL F_SETFL O_NONBLOCK);
 use Digest::MD5 qw(md5_hex);
 use POSIX qw(strftime);
 use File::Path qw(make_path);
+use JSON::PP;
 
 my $debug = 0;
 if (@ARGV && $ARGV[0] eq '--debug') {
@@ -56,6 +67,17 @@ my $nextMsgId   = 1;
 
 # Bucket notification configs: $bucket_notifications{$bucket} = [ { queue => "acct/queue", events => [...] }, ... ]
 my %bucket_notifications;
+
+# EKS tokens the tests write to their token files, and the credentials handed out for them
+my $EKS_POD_TOKEN = 'mini-aws-pod-identity-token';
+my $EKS_WEB_TOKEN = 'mini.aws-web+identity/token=';
+my %EKS_POD_CREDS = (AccessKeyId => 'ASIAMINIPODIDENTITY', SecretAccessKey => 'mini/pod+secret=', Token => 'mini/pod+session+token=');
+my %EKS_STS_CREDS = (AccessKeyId => 'ASIAMINIIRSA', SecretAccessKey => 'mini/irsa+secret=', SessionToken => 'mini/irsa+session+token=');
+my %ECS_CREDS = (AccessKeyId => 'ASIAMINIECS', SecretAccessKey => 'mini/ecs+secret=', Token => 'mini/ecs+session+token=', RoleArn => 'arn:aws:iam::000000000000:role/arkime');
+
+# $auth_seen{keys}{$accessKeyId}{$sessionToken} = count, $auth_seen{sts}{$roleSessionName} = count,
+# $auth_seen{imdsToken} = count of IMDSv2 token requests
+my %auth_seen = (keys => {}, sts => {});
 
 # Per-connection state
 my %conn_buf;    # fileno => raw read buffer
@@ -90,6 +112,7 @@ while (1) {
                 $conn_buf{$fn} = '';
                 $conn_state{$fn} = {};
                 $sel->add($client);
+                print strftime("%H:%M:%S", localtime) . " AWS: conn $fn opened\n" if ($debug);
             }
             next;
         }
@@ -147,6 +170,7 @@ while (1) {
                 $state->{content_length} = int($headers{'content-length'} // 0);
                 $state->{body} = '';
                 $state->{headers_done} = 1;
+                print strftime("%H:%M:%S", localtime) . " AWS: conn $fn <- $state->{method} $state->{uri} content-length:$state->{content_length}\n" if ($debug);
 
                 # Handle Expect: 100-continue — client won't send body until we respond
                 if (($headers{'expect'} // '') =~ /100-continue/i) {
@@ -179,7 +203,7 @@ while (1) {
                 my $range = $state->{headers}{'range'} // '';
                 my $body_size = length($state->{body} // '');
                 my $ts2 = strftime("%H:%M:%S", localtime);
-                print "$ts2 AWS: $state->{method} $state->{uri}" . ($state->{query} ne '' ? "?$state->{query}" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . " -> $status\n";
+                print "$ts2 AWS: conn $fn -> $state->{method} $state->{uri}" . ($state->{query} ne '' ? "?$state->{query}" : "") . " body:$body_size" . ($range ne '' ? " Range:$range" : "") . " -> $status\n";
             }
 
             write_all($fh, $resp);
@@ -197,6 +221,7 @@ while (1) {
 
 sub cleanup_conn {
     my ($fh, $fn) = @_;
+    print strftime("%H:%M:%S", localtime) . " AWS: conn $fn closed\n" if ($debug);
     delete $conn_buf{$fn};
     delete $conn_state{$fn};
     $sel->remove($fh);
@@ -220,7 +245,7 @@ sub write_all {
             # the server is single threaded, so a client that stops reading
             # must not hold everyone else up: give it 30s, then drop the response
             if (!IO::Select->new($fh)->can_write(5) && ++$stalls >= 6) {
-                print "write to client stalled, dropping response\n";
+                print strftime("%H:%M:%S", localtime) . " AWS: conn " . fileno($fh) . " write to client stalled, dropping response\n";
                 return;
             }
             next;
@@ -251,6 +276,11 @@ sub handle_request {
     my $headers = $state->{headers};
     my $body    = $state->{body};
 
+    # Newer aws clis send aws-chunked bodies with a checksum trailer, S3 stores just the data
+    if (($headers->{'content-encoding'} // '') =~ /aws-chunked/ || ($headers->{'x-amz-content-sha256'} // '') =~ /^STREAMING-/) {
+        $body = aws_unchunk($body);
+    }
+
     my $range = $headers->{'range'} // '';
     my $body_size = length($body);
 
@@ -261,6 +291,34 @@ sub handle_request {
     # SQS test helper: enqueue an S3-event style message
     if ($method eq 'POST' && $uri =~ m{^/_sqs_enqueue/([^/]+)/([^/]+)/?$}) {
         return sqs_enqueue_resp($1, $2, $query, $body);
+    }
+
+    if ($uri eq '/_auth_seen') {
+        %auth_seen = (keys => {}, sts => {}) if ($method eq 'DELETE');
+        return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, encode_json(\%auth_seen));
+    }
+
+    if ($method eq 'GET' && $uri eq '/_eks/credentials') {
+        return eks_pod_identity_resp($headers);
+    }
+
+    if ($method eq 'GET' && $uri eq '/_ecs/credentials') {
+        my %creds = (%ECS_CREDS, Expiration => strftime("%Y-%m-%dT%H:%M:%SZ", gmtime(time() + 3600)));
+        return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, encode_json(\%creds));
+    }
+
+    # Not the instance metadata service, just count IMDSv2 token requests so tests can check none are sent
+    if ($uri eq '/latest/api/token') {
+        $auth_seen{imdsToken}++;
+        return build_response(404, 'Not Found', { 'Content-Type' => 'text/plain' }, 'not here');
+    }
+
+    if ($method eq 'POST' && $uri eq '/' && $body =~ /(?:^|&)Action=AssumeRoleWithWebIdentity(?:&|$)/) {
+        return sts_assume_role_with_web_identity_resp($body);
+    }
+
+    if (($headers->{'authorization'} // '') =~ /Credential=([^\/,\s]+)\//) {
+        $auth_seen{keys}{$1}{$headers->{'x-amz-security-token'} // ''}++;
     }
 
     # SQS: detect Action in query (ReceiveMessage) or body (Delete/Send)
@@ -312,9 +370,34 @@ sub handle_request {
         return delete_object_resp($bucket, $key);
     } elsif ($method eq 'HEAD' && defined $key) {
         return head_object_resp($bucket, $key);
+    } elsif ($method eq 'PUT' && defined $bucket) {
+        # CreateBucket; fine if it is already there
+        $objects{$bucket} //= {};
+        return build_response(200, 'OK', { 'Location' => "/$bucket" }, '');
+    } elsif ($method eq 'HEAD' && defined $bucket) {
+        return build_response(200, 'OK', {}, '') if exists $objects{$bucket};
+        return build_response(404, 'Not Found', {}, '');
+    } elsif ($method eq 'DELETE' && defined $bucket) {
+        return send_s3_error_resp(409, "BucketNotEmpty", "The bucket you tried to delete is not empty")
+            if %{ $objects{$bucket} // {} };
+        delete $objects{$bucket};
+        return build_response(204, 'No Content', {}, '');
     } else {
         return send_s3_error_resp(501, "NotImplemented", "Not implemented: $method $uri?$query");
     }
+}
+
+sub aws_unchunk {
+    my ($body) = @_;
+    my $out = '';
+    while ($body =~ /\G([0-9a-fA-F]+)[^\r\n]*\r\n/gc) {
+        my $size = hex($1);
+        last if $size == 0;
+        my $start = pos($body);
+        $out .= substr($body, $start, $size);
+        pos($body) = $start + $size + 2;
+    }
+    return $out;
 }
 
 sub parse_path {
@@ -522,7 +605,7 @@ sub delete_object_resp {
 
 sub list_buckets_resp {
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
-<ListAllMyBucketsResult>
+<ListAllMyBucketsResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
   <Owner>
     <ID>mini-aws</ID>
     <DisplayName>mini-aws</DisplayName>
@@ -575,7 +658,7 @@ sub list_objects_resp {
     my $prefix_x    = xml_escape($prefix);
     my $delimiter_x = xml_escape($delimiter);
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
-<ListBucketResult>
+<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
   <Name>$bucket</Name>
   <Prefix>$prefix_x</Prefix>
   <Delimiter>$delimiter_x</Delimiter>
@@ -669,6 +752,37 @@ sub json_escape_string {
     $s =~ s/\t/\\t/g;
     $s =~ s/([\x00-\x1f])/sprintf("\\u%04x", ord($1))/ge;
     return $s;
+}
+
+sub eks_pod_identity_resp {
+    my ($headers) = @_;
+    if (($headers->{'authorization'} // '') ne $EKS_POD_TOKEN) {
+        return build_response(401, 'Unauthorized', { 'Content-Type' => 'application/json' }, '{"Message":"invalid pod identity token"}');
+    }
+    my %creds = (%EKS_POD_CREDS, AccountId => '000000000000', Expiration => strftime("%Y-%m-%dT%H:%M:%SZ", gmtime(time() + 3600)));
+    return build_response(200, 'OK', { 'Content-Type' => 'application/json' }, encode_json(\%creds));
+}
+
+sub sts_assume_role_with_web_identity_resp {
+    my ($body) = @_;
+    my %params = parse_form($body);
+    if (($params{WebIdentityToken} // '') ne $EKS_WEB_TOKEN || !$params{RoleArn} || !$params{RoleSessionName}) {
+        return build_response(400, 'Bad Request', { 'Content-Type' => 'text/xml' },
+            '<ErrorResponse><Error><Type>Sender</Type><Code>InvalidIdentityToken</Code><Message>invalid web identity token</Message></Error></ErrorResponse>');
+    }
+    $auth_seen{sts}{$params{RoleSessionName}}++;
+    my $expiration = strftime("%Y-%m-%dT%H:%M:%SZ", gmtime(time() + ($params{DurationSeconds} // 3600)));
+    my $xml = qq(<AssumeRoleWithWebIdentityResponse xmlns="https://sts.amazonaws.com/doc/2011-06-15/">
+  <AssumeRoleWithWebIdentityResult>
+    <Credentials>
+      <AccessKeyId>$EKS_STS_CREDS{AccessKeyId}</AccessKeyId>
+      <SecretAccessKey>$EKS_STS_CREDS{SecretAccessKey}</SecretAccessKey>
+      <SessionToken>$EKS_STS_CREDS{SessionToken}</SessionToken>
+      <Expiration>$expiration</Expiration>
+    </Credentials>
+  </AssumeRoleWithWebIdentityResult>
+</AssumeRoleWithWebIdentityResponse>);
+    return build_response(200, 'OK', { 'Content-Type' => 'text/xml' }, $xml);
 }
 
 sub sqs_receive_resp {
@@ -856,7 +970,7 @@ sub fire_bucket_notification {
 
 sub send_s3_error_resp {
     my ($status, $code, $message) = @_;
-    my %status_text = (404 => 'Not Found', 500 => 'Internal Server Error', 501 => 'Not Implemented', 416 => 'Range Not Satisfiable');
+    my %status_text = (404 => 'Not Found', 409 => 'Conflict', 500 => 'Internal Server Error', 501 => 'Not Implemented', 416 => 'Range Not Satisfiable');
     my $xml = qq{<?xml version="1.0" encoding="UTF-8"?>
 <Error>
   <Code>$code</Code>

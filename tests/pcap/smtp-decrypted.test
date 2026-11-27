@@ -50,6 +50,10 @@
       "multipart/mixed; boundary=\"----MIME delimiter for sendEmail-791813.917066069\""
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Thu, 5 Dec 2024 08:52:11 +0000"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "aponcelet@shewa.intradef.gouv.fr"
      ],
@@ -70,13 +74,6 @@
       "x-mailer"
      ],
      "headerCnt" : 9,
-     "headerField" : [
-      "date"
-     ],
-     "headerValue" : [
-      "Thu, 5 Dec 2024 08:52:11 +0000"
-     ],
-     "headerValueCnt" : 1,
      "host" : [
       "intra-dmz-mta",
       "intra-mx2",
@@ -100,6 +97,10 @@
       "1.0"
      ],
      "mimeVersionCnt" : 1,
+     "reply" : [
+      "250 2.6.0 <964329.815327318-sendEmail@intra-mx2> [InternalId=3835405795330, Hostname=PCIAT-MX.shewa.intradef.gouv.fr] 17802 bytes in 0.102, 170,277 KB/sec Queued mail for delivery"
+     ],
+     "replyCnt" : 1,
      "sha256" : [
       "1fd56beabe526dfcd7b1b1cf138f028221d425e71d46d4c5086b5a1f934477a4"
      ],
@@ -334,6 +335,10 @@
       "multipart/alternative; boundary=\"_000_aef51e3ea08644119c921e966163a822bg1shewaintradefgouvfr_\""
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Fri, 6 Dec 2024 12:58:26 +0000"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "naruto@shewa.intradef.gouv.fr"
      ],
@@ -359,7 +364,6 @@
      "headerField" : [
       "accept-language",
       "content-language",
-      "date",
       "thread-index",
       "thread-topic",
       "x-ms-has-attach",
@@ -369,12 +373,11 @@
       "",
       "",
       "AdtH3oh+nst0M63DRrKbn9cxUkswuw==",
-      "Fri, 6 Dec 2024 12:58:26 +0000",
       "en-US, fr-FR",
       "fr-FR",
       "test sans pi7ce joint"
      ],
-     "headerValueCnt" : 7,
+     "headerValueCnt" : 6,
      "host" : [
       "bg1-mx.bg1.shewa.intradef.gouv.fr"
      ],
@@ -587,6 +590,10 @@
       "multipart/mixed; boundary=\"_004_c960c96baa8943f18d71112fcfbfafbdbg1shewaintradefgouvfr_\""
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Fri, 6 Dec 2024 12:59:06 +0000"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "naruto@shewa.intradef.gouv.fr"
      ],
@@ -616,7 +623,6 @@
      "headerField" : [
       "accept-language",
       "content-language",
-      "date",
       "thread-index",
       "thread-topic",
       "x-ms-has-attach",
@@ -625,13 +631,12 @@
      "headerValue" : [
       "",
       "AdtH3qEegbWQXA1gSg6GnuQ55eVLZg==",
-      "Fri, 6 Dec 2024 12:59:06 +0000",
       "en-US, fr-FR",
       "fr-FR",
       "test avec pj",
       "yes"
      ],
-     "headerValueCnt" : 7,
+     "headerValueCnt" : 6,
      "host" : [
       "bg1-mx.bg1.shewa.intradef.gouv.fr"
      ],
@@ -849,6 +854,10 @@
       "multipart/related; boundary=\"----MIME delimiter for sendEmail-133833.711574884\""
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Fri, 6 Dec 2024 13:06:24 +0000"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "aponcelet@shewa.intradef.gouv.fr"
      ],
@@ -865,13 +874,6 @@
       "x-mailer"
      ],
      "headerCnt" : 9,
-     "headerField" : [
-      "date"
-     ],
-     "headerValue" : [
-      "Fri, 6 Dec 2024 13:06:24 +0000"
-     ],
-     "headerValueCnt" : 1,
      "host" : [
       "intra-dmz-mta",
       "intra-mx2",
@@ -891,6 +893,10 @@
       "1.0"
      ],
      "mimeVersionCnt" : 1,
+     "reply" : [
+      "250 2.6.0 <216179.502054246-sendEmail@intra-mx2> [InternalId=3856880631809, Hostname=PCIAT-MX.shewa.intradef.gouv.fr] 2404 bytes in 0.101, 23,183 KB/sec Queued mail for delivery"
+     ],
+     "replyCnt" : 1,
      "smtpHello" : [
       "transit-mta"
      ],

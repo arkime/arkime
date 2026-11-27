@@ -1,3 +1,8 @@
+/*
+Copyright Yahoo Inc.
+SPDX-License-Identifier: Apache-2.0
+*/
+import { newQueryBatch } from '@common/queryTimes.js';
 import { createStore } from 'vuex';
 
 import Utils from './components/utils/utils';
@@ -24,6 +29,11 @@ const store = createStore({
     // eslint-disable-next-line no-undef
     timeRange: DEFAULT_TIME_RANGE ?? 1,
     expression: undefined,
+    // the shown dashboard's own filter (data.expression), ANDed with the search
+    dashboardExpression: '',
+    // the dashboard's control widgets' variables and their picked values:
+    // { name: { field, applyAll, values } } (see dashboardVariables.js)
+    dashboardVariables: {},
     time: {
       startTime: undefined,
       stopTime: undefined
@@ -44,12 +54,10 @@ const store = createStore({
     issueSearch: undefined,
     focusTimeRange: undefined,
     shiftKeyHold: false,
-    responseTime: undefined,
     sessionsTableState: undefined,
     loadingData: false,
     sorts: [['firstPacket', 'desc']],
     sortsParam: 'firstPacket:desc',
-    stickySessionsBtn: false,
     showCapStartTimes: true,
     capStartTimes: [{ nodeName: 'none', startTime: 1 }],
     roles: [],
@@ -140,6 +148,7 @@ const store = createStore({
       setTimeout(() => { state.focusSearch = false; });
     },
     setIssueSearch (state, value) {
+      if (value) { newQueryBatch(); }
       state.issueSearch = value;
       setTimeout(() => { state.issueSearch = false; });
     },
@@ -156,14 +165,17 @@ const store = createStore({
     setUserSettings (state, value) {
       state.user.settings = value;
     },
-    setResponseTime (state, value) {
-      state.responseTime = value;
-    },
     setSessionsTableState (state, value) {
       state.sessionsTableState = value;
     },
     setViews (state, value) {
       state.views = value;
+    },
+    setDashboardExpression (state, value) {
+      state.dashboardExpression = typeof value === 'string' ? value.trim() : '';
+    },
+    setDashboardVariables (state, value) {
+      state.dashboardVariables = value && typeof value === 'object' ? value : {};
     },
     addView (state, value) {
       state.views.push(value);
@@ -194,9 +206,6 @@ const store = createStore({
     },
     setSelectedCluster (state, value) {
       state.esCluster.selectedCluster = value;
-    },
-    setStickySessionsBtn (state, value) {
-      state.stickySessionsBtn = value;
     },
     setShowCapStartTimes (state, value) {
       state.showCapStartTimes = value;

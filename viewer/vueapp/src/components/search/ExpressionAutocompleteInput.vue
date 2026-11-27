@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0
     :placeholder="placeholder"
     :disabled="disabled"
     :value="modelValue"
-    class="form-control form-control-sm"
+    class="arkime-input-control"
     @input="onInput"
     @keydown="onKeydown"
     @click="updateCaretPos"
@@ -22,7 +22,7 @@ SPDX-License-Identifier: Apache-2.0
     :placeholder="placeholder"
     :disabled="disabled"
     :value="modelValue"
-    class="form-control form-control-sm"
+    class="arkime-input-control"
     @input="onInput"
     @keydown="onKeydown"
     @click="updateCaretPos"
@@ -31,22 +31,23 @@ SPDX-License-Identifier: Apache-2.0
     <div
       v-show="modelValue && results && results.length"
       ref="dropdownEl"
-      class="dropdown-menu expression-autocomplete-dropdown"
+      class="arkime-dropdown-menu expression-autocomplete-dropdown"
       :style="dropdownStyle">
       <template v-if="autocompletingField">
         <template
           v-for="(value, key) in fieldHistoryResults"
           :key="key + 'history'">
           <a
-            class="dropdown-item cursor-pointer"
+            class="arkime-dropdown-item cursor-pointer"
             :class="{'active': key === activeIdx, 'last-history-item': key === fieldHistoryResults.length - 1}"
             @click="addToQuery(value)">
-            <span class="fa fa-history" />&nbsp;
+            <v-icon icon="mdi-history" />&nbsp;
             <strong v-if="value.exp">{{ value.exp }}</strong>
             <strong v-if="!value.exp">{{ value }}</strong>
-            <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
-            <span
-              class="fa fa-close pull-right mt-1"
+            <span v-if="value.friendlyName">&nbsp;- {{ value.friendlyName }}</span>
+            <v-icon
+              icon="mdi-close"
+              class="float-right mt-1"
               :title="`Remove ${value.exp} from your field history`"
               @click.stop.prevent="removeFromFieldHistory(value)" />
           </a>
@@ -56,31 +57,33 @@ SPDX-License-Identifier: Apache-2.0
         v-for="(value, key) in results"
         :key="value + 'item'">
         <a
-          class="dropdown-item cursor-pointer"
+          class="arkime-dropdown-item cursor-pointer"
           :title="value.help"
           :class="{'active': key + fieldHistoryResults.length === activeIdx}"
           @click="addToQuery(value)">
           <strong v-if="value.exp">{{ value.exp }}</strong>
           <strong v-if="!value.exp">{{ value }}</strong>
-          <span v-if="value.friendlyName">- {{ value.friendlyName }}</span>
+          <span v-if="value.friendlyName">&nbsp;- {{ value.friendlyName }}</span>
         </a>
       </template>
     </div>
     <div
-      class="dropdown-menu expression-autocomplete-dropdown"
+      class="arkime-dropdown-menu expression-autocomplete-dropdown"
       :style="dropdownStyle"
       v-show="modelValue && loadingError">
-      <a class="dropdown-item text-danger">
-        <span class="fa fa-warning" />&nbsp;
+      <a class="arkime-dropdown-item text-danger">
+        <v-icon icon="mdi-alert" />&nbsp;
         Error: {{ loadingError }}
       </a>
     </div>
     <div
-      class="dropdown-menu expression-autocomplete-dropdown"
+      class="arkime-dropdown-menu expression-autocomplete-dropdown"
       :style="dropdownStyle"
       v-show="modelValue && loadingValues">
-      <a class="dropdown-item">
-        <span class="fa fa-spinner fa-spin" />&nbsp;
+      <a class="arkime-dropdown-item">
+        <v-icon
+          icon="mdi-loading"
+          class="mdi-spin" />&nbsp;
         Loading...
       </a>
     </div>
@@ -152,7 +155,10 @@ const dropdownStyle = computed(() => ({
   top: `${dropdownPos.value.top}px`,
   left: `${dropdownPos.value.left}px`,
   width: `${dropdownPos.value.width}px`,
-  zIndex: 1060,
+  // Above Vuetify's v-dialog content (~2400) so the autocomplete
+  // dropdown stays on top when the input lives inside the big-typeahead
+  // modal.
+  zIndex: 2500,
   maxHeight: '300px',
   overflowY: 'auto',
   overflowX: 'hidden'
@@ -745,6 +751,6 @@ onBeforeUnmount(() => {
   overflow-x: hidden;
 }
 .expression-autocomplete-dropdown a.last-history-item {
-  border-bottom: 1px solid var(--color-gray);
+  border-bottom: 1px solid rgb(var(--v-theme-neutral));
 }
 </style>

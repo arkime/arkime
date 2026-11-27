@@ -4,16 +4,18 @@ SPDX-License-Identifier: Apache-2.0
 -->
 <template>
   <div>
-    <h3>
-      Shortcuts
-      <b-button
-        size="sm"
-        variant="success"
-        class="pull-right"
+    <h3 class="d-flex align-center">
+      <span class="flex-grow-1">Shortcuts</span>
+      <v-btn
+        color="success"
+        variant="flat"
+        size="large"
         @click="showShortcutModal = true">
-        <span class="fa fa-plus-circle me-1" />
+        <v-icon
+          icon="mdi-plus-circle"
+          class="me-1" />
         {{ $t('settings.shortcuts.newShortcut') }}
-      </b-button>
+      </v-btn>
     </h3>
 
     <span v-html="$t('settings.shortcuts.infoHtml')" />
@@ -27,33 +29,41 @@ SPDX-License-Identifier: Apache-2.0
       </template>
     </p>
 
-    <div class="d-flex">
+    <div class="d-flex align-center">
       <div class="flex-grow-1 me-2">
-        <b-input-group size="sm">
-          <b-input-group-text>
-            <span class="fa fa-search" />
-          </b-input-group-text>
-          <b-form-input
-            debounce="400"
-            :model-value="shortcutsQuery.search"
-            @update:model-value="updateSearch"
-            placeholder="Search shortcuts" />
-        </b-input-group>
+        <v-text-field
+          density="compact"
+          variant="outlined"
+          hide-details
+          clearable
+          prepend-inner-icon="mdi-magnify"
+          :model-value="shortcutsQuery.search"
+          @update:model-value="updateSearch"
+          placeholder="Search shortcuts" />
       </div>
-      <BFormCheckbox
-        button
-        size="sm"
+      <v-btn-toggle
+        v-if="user.roles.includes('arkimeAdmin')"
+        density="compact"
+        variant="outlined"
+        color="secondary"
         class="me-2"
-        :model-value="seeAll"
-        @update:model-value="updateSeeAll"
-        id="seeAllShortcuts"
-        v-if="user.roles.includes('arkimeAdmin')">
-        <span class="fa fa-user-circle me-1" />
-        {{ $t(seeAll ? 'settings.shortcuts.seeMy' : 'settings.shortcuts.seeAll') }}
-        <BTooltip target="seeAllShortcuts">
-          {{ $t(seeAll ? 'settings.shortcuts.seeMyTip' : 'settings.shortcuts.seeAllTip') }}
-        </BTooltip>
-      </BFormCheckbox>
+        multiple
+        :model-value="seeAll ? ['seeAll'] : []"
+        @update:model-value="(val) => updateSeeAll(val.includes('seeAll'))">
+        <v-btn
+          value="seeAll"
+          id="seeAllShortcuts">
+          <v-icon
+            icon="mdi-account-circle"
+            class="me-1" />
+          {{ $t(seeAll ? 'settings.shortcuts.seeMy' : 'settings.shortcuts.seeAll') }}
+          <v-tooltip
+            activator="parent"
+            location="top">
+            {{ $t(seeAll ? 'settings.shortcuts.seeMyTip' : 'settings.shortcuts.seeAllTip') }}
+          </v-tooltip>
+        </v-btn>
+      </v-btn-toggle>
       <arkime-paging
         v-if="shortcuts.data"
         :length-default="shortcutsSize"
@@ -64,36 +74,30 @@ SPDX-License-Identifier: Apache-2.0
 
     <table
       v-if="shortcuts.data"
-      class="table table-striped table-sm">
+      class="arkime-table">
       <thead>
         <tr>
           <th
             class="cursor-pointer"
             @click.self="sortShortcuts('name')">
             {{ $t('settings.shortcuts.table-name') }}
-            <span
-              v-show="shortcutsQuery.sortField === 'name' && !shortcutsQuery.desc"
-              class="fa fa-sort-asc" />
-            <span
-              v-show="shortcutsQuery.sortField === 'name' && shortcutsQuery.desc"
-              class="fa fa-sort-desc" />
-            <span
-              v-show="shortcutsQuery.sortField !== 'name'"
-              class="fa fa-sort" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-show="shortcutsQuery.sortField === 'name' && !shortcutsQuery.desc" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-show="shortcutsQuery.sortField === 'name' && shortcutsQuery.desc" />
           </th>
           <th
             class="cursor-pointer"
             @click.self="sortShortcuts('description')">
             {{ $t('settings.shortcuts.table-description') }}
-            <span
-              v-show="shortcutsQuery.sortField === 'description' && !shortcutsQuery.desc"
-              class="fa fa-sort-asc" />
-            <span
-              v-show="shortcutsQuery.sortField === 'description' && shortcutsQuery.desc"
-              class="fa fa-sort-desc" />
-            <span
-              v-show="shortcutsQuery.sortField !== 'description'"
-              class="fa fa-sort" />
+            <v-icon
+              icon="mdi-chevron-up"
+              v-show="shortcutsQuery.sortField === 'description' && !shortcutsQuery.desc" />
+            <v-icon
+              icon="mdi-chevron-down"
+              v-show="shortcutsQuery.sortField === 'description' && shortcutsQuery.desc" />
           </th>
           <th>{{ $t('settings.shortcuts.table-values') }}</th>
           <th>{{ $t('settings.shortcuts.table-type') }}</th>
@@ -106,7 +110,9 @@ SPDX-License-Identifier: Apache-2.0
         <tr v-if="loading">
           <td colspan="9">
             <p class="text-center mb-0">
-              <span class="fa fa-spinner fa-spin" />
+              <v-icon
+                icon="mdi-loading"
+                class="mdi-spin" />
               {{ $t('common.loading') }}
             </p>
           </td>
@@ -119,26 +125,26 @@ SPDX-License-Identifier: Apache-2.0
               :id="`shortcut-${item.id}`"
               class="shortcut-value narrow cursor-help">
               {{ item.name }}
-              <BTooltip :target="`shortcut-${item.id}`">
+              <v-tooltip :activator="`#shortcut-${item.id}`">
                 {{ item.name }}
-              </BTooltip>
+              </v-tooltip>
             </td>
             <td
               :id="`shortcut-${item.id}-desc`"
               class="shortcut-value cursor-help">
               {{ item.description }}
-              <BTooltip :target="`shortcut-${item.id}-desc`">
+              <v-tooltip :activator="`#shortcut-${item.id}-desc`">
                 {{ item.description }}
-              </BTooltip>
+              </v-tooltip>
             </td>
             <td
               class="shortcut-value"
               :class="{'show-all':item.showAll}">
-              <span
+              <v-icon
                 v-if="item.value.length > 50"
-                @click="toggleDisplayAllShortcut(item)"
-                class="fa pull-right cursor-pointer mt-1"
-                :class="{'fa-chevron-down':!item.showAll,'fa-chevron-up':item.showAll}" />
+                :icon="item.showAll ? 'mdi-chevron-up' : 'mdi-chevron-down'"
+                class="float-right cursor-pointer mt-1"
+                @click="toggleDisplayAllShortcut(item)" />
               <span v-if="!item.showAll">
                 {{ item.value.substring(0, 50) }}
                 <span v-if="item.value.length > 50">...</span>
@@ -151,84 +157,94 @@ SPDX-License-Identifier: Apache-2.0
             <td>
               {{ item.userId }}
             </td>
-            <td class="shortcut-btns">
-              <span class="pull-right">
-                <b-button
-                  size="sm"
+            <td class="shortcut-btns text-end">
+              <v-btn
+                variant="flat"
+                size="small"
+                density="comfortable"
+                icon
+                :style="secondaryBtnStyle"
+                class="ms-1"
+                :id="`copy-${item.id}`"
+                @click="$emit('copy-value', item.value)">
+                <v-icon icon="mdi-clipboard" />
+                <v-tooltip :activator="`#copy-${item.id}`">
+                  {{ $t('settings.shortcuts.copyTip') }}
+                </v-tooltip>
+              </v-btn>
+              <template v-if="canEdit(item)">
+                <v-btn
+                  v-if="canTransfer(item)"
+                  color="info"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  icon
                   class="ms-1"
-                  :id="`copy-${item.id}`"
-                  variant="theme-secondary"
-                  @click="$emit('copy-value', item.value)">
-                  <span class="fa fa-clipboard fa-fw" />
-                  <BTooltip :target="`copy-${item.id}`">
-                    {{ $t('settings.shortcuts.copyTip') }}
-                  </BTooltip>
-                </b-button>
-                <span v-if="canEdit(item)">
-                  <b-button
-                    size="sm"
-                    class="ms-1"
-                    variant="info"
-                    :id="`transfer-${item.id}`"
-                    v-if="canTransfer(item)"
-                    @click="openTransferShortcut(item)">
-                    <span class="fa fa-share fa-fw" />
-                    <BTooltip :target="`transfer-${item.id}`">
-                      {{ $t('settings.shortcuts.transferTip') }}
-                    </BTooltip>
-                  </b-button>
-                  <b-button
-                    size="sm"
-                    class="ms-1"
-                    variant="danger"
-                    :id="`delete-${item.id}`"
-                    @click="deleteShortcut(item, index)">
-                    <span
-                      class="fa fa-trash-o fa-fw"
-                      v-if="!item.loading" />
-                    <span
-                      class="fa fa-spinner fa-spin fa-fw"
-                      v-else />
-                    <BTooltip :target="`delete-${item.id}`">
-                      {{ $t('settings.shortcuts.deleteTip') }}
-                    </BTooltip>
-                  </b-button>
-                  <span>
-                    <div
-                      v-if="item.locked"
-                      style="display:inline-block">
-                      <b-button
-                        size="sm"
-                        :disabled="true"
-                        variant="warning"
-                        :id="`locked-${item.id}`"
-                        class="disabled cursor-help ms-1">
-                        <span class="fa fa-lock fa-fw" />
-                      </b-button>
-                      <BTooltip :target="`locked-${item.id}`">
-                        {{ $t('settings.shortcuts.lockedTip') }}
-                      </BTooltip>
-                    </div>
-                    <b-button
-                      v-else
-                      size="sm"
-                      class="ms-1"
-                      :id="`update-${item.id}`"
-                      variant="theme-tertiary"
-                      @click="editShortcut(item)">
-                      <span
-                        class="fa fa-pencil fa-fw"
-                        v-if="!item.loading" />
-                      <span
-                        class="fa fa-spinner fa-spin fa-fw"
-                        v-else />
-                      <BTooltip :target="`update-${item.id}`">
-                        {{ $t('settings.shortcuts.updateTip') }}
-                      </BTooltip>
-                    </b-button>
-                  </span>
-                </span>
-              </span>
+                  :id="`transfer-${item.id}`"
+                  @click="openTransferShortcut(item)">
+                  <v-icon icon="mdi-share" />
+                  <v-tooltip :activator="`#transfer-${item.id}`">
+                    {{ $t('settings.shortcuts.transferTip') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  color="error"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  class="ms-1"
+                  :id="`delete-${item.id}`"
+                  @click="deleteShortcut(item, index)">
+                  <v-icon
+                    icon="mdi-trash-can-outline"
+                    v-if="!item.loading" />
+                  <v-icon
+                    icon="mdi-loading"
+                    class="mdi-spin"
+                    v-else />
+                  <v-tooltip :activator="`#delete-${item.id}`">
+                    {{ $t('settings.shortcuts.deleteTip') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  v-if="item.locked"
+                  color="warning"
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  disabled
+                  class="cursor-help ms-1"
+                  :id="`locked-${item.id}`">
+                  <v-icon icon="mdi-lock" />
+                  <v-tooltip :activator="`#locked-${item.id}`">
+                    {{ $t('settings.shortcuts.lockedTip') }}
+                  </v-tooltip>
+                </v-btn>
+                <v-btn
+                  v-else
+                  variant="flat"
+                  size="small"
+                  density="comfortable"
+                  icon
+                  :style="tertiaryBtnStyle"
+                  class="ms-1"
+                  :id="`update-${item.id}`"
+                  @click="editShortcut(item)">
+                  <v-icon
+                    icon="mdi-pencil"
+                    v-if="!item.loading" />
+                  <v-icon
+                    icon="mdi-loading"
+                    class="mdi-spin"
+                    v-else />
+                  <v-tooltip :activator="`#update-${item.id}`">
+                    {{ $t('settings.shortcuts.updateTip') }}
+                  </v-tooltip>
+                </v-btn>
+              </template>
             </td>
           </tr>
         </template> <!-- /shortcuts -->
@@ -236,20 +252,24 @@ SPDX-License-Identifier: Apache-2.0
     </table>
 
     <!-- shortcuts list error -->
-    <div
+    <v-alert
       v-if="shortcutsListError"
+      type="error"
+      variant="tonal"
+      density="compact"
       style="z-index: 2000;"
-      class="mt-2 mb-0 alert alert-danger">
-      <span class="fa fa-exclamation-triangle me-1" />
+      class="mt-2 mb-0">
       {{ shortcutsListError }}
-    </div> <!-- /shortcuts list error -->
+    </v-alert> <!-- /shortcuts list error -->
 
     <!-- no results -->
     <div
       class="text-center mt-4"
       v-if="shortcuts.data && shortcuts.data.length === 0">
       <h3>
-        <span class="fa fa-folder-open fa-2x" />
+        <v-icon
+          icon="mdi-folder-open"
+          size="large" />
       </h3>
       <h5>
         {{ $t('settings.shortcuts.noMatch') }}
@@ -259,174 +279,186 @@ SPDX-License-Identifier: Apache-2.0
     </div> <!-- /no results -->
 
     <!-- new shortcut form -->
-    <BModal
-      size="xl"
+    <v-dialog
       :model-value="showShortcutModal"
-      @hidden="showShortcutModal = false"
-      :title="$t(editingShortcut ? 'settings.shortcuts.editShortcut' : 'settings.shortcuts.newShortcut')">
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <template #prepend>
-          <b-input-group-text
-            id="shortcutFormName"
-            class="cursor-help">
-            {{ $t('settings.shortcuts.shortcutFormName') }}<sup>*</sup>
-            <BTooltip target="shortcutFormName">
-              {{ $t('settings.shortcuts.shortcutFormNameTip') }}
-            </BTooltip>
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          :model-value="newShortcutName"
-          placeholder="MY_ARKIME_VAR"
-          @update:model-value="newShortcutName = $event" />
-      </b-input-group>
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <template #prepend>
-          <b-input-group-text
-            id="shortcutFormDesc"
-            class="cursor-help">
-            {{ $t('settings.shortcuts.shortcutFormDesc') }}
-            <BTooltip target="shortcutFormDesc">
-              {{ $t('settings.shortcuts.shortcutFormDescTip') }}
-            </BTooltip>
-          </b-input-group-text>
-        </template>
-        <b-form-input
-          :model-value="newShortcutDescription"
-          :placeholder="$t('settings.shortcuts.shortcutFormDescPlaceholder')"
-          @update:model-value="newShortcutDescription = $event" />
-      </b-input-group>
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <template #prepend>
-          <b-input-group-text
-            id="shortCutFormValue"
-            class="cursor-help">
-            {{ $t('settings.shortcuts.shortcutFormValue') }}<sup>*</sup>
-            <BTooltip target="shortCutFormValue">
-              {{ $t('settings.shortcuts.shortcutFormValueTip') }}
-            </BTooltip>
-          </b-input-group-text>
-        </template>
-        <b-form-textarea
-          rows="5"
-          :model-value="newShortcutValue"
-          :placeholder="$t('settings.shortcuts.shortcutFormValuePlaceholder')"
-          @update:model-value="newShortcutValue = $event" />
-      </b-input-group>
-      <b-input-group
-        size="sm"
-        class="mb-2">
-        <template #prepend>
-          <b-input-group-text
-            id="shortcutFormType"
-            class="cursor-help">
-            {{ $t('settings.shortcuts.shortcutFormType') }}<sup>*</sup>
-            <BTooltip target="shortcutFormType">
-              {{ $t('settings.shortcuts.shortcutFormTypeTip') }}
-            </BTooltip>
-          </b-input-group-text>
-        </template>
-        <select
-          v-model="newShortcutType"
-          class="form-control form-control-sm">
-          <option
-            value="ip"
-            v-i18n-value="'settings.shortcuts.newShortcutType-'" />
-          <option
-            value="string"
-            v-i18n-value="'settings.shortcuts.newShortcutType-'" />
-          <option
-            value="number"
-            v-i18n-value="'settings.shortcuts.newShortcutType-'" />
-        </select>
-      </b-input-group>
-      <div class="d-flex">
-        <div class="me-3 flex-grow-1 no-wrap">
-          <RoleDropdown
-            :roles="roles"
-            class="d-inline me-1"
-            :display-text="$t('common.rolesCanView')"
-            :selected-roles="newShortcutRoles"
-            @selected-roles-updated="updateNewShortcutRoles" />
-          <RoleDropdown
-            :roles="roles"
-            class="d-inline"
-            :display-text="$t('common.rolesCanEdit')"
-            :selected-roles="newShortcutEditRoles"
-            @selected-roles-updated="updateNewShortcutEditRoles" />
-        </div>
-        <b-input-group
-          size="sm">
-          <template #prepend>
-            <b-input-group-text
-              id="shortcutFormUsers"
-              class="cursor-help">
-              {{ $t('common.shareWithUsers') }}
-              <BTooltip target="shortcutFormUsers">
-                {{ $t('settings.shortcuts.shortcutFormUsersTip') }}
-              </BTooltip>
-            </b-input-group-text>
-          </template>
-          <b-form-input
-            :model-value="newShortcutUsers"
-            @update:model-value="newShortcutUsers = $event"
-            :placeholder="$t('settings.shortcuts.shortcutFormUsersPlaceholder')" />
-        </b-input-group>
-      </div>
-      <!-- create form error -->
-      <div
-        v-if="shortcutFormError"
-        class="alert alert-danger alert-sm mt-2 mb-0">
-        <span class="fa fa-exclamation-triangle me-1" />
-        {{ shortcutFormError }}
-      </div> <!-- /create form error -->
-      <template #footer>
-        <div class="w-100 d-flex justify-content-between">
-          <b-button
-            variant="danger"
-            @click="showShortcutModal = false">
-            <span class="fa fa-times" />
-            {{ $t('common.cancel') }}
-          </b-button>
-          <b-button
-            variant="success"
-            v-if="!editingShortcut"
-            @click="createShortcut"
-            :disabled="createShortcutLoading"
-            :class="{'disabled':createShortcutLoading}">
-            <template v-if="!createShortcutLoading">
-              <span class="fa fa-plus-circle me-1" />
-              {{ $t('common.create') }}
-            </template>
-            <template v-else>
-              <span class="fa fa-spinner fa-spin me-1" />
-              {{ $t('common.creating') }}
-            </template>
-          </b-button>
-          <b-button
-            v-else
-            variant="success"
-            @click="updateShortcut"
-            :disabled="createShortcutLoading"
-            :class="{'disabled':createShortcutLoading}">
-            <template v-if="!createShortcutLoading">
-              <span class="fa fa-save me-1" />
-              {{ $t('common.save') }}
-            </template>
-            <template v-else>
-              <span class="fa fa-spinner fa-spin me-1" />
-              {{ $t('common.saving') }}
-            </template>
-          </b-button>
-        </div>
-      </template> <!-- /modal footer -->
-    </BModal> <!-- /new shortcut form -->
+      @update:model-value="(val) => { if (!val) showShortcutModal = false; }"
+      max-width="1140">
+      <v-card density="compact">
+        <v-card-title>
+          {{ $t(editingShortcut ? 'settings.shortcuts.editShortcut' : 'settings.shortcuts.newShortcut') }}
+        </v-card-title>
+        <v-card-text>
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span
+              id="shortcutFormName"
+              class="arkime-input-label cursor-help">
+              {{ $t('settings.shortcuts.shortcutFormName') }}<sup>*</sup>
+              <v-tooltip activator="#shortcutFormName">
+                {{ $t('settings.shortcuts.shortcutFormNameTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="arkime-input-control"
+              :value="newShortcutName"
+              placeholder="MY_ARKIME_VAR"
+              @input="newShortcutName = $event.target.value">
+          </div>
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span
+              id="shortcutFormDesc"
+              class="arkime-input-label cursor-help">
+              {{ $t('settings.shortcuts.shortcutFormDesc') }}
+              <v-tooltip activator="#shortcutFormDesc">
+                {{ $t('settings.shortcuts.shortcutFormDescTip') }}
+              </v-tooltip>
+            </span>
+            <input
+              type="text"
+              class="arkime-input-control"
+              :value="newShortcutDescription"
+              :placeholder="$t('settings.shortcuts.shortcutFormDescPlaceholder')"
+              @input="newShortcutDescription = $event.target.value">
+          </div>
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span
+              id="shortCutFormValue"
+              class="arkime-input-label cursor-help">
+              {{ $t('settings.shortcuts.shortcutFormValue') }}<sup>*</sup>
+              <v-tooltip activator="#shortCutFormValue">
+                {{ $t('settings.shortcuts.shortcutFormValueTip') }}
+              </v-tooltip>
+            </span>
+            <textarea
+              class="arkime-input-control"
+              rows="5"
+              :value="newShortcutValue"
+              :placeholder="$t('settings.shortcuts.shortcutFormValuePlaceholder')"
+              @input="newShortcutValue = $event.target.value" />
+          </div>
+          <div class="arkime-input-group arkime-input-group--fluid mb-2">
+            <span
+              id="shortcutFormType"
+              class="arkime-input-label cursor-help">
+              {{ $t('settings.shortcuts.shortcutFormType') }}<sup>*</sup>
+              <v-tooltip activator="#shortcutFormType">
+                {{ $t('settings.shortcuts.shortcutFormTypeTip') }}
+              </v-tooltip>
+            </span>
+            <select
+              v-model="newShortcutType"
+              class="arkime-input-control">
+              <option
+                value="ip"
+                v-i18n-value="'settings.shortcuts.newShortcutType-'" />
+              <option
+                value="string"
+                v-i18n-value="'settings.shortcuts.newShortcutType-'" />
+              <option
+                value="number"
+                v-i18n-value="'settings.shortcuts.newShortcutType-'" />
+            </select>
+          </div>
+          <div class="d-flex">
+            <div class="me-3 flex-grow-1 no-wrap">
+              <RoleDropdown
+                size="large"
+                :roles="roles"
+                class="d-inline me-1"
+                :display-text="$t('common.rolesCanView')"
+                :selected-roles="newShortcutRoles"
+                @selected-roles-updated="updateNewShortcutRoles" />
+              <RoleDropdown
+                size="large"
+                :roles="roles"
+                class="d-inline"
+                :display-text="$t('common.rolesCanEdit')"
+                :selected-roles="newShortcutEditRoles"
+                @selected-roles-updated="updateNewShortcutEditRoles" />
+            </div>
+            <div class="arkime-input-group arkime-input-group--fluid">
+              <span
+                id="shortcutFormUsers"
+                class="arkime-input-label cursor-help">
+                {{ $t('common.shareWithUsers') }}
+                <v-tooltip activator="#shortcutFormUsers">
+                  {{ $t('settings.shortcuts.shortcutFormUsersTip') }}
+                </v-tooltip>
+              </span>
+              <input
+                type="text"
+                class="arkime-input-control"
+                :value="newShortcutUsers"
+                @input="newShortcutUsers = $event.target.value"
+                :placeholder="$t('settings.shortcuts.shortcutFormUsersPlaceholder')">
+            </div>
+          </div>
+          <!-- create form error -->
+          <v-alert
+            v-if="shortcutFormError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mt-2 mb-0">
+            {{ shortcutFormError }}
+          </v-alert> <!-- /create form error -->
+        </v-card-text>
+        <v-card-actions>
+          <div class="w-100 d-flex justify-space-between">
+            <v-btn
+              color="error"
+              variant="flat"
+              size="large"
+              @click="showShortcutModal = false">
+              <v-icon
+                icon="mdi-close"
+                class="me-1" />
+              {{ $t('common.cancel') }}
+            </v-btn>
+            <v-btn
+              v-if="!editingShortcut"
+              color="success"
+              variant="flat"
+              size="large"
+              @click="createShortcut"
+              :disabled="createShortcutLoading">
+              <template v-if="!createShortcutLoading">
+                <v-icon
+                  icon="mdi-plus-circle"
+                  class="me-1" />
+                {{ $t('common.create') }}
+              </template>
+              <template v-else>
+                <v-icon
+                  icon="mdi-loading"
+                  class="mdi-spin me-1" />
+                {{ $t('common.creating') }}
+              </template>
+            </v-btn>
+            <v-btn
+              v-else
+              color="success"
+              variant="flat"
+              size="large"
+              @click="updateShortcut"
+              :disabled="createShortcutLoading">
+              <template v-if="!createShortcutLoading">
+                <v-icon
+                  icon="mdi-content-save"
+                  class="me-1" />
+                {{ $t('common.save') }}
+              </template>
+              <template v-else>
+                <v-icon
+                  icon="mdi-loading"
+                  class="mdi-spin me-1" />
+                {{ $t('common.saving') }}
+              </template>
+            </v-btn>
+          </div>
+        </v-card-actions>
+      </v-card>
+    </v-dialog> <!-- /new shortcut form -->
 
     <transfer-resource
       :show-modal="showTransferModal"
@@ -439,7 +471,7 @@ SPDX-License-Identifier: Apache-2.0
 import SettingsService from './SettingsService';
 import UserService from '@common/UserService';
 // components
-import ArkimePaging from '../utils/Pagination.vue';
+import ArkimePaging from '@common/Pagination.vue';
 import RoleDropdown from '@common/RoleDropdown.vue';
 import TransferResource from '@common/TransferResource.vue';
 import { resolveMessage } from '@common/resolveI18nMessage';
@@ -479,7 +511,16 @@ export default {
       seeAll: false,
       transferResource: undefined,
       showShortcutModal: false,
-      showTransferModal: false
+      showTransferModal: false,
+      // Arkime theme-color v-btn styles. Vuetify :color can't take CSS vars.
+      secondaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-secondary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      },
+      tertiaryBtnStyle: {
+        backgroundColor: 'rgb(var(--v-theme-tertiary))',
+        color: 'rgb(var(--v-theme-button-fg))'
+      }
     };
   },
   computed: {

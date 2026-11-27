@@ -11,14 +11,14 @@ SPDX-License-Identifier: Apache-2.0
       variant="tonal"
       tabindex="0"
       @click="clearTags"
-      title="Clear tags"
+      :title="$t('cont3xt.tags.clearTip')"
       class="border-0 px-1 py-0 ma-0 btn-revert-size"
       id="clear-tags"
       v-if="tags.length > 0">
       <v-tooltip
         activator="#clear-tags"
         location="top">
-        Clear tags
+        {{ $t('cont3xt.tags.clearTip') }}
       </v-tooltip>
       <v-icon icon="mdi-trash-can" />
     </v-btn>
@@ -28,7 +28,7 @@ SPDX-License-Identifier: Apache-2.0
         ref="tagRefs"
         v-for="(tag, index) in tags"
         :key="index"
-        class="bg-error rounded pl-1 ml-1 bold tag no-wrap"
+        class="bg-error rounded ps-1 ms-1 bold tag no-wrap"
         :class="{ 'd-none': index >= (tags.length - tagsOffScreen) }">
         {{ tag }}
         <v-btn
@@ -36,7 +36,7 @@ SPDX-License-Identifier: Apache-2.0
           variant="text"
           size="x-small"
           @click="removeTag(index)"
-          title="Remove tag"
+          :title="$t('cont3xt.tags.removeTip')"
           class="border-0 px-1 py-0 ma-0 h-100 btn-revert-width">
           <v-icon
             icon="mdi-close"
@@ -46,20 +46,20 @@ SPDX-License-Identifier: Apache-2.0
       <span
         ref="tagOffScreenCounter"
         id="off-screen-counter"
-        class="rounded pl-1 ml-1 bold no-wrap cursor-help"
+        class="rounded ps-1 ms-1 bold no-wrap cursor-help"
         :class="{ invisible: tagsOffScreen <= 0 }">
-        <span>+ {{ tagsOffScreen }} more</span>
+        <span>{{ $t('cont3xt.tags.moreCount', { count: tagsOffScreen }) }}</span>
         <interactive-tooltip
           v-if="!(tagsOffScreen <= 0 && !checkInProgress)"
           target="off-screen-counter"
           location="bottom left">
-          <div class="d-flex flex-row flex-wrap justify-start ma-2 ml-1">
+          <div class="d-flex flex-row flex-wrap justify-start ma-2 ms-1">
             <div
               v-for="(tag, index) in tags"
               :key="index"
               class="d-flex">
               <span
-                class="bg-error rounded ml-1 pl-1 bold tag no-wrap"
+                class="bg-error rounded ms-1 ps-1 bold tag no-wrap"
                 v-if="index >= (tags.length - tagsOffScreen)">
                 {{ tag }}
                 <v-btn
@@ -67,8 +67,8 @@ SPDX-License-Identifier: Apache-2.0
                   variant="text"
                   tabindex="0"
                   @click="removeTag(index)"
-                  title="Remove tag"
-                  class="bg-error border-0 px-1 py-0 ma-0 square-btn-xs">
+                  :title="$t('cont3xt.tags.removeTip')"
+                  class="bg-error border-0 px-1 py-0 ma-0">
                   <v-icon
                     icon="mdi-close"
                     class="mb-1" />

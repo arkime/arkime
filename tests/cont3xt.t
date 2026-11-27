@@ -1,11 +1,12 @@
 # Test cont3xt.js
-use Test::More tests => 332;
+use Test::More tests => 361;
 use Test::Differences;
 use Data::Dumper;
 use ArkimeTest;
 use JSON;
 use MIME::Base64;
 use LWP::UserAgent;
+use POSIX ();
 use strict;
 
 viewerGet("/regressionTests/deleteAllUsers");
@@ -690,7 +691,7 @@ $json = cont3xtPutToken("/api/overview", to_json({
         custom => $deep
     }]
 }), $token);
-eq_or_diff($json, from_json('{"success": false, "text": "Custom field nested too deep"}'));
+is($json, "Error: JSON body nested deeper than 32");
 
 # update overview requires token
 $json = cont3xtPut('/api/overview', to_json({
@@ -1005,13 +1006,24 @@ $json = cont3xtPost('/api/integration/ip/Maxmind/search', to_json({
 is($json->{data}->{asn}->{autonomous_system_number}, 15169);
 is($json->{data}->{country}->{country}->{names}->{en}, "United States");
 
-# elasticsearch tests
+# elasticsearch tests - create the fixture index the elasticsearch:test
+# integration queries, so the test doesn't depend on where sessions live
+esDelete("/tests_cont3xt");
+for my $i (1..11) {
+    esPost("/tests_cont3xt/_doc/fixture$i", '{"source": {"ip": "10.0.0.1"}}');
+}
+esGet("/_refresh");
+
+# Searched with no ES too, the audit counts below include it
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "10.0.0.1"
 }));
+SKIP: {
+skip "no OpenSearch/Elasticsearch for the elasticsearch integration", 3 if $ArkimeTest::noEs;
 is($json->{data}->{_cont3xt}->{count}, 11);
 is($json->{data}->{hits}->[0]->{source}->{ip}, "10.0.0.1");
 is($json->{data}->{hits}->[1]->{source}->{ip}, "10.0.0.1");
+}
 
 $json = cont3xtPost('/api/integration/ip/elasticsearch:test/search', to_json({
   query => "badip"
@@ -1049,13 +1061,53 @@ is($json->{data}->{_cont3xt}->{count}, 1);
 is($json->{data}->{results}->[0]->{value}, "ipwisecsv");
 is($json->{data}->{results}->[0]->{key}, "tags");
 
+# misp tests - served by the mock in mini-wise-source.js
+$json = cont3xtPost('/api/integration/ip/misp:test/search', to_json({
+  query => "10.66.0.1"
+}));
+is($json->{data}->{_cont3xt}->{count}, 2, "misp matches either half of a composite value");
+is($json->{data}->{attributes}->[0]->{value}, "10.66.0.1");
+is($json->{data}->{attributes}->[0]->{eventInfo}, "Mini MISP Event");
+is($json->{data}->{attributes}->[0]->{threatLevel}, "High");
+is($json->{data}->{attributes}->[0]->{org}, "MiniOrg");
+is($json->{data}->{attributes}->[0]->{timestamp}, 1700000000);
+eq_or_diff($json->{data}->{attributes}->[0]->{tags}, ["tlp:green", 'misp-galaxy:threat-actor="Mini"']);
+is($json->{data}->{attributes}->[0]->{eventUrl}, "https://localhost:9998/events/view/42");
+
+$json = cont3xtPost('/api/integration/ip/misp:test/search', to_json({
+  query => "10.66.0.99"
+}));
+ok(!exists $json->{data}->{attributes});
+
+# sourceip tests - served by the mock in mini-wise-source.js
+$json = cont3xtPost('/api/integration/ip/SourceIP.io/search', to_json({
+  query => "3.5.140.1"
+}));
+is($json->{data}->{_cont3xt}->{count}, 1, "sourceip provider count");
+is($json->{data}->{providers}->[0]->{name}, "Amazon EC2");
+is($json->{data}->{providers}->[0]->{cloudRegion}, "ap-northeast-2");
+is($json->{data}->{providers}->[0]->{region}, "Seoul-teukbyeolsi");
+eq_or_diff($json->{data}->{origins}, from_json('[{"asn": 16509, "name": "AMAZON-02 - Amazon.com, Inc.", "prefix": "3.5.0.0/16", "country": "US", "source": "rpki, irr", "rpki": "valid"}]'), "sourceip merges an origin listed per source");
+is($json->{data}->{allocation}->[0]->{rir}, "arin");
+is($json->{data}->{lastUpdated}, "2026-11-01T00:00:00Z");
+
+$json = cont3xtPost('/api/integration/ip/SourceIP.io/search', to_json({
+  query => "3.5.140.4"
+}));
+ok(!exists $json->{data}->{providers}, "sourceip with nothing published is no result");
+
 ################################################################################
 ### HISTORY
+# History entries a search finds, the db is refreshed first so recent writes show up
+sub auditCount {
+  my ($query) = @_;
+  esGet("/_refresh");
+  return scalar @{cont3xtGet("/api/audits$query")->{audits} // []};
+}
+
 # the single integration searches above are audited after their response is
-# sent, give those writes a moment to land
-sleep(1);
-esGet("/_flush");
-esGet("/_refresh");
+# sent, wait for all 15 to land
+waitUntil(sub { auditCount('') >= 15 });
 
 $json = cont3xtGet('/api/audits?searchTerm=goodtag');
 is($json->{success}, 1);
@@ -1075,7 +1127,7 @@ is ($json->{audits}->[0]->{iType}, "domain", "single search audit records the it
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 11, "4 bulk searches + 7 single integration searches audited");
+is (scalar @{$json->{audits}}, 15, "4 bulk searches + 11 single integration searches audited");
 $id = $json->{audits}->[0]->{_id};
 
 $json = cont3xtDelete("/api/audit/$id", '{}');
@@ -1089,7 +1141,7 @@ eq_or_diff($json, from_json('{"success": false, "text": "History log not found"}
 
 $json = cont3xtGet('/api/audits');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 10);
+is (scalar @{$json->{audits}}, 14);
 
 # use actual issuedAt from results to build reliable date ranges
 my @timestamps = sort map { $_->{issuedAt} } @{$json->{audits}};
@@ -1099,7 +1151,7 @@ my $maxTime = $timestamps[-1];
 # date range covering all audits
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1));
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 10, "all audits in range");
+is (scalar @{$json->{audits}}, 14, "all audits in range");
 
 # date range before all audits
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 2000) . "&stopMs=" . ($minTime - 1000));
@@ -1130,7 +1182,7 @@ ok($json->{audits}->[0]->{issuedAt} >= $json->{audits}->[-1]->{issuedAt}, "defau
 $json = cont3xtGet('/api/audits?page=1&itemsPerPage=2');
 is($json->{success}, 1);
 is (scalar @{$json->{audits}}, 2, "page 1 has 2 items");
-is ($json->{total}, 10, "total is still 10");
+is ($json->{total}, 14, "total is still 14");
 
 $json = cont3xtGet('/api/audits?page=2&itemsPerPage=2');
 is($json->{success}, 1);
@@ -1139,7 +1191,7 @@ is (scalar @{$json->{audits}}, 2, "page 2 has 2 items");
 # itemsPerPage=-1 returns all audits
 $json = cont3xtGet('/api/audits?itemsPerPage=-1');
 is($json->{success}, 1);
-is (scalar @{$json->{audits}}, 10, "itemsPerPage=-1 returns all items");
+is (scalar @{$json->{audits}}, 14, "itemsPerPage=-1 returns all items");
 
 # combined date range + search
 $json = cont3xtGet("/api/audits?startMs=" . ($minTime - 1) . "&stopMs=" . ($maxTime + 1) . "&searchTerm=goodtag");
@@ -1150,21 +1202,21 @@ is (scalar @{$json->{audits}}, 1, "date range + searchTerm combined");
 # than reaching the backend, and paging values are clamped
 $json = cont3xtGet('/api/audits?sortBy=userId');
 is($json->{success}, 1, "unknown sortBy ignored");
-is (scalar @{$json->{audits}}, 10, "unknown sortBy still returns audits");
+is (scalar @{$json->{audits}}, 14, "unknown sortBy still returns audits");
 
 $json = cont3xtGet('/api/audits?sortBy[]=issuedAt&sortOrder[]=asc');
 is($json->{success}, 1, "array sortBy/sortOrder ignored");
 
 $json = cont3xtGet('/api/audits?itemsPerPage=99999999999');
 is($json->{success}, 1, "huge itemsPerPage clamped");
-is (scalar @{$json->{audits}}, 10, "huge itemsPerPage still returns audits");
+is (scalar @{$json->{audits}}, 14, "huge itemsPerPage still returns audits");
 
 $json = cont3xtGet('/api/audits?page=-5&itemsPerPage=-20');
 is($json->{success}, 1, "negative paging clamped");
 
 $json = cont3xtGet('/api/audits?page=notanumber&itemsPerPage=notanumber');
 is($json->{success}, 1, "non numeric paging defaulted");
-is (scalar @{$json->{audits}}, 10, "non numeric paging returns defaults");
+is (scalar @{$json->{audits}}, 14, "non numeric paging returns defaults");
 
 $json = cont3xtGet('/api/audits?searchTerm[]=goodtag');
 is($json->{success}, 1, "non string searchTerm ignored");
@@ -1179,9 +1231,7 @@ my $roleRemoveToken = getCont3xtTokenCookie('sac-roleremove');
 # each user searches so they own a log
 cont3xtPost('/api/integration/ip/csv:rir/search?arkimeRegressionUser=sac-noremove', to_json({ query => "8.8.4.4" }));
 cont3xtPost('/api/integration/ip/csv:rir/search?arkimeRegressionUser=sac-roleremove', to_json({ query => "8.8.4.4" }));
-sleep(1);
-esGet("/_flush");
-esGet("/_refresh");
+waitUntil(sub { auditCount('?arkimeRegressionUser=sac-noremove') && auditCount('?arkimeRegressionUser=sac-roleremove') });
 
 $json = cont3xtGet('/api/audits?arkimeRegressionUser=sac-noremove');
 is (scalar @{$json->{audits}}, 1, "sac-noremove owns one log");
@@ -1330,6 +1380,15 @@ eq_or_diff($json, from_json('{"success": false, "text": "settings.Twilio must be
 $json = cont3xtPutToken('/api/integration/settings', '{"settings": {"Twilio": {"disabled": true}}}', $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "valid integration settings saved");
 
+# a user's own SourceIP.io endpoint is only used with the user's own key, so
+# the configured key isn't sent to a host the user picked
+$json = cont3xtPutToken('/api/integration/settings', '{"settings": {"SourceIP.io": {"endpoint": "https://127.0.0.1:1"}}}', $token);
+eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "sourceip user endpoint saved");
+$json = cont3xtPost('/api/integration/ip/SourceIP.io/search', to_json({
+  query => "3.5.140.2"
+}));
+is($json->{data}->{_cont3xt}->{count}, 3, "sourceip user endpoint without a user key uses the configured endpoint");
+
 $json = cont3xtPutToken('/api/integration/settings', '{"settings": {}}', $token);
 eq_or_diff($json, from_json('{"success": true, "text": "Saved"}'), "integration settings cleared");
 
@@ -1391,6 +1450,24 @@ is($json->{success}, 1, "link groups fetchable with an order set");
 # put it back
 $json = cont3xtPutToken('/api/settings', '{"linkGroup": {"order": []}}', $token);
 is($json->{success}, 1, "linkGroup order reset");
+
+################################################################################
+### Cross-app shared user settings
+viewerPostToken('/api/user', '{"userId": "sac-crossapp", "userName": "crossapp", "enabled":true, "webEnabled":true, "password":"password", "roles":["arkimeUser","cont3xtUser"]}', $token);
+my $crossappToken = getTokenCookie('sac-crossapp');
+
+viewerPostToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', '{"logo": "crossapp.png"}', $crossappToken);
+$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', $crossappToken);
+is($json->{logo}, "crossapp.png", "viewer set logo on the shared user");
+
+$json = cont3xtPostToken('/api/settings/update?arkimeRegressionUser=sac-crossapp', '{"vuetifyTheme": "cotton-candy"}', $crossappToken);
+is($json->{success}, 1, "cont3xt updated the shared vuetifyTheme");
+
+# flush viewer's user cache so cont3xt's cross-process write is visible
+viewerPost('/regressionTests/flushCache');
+$json = viewerGetToken('/api/user/settings?arkimeRegressionUser=sac-crossapp', $crossappToken);
+is($json->{vuetifyTheme}, "cotton-candy", "cont3xt theme update is visible in viewer");
+is($json->{logo}, "crossapp.png", "viewer-set logo preserved after cont3xt theme update");
 
 ################################################################################
 ### Integration Stats
@@ -1658,6 +1735,21 @@ ok(!exists $json->{data}->{data}, "urlapi miss has no result");
 $json = cont3xtPost('/api/integration/text/urlapi:redirect/search', to_json({ query => "redir" }));
 is($json->{purpose}, "fail", "urlapi redirect not followed");
 
+# mTLS: the mock is verified with caTrustFile (no insecure) and sent the client cert
+$json = cont3xtPost('/api/integration/text/urlapi:mtls/search', to_json({ query => "mtls" }));
+is($json->{data}->{data}->{value}, "mtls", "urlapi caTrustFile verifies the server");
+is($json->{data}->{data}->{clientCN}, "arkime-test-client", "urlapi clientKey/clientCert sent");
+$json = cont3xtPost('/api/integration/text/urlapi:test/search', to_json({ query => "nomtls" }));
+is($json->{data}->{data}->{clientCN}, undef, "urlapi without clientCert sends none");
+
+# with maxRedirects a same-origin redirect is followed with the client cert, one to another
+# origin (127.0.0.1 is not localhost) loses the cert and private CA, so the self-signed mock fails
+$json = cont3xtPost('/api/integration/text/urlapi:redirects/search', to_json({ query => "redirect" }));
+is($json->{data}->{data}->{value}, "redirected", "urlapi same-origin redirect followed");
+is($json->{data}->{data}->{clientCN}, "arkime-test-client", "urlapi same-origin redirect keeps the client cert");
+$json = cont3xtPost('/api/integration/text/urlapi:redirects/search', to_json({ query => "redirect-cross" }));
+is($json->{purpose}, "fail", "urlapi cross-origin redirect does not get the section TLS settings");
+
 # a result fetched with a user's own key is only cached for that user
 sub urlapiResult {
   my ($user, $query) = @_;
@@ -1744,6 +1836,18 @@ SKIP: {
 ### Search history is written even when an integration doesn't answer in time
 my $slowVal = "slowaudit" . time();
 my $slowStart = time();
+# The single integration search waits out searchTimeout too, so it runs alongside the full search
+my $singleFile = "/tmp/cont3xt-single-$$.json";
+my $singlePid = fork();
+die "fork failed: $!" unless defined $singlePid;
+if ($singlePid == 0) {
+  my $response = LWP::UserAgent->new(timeout => 120)->post("http://$ArkimeTest::host:3218/api/integration/text/urlapi:slow/search",
+    Content => to_json({ query => $slowVal }), "Content-Type" => "application/json;charset=UTF-8");
+  open(my $fh, '>', $singleFile) or POSIX::_exit(1);
+  print $fh $response->content;
+  close($fh);
+  POSIX::_exit(0);
+}
 $json = cont3xtPost('/api/integration/search', to_json({
   query => $slowVal,
   doIntegrations => ["urlapi:slow"]
@@ -1751,7 +1855,15 @@ $json = cont3xtPost('/api/integration/search', to_json({
 is($json->[-1]->{purpose}, "finish", "search finishes at searchTimeout");
 cmp_ok(time() - $slowStart, "<", 8, "search doesn't wait for the slow integration");
 
-$json = cont3xtPost('/api/integration/text/urlapi:slow/search', to_json({ query => $slowVal }));
+waitpid($singlePid, 0);
+my $singleContent = "{}";
+if (open(my $fh, '<', $singleFile)) {
+  local $/;
+  $singleContent = <$fh>;
+  close($fh);
+}
+unlink($singleFile);
+$json = from_json($singleContent);
 is($json->{purpose}, "fail", "single search fails at searchTimeout");
 my ($slowStats) = grep { $_->{name} eq "urlapi:slow" } @{cont3xtGet('/api/integration/stats')->{stats}};
 is($slowStats->{directError}, 1, "single search timeout counts as an integration error");
@@ -1794,9 +1906,7 @@ $json = cont3xtPost('/api/integration/search', to_json({
 }));
 is($json->[-1]->{purpose}, "finish", "long bulk search finishes");
 
-sleep(1);
-esGet("/_flush");
-esGet("/_refresh");
+waitUntil(sub { auditCount("?searchTerm=$slowVal") >= 2 && auditCount("?searchTerm=$leaveVal") && auditCount("?searchTerm=$longVal") });
 $json = cont3xtGet("/api/audits?searchTerm=$slowVal");
 is(scalar @{$json->{audits}}, 2, "timed out searches are in the history");
 $json = cont3xtGet("/api/audits?searchTerm=$leaveVal");
@@ -1804,4 +1914,4 @@ is(scalar @{$json->{audits}}, 1, "search the client left is in the history");
 cmp_ok(time() - $leaveStart, "<", 5, "search the client left was saved before searchTimeout");
 $json = cont3xtGet("/api/audits?searchTerm=$longVal");
 is(scalar @{$json->{audits}}, 1, "long bulk search is in the history");
-cmp_ok(length($json->{audits}->[0]->{indicator}), "<=", 8000, "long bulk search indicator is truncated");
+cmp_ok(length($json->{audits}->[0]->{indicator}), "<=", 2000, "long bulk search indicator is truncated");

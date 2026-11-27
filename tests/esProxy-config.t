@@ -7,6 +7,9 @@ use strict;
 my $ini = "/tmp/arkime-esproxy-config-$$.ini";
 END { unlink $ini if $ini; }
 
+# tests.pl's [tee] sessionsDbUrl and dbPlugins aren't for these configs
+delete $ENV{$_} for grep { /^ARKIME_(tee__|default__dbPlugins$)/ } keys %ENV;
+
 sub writeIni {
     my ($sensor, $es) = @_;
     $es //= "http://127.0.0.1:9200";

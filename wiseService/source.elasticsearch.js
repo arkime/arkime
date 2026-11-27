@@ -14,7 +14,7 @@ const { Client } = require('@elastic/elasticsearch');
 class ElasticsearchSource extends WISESource {
   // ----------------------------------------------------------------------------
   constructor (api, section) {
-    super(api, section, { typeSetting: true, tagsSetting: true });
+    super(api, section, { typeSetting: true, tagsSetting: true, tlsSettings: 'elasticsearch' });
 
     this.esIndex = api.getConfig(section, 'esIndex');
     this.esTimestampField = api.getConfig(section, 'esTimestampField');
@@ -33,6 +33,8 @@ class ElasticsearchSource extends WISESource {
     });
     if (missing) { return; }
 
+    if (this.tlsOptions === undefined) { return; } // bad TLS settings, already logged
+
     this[this.api.funcName(this.type)] = this.sendResult;
 
     try {
@@ -42,10 +44,12 @@ class ElasticsearchSource extends WISESource {
         node: info.url,
         auth: info.auth,
         requestTimeout: 300000,
-        maxRetries: 2
+        maxRetries: 2,
+        ssl: this.tlsOptions
       });
     } catch (err) {
       console.log(this.section, 'ERROR - creating Elasticsearch client for new Elasticsearch source', err);
+      return;
     }
 
     api.addSource(section, this, [this.type]);
@@ -112,7 +116,8 @@ exports.initSource = function (api) {
       { name: 'esIndex', required: true, help: 'The index pattern to look at' },
       { name: 'esTimestampField', required: true, help: 'The field to use in queries that has the timestamp in ms' },
       { name: 'esMaxTimeMS', required: false, help: 'Maximum age in ms; only documents whose timestamp is newer than now minus this are matched (default: 1hr)' },
-      { name: 'esResultField', required: true, help: 'Field that is required to be in the result' }
+      { name: 'esResultField', required: true, help: 'Field that is required to be in the result' },
+      ...WISESource.tlsConfigFields
     ]
   });
 

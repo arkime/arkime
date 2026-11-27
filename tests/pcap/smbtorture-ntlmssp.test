@@ -40,6 +40,14 @@
     },
     "node" : "test",
     "ntlm" : {
+     "dnsComputerName" : [
+      "vista2"
+     ],
+     "dnsComputerNameCnt" : 1,
+     "dnsDomainName" : [
+      "vista2"
+     ],
+     "dnsDomainNameCnt" : 1,
      "domain" : [
       "VNET3"
      ],
@@ -48,10 +56,27 @@
       "BLU"
      ],
      "hostCnt" : 1,
-     "type" : [
-      3
+     "nbComputerName" : [
+      "VISTA2"
      ],
-     "typeCnt" : 1
+     "nbComputerNameCnt" : 1,
+     "nbDomainName" : [
+      "VISTA2"
+     ],
+     "nbDomainNameCnt" : 1,
+     "targetName" : [
+      "VISTA2"
+     ],
+     "targetNameCnt" : 1,
+     "type" : [
+      "2",
+      "3"
+     ],
+     "typeCnt" : 2,
+     "version" : [
+      "6.0.5231"
+     ],
+     "versionCnt" : 1
     },
     "packetLen" : [
      90,

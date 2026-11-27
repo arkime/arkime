@@ -1,0 +1,29 @@
+# DO NOT EDIT - default.rules.yml is installed by Arkime and replaced on every
+# upgrade.
+#
+# Capture rules, loaded at startup from every *.rules.yml file in the rulesFiles
+# directories (default /opt/arkime/etc;/opt/arkime/share) and reloaded when a
+# file changes. To add or change rules put them in your own file in etc, eg
+# /opt/arkime/etc/local.rules.yml. default.* loads first and later files win:
+# a rule with the same name as one here replaces it, and a rule with just the
+# name and disabled: true turns it off, eg
+#
+#   version: 1
+#   rules:
+#     - name: "some default rule"
+#       disabled: true
+#
+# See https://arkime.com/rulesformat and capture/RULES.md
+version: 1
+rules:
+  # Once both sides finish the handshake and switch to encrypted traffic there is
+  # nothing more capture can read, so save 2 more packets and then stop saving pcap.
+  # SPI data, such as packet and byte counts, is still saved for the whole session.
+  # The parsers that set encrypted are tls (which also covers SMTP STARTTLS, MySQL,
+  # SOCKS and HTTP CONNECT), quic and ssh. Turn off if you decrypt saved pcap, eg
+  # with key logs.
+  - name: "Stop saving pcap once encrypted"
+    when: "fieldSet"
+    expression: "has(encrypted)"
+    ops:
+      _maxPacketsToSave: "+2"

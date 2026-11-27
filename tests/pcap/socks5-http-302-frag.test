@@ -14,7 +14,7 @@
        "name" : "Cool Beans!"
       }
      },
-     "bytes" : 1274,
+     "bytes" : 2634,
      "geo" : {
       "country_iso_code" : "CA"
      },
@@ -24,7 +24,7 @@
       "00:26:88:df:17:c7"
      ],
      "mac-cnt" : 2,
-     "packets" : 6,
+     "packets" : 46,
      "port" : 21477
     },
     "dstOui" : [
@@ -75,6 +75,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -103,6 +107,10 @@
      "response-location" : [
       "http://www.google.de/?gws_rd=cr&ei=xxxxxxxxxxxxxxxxxxxxxx"
      ],
+     "responseBodyLen" : [
+      258
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "alternate-protocol",
       "cache-control",
@@ -168,9 +176,9 @@
     "lastPacket" : 1385474412431,
     "length" : 117939,
     "network" : {
-     "bytes" : 2133,
+     "bytes" : 4105,
      "community_id" : "1:JyQ6uQSVR95peZHUdpcExPE7Dzw=",
-     "packets" : 14
+     "packets" : 72
     },
     "node" : "test",
     "packetLen" : [
@@ -179,10 +187,68 @@
      70,
      73,
      72,
-     91,
-     80,
-     465,
-     1000,
+     74,
+     67,
+     74,
+     56,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     57,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     74,
+     64,
      70,
      70,
      70,
@@ -195,9 +261,67 @@
      180,
      250,
      323,
+     395,
      469,
+     536,
      610,
+     666,
+     740,
+     814,
+     888,
+     962,
+     1036,
+     1110,
+     1184,
+     1258,
+     1332,
+     1406,
+     1480,
+     1554,
+     1628,
+     1702,
+     1776,
+     1850,
      1924,
+     1981,
+     2055,
+     2129,
+     2203,
+     2277,
+     2351,
+     2425,
+     2499,
+     2573,
+     2647,
+     2721,
+     2795,
+     2869,
+     2943,
+     3017,
+     3091,
+     3165,
+     3239,
+     3313,
+     3387,
+     3461,
+     3535,
+     3609,
+     3683,
+     3757,
+     3831,
+     3905,
+     3979,
+     4053,
+     4127,
+     4201,
+     4275,
+     4349,
+     4423,
+     4497,
+     4571,
+     4645,
+     4719,
+     4793,
      4867,
      4931,
      5001,
@@ -220,8 +344,33 @@
      "bytes" : 942
     },
     "socks" : {
+     "boundASN" : [
+      "AS1 Cool Beans!"
+     ],
+     "boundGEO" : [
+      "CA"
+     ],
+     "boundIp" : [
+      "10.0.0.2"
+     ],
+     "boundIpCnt" : 1,
+     "boundPort" : [
+      80
+     ],
+     "boundPortCnt" : 1,
+     "boundRIR" : [
+      "TEST"
+     ],
      "host" : "www.google.com",
-     "port" : 80
+     "port" : 80,
+     "status" : [
+      "succeeded"
+     ],
+     "statusCnt" : 1,
+     "version" : [
+      5
+     ],
+     "versionCnt" : 1
     },
     "source" : {
      "as" : {
@@ -231,7 +380,7 @@
        "name" : "This is neat"
       }
      },
-     "bytes" : 859,
+     "bytes" : 1471,
      "geo" : {
       "country_iso_code" : "RU"
      },
@@ -240,7 +389,7 @@
       "00:0b:45:b7:16:c0"
      ],
      "mac-cnt" : 1,
-     "packets" : 8,
+     "packets" : 26,
      "port" : 1637
     },
     "srcISNCnt" : 1,
@@ -320,10 +469,17 @@
       "indicator" : "10.0.0.0/24",
       "indicator_type" : "subnet",
       "source" : "arkime-test",
+      "where" : "socks.bound.ip"
+     },
+     {
+      "desc" : "matches 10.0.0.x test traffic",
+      "indicator" : "10.0.0.0/24",
+      "indicator_type" : "subnet",
+      "source" : "arkime-test",
       "where" : "test.ip"
      }
     ],
-    "zeekintelCnt" : 3
+    "zeekintelCnt" : 4
    },
    "header" : {
     "index" : {

@@ -45,6 +45,10 @@
       "text/plain; charset=us-ascii"
      ],
      "contentTypeCnt" : 1,
+     "date" : [
+      "Mon, 13 Jan 2014 07:01:01 -0800"
+     ],
+     "dateCnt" : 1,
      "dst" : [
       "xxxxxxxx.xxxxxxx@xxxxxxxxxxxxxx.com"
      ],
@@ -70,15 +74,13 @@
      "headerCnt" : 13,
      "headerField" : [
       "content-transfer-encoding",
-      "date",
       "domainkey-signature"
      ],
      "headerValue" : [
-      "Mon, 13 Jan 2014 07:01:01 -0800",
       "a=rsa-sha1; q=dns; c=nofws;  s=xxxxxxxxxx; d=xxxxxxxxx.net;  b=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx;  h=Received:From:Content-Type:Content-Transfer-Encoding:Subject:Date:Message-Id:To:Mime-Version:X-Mailer:X-ELNK-Trace:X-Originating-IP;",
       "quoted-printable"
      ],
-     "headerValueCnt" : 3,
+     "headerValueCnt" : 2,
      "host" : [
       "xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"
      ],
@@ -97,6 +99,10 @@
       "1.0 (Apple Message framework v1283)"
      ],
      "mimeVersionCnt" : 1,
+     "reply" : [
+      "250 Ok: queued as 555A012C342"
+     ],
+     "replyCnt" : 1,
      "smtpHello" : [
       "xxxxxxxxxxxxxxxxxxxx.xxxxxxxxx.net"
      ],

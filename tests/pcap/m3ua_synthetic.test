@@ -75,9 +75,10 @@
      "camel",
      "m2ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       100
@@ -414,9 +415,10 @@
      "camel",
      "m3ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       500
@@ -559,9 +561,10 @@
      "camel",
      "m2ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       100
@@ -928,9 +931,10 @@
      "camel",
      "m3ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       500
@@ -1062,9 +1066,10 @@
      "camel",
      "m3ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       500
@@ -1193,9 +1198,10 @@
      "camel",
      "m3ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       500
@@ -1314,9 +1320,10 @@
      "camel",
      "m2ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       100
@@ -1431,9 +1438,10 @@
      "camel",
      "m3ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       100
@@ -1553,9 +1561,10 @@
      "camel",
      "m3ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 4,
+    "protocolCnt" : 5,
     "sccp" : {
      "dst" : [
       100
@@ -1674,9 +1683,10 @@
      "isup",
      "m3ua",
      "sccp",
-     "sctp"
+     "sctp",
+     "tcap"
     ],
-    "protocolCnt" : 5,
+    "protocolCnt" : 6,
     "sccp" : {
      "dst" : [
       100

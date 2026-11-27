@@ -15,17 +15,16 @@
 #include <grp.h>
 #include <sys/stat.h>
 
-extern ArkimePcapFileHdr_t   pcapFileHeader;
 
 extern ArkimeConfig_t        config;
 
 LOCAL  pcap_t               *pcap;
 LOCAL  FILE                 *offlineFile = 0;
 
-extern void                 *esServer;
 LOCAL  ArkimeStringHead_t    monitorQ;
 
 LOCAL  char                  offlinePcapFilename[PATH_MAX + 1];
+LOCAL  struct stat           offlineStat;      // file found by a directory walk or monitor, else zeroed
 LOCAL  int                   pktsToRead;
 
 LOCAL void reader_libpcapfile_opened();
@@ -33,13 +32,14 @@ LOCAL void reader_libpcapfile_opened();
 LOCAL ArkimePacketBatch_t   batch;
 LOCAL uint8_t               readerPos;
 
-extern ArkimeOfflineInfo_t  offlineInfo[256];
+extern ArkimeFileInfo_t  fileInfo[256];
 extern ArkimeFieldOps_t     readerFieldOps[256];
 
 LOCAL  int                  offlineDispatchAfter;
 
 extern ArkimeFilenameOps_t  readerFilenameOps[256];
 extern int                  readerFilenameOpsNum;
+
 
 #ifdef HAVE_SYS_INOTIFY_H
 #include <sys/inotify.h>
@@ -57,7 +57,7 @@ LOCAL void reader_libpcapfile_monitor_do(struct inotify_event *event)
 
     if (config.pcapRecursive &&
         (event->mask & IN_CREATE) &&
-        g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+        arkime_readers_is_dir(fullfilename, config.pcapFollowLinks)) {
 
         reader_libpcapfile_monitor_dir(fullfilename);
         g_free(fullfilename);
@@ -108,7 +108,7 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
     if (config.debug)
         LOG("Monitoring %s", dirname);
 
-    int rc = inotify_add_watch(monitorFd, dirname, IN_CLOSE_WRITE | IN_CREATE);
+    int rc = inotify_add_watch(monitorFd, dirname, IN_CLOSE_WRITE | IN_CREATE | (config.pcapFollowLinks ? 0 : IN_DONT_FOLLOW));
     if (rc == -1) {
         LOG("WARNING - Couldn't watch %s %s", dirname, strerror(errno));
         return;
@@ -139,7 +139,7 @@ LOCAL void reader_libpcapfile_monitor_dir(char *dirname)
 
         gchar *fullfilename = g_build_filename(dirname, filename, NULL);
 
-        if (g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+        if (arkime_readers_is_dir(fullfilename, config.pcapFollowLinks)) {
             reader_libpcapfile_monitor_dir(fullfilename);
         }
         g_free(fullfilename);
@@ -171,9 +171,12 @@ LOCAL void reader_libpcapfile_init_monitor()
 }
 #endif
 /******************************************************************************/
-LOCAL int reader_libpcapfile_process(char *filename)
+LOCAL int reader_libpcapfile_process(char *filename, gboolean inDir)
 {
     char         errbuf[1024];
+    int          fd = -1;
+
+    memset(&offlineStat, 0, sizeof(offlineStat));
 
     if (strcmp(filename, "-") == 0) {
         goto process;
@@ -195,6 +198,15 @@ LOCAL int reader_libpcapfile_process(char *filename)
         return 1;
     }
 
+    // A file found in a directory must be that entry itself, not what a link points to
+    if (inDir && !config.pcapFollowLinks) {
+        fd = arkime_readers_open_nofollow(filename, &offlineStat);
+        if (fd < 0) {
+            memset(&offlineStat, 0, sizeof(offlineStat));
+            return 1;
+        }
+    }
+
     // check to see if viewer might have access issues to non-copied pcap file
     if (config.copyPcap == 0) {
         arkime_check_file_permissions(filename);
@@ -204,7 +216,19 @@ process:
     errbuf[0] = 0;
     LOG("Processing %s", filename);
     pktsToRead = config.pktsToRead;
-    pcap = pcap_open_offline(filename, errbuf);
+    if (fd >= 0) {
+        FILE *fp = fdopen(fd, "r");
+        if (!fp) {
+            LOG("Couldn't process '%s' error '%s'", filename, strerror(errno));
+            close(fd);
+            return 1;
+        }
+        pcap = pcap_fopen_offline(fp, errbuf);
+        if (!pcap)
+            fclose(fp);
+    } else {
+        pcap = pcap_open_offline(filename, errbuf);
+    }
 
     if (!pcap) {
         LOG("Couldn't process '%s' error '%s'", filename, errbuf);
@@ -221,6 +245,10 @@ LOCAL int reader_libpcapfile_next()
 
     pcap = 0;
 
+    // don't open any more files once quitting
+    if (config.quitting)
+        return 0;
+
     if (config.pcapReadFiles) {
         static int pcapFilePos = 0;
 
@@ -231,7 +259,7 @@ LOCAL int reader_libpcapfile_next()
         }
         pcapFilePos++;
 
-        if (reader_libpcapfile_process(fullfilename)) {
+        if (reader_libpcapfile_process(fullfilename, FALSE)) {
             return reader_libpcapfile_next();
         }
 
@@ -283,7 +311,7 @@ filesDone:
         if (!line[0] || line[0] == '#')
             return reader_libpcapfile_next();
 
-        if (reader_libpcapfile_process(line)) {
+        if (reader_libpcapfile_process(line, FALSE)) {
             return reader_libpcapfile_next();
         }
 
@@ -333,7 +361,7 @@ fileListsDone:
             fullfilename = g_build_filename(pcapBase[pcapGDirLevel], filename, NULL);
 
             // If recursive option and a directory then process all the files in that dir
-            if (config.pcapRecursive && g_file_test(fullfilename, G_FILE_TEST_IS_DIR)) {
+            if (config.pcapRecursive && arkime_readers_is_dir(fullfilename, config.pcapFollowLinks)) {
                 if (pcapGDirLevel >= 20) {
                     g_free(fullfilename);
                     continue;
@@ -348,7 +376,7 @@ fileListsDone:
                 continue;
             }
 
-            if (reader_libpcapfile_process(fullfilename)) {
+            if (reader_libpcapfile_process(fullfilename, TRUE)) {
                 g_free(fullfilename);
                 continue;
             }
@@ -379,7 +407,7 @@ dirsDone:
         fullfilename = string->str;
         ARKIME_TYPE_FREE(ArkimeString_t, string);
 
-        if (reader_libpcapfile_process(fullfilename)) {
+        if (reader_libpcapfile_process(fullfilename, TRUE)) {
             g_free(fullfilename);
             continue;
         }
@@ -392,6 +420,9 @@ dirsDone:
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_monitor_gfunc(gpointer UNUSED(user_data))
 {
+    if (config.quitting)
+        return G_SOURCE_REMOVE;
+
     if (DLL_COUNT(s_, &monitorQ) == 0)
         return G_SOURCE_CONTINUE;
 
@@ -433,8 +464,8 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
 
     ArkimePacket_t *packet = arkime_packet_alloc();
 
-    offlineInfo[readerPos].lastPackets++;
-    offlineInfo[readerPos].lastPacketTime = h->ts;
+    fileInfo[readerPos].lastPackets++;
+    fileInfo[readerPos].lastPacketTime = h->ts;
 
     packet->pktlen        = h->caplen;
     packet->pkt           = (u_char *)bytes;
@@ -444,13 +475,31 @@ LOCAL void reader_libpcapfile_pcap_cb(u_char *UNUSED(user), const struct pcap_pk
     packet->readerFilePos = ftell(offlineFile) - 16 - h->caplen;
     packet->readerPos     = readerPos;
 
-    offlineInfo[readerPos].lastBytes += packet->pktlen + 16;
+    fileInfo[readerPos].lastBytes += packet->pktlen + 16;
 
     arkime_packet_batch(&batch, packet);
 }
 /******************************************************************************/
 LOCAL gboolean reader_libpcapfile_read()
 {
+    // stop reading once quitting, the rest of this file is skipped and it isn't deleted
+    // since it wasn't fully processed. This also keeps packets from reaching reader
+    // callbacks after the reader exit hook has run.
+    if (config.quitting) {
+        const char *name = offlinePcapFilename[0] ? offlinePcapFilename : "-";
+        if (!config.dryRun && !config.copyPcap && fileInfo[readerPos].lastPackets > 0) {
+            // The files record is created when the first packet is written, so once packets
+            // have been read it exists and --skip would skip this file next time
+            LOG("Quitting, skipping rest of %s - it is recorded as processed, use --reprocess to read it again", name);
+            arkime_packet_batch_end_of_file(readerPos);
+        } else {
+            LOG("Quitting, skipping rest of %s", name);
+        }
+        pcap_close(pcap);
+        pcap = 0;
+        return G_SOURCE_REMOVE;
+    }
+
     // pause reading if too many waiting disk operations
     if (arkime_writer_queue_length() > 10) {
         if (config.debug)
@@ -458,10 +507,10 @@ LOCAL gboolean reader_libpcapfile_read()
         return G_SOURCE_CONTINUE;
     }
 
-    // pause reading if too many waiting ES operations
-    if (arkime_http_queue_length(esServer) > 30 || arkime_http_queue_length_best(esServer) > 0) {
+    // pause reading if too many waiting db operations
+    if (arkime_db_queue_length() > 30 || arkime_db_queue_length_best() > 0) {
         if (config.debug)
-            LOG("Waiting to process more packets, es q: %d best q: %d", arkime_http_queue_length(esServer), arkime_http_queue_length_best(esServer));
+            LOG("Waiting to process more packets, db q: %d best q: %d", arkime_db_queue_length(), arkime_db_queue_length_best());
         return G_SOURCE_CONTINUE;
     }
 
@@ -489,18 +538,12 @@ LOCAL gboolean reader_libpcapfile_read()
     // Some kind of failure, move to the next file or quit
     if (r <= 0) {
         if (config.pcapDelete && r == 0) {
-            if (config.debug)
-                LOG("Deleting %s", offlinePcapFilename);
-            int rc = unlink(offlinePcapFilename);
-            if (rc != 0)
-                LOG("Failed to delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
+            arkime_readers_delete(offlinePcapFilename, &offlineStat);
         } else if (r < 0) {
             LOG("Failed pcap_dispatch on file %s: '%s'", offlinePcapFilename, pcap_geterr(pcap));
             if (config.pcapDelete && config.ignoreErrors) {
                 LOG("Force deleting %s", offlinePcapFilename);
-                int rc = unlink(offlinePcapFilename);
-                if (rc != 0)
-                    LOG("Failed to force delete file %s %s (%d)", offlinePcapFilename, strerror(errno), errno);
+                arkime_readers_delete(offlinePcapFilename, &offlineStat);
             }
         }
         if (!config.dryRun && !config.copyPcap) {
@@ -541,11 +584,9 @@ LOCAL void reader_libpcapfile_opened()
         }
     }
 
-    arkime_packet_set_dltsnap(pcap_datalink(pcap), pcap_snapshot(pcap));
-
     offlineFile = pcap_file(pcap);
 
-    if (config.bpf && pcapFileHeader.dlt != DLT_NFLOG) {
+    if (config.bpf && pcap_datalink(pcap) != DLT_NFLOG) {
         struct bpf_program   bpf;
 
         if (pcap_compile(pcap, &bpf, config.bpf, 1, PCAP_NETMASK_UNKNOWN) == -1) {
@@ -560,16 +601,17 @@ LOCAL void reader_libpcapfile_opened()
 
     readerPos++;
     // We've wrapped around all 256 reader items, clear the previous file information
-    if (offlineInfo[readerPos].filename) {
-        g_free(offlineInfo[readerPos].filename);
-        g_free(offlineInfo[readerPos].extra);
-        memset(&offlineInfo[readerPos], 0, sizeof(ArkimeOfflineInfo_t));
+    if (fileInfo[readerPos].filename) {
+        g_free(fileInfo[readerPos].filename);
+        g_free(fileInfo[readerPos].extra);
+        memset(&fileInfo[readerPos], 0, sizeof(ArkimeFileInfo_t));
     }
-    offlineInfo[readerPos].filename = g_strdup(offlinePcapFilename);
+    fileInfo[readerPos].filename = g_strdup(offlinePcapFilename);
+    arkime_packet_set_interface(readerPos, 0, pcap_datalink(pcap), pcap_snapshot(pcap));
 
     struct stat st;
     if (stat(offlinePcapFilename, &st) == 0)
-        offlineInfo[readerPos].size = st.st_size;
+        fileInfo[readerPos].size = st.st_size;
 
     int fd = pcap_fileno(pcap);
     if (fd == -1) {
@@ -606,7 +648,7 @@ LOCAL void reader_libpcapfile_opened()
         }
     }
 
-    offlineInfo[readerPos].lastBytes = 24;
+    fileInfo[readerPos].lastBytes = 24;
 }
 
 /******************************************************************************/
@@ -642,6 +684,15 @@ void reader_libpcapfile_init(const char *UNUSED(name))
     arkime_reader_start         = reader_libpcapfile_start;
     arkime_reader_stop          = reader_libpcapfile_stop;
     arkime_reader_stats         = reader_libpcapfile_stats;
+
+    // Walk from real paths, so a link below them shows up when a file is opened
+    for (int i = 0; !config.pcapFollowLinks && config.pcapReadDirs && config.pcapReadDirs[i]; i++) {
+        char real[PATH_MAX + 1];
+        if (config.pcapReadDirs[i][0] && realpath(config.pcapReadDirs[i], real)) {
+            g_free(config.pcapReadDirs[i]);
+            config.pcapReadDirs[i] = g_strdup(real);
+        }
+    }
 
     if (config.pcapMonitor)
         reader_libpcapfile_init_monitor();

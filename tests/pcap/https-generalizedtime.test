@@ -20,6 +20,7 @@
        "mail.yandex.ru"
       ],
       "altCnt" : 12,
+      "exponent" : 65537,
       "hash" : "59:4d:51:83:75:d0:9c:29:82:26:58:5f:ec:83:7b:60:ce:33:ba:d8",
       "issuerCN" : [
        "certum level iv ca"
@@ -30,12 +31,15 @@
       "issuerOU" : [
        "Certum Certification Authority"
       ],
+      "keyLength" : 2048,
       "notAfter" : 1451573263000,
       "notBefore" : 1415717263000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 344,
       "remainingSeconds" : 29801713,
       "serial" : "2e8f3b9cbc17eacb6459a3b8c0b598fb",
+      "sha256" : "0270c49323ab28ff8690792b713737e1e639a7ec2c03f28db20aaa6ba956fe38",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "mail.yandex.ru"
       ],
@@ -46,9 +50,11 @@
        "ITO"
       ],
       "validDays" : 415,
-      "validSeconds" : 35856000
+      "validSeconds" : 35856000,
+      "version" : 3
      },
      {
+      "exponent" : 65537,
       "hash" : "12:e1:89:f7:dc:2f:a2:82:38:0b:48:77:31:9f:5f:1d:fe:af:6d:69",
       "issuerCN" : [
        "certum ca"
@@ -56,12 +62,15 @@
       "issuerON" : [
        "Unizeto Sp. z o.o."
       ],
+      "keyLength" : 2048,
       "notAfter" : 1709470465000,
       "notBefore" : 1236084865000,
       "publicAlgorithm" : "rsaEncryption",
       "remainingDays" : 3329,
       "remainingSeconds" : 287698915,
       "serial" : "4ca5fec6617c48b056382a8280e0508c",
+      "sha256" : "14239787e8fec7dffa5f4c570b721b96c169acca3f4e95bc3057a3f8a60d7eef",
+      "signatureAlgorithm" : "sha1WithRSAEncryption",
       "subjectCN" : [
        "certum level iv ca"
       ],
@@ -72,7 +81,8 @@
        "Certum Certification Authority"
       ],
       "validDays" : 5479,
-      "validSeconds" : 473385600
+      "validSeconds" : 473385600,
+      "version" : 3
      }
     ],
     "certCnt" : 2,
@@ -242,6 +252,16 @@
       "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
      ],
      "cipherCnt" : 1,
+     "clientAlpn" : [
+      "http/1.1",
+      "spdy/3",
+      "spdy/3.1"
+     ],
+     "clientAlpnCnt" : 3,
+     "group" : [
+      "secp256r1"
+     ],
+     "groupCnt" : 1,
      "ja3" : [
       "8ca01c116f7fa9e77c6e1800eac1bec2"
      ],

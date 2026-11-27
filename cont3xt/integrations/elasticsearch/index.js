@@ -9,6 +9,11 @@ const ArkimeConfig = require('../../../common/arkimeConfig');
 const ArkimeUtil = require('../../../common/arkimeUtil');
 const { Client } = require('@elastic/elasticsearch');
 
+ArkimeConfig.registerSettings({
+  apiKey: { secret: true },
+  basicAuth: { secret: true }
+});
+
 class ElasticsearchIntegration extends Integration {
   // Integration Items
   name;
@@ -82,9 +87,8 @@ class ElasticsearchIntegration extends Integration {
       auth: info.auth,
       requestTimeout: 300000,
       maxRetries: 2,
-      ssl: {
-        rejectUnauthorized: !ArkimeConfig.getFull(section, 'insecure', false)
-      }
+      // insecure, caTrustFile and the clientKey/clientCert (mTLS) settings
+      ssl: this.tlsOptions(info.url)
     };
 
     const apiKey = ArkimeConfig.getFull(section, 'apiKey');

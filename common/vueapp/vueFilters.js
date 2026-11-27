@@ -1,3 +1,6 @@
+// Copyright Yahoo Inc.
+// SPDX-License-Identifier: Apache-2.0
+//
 // NOTE: these are no longer 'filters', as the filter syntax was removed in Vue 3.
 // So now these are just assorted string formatting functions :)
 // TODO this is duplicated between cont3xt and viewer, should be moved to top level common
@@ -17,6 +20,25 @@ export const escapeHtml = function (str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+};
+
+/**
+ * Returns url if it uses a safe scheme (http(s)/mailto/ftp/tel or relative),
+ * otherwise undefined. Rejects javascript:/data: and similar.
+ *
+ * @param {string} url The url to validate
+ * @returns {string|undefined}
+ */
+export const safeUrl = function (url) {
+  if (typeof url !== 'string') { return undefined; }
+
+  const stripped = url.replace(/[\u0000-\u001F\u007F-\u009F\s]/g, '');
+
+  if (/^[a-z][a-z0-9+.-]*:/i.test(stripped) && !/^(https?|mailto|ftp|tel):/i.test(stripped)) {
+    return undefined;
+  }
+
+  return url;
 };
 
 /**
@@ -166,15 +188,16 @@ function str2format (str) {
  * '{{ parseSeconds(-5h) }}'
  *
  * @param {string} str The relative time string
+ * @param {number|string} [date] Optional base date (ms or moment-parsable); defaults to now
  */
-export const parseSeconds = function (str) {
+export const parseSeconds = function (str, date) {
   if (str === '' || str === 'now') {
-    return moment().unix();
+    return moment(date).unix();
   }
 
   let m, n;
   if ((m = str.match(/^([+-])(\d*)([a-zA-Z]*)([@]*)([a-zA-Z0-9]*)/))) {
-    const d = moment();
+    const d = moment(date);
     const format = str2format(m[3]);
     const snap = str2format(m[5]);
 
@@ -194,7 +217,7 @@ export const parseSeconds = function (str) {
   }
 
   if ((m = str.match(/^@([a-z0-9]+)/))) {
-    const d = moment();
+    const d = moment(date);
     const snap = str2format(m[1]);
 
     d.startOf(snap);
@@ -381,7 +404,7 @@ export const readableTimeCompact = function (ms) {
 
 /**
  * Searches fields for a term
- * Looks for the term in field friendlyName, exp, and aliases
+ * Looks for the term in field friendlyName, exp, dbField(2), and aliases
  *
  * @example
  * '{{ searchFields('test', fields, true) }}'
@@ -415,6 +438,8 @@ export const searchFields = function (searchTerm, fields, excludeTokens, exclude
     searchTerm = searchTerm.toLowerCase();
     return field.friendlyName.toLowerCase().includes(searchTerm) ||
       field.exp.toLowerCase().includes(searchTerm) ||
+      (field.dbField && field.dbField.toLowerCase().includes(searchTerm)) ||
+      (field.dbField2 && field.dbField2.toLowerCase().includes(searchTerm)) ||
       (field.aliases && field.aliases.some(item => {
         return item.toLowerCase().includes(searchTerm);
       }));
@@ -449,11 +474,12 @@ export const buildExpression = function (field, value, op) {
  * @returns {string}      The fully built expression
  */
 export const buildListExpression = function (field, values, op) {
-  // The list parser splits on , and ] even inside quotes, so those values get their own clause
+  // The list parser splits on , and ] even inside quotes and drops the escapes
+  // that keep a * literal, so those values get their own clause
   const listValues = [];
   const clauses = [];
   for (const value of values.flat()) {
-    if (/[,\]]/.test(value.toString())) {
+    if (/[,\]*]/.test(value.toString())) {
       clauses.push(buildExpression(field, value, op));
     } else {
       listValues.push(expressionValue(value));
@@ -470,8 +496,14 @@ export const buildListExpression = function (field, values, op) {
 function expressionValue (value) {
   value = value.toString();
 
-  // for values required to be strings in the search expression
-  const needQuotes = (value !== 'EXISTS!' && /[^-+a-zA-Z0-9_.@:*?/]+/.test(value)) ||
+  // the parser makes any value with a * a wildcard, even quoted, so escape the
+  // wildcard syntax to match the value exactly
+  const wildcard = value.includes('*');
+  if (wildcard) { value = value.replace(/[\\*?]/g, '\\$&'); }
+
+  // for values required to be strings in the search expression, so a captured
+  // EXISTS! or '' is a value too (callers wanting an exists check build it themselves)
+  const needQuotes = wildcard || value === '' || /[^-+a-zA-Z0-9_.@:?/]/.test(value) ||
     (value.startsWith('/') && value.endsWith('/'));
 
   // escape unescaped quotes
@@ -545,7 +577,51 @@ export const extractIPv6String = function (ipv6) {
  * @returns {string}          The human understandable protocol string
  */
 export const protocol = function (protocolCode) {
-  const lookup = { 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
+  const lookup = { 0: 'not-ip', 1: 'icmp', 2: 'igmp', 6: 'tcp', 17: 'udp', 47: 'gre', 50: 'esp', 58: 'icmp6', 89: 'ospf', 103: 'pim', 132: 'sctp' };
 
-  return lookup[protocolCode] || protocolCode;
+  return lookup[protocolCode] ?? protocolCode;
+};
+
+/**
+ * Displays the ethertype name instead of number code, or hex if unknown
+ *
+ * @example
+ * '{{ ethertype(2054) }}'
+ *
+ * @param {int} code  The ethertype code
+ * @returns {string}  The human understandable ethertype string
+ */
+export const ethertype = function (code) {
+  const lookup = {
+    0x0800: 'ipv4',
+    0x0806: 'arp',
+    0x0842: 'wol',
+    0x6558: 'teb',
+    0x8035: 'rarp',
+    0x8100: 'vlan',
+    0x86dd: 'ipv6',
+    0x8808: 'pause',
+    0x8809: 'slow',
+    0x8847: 'mpls',
+    0x8848: 'mpls-mc',
+    0x8863: 'pppoed',
+    0x8864: 'pppoe',
+    0x888e: 'eapol',
+    0x8892: 'profinet',
+    0x88a4: 'ethercat',
+    0x88a8: 'qinq',
+    0x88b8: 'goose',
+    0x88ba: 'sv',
+    0x88cc: 'lldp',
+    0x88e5: 'macsec',
+    0x88f7: 'ptp',
+    0x8906: 'fcoe',
+    0x8914: 'fip',
+    0x894f: 'nsh',
+    0x9000: 'loopback'
+  };
+
+  const num = Number(code);
+  if (!Number.isInteger(num)) { return code; }
+  return lookup[num] ?? `0x${num.toString(16).padStart(4, '0')}`;
 };

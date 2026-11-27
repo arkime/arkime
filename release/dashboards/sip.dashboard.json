@@ -1,0 +1,116 @@
+{
+  "name": "SIP",
+  "description": "SIP sessions: protocols == sip",
+  "data": {
+    "version": 1,
+    "folder": "Protocols",
+    "colorScheme": "rainbow",
+    "expression": "protocols == sip",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "sip.method",
+        "splitLength": 5,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "SIP sessions by sip.method"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SIP sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "SIP bytes",
+        "metricType": "bytes"
+      },
+      {
+        "id": "w4",
+        "field": "sip.user-agent",
+        "viewMode": "tagcloud",
+        "width": 2,
+        "height": 2,
+        "length": 20
+      },
+      {
+        "id": "w5",
+        "field": "sip.statuscode",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true
+      },
+      {
+        "id": "w6",
+        "field": "sip.from",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20
+      },
+      {
+        "id": "w7",
+        "field": "sip.to",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20
+      },
+      {
+        "id": "w8",
+        "field": "ip.src",
+        "viewMode": "bar",
+        "width": 2,
+        "height": 3,
+        "length": 15,
+        "title": "Clients"
+      },
+      {
+        "id": "w9",
+        "field": "ip.dst:port",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "bytes"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Servers"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "sip.method",
+          "sip.from",
+          "sip.to",
+          "sip.statuscode"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

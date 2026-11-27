@@ -739,6 +739,10 @@
       "/"
      ],
      "pathCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-encoding",
@@ -758,6 +762,10 @@
       "text/html, text/plain, text/css, text/sgml, */*;q=0.01"
      ],
      "requestHeaderValueCnt" : 3,
+     "responseBodyLen" : [
+      2121
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "connection",
       "content-length",

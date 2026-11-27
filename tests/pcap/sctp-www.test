@@ -72,6 +72,10 @@
       "http://203.255.252.194/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-charset",
@@ -113,6 +117,11 @@
       "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,text/plain;q=0.8,image/png,*/*;q=0.5"
      ],
      "requestHeaderValueCnt" : 12,
+     "responseBodyLen" : [
+      "12800",
+      "7486"
+     ],
+     "responseBodyLenCnt" : 2,
      "responseHeader" : [
       "accept-ranges",
       "connection",
@@ -415,6 +424,10 @@
       "http://203.255.252.194/"
      ],
      "request-refererCnt" : 1,
+     "requestBodyLen" : [
+      0
+     ],
+     "requestBodyLenCnt" : 1,
      "requestHeader" : [
       "accept",
       "accept-charset",
@@ -444,6 +457,10 @@
       "ko,en-us;q=0.7,en;q=0.3"
      ],
      "requestHeaderValueCnt" : 6,
+     "responseBodyLen" : [
+      19071
+     ],
+     "responseBodyLenCnt" : 1,
      "responseHeader" : [
       "accept-ranges",
       "connection",

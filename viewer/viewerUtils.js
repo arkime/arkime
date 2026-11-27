@@ -19,6 +19,9 @@ const internals = require('./internals');
 const PacketPortal = require('./packetPortal');
 
 class ViewerUtils {
+  // a percentile's metricAgg name -> the percent it asks for (p50 is the median)
+  static PERCENTILE_AGGS = { p50: 50, p90: 90, p95: 95, p99: 99 };
+  static METRIC_AGGS = ['sum', 'avg', 'min', 'max', 'cardinality', ...Object.keys(ViewerUtils.PERCENTILE_AGGS)];
   static #oldDBFields = new Map();
   static #caTrustCerts = new Map();
   static #hostnameRE = /^(?:[a-zA-Z0-9._-]+|\[[0-9a-fA-F:]+\])$/;
@@ -81,12 +84,259 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
-  static graphMerge (req, query, aggregations) {
-    const filterNameMap = { totPackets: 'network.packets', totBytes: 'network.bytes' };
-    let filters = req.user.settings.timelineDataFilters || internals.settingDefaults.timelineDataFilters;
+  // Resolve a dashboard metric field exp to its dbField, but only when it names a
+  // numeric (integer) field whose per-value sum is meaningful — matching the metric
+  // set the widget editor and timeline data filters offer. Returns undefined for
+  // 'sessions', unknown, or non-numeric fields so callers fall back to a
+  // session-count metric instead of building an invalid sum aggregation.
+  // A cardinality (unique count) aggregation is meaningful on any field, so that
+  // agg accepts every field with a dbField.
+  static metricDbField (metricExp, agg) {
+    if (!ArkimeUtil.isString(metricExp) || metricExp === 'sessions') { return undefined; }
+    const field = Config.getFieldsMap()[metricExp];
+    if (!field?.dbField) { return undefined; }
+    if (agg === 'cardinality') { return field.dbField; }
+    return field.type === 'integer' ? field.dbField : undefined;
+  }
 
-    // Convert old names to new names locally
-    filters = filters.map(x => filterNameMap[x] ?? x);
+  // ----------------------------------------------------------------------------
+  // The aggregation a dashboard metric uses per bucket; anything unknown is a sum.
+  static metricAgg (agg) {
+    return ViewerUtils.METRIC_AGGS.includes(agg) ? agg : 'sum';
+  }
+
+  // ----------------------------------------------------------------------------
+  // The percent a percentile metricAgg (p50, p95, ...) asks for, else undefined.
+  static metricPercent (agg) {
+    return Object.hasOwn(ViewerUtils.PERCENTILE_AGGS, agg) ? ViewerUtils.PERCENTILE_AGGS[agg] : undefined;
+  }
+
+  // ----------------------------------------------------------------------------
+  // The aggregation for one or more percentiles of a field, as one digest.
+  // Every backend answers it as ES does ({ values: { '95.0': n, ... } }) or,
+  // for ClickHouse and a single percent, as a single value. ES and OpenSearch
+  // use an HDR histogram rather than their default t-digest: several times
+  // faster on a large search, each value within 1% (2 significant digits;
+  // 4 trips the request circuit breaker on a few million sessions). Its
+  // values are bucket bounds, so readers clamp them to the bucket's min and
+  // max (percentileAggs adds them), which keeps one session's value exact.
+  static PERCENTILE_HDR_DIGITS = 2;
+  static percentileAgg (field, percents) {
+    return {
+      percentiles: {
+        field,
+        percents: [...new Set([].concat(percents))],
+        hdr: { number_of_significant_value_digits: ViewerUtils.PERCENTILE_HDR_DIGITS }
+      }
+    };
+  }
+
+  // ----------------------------------------------------------------------------
+  // A percentile aggregation named aggName, plus the min and max of the field
+  // (aggName + 'Mn', aggName + 'Mx') that percentileIn clamps it with.
+  static percentileAggs (aggName, field, percents) {
+    return {
+      [aggName]: ViewerUtils.percentileAgg(field, percents),
+      [`${aggName}Mn`]: { min: { field } },
+      [`${aggName}Mx`]: { max: { field } }
+    };
+  }
+
+  // ----------------------------------------------------------------------------
+  // The terms/histogram order path of a percentile aggregation (ES's
+  // multi-value metric syntax, name[95.0]).
+  static percentileOrderKey (aggName, percent) {
+    return `${aggName}[${Number(percent).toFixed(1)}]`;
+  }
+
+  // ----------------------------------------------------------------------------
+  // What a percentile aggregation answered for a percent, as the backend gave it
+  static #percentileRaw (result, percent) {
+    if (!result?.values) { return result?.value; }
+    const key = percent === undefined ? undefined : Number(percent).toFixed(1);
+    return key !== undefined && Object.hasOwn(result.values, key) ? result.values[key] : Object.values(result.values)[0];
+  }
+
+  // ----------------------------------------------------------------------------
+  // True when a percentile aggregation has a value: a bucket none of whose
+  // sessions has the field answers null (percentileValue makes that 0).
+  static percentileHasValue (result, percent) {
+    const v = ViewerUtils.#percentileRaw(result, percent);
+    return typeof v === 'number' && Number.isFinite(v);
+  }
+
+  // ----------------------------------------------------------------------------
+  // A percentile aggregation's value: ES's values map (null for a bucket with
+  // no values), or a plain value; 0 when there is none. percent picks one of
+  // several (the first when not given). min and max, when finite, bound it:
+  // an HDR value is its bucket's bound, which can fall just outside them.
+  static percentileValue (result, percent, min, max) {
+    let v = ViewerUtils.#percentileRaw(result, percent);
+    if (typeof v !== 'number' || !Number.isFinite(v)) { return 0; }
+    if (typeof min === 'number' && Number.isFinite(min) && v < min) { v = min; }
+    if (typeof max === 'number' && Number.isFinite(max) && v > max) { v = max; }
+    return v;
+  }
+
+  // ----------------------------------------------------------------------------
+  // A percentile of the aggregation aggName in a bucket (or aggregations) built
+  // by percentileAggs, clamped to its min and max.
+  static percentileIn (container, aggName, percent) {
+    return ViewerUtils.percentileValue(container?.[aggName], percent, container?.[`${aggName}Mn`]?.value, container?.[`${aggName}Mx`]?.value);
+  }
+
+  // ----------------------------------------------------------------------------
+  // A requested count (eg a terms size) as an integer from 1 to max (if given);
+  // anything else is the fallback. A fractional size reaches array lengths in
+  // multies.
+  static clampInt (val, fallback, max = Infinity) {
+    const n = parseInt(val);
+    if (!Number.isFinite(n) || n <= 0) { return fallback; }
+    return Math.min(n, max);
+  }
+
+  // ----------------------------------------------------------------------------
+  // A dashboard widget can request an extra metric field (already resolved to a
+  // dbField via metricDbField); append it to the timeline data filters so its
+  // per-bucket sum / <dbField>Histo series is built alongside the user's filters.
+  static withMetricField (filters, reqQuery) {
+    const metricField = reqQuery?.metricField;
+    if (metricField && !filters.includes(metricField)) {
+      return [...filters, metricField];
+    }
+    return filters;
+  }
+
+  // ----------------------------------------------------------------------------
+  /**
+   * The series a request's timeline carries besides sessions: the user's
+   * timeline data filters (old names made new) and the metric field, or with
+   * metricOnly (a dashboard widget, which draws only its metric) just the
+   * metric field. Each is a sum per time bucket, so a series not drawn costs
+   * the database work and the response bytes of one, per bucket, per value.
+   * @param {object} req - the request (its user's settings)
+   * @param {object} [reqQuery] - the query it runs (req.query by default)
+   * @returns {string[]}
+   */
+  static timelineFilters (req, reqQuery = req.query) {
+    const filterNameMap = { totPackets: 'network.packets', totBytes: 'network.bytes' };
+    const metricOnly = reqQuery?.metricOnly === true || reqQuery?.metricOnly === 'true';
+    const filters = metricOnly ? [] : (req.user?.settings?.timelineDataFilters || internals.settingDefaults.timelineDataFilters);
+    return ViewerUtils.withMetricField(filters.map(x => filterNameMap[x] ?? x), reqQuery);
+  }
+
+  // ----------------------------------------------------------------------------
+  // the hour of week fold (interval=hourOfWeek): a weekday and hour reader per
+  // timezone, made once and kept (keyed by the zone's canonical name, so the
+  // map is bounded by the zones the runtime knows)
+  static #hourOfWeekFormats = new Map();
+  static #WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  /**
+   * The timezone an hour of week fold places buckets in: the request's IANA
+   * zone name when the runtime can use it, else UTC. Checked by making a
+   * formatter rather than against Intl.supportedValuesOf, which only lists one
+   * name per zone (Asia/Calcutta but not Asia/Kolkata, which browsers send).
+   * @param {string} timezone - the request's timezone parameter
+   * @returns {string}
+   */
+  static hourOfWeekTimezone (timezone) {
+    if (!ArkimeUtil.isString(timezone) || timezone.length > 64) { return 'UTC'; }
+    if (/^(utc|gmt|etc\/utc|etc\/gmt)$/i.test(timezone)) { return 'UTC'; }
+    try {
+      return new Intl.DateTimeFormat('en-US', { timeZone: timezone }).resolvedOptions().timeZone;
+    } catch (err) {
+      return 'UTC';
+    }
+  }
+
+  /**
+   * How far past UTC's hours a timezone's hours start, in ms (0 .. 1 hour), so
+   * hour buckets can start on its hours: 30 minutes for Asia/Kolkata (+05:30,
+   * its 16:00 is 10:30 UTC) or America/St_Johns (-03:30), 15 for
+   * Asia/Kathmandu (+05:45), 0 for most zones. Taken
+   * at one time; the few zones whose part hour changes with DST
+   * (Australia/Lord_Howe) are off by it for part of the year.
+   * @param {string} timezone - a zone hourOfWeekTimezone returned
+   * @param {number} ms - the time to take the offset at
+   * @returns {number}
+   */
+  static hourOfWeekOffsetMs (timezone, ms) {
+    const fmt = new Intl.DateTimeFormat('en-US', { timeZone: timezone, timeZoneName: 'longOffset' });
+    const offsetName = fmt.formatToParts(new Date(ms)).find(p => p.type === 'timeZoneName')?.value ?? '';
+    const m = offsetName.match(/([+-])(\d{2}):(\d{2})/); // GMT+05:30, plain GMT for UTC
+    if (!m) { return 0; }
+    const minutes = (m[1] === '-' ? -1 : 1) * (parseInt(m[2], 10) * 60 + parseInt(m[3], 10));
+    // local hh:00 is UTC hh:00 minus the offset
+    return (((-minutes % 60) + 60) % 60) * 60 * 1000;
+  }
+
+  /**
+   * The hour of week slot (0 = Monday 00:00 .. 167 = Sunday 23:00) a time
+   * falls in, in a timezone.
+   * @param {number} ms - the time
+   * @param {string} timezone - a zone hourOfWeekTimezone returned
+   * @returns {number}
+   */
+  static hourOfWeekSlot (ms, timezone) {
+    let fmt = ViewerUtils.#hourOfWeekFormats.get(timezone);
+    if (!fmt) {
+      fmt = new Intl.DateTimeFormat('en-US', { timeZone: timezone, weekday: 'short', hour: 'numeric', hourCycle: 'h23' });
+      ViewerUtils.#hourOfWeekFormats.set(timezone, fmt);
+    }
+    const parts = fmt.formatToParts(new Date(ms));
+    const day = ViewerUtils.#WEEKDAYS.indexOf(parts.find(p => p.type === 'weekday')?.value);
+    const hour = parseInt(parts.find(p => p.type === 'hour')?.value, 10) % 24;
+    return Math.max(0, day) * 24 + hour;
+  }
+
+  /**
+   * Folds a graph's hour buckets into a week: every <name>Histo series
+   * becomes [[slot, value], ...] by slot (0 = Monday 00:00 .. 167 = Sunday
+   * 23:00) in the timezone, values summed, and the graph is marked
+   * hourOfWeek. hourOfWeekHours is [[slot, hours], ...], the hours with
+   * sessions folded into each slot. The totals are left as they are, and
+   * missing bounds (an all time search) are taken from the buckets before they
+   * are folded, so they stay times rather than slots.
+   * @param {object} graph - a graphMerge graph (hour interval)
+   * @param {string} timezone - the request's timezone parameter
+   * @param {Map} [slotCache] - bucket time -> slot, shared by the graphs of
+   *   one request so each bucket is only placed once
+   */
+  static foldHourOfWeek (graph, timezone, slotCache = new Map()) {
+    const tz = ViewerUtils.hourOfWeekTimezone(timezone);
+    let min = Infinity;
+    let max = -Infinity;
+    for (const key of Object.keys(graph)) {
+      if (!key.endsWith('Histo') || !Array.isArray(graph[key])) { continue; }
+      const slots = new Map();
+      const hours = new Map();
+      for (const [ms, value] of graph[key]) {
+        if (ms < min) { min = ms; }
+        if (ms > max) { max = ms; }
+        let slot = slotCache.get(ms);
+        if (slot === undefined) {
+          slot = ViewerUtils.hourOfWeekSlot(ms, tz);
+          slotCache.set(ms, slot);
+        }
+        slots.set(slot, (slots.get(slot) || 0) + value);
+        hours.set(slot, (hours.get(slot) || 0) + 1);
+      }
+      graph[key] = [...slots.entries()].sort((a, b) => a[0] - b[0]);
+      // every bucket has sessions (min_doc_count 1), so sessionsHisto has one per hour
+      if (key === 'sessionsHisto') { graph.hourOfWeekHours = [...hours.entries()].sort((a, b) => a[0] - b[0]); }
+    }
+    if (graph.xmin === null && min !== Infinity) { graph.xmin = min; }
+    if (graph.xmax === null && max !== -Infinity) { graph.xmax = max; }
+    graph.hourOfWeek = true;
+    // the zone as the request named it (Asia/Kolkata, not the runtime's
+    // Asia/Calcutta), UTC when the request's wasn't one
+    graph.timezone = tz === 'UTC' ? 'UTC' : timezone;
+  }
+
+  // ----------------------------------------------------------------------------
+  static graphMerge (req, query, aggregations) {
+    const filters = ViewerUtils.timelineFilters(req);
 
     const graph = {
       xmin: req.query.startTime * 1000 || null,
@@ -117,7 +367,21 @@ class ViewerUtils {
       graph[filter + 'Total'] = 0;
     }
 
+    // a SPI Graph percentile: its own series, and a total that is the
+    // percentile over the whole range (from the query's top level aggregation)
+    const pct = req.metricPercentile;
+    if (pct) {
+      graph[pct.key + 'Histo'] = [];
+      graph[pct.key + 'Total'] = ViewerUtils.percentileIn(aggregations, pct.key, pct.percent);
+    }
+
+    // the hour of week fold: hour buckets become a week of slots, placed once
+    // per request (a SPI Graph request merges a graph per value)
+    const hourOfWeek = req.query.interval === 'hourOfWeek';
+    if (hourOfWeek) { req.hourOfWeekSlots ??= new Map(); }
+
     if (!aggregations || !aggregations.dbHisto) {
+      if (hourOfWeek) { ViewerUtils.foldHourOfWeek(graph, req.query.timezone, req.hourOfWeekSlots); }
       return graph;
     }
 
@@ -127,6 +391,7 @@ class ViewerUtils {
       // always add session information
       graph.sessionsHisto.push([key, item.doc_count]);
       graph.sessionsTotal += item.doc_count;
+      if (pct) { graph[pct.key + 'Histo'].push([key, ViewerUtils.percentileIn(item, pct.key, pct.percent)]); }
 
       for (const prop in item) {
         // excluding every item prop that isn't a summed up aggregate collection (ie. es keys)
@@ -155,6 +420,7 @@ class ViewerUtils {
       }
     }
 
+    if (hourOfWeek) { ViewerUtils.foldHourOfWeek(graph, req.query.timezone, req.hourOfWeekSlots); }
     return graph;
   }
 
@@ -182,9 +448,10 @@ class ViewerUtils {
   // ----------------------------------------------------------------------------
   static async loadFields () {
     try {
-      let data = await Db.loadFields();
+      // Config takes { _id, _source } field docs
+      let data = (await Db.loadFields()).map(h => ({ _id: h.id, _source: h.doc }));
       // Field docs can be written by sensors, drop a bad one before anything reads it
-      data = data.hits.hits.filter((field) => {
+      data = data.filter((field) => {
         if (Config.isValidFieldDoc(field)) { return true; }
         console.log('WARNING - skipping invalid field definition', ArkimeUtil.sanitizeStr(JSON.stringify(field?._id)));
         return false;
@@ -342,10 +609,18 @@ class ViewerUtils {
   }
 
   // ----------------------------------------------------------------------------
+  // Session ids and node names come from sensor written docs, only allow ones
+  // that can't change the structure of the s2s path or body they are put in
+  static isSafeSegment (str) {
+    return typeof str === 'string' && /^[A-Za-z0-9_.:@+=-]+$/.test(str) && str !== '.' && str !== '..';
+  }
+
+  // ----------------------------------------------------------------------------
   // URL for path on the node, or null unless path is origin-form, has no dot
-  // segments and stays on the node's origin (absolute-form, /// or /\\ won't)
+  // segments or fragment (new URL() drops it unsigned) and stays on the node's
+  // origin (absolute-form, /// or /\\ won't)
   static #nodeUrl (path, viewUrl) {
-    if (!path.startsWith('/') || ViewerUtils.#hasDotSegment(path)) { return null; }
+    if (!path.startsWith('/') || path.includes('#') || ViewerUtils.#hasDotSegment(path)) { return null; }
     const url = new URL(path.substring(1), viewUrl);
     return url.origin === new URL(viewUrl).origin ? url : null;
   }
@@ -399,6 +674,30 @@ class ViewerUtils {
       preq.end();
     } catch (err) {
       cb(err);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Like makeRequest but invokes onResponse(IncomingMessage) so the caller can
+  // stream/pipe the body instead of buffering. No retry on error.
+  static async makeStreamRequest (node, path, user, onResponse, onError, cluster) {
+    try {
+      const { viewUrl, client } = await ViewerUtils.getViewUrl(node);
+      const url = ViewerUtils.#nodeUrl(encodeURI(path), viewUrl);
+      if (!url) {
+        throw new Error(`Bad path ${path}`);
+      }
+      const options = {
+        timeout: 20 * 60 * 1000,
+        agent: client === http ? internals.httpAgent : internals.httpsAgent
+      };
+      Auth.addS2SAuth(options, user, node, url.pathname + (url.search ?? ''), ViewerUtils.getClusterSecret(cluster));
+      ViewerUtils.addCaTrust(options, node);
+      const preq = client.request(url, options, onResponse);
+      preq.on('error', (err) => onError(err));
+      preq.end();
+    } catch (err) {
+      onError(err);
     }
   }
 

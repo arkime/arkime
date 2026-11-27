@@ -1,0 +1,162 @@
+{
+  "name": "Routing",
+  "description": "Routing protocol sessions: OSPF, BGP and IS-IS routers, areas and message types",
+  "data": {
+    "version": 1,
+    "folder": "Analysis",
+    "colorScheme": "rainbow",
+    "expression": "protocols == [ospf, bgp, isis]",
+    "widgets": [
+      {
+        "id": "w0",
+        "viewMode": "navigation",
+        "width": 4,
+        "height": 1
+      },
+      {
+        "id": "w1",
+        "viewMode": "timeline",
+        "splitField": "protocols",
+        "splitLength": 3,
+        "barMode": "stacked",
+        "width": 3,
+        "height": 2,
+        "title": "Routing sessions by protocol"
+      },
+      {
+        "id": "w2",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Routing sessions"
+      },
+      {
+        "id": "w3",
+        "viewMode": "metric",
+        "width": 1,
+        "height": 1,
+        "title": "Routers",
+        "metricType": "ip.src",
+        "metricAgg": "cardinality"
+      },
+      {
+        "id": "w4",
+        "field": "protocols",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 5,
+        "other": true,
+        "title": "Routing protocols"
+      },
+      {
+        "id": "w5",
+        "field": "ospf.msgType",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "OSPF message types"
+      },
+      {
+        "id": "w6",
+        "field": "ospf.routerId",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "OSPF router IDs"
+      },
+      {
+        "id": "w7",
+        "field": "ospf.areaId",
+        "viewMode": "table",
+        "width": 2,
+        "height": 2,
+        "length": 20,
+        "title": "OSPF areas"
+      },
+      {
+        "id": "w8",
+        "field": "bgp.type",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "BGP message types"
+      },
+      {
+        "id": "w9",
+        "field": "isis.msgType",
+        "viewMode": "pie",
+        "width": 2,
+        "height": 2,
+        "length": 8,
+        "other": true,
+        "title": "IS-IS message types"
+      },
+      {
+        "id": "w10",
+        "field": "ip.src",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "packets"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Routers"
+      },
+      {
+        "id": "w11",
+        "field": "ip.dst",
+        "viewMode": "table",
+        "width": 2,
+        "height": 3,
+        "length": 20,
+        "metrics": [
+          "sessions",
+          "packets"
+        ],
+        "sortMetric": "sessions",
+        "metricType": "sessions",
+        "title": "Peers and groups"
+      },
+      {
+        "id": "w12",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst"
+        ],
+        "viewMode": "connections",
+        "width": 4,
+        "height": 3,
+        "length": 500,
+        "title": "Routing adjacencies"
+      },
+      {
+        "id": "w13",
+        "field": "ip.src",
+        "fields": [
+          "ip.src",
+          "ip.dst",
+          "protocols",
+          "ospf.msgType",
+          "ospf.routerId",
+          "ospf.areaId",
+          "bgp.type"
+        ],
+        "viewMode": "sessions",
+        "width": 4,
+        "height": 3,
+        "length": 20
+      }
+    ]
+  }
+}

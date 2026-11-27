@@ -12,6 +12,7 @@ LOCAL  int userField;
 LOCAL  int commandField;
 LOCAL  int filenameField;
 LOCAL  int responseCodeField;
+LOCAL  int responseMsgField;
 LOCAL  int bannerField;
 
 #define FTP_LINE_MAX 4096
@@ -92,6 +93,10 @@ LOCAL void ftp_process_server_line(FTPInfo_t *ftp, ArkimeSession_t *session, con
 
     int code = (line[0] - '0') * 100 + (line[1] - '0') * 10 + (line[2] - '0');
     arkime_field_int_add(responseCodeField, session, code);
+
+    // Final reply text, skipping the per transfer 150/226 chatter
+    if (line[3] == ' ' && len > 4 && code != 150 && code != 226)
+        arkime_field_string_add(responseMsgField, session, line, MIN(len, 128), TRUE);
 
     if (!ftp->sawBanner && code == 220) {
         const char *msg = line + 4;
@@ -214,6 +219,12 @@ void arkime_parser_init()
                                             "FTP response code",
                                             ARKIME_FIELD_TYPE_INT_GHASH, ARKIME_FIELD_FLAG_CNT,
                                             (char *)NULL);
+
+    responseMsgField = arkime_field_define("ftp", "termfield",
+                                           "ftp.responseMsg", "Response Message", "ftp.responseMsg",
+                                           "FTP server reply lines",
+                                           ARKIME_FIELD_TYPE_STR_HASH,  ARKIME_FIELD_FLAG_CNT,
+                                           (char *)NULL);
 
     bannerField = arkime_field_define("ftp", "termfield",
                                       "ftp.banner", "Banner", "ftp.banner",

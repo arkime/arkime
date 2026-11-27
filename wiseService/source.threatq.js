@@ -40,14 +40,7 @@ class ThreatQSource extends WISESource {
     this.campaignField = this.api.addField('field:threatq.campaign;db:threatq.campaign;kind:lotermfield;friendly:Campaign;help:Campaign Attribution;shortcut:3;count:true');
 
     this.api.addView('threatq',
-      'if (session.threatq)\n' +
-      '  div.sessionDetailMeta.bold ThreatQ\n' +
-      '  dl.sessionDetailMeta\n' +
-      "    +arrayList(session.threatq, 'id', 'Id', 'threatq.id')\n" +
-      "    +arrayList(session.threatq, 'type', 'Type', 'threatq.type')\n" +
-      "    +arrayList(session.threatq, 'source', 'Source', 'threatq.source')\n" +
-      "    +arrayList(session.threatq, 'campaign', 'Campaign', 'threatq.campaign')\n"
-    );
+      'require:threatq;title:ThreatQ;fields:threatq.id,threatq.type,threatq.source,threatq.campaign');
 
     this.api.addValueAction('threatqip', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%TEXT%`, category: 'ip' });
     this.api.addValueAction('threatqhost', { name: 'ThreatQ', url: `https://${this.host}/search.php?search=%HOST%`, category: 'host' });

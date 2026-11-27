@@ -15,6 +15,12 @@ const zlib = require('zlib');
 const ArkimeUtil = require('../common/arkimeUtil');
 const { LRUCache } = require('lru-cache');
 
+// Compressed pcap is read in slices that end mid-frame, so the decoder must
+// hand back what it has instead of failing on the truncated tail. For zstd that
+// is ZSTD_e_flush: Z_SYNC_FLUSH has the value of ZSTD_e_end, which Node 24.22+
+// treats as "the input must be complete" and rejects with Z_BUF_ERROR.
+const ZSTD_FINISH_FLUSH = zlib.constants.ZSTD_e_flush;
+
 const pr2name = {
   1: 'icmp',
   2: 'igmp',
@@ -38,6 +44,36 @@ class Pcap {
   #lastMsg;
 
   static #etherCBs = new Map();
+  static #unknownLogged = new Map();
+
+  // --------------------------------------------------------------------------
+  // Each unknown type is logged at most once a minute, a session full of them, or crafted
+  // packets, would otherwise log a line for every packet that is decoded
+  static #logUnknown (what, type, ...extra) {
+    const key = `${what}-${type}`;
+    const now = Date.now();
+    let entry = Pcap.#unknownLogged.get(key);
+    if (entry && now - entry.last < 60000) {
+      entry.skipped++;
+      return;
+    }
+    if (!entry) {
+      if (Pcap.#unknownLogged.size >= 1000) {
+        // Make room from the ones not logged in the last minute, otherwise once full nothing
+        // new would ever be logged
+        for (const [oldKey, old] of Pcap.#unknownLogged) {
+          if (now - old.last >= 60000) { Pcap.#unknownLogged.delete(oldKey); }
+        }
+        if (Pcap.#unknownLogged.size >= 1000) { return; }
+      }
+      entry = { last: 0, skipped: 0 };
+      Pcap.#unknownLogged.set(key, entry);
+    }
+    const skipped = entry.skipped ? [`(${entry.skipped} more since last logged)`] : [];
+    entry.last = now;
+    entry.skipped = 0;
+    console.log('Unknown', what, type, ...extra, ...skipped, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
+  }
 
   // --------------------------------------------------------------------------
   constructor (key) {
@@ -81,8 +117,9 @@ class Pcap {
   // current block is unused, so truncating loses nothing and bounds memory.
   static decompressBlock (compression, buffer, maxLength) {
     return new Promise((resolve, reject) => {
-      const opts = { finishFlush: zlib.constants.Z_SYNC_FLUSH };
-      const stream = compression === 'gzip' ? zlib.createInflateRaw(opts) : zlib.createZstdDecompress(opts);
+      const stream = compression === 'gzip'
+        ? zlib.createInflateRaw({ finishFlush: zlib.constants.Z_SYNC_FLUSH })
+        : zlib.createZstdDecompress({ finishFlush: ZSTD_FINISH_FLUSH });
       const chunks = [];
       let len = 0;
       let done = false;
@@ -112,11 +149,39 @@ class Pcap {
   }
 
   // --------------------------------------------------------------------------
-  static make (key, header) {
+  // Sync gzip or zstd decompress of the longest prefix of buffer that fits in maxLength bytes
+  static decompressPrefixSync (compression, buffer, maxLength) {
+    let len = buffer.length;
+    while (true) {
+      try {
+        const input = buffer.subarray(0, len);
+        return compression === 'gzip'
+          ? zlib.gunzipSync(input, { finishFlush: zlib.constants.Z_SYNC_FLUSH, maxOutputLength: maxLength })
+          : zlib.zstdDecompressSync(input, { finishFlush: ZSTD_FINISH_FLUSH, maxOutputLength: maxLength });
+      } catch (e) {
+        if (e.code !== 'ERR_BUFFER_TOO_LARGE' || len <= 1) { throw e; }
+        len = Math.floor(len / 2);
+      }
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  static make (key, header, interfaceOffsets) {
     const pcap = new Pcap(key);
     pcap.headBuffer = header;
 
     const magic = pcap.headBuffer.readUInt32LE(0);
+
+    // pcapng Section Header Block: learn every interface's link type so packets
+    // read back from the block reader decode with the right DLT, exactly like a
+    // pcapng file opened from disk.
+    if (magic === 0x0a0d0d0a) {
+      pcap.isPcapNG = true;
+      pcap.ngInterfaces = Pcap.parseNgInterfaces(header, interfaceOffsets);
+      pcap.linkType = pcap.ngInterfaces[0]?.linkType ?? 0;
+      return pcap;
+    }
+
     pcap.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
     pcap.nanosecond = (magic === 0xa1b23c4d || magic === 0x4d3cb2a1);
     if (magic === 0xa1b2c3d5) {
@@ -153,6 +218,7 @@ class Pcap {
     }
     this.filename = info.name;
     this.encoding = info.encoding ?? 'normal';
+    this.interfaceOffsets = info.interfaceOffsets;
 
     if (info.dek) {
       if (info.dekEncoding === 'aes-256-gcm') {
@@ -289,7 +355,7 @@ class Pcap {
         if (this.compression === 'gzip') {
           this.headBuffer = zlib.gunzipSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
         } else if (this.compression === 'zstd') {
-          this.headBuffer = zlib.zstdDecompressSync(this.headBuffer, { finishFlush: zlib.constants.Z_SYNC_FLUSH });
+          this.headBuffer = zlib.zstdDecompressSync(this.headBuffer, { finishFlush: ZSTD_FINISH_FLUSH });
         }
       } catch (e) {
         this.corrupt = true;
@@ -298,10 +364,18 @@ class Pcap {
       }
     }
 
+    const magic = this.headBuffer.readUInt32LE(0);
+
+    // pcapng - Section Header Block magic
+    if (magic === 0x0a0d0d0a) {
+      this.isPcapNG = true;
+      this.parseNgHeader();
+      return this.headBuffer;
+    }
+
     // Actual pcap header is 24, that is all we need
     this.headBuffer = this.headBuffer.slice(0, 24);
 
-    const magic = this.headBuffer.readUInt32LE(0);
     this.bigEndian = (magic === 0xd4c3b2a1 || magic === 0x4d3cb2a1);
     this.nanosecond = (magic === 0xa1b23c4d || magic === 0x4d3cb2a1);
 
@@ -324,6 +398,115 @@ class Pcap {
     }
 
     return this.headBuffer;
+  }
+
+  // --------------------------------------------------------------------------
+  // Decode an aes/xor/gzip/zstd encoded region read from the start of the file.
+  #decodeRegion (buf) {
+    if (this.encoding === 'aes-256-ctr') {
+      const decipher = this.createDecipher(0);
+      buf = Buffer.concat([decipher.update(buf), decipher.final()]);
+    } else if (this.encoding === 'xor-2048') {
+      buf = Buffer.from(buf);
+      for (let i = 0; i < buf.length; i++) {
+        buf[i] ^= this.encKey[i % 256];
+      }
+    }
+    if (this.uncompressedBits && (this.compression === 'gzip' || this.compression === 'zstd')) {
+      try {
+        buf = Pcap.decompressPrefixSync(this.compression, buf, this.uncompressedBitsSize + 0x20000);
+      } catch (e) {
+        console.log('PCAP uncompress issue', this.key, e);
+        buf = Buffer.alloc(0);
+      }
+    }
+    return buf;
+  }
+
+  // --------------------------------------------------------------------------
+  // Parse the leading Section Header + Interface Description Blocks of a pcapng
+  // file to learn each interface's link type (indexed by interface_id) so that
+  // packets read back from arbitrary offsets can be decoded with the right DLT.
+  parseNgHeader () {
+    this.ngInterfaces = [];
+
+    const region = Buffer.alloc(65536);
+    const len = fs.readSync(this.fd, region, 0, region.length, 0);
+    const buf = this.#decodeRegion(region.slice(0, len));
+
+    // Fast path: the files index has the IDB offset of each interface, so parse
+    // each one directly instead of scanning. interfaceOffsets is indexed by
+    // pcapng interface_id (offsets are into the uncompressed stream).
+    if (Array.isArray(this.interfaceOffsets) && this.interfaceOffsets.length > 0) {
+      for (const off of this.interfaceOffsets) {
+        const iface = this.#parseNgIdb(buf, off);
+        this.ngInterfaces.push(iface ?? { linkType: 0, snaplen: 0, tsresol: 1000000 });
+      }
+      if (this.ngInterfaces.length > 0) {
+        this.linkType = this.ngInterfaces[0].linkType;
+      }
+      return;
+    }
+
+    let pos = 0;
+    while (pos + 12 <= buf.length) {
+      const blockType = buf.readUInt32LE(pos);
+      const blockLen = buf.readUInt32LE(pos + 4);
+      if (blockLen < 12 || pos + blockLen > buf.length) {
+        break;
+      }
+
+      if (blockType === 0x00000001) { // Interface Description Block
+        // #parseNgIdb returns undefined for a malformed/too-short IDB (capture
+        // accepts block_total_length down to 16, stricter than our 20); default
+        // it like the fast path above so ngInterfaces never holds undefined.
+        this.ngInterfaces.push(this.#parseNgIdb(buf, pos) ?? { linkType: 0, snaplen: 0, tsresol: 1000000 });
+      } else if (blockType === 0x00000006 || blockType === 0x00000003) {
+        // First Enhanced/Simple Packet Block - interfaces seen so far are enough
+        break;
+      }
+
+      pos += blockLen;
+    }
+
+    if (this.ngInterfaces.length > 0) {
+      this.linkType = this.ngInterfaces[0]?.linkType;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Parse a single Interface Description Block at pos in buf, returning
+  // { linkType, snaplen, tsresol } or undefined if pos isn't a valid IDB.
+  #parseNgIdb (buf, pos) {
+    if (pos < 0 || pos + 12 > buf.length) { return undefined; }
+    const blockType = buf.readUInt32LE(pos);
+    const blockLen = buf.readUInt32LE(pos + 4);
+    if (blockType !== 0x00000001 || blockLen < 20 || pos + blockLen > buf.length) {
+      return undefined;
+    }
+
+    const linkType = buf.readUInt16LE(pos + 8);
+    const snaplen = buf.readUInt32LE(pos + 12);
+    let tsresol = 1000000;
+    // Walk options for if_tsresol (code 9)
+    let o = pos + 16;
+    const optsEnd = pos + blockLen - 4;
+    while (o + 4 <= optsEnd) {
+      const otype = buf.readUInt16LE(o);
+      const olen = buf.readUInt16LE(o + 2);
+      o += 4;
+      if (otype === 0) { break; }
+      if (otype === 9 && olen >= 1) {
+        const v = buf.readUInt8(o);
+        if (v & 0x80) {
+          tsresol = Math.pow(2, v & 0x7f);
+        } else {
+          tsresol = Math.pow(10, v);
+        }
+      }
+      o += olen + ((4 - (olen & 3)) & 3);
+    }
+    return { linkType, snaplen, tsresol };
   }
 
   // --------------------------------------------------------------------------
@@ -429,6 +612,10 @@ class Pcap {
       await ArkimeUtil.yield(10);
     }
 
+    if (this.isPcapNG) {
+      return this.readPacketNg(pos);
+    }
+
     try {
       let readBuffer = await this.readAndSliceBlock(pos);
       if (!readBuffer) {
@@ -505,6 +692,131 @@ class Pcap {
   }
 
   // --------------------------------------------------------------------------
+  // Read one pcapng Enhanced/Simple Packet Block at pos and return a buffer in
+  // the classic "[16-byte pcap record header][frame]" shape so the rest of the
+  // decode/reassembly code is unchanged. The per-packet link type (from the
+  // referenced interface) is attached as buffer.ngLinkType.
+  async readPacketNg (pos) {
+    try {
+      let readBuffer = await this.readAndSliceBlock(pos);
+      if (!readBuffer || readBuffer.length < 32) {
+        const more = await this.readAndSliceBlock(pos + (readBuffer ? readBuffer.length : 0));
+        if (!more) { return undefined; }
+        readBuffer = readBuffer ? Buffer.concat([readBuffer, more]) : more;
+        if (readBuffer.length < 32) { return undefined; }
+      }
+
+      const blockType = readBuffer.readUInt32LE(0);
+      const blockLen = readBuffer.readUInt32LE(4);
+
+      let interfaceId, tsHigh, tsLow, caplen, dataOffset;
+      if (blockType === 0x00000006) { // Enhanced Packet Block
+        interfaceId = readBuffer.readUInt32LE(8);
+        tsHigh = readBuffer.readUInt32LE(12);
+        tsLow = readBuffer.readUInt32LE(16);
+        caplen = readBuffer.readUInt32LE(20);
+        dataOffset = 28;
+      } else if (blockType === 0x00000003) { // Simple Packet Block
+        interfaceId = 0;
+        tsHigh = 0;
+        tsLow = 0;
+        caplen = blockLen - 16;
+        dataOffset = 12;
+      } else {
+        return null;
+      }
+
+      if (caplen < 0 || caplen > 0xffff) {
+        return undefined;
+      }
+
+      // Make sure we have the whole packet
+      if (readBuffer.length < dataOffset + caplen) {
+        const more = await this.readAndSliceBlock(pos + readBuffer.length);
+        if (!more || readBuffer.length + more.length < dataOffset + caplen) {
+          return undefined;
+        }
+        readBuffer = Buffer.concat([readBuffer, more]);
+      }
+
+      const iface = this.ngInterfaces?.[interfaceId];
+      const tsresol = iface?.tsresol ?? 1000000;
+      const ts = tsHigh * 0x100000000 + tsLow;
+      const sec = Math.floor(ts / tsresol);
+      const usec = Math.floor((ts % tsresol) * 1000000 / tsresol);
+
+      const newBuffer = Buffer.allocUnsafe(16 + caplen);
+      newBuffer.writeUInt32LE(sec >>> 0, 0);
+      newBuffer.writeUInt32LE(usec >>> 0, 4);
+      newBuffer.writeUInt32LE(caplen, 8);
+      newBuffer.writeUInt32LE(caplen, 12);
+      readBuffer.copy(newBuffer, 16, dataOffset, dataOffset + caplen);
+      newBuffer.ngLinkType = iface ? iface.linkType : this.linkType;
+      return newBuffer;
+    } catch (err) {
+      return undefined;
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Where the headers that scrubbing keeps end, relative to the start of the pcap record
+  #headersEnd (packet) {
+    // No ip layer, like arp or an unknown ethertype, there are no headers known to be safe
+    // to keep so only the pcap record header is
+    if (!packet.ip) { return 16; }
+
+    const frag = packet.ip.frag;
+    if (frag) {
+      // A first ip4 fragment still has the headers after its ip header, for a tunnel the
+      // inner ones too, so decode them like a whole packet to keep them
+      if (frag.v === 4 && frag.off === 0) {
+        try {
+          const ip = { ...packet.ip, p: frag.p };
+          delete ip.data;
+          const obj = { pcap: packet.pcap, ip };
+          this.ip4payload(frag.buffer, obj, frag.pos);
+          if (obj.ip !== ip) { return this.#headersEnd(obj); }
+        } catch (e) {
+          // The inner headers aren't all in this fragment, keep what the outer ones say
+        }
+      }
+
+      // Only the first fragment has a transport header to keep
+      const payloadPos = frag.pos + frag.hdrLen + (frag.v === 6 ? 8 : 0);
+      if (frag.off !== 0) {
+        return payloadPos;
+      } else if (frag.p === 6) {
+        return payloadPos + (frag.payload.length > 12 ? 4 * ((frag.payload[12] >> 4) & 0xf) : 20);
+      } else {
+        return payloadPos + 8;
+      }
+    }
+
+    switch (packet.ip.p) {
+    case 1:
+    case 58:
+      if (packet.icmp) { return packet.icmp._pos + 8; }
+      break;
+    case 6:
+      if (packet.tcp) { return packet.tcp._pos + 4 * packet.tcp.off; }
+      break;
+    case 17:
+      if (packet.udp) { return packet.udp._pos + 8; }
+      break;
+    case 50:
+      if (packet.esp) { return packet.esp._pos + 8; } // spi and sequence number
+      break;
+    case 132:
+      if (packet.sctp) { return packet.sctp._pos + 8; }
+      break;
+    }
+
+    // No transport header to keep, from another protocol or one too short to decode, so keep
+    // just the ip header
+    return packet.ip.dataPos ?? 16;
+  }
+
+  // --------------------------------------------------------------------------
   scrubPacket (packet, pos, buf, entire) {
     this.blockCache.clear();
     const headerLen = (this.shortHeader === undefined) ? 16 : 6;
@@ -514,23 +826,7 @@ class Pcap {
       pos += headerLen; // Don't delete pcap header
       len -= headerLen;
     } else {
-      let skip;
-      switch (packet.ip.p) {
-      case 1:
-        skip = packet.icmp._pos + 8;
-        break;
-      case 6:
-        skip = packet.tcp._pos + 4 * packet.tcp.off;
-        break;
-      case 17:
-        skip = packet.udp._pos + 8;
-        break;
-      case 132:
-        skip = packet.sctp._pos + 8;
-        break;
-      default:
-        throw new Error("Unknown packet type, can't scrub");
-      }
+      let skip = Math.min(this.#headersEnd(packet), packet.pcap.incl_len + 16);
       // decode() runs on the buffer readPacket rebuilds with a standard
       // 16 byte header, so _pos values are 16-based even when the on-disk
       // record header is 6 bytes
@@ -563,6 +859,12 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   icmp (buffer, obj, pos) {
+    // Too short for the header, the payload is all there is, like a fragment
+    if (buffer.length < 4) {
+      obj.ip.data = buffer;
+      return;
+    }
+
     obj.icmp = {
       _pos: pos,
       length: buffer.length,
@@ -578,41 +880,49 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   tcp (buffer, obj, pos) {
-    try {
-      obj.tcp = {
-        _pos: pos,
-        length: buffer.length,
-        sport: buffer.readUInt16BE(0),
-        dport: buffer.readUInt16BE(2),
-        seq: buffer.readUInt32BE(4),
-        ack: buffer.readUInt32BE(8),
-        off: ((buffer[12] >> 4) & 0xf),
-        res1: (buffer[12] & 0xf),
-        flags: buffer[13],
-        res2: (buffer[13] >> 6 & 0x3),
-        urgflag: (buffer[13] >> 5 & 0x1),
-        ackflag: (buffer[13] >> 4 & 0x1),
-        pshflag: (buffer[13] >> 3 & 0x1),
-        rstflag: (buffer[13] >> 2 & 0x1),
-        synflag: (buffer[13] >> 1 & 0x1),
-        finflag: (buffer[13] >> 0 & 0x1),
-        win: buffer.readUInt16BE(14),
-        sum: buffer.readUInt16BE(16),
-        urp: buffer.readUInt16BE(18)
-      };
+    // Too short for the header, the payload is all there is, like a fragment
+    if (buffer.length < 20) {
+      obj.ip.data = buffer;
+      return;
+    }
 
-      if (4 * obj.tcp.off > buffer.length) {
-        obj.tcp.data = EMPTY_BUFFER;
-      } else {
-        obj.tcp.data = buffer.slice(4 * obj.tcp.off);
-      }
-    } catch (e) {
-      console.trace("Couldn't parse tcp", e);
+    obj.tcp = {
+      _pos: pos,
+      length: buffer.length,
+      sport: buffer.readUInt16BE(0),
+      dport: buffer.readUInt16BE(2),
+      seq: buffer.readUInt32BE(4),
+      ack: buffer.readUInt32BE(8),
+      off: ((buffer[12] >> 4) & 0xf),
+      res1: (buffer[12] & 0xf),
+      flags: buffer[13],
+      res2: (buffer[13] >> 6 & 0x3),
+      urgflag: (buffer[13] >> 5 & 0x1),
+      ackflag: (buffer[13] >> 4 & 0x1),
+      pshflag: (buffer[13] >> 3 & 0x1),
+      rstflag: (buffer[13] >> 2 & 0x1),
+      synflag: (buffer[13] >> 1 & 0x1),
+      finflag: (buffer[13] >> 0 & 0x1),
+      win: buffer.readUInt16BE(14),
+      sum: buffer.readUInt16BE(16),
+      urp: buffer.readUInt16BE(18)
+    };
+
+    if (4 * obj.tcp.off > buffer.length) {
+      obj.tcp.data = EMPTY_BUFFER;
+    } else {
+      obj.tcp.data = buffer.slice(4 * obj.tcp.off);
     }
   }
 
   // --------------------------------------------------------------------------
   udp (buffer, obj, pos) {
+    // Too short for the header, the payload is all there is, like a fragment
+    if (buffer.length < 8) {
+      obj.ip.data = buffer;
+      return;
+    }
+
     obj.udp = {
       _pos: pos,
       length: buffer.length,
@@ -622,7 +932,9 @@ class Pcap {
       sum: buffer.readUInt16BE(6)
     };
 
-    obj.udp.data = buffer.slice(8);
+    // Like capture the datagram ends where the udp length says, unless it says more than there is
+    const end = (obj.udp.ulen >= 8 && obj.udp.ulen <= buffer.length) ? obj.udp.ulen : buffer.length;
+    obj.udp.data = buffer.slice(8, end);
     const data = obj.udp.data;
 
     // vxlan
@@ -640,8 +952,7 @@ class Pcap {
       case 3:
         return this.ether(buffer.slice(16), obj, pos + 16);
       case 4:
-      // TODO NSH
-        break;
+        return this.nsh(buffer.slice(16), obj, pos + 16);
       }
     }
 
@@ -687,6 +998,12 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   sctp (buffer, obj, pos) {
+    // Too short for the common header, the payload is all there is, like a fragment
+    if (buffer.length < 12) {
+      obj.ip.data = buffer;
+      return;
+    }
+
     obj.sctp = {
       _pos: pos,
       length: buffer.length,
@@ -709,6 +1026,11 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   gre (buffer, obj, pos) {
+    if (buffer.length < 4) {
+      obj.ip.data = buffer;
+      return;
+    }
+
     obj.gre = {
       flags_version: buffer.readUInt16BE(0),
       type: buffer.readUInt16BE(2)
@@ -750,7 +1072,8 @@ class Pcap {
     if (obj.gre.type === 0x88be && (obj.gre.flags_version & 0x1000) === 0) {
       this.ethertyperun(0, buffer.slice(bpos), obj, pos + bpos);
     } else if (!this.ethertyperun(obj.gre.type, buffer.slice(bpos), obj, pos + bpos)) {
-      console.log('gre Unknown type', obj.gre.type, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
+      this.#undecoded(buffer.slice(bpos), obj);
+      Pcap.#logUnknown('gre.type', obj.gre.type);
     }
   }
 
@@ -774,7 +1097,28 @@ class Pcap {
   }
 
   // --------------------------------------------------------------------------
+  // What can't be decoded, a header that isn't all there or an unknown type, is data of the
+  // layer it is in so what is around it can still be shown, an outer ip when tunneled, else
+  // the ethernet frame
+  #undecoded (buffer, obj) {
+    if (obj.ip) {
+      obj.ip.data = buffer;
+    } else {
+      obj.ether ??= {};
+      obj.ether.data = buffer;
+    }
+  }
+
+  // --------------------------------------------------------------------------
   ip4 (buffer, obj, pos) {
+    // Which ip layer this is, like capture fragments are only put back together with
+    // fragments from the same layer, an outer and inner header can have the same id
+    obj.ipDepth = (obj.ipDepth ?? 0) + 1;
+    if (buffer.length < 20) {
+      this.#undecoded(buffer, obj);
+      return;
+    }
+
     obj.ip = {
       length: buffer.length,
       hl: (buffer[0] & 0xf),
@@ -790,11 +1134,39 @@ class Pcap {
       addr2: Pcap.inet_ntoa(buffer.readUInt32BE(16))
     };
 
-    // Non-first fragments don't have transport headers, force raw handling
-    if ((obj.ip.off & 0x1fff) !== 0) {
+    // Capture saves the fragments as they were on the wire, Pcap.defrag() stitches them back
+    // into the datagram. Until then a fragment has no transport layer.
+    if ((obj.ip.off & 0x3fff) !== 0) {
+      obj.ip.frag = {
+        pcap: this,
+        v: 4,
+        depth: obj.ipDepth,
+        buffer,
+        pos,
+        hdrLen: obj.ip.hl * 4,
+        id: obj.ip.id,
+        p: obj.ip.p,
+        off: (obj.ip.off & 0x1fff) * 8,
+        more: (obj.ip.off & 0x2000) !== 0,
+        payload: buffer.slice(obj.ip.hl * 4, obj.ip.len)
+      };
       obj.ip.p = 0;
     }
 
+    this.ip4payload(buffer, obj, pos);
+  }
+
+  // --------------------------------------------------------------------------
+  ip4payload (buffer, obj, pos) {
+    // A header length shorter than the header, or longer than the packet, has no payload
+    if (obj.ip.hl < 5 || obj.ip.len < obj.ip.hl * 4) {
+      obj.ip.data = EMPTY_BUFFER;
+      obj.ip.dataPos = pos + 20;
+      return;
+    }
+
+    // Where the ip payload starts, scrubbing keeps up to here when there is nothing else to keep
+    obj.ip.dataPos = pos + obj.ip.hl * 4;
     switch (obj.ip.p) {
     case 1:
       this.icmp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
@@ -804,6 +1176,9 @@ class Pcap {
       break;
     case 17:
       this.udp(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
+      break;
+    case 4: // IPPROTO_IPV4
+      this.ip4(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
       break;
     case 41: // IPPROTO_IPV6
       this.ip6(buffer.slice(obj.ip.hl * 4, obj.ip.len), obj, pos + obj.ip.hl * 4);
@@ -825,6 +1200,12 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   ip6 (buffer, obj, pos) {
+    obj.ipDepth = (obj.ipDepth ?? 0) + 1; // see ip4
+    if (buffer.length < 40) {
+      this.#undecoded(buffer, obj);
+      return;
+    }
+
     obj.ip = {
       length: buffer.length,
       v: ((buffer[0] >> 4) & 0xf),
@@ -837,44 +1218,73 @@ class Pcap {
       addr2: ipaddr.fromByteArray(buffer.slice(24, 40)).toString()
     };
 
+    // The payload length counts from the end of the fixed header, extension headers included
+    const end = 40 + obj.ip.len;
+    obj.ip.dataPos = pos + 40; // when there is nothing after the header
     let offset = 40;
+    let nxtPos = 6; // where the next header byte for the header at offset is
     while (offset < buffer.length) {
+      obj.ip.dataPos = pos + offset;
       switch (obj.ip.p) {
       case 0: // IPPROTO_HOPOPTS:
       case 60: // IPPROTO_DSTOPTS:
       case 43: // IPPROTO_ROUTING:
         // Cut off before the length byte, the undefined length would add 0 and loop forever
         if (offset + 1 >= buffer.length) {
-          obj.ip.data = buffer.slice(offset, offset + obj.ip.len);
+          obj.ip.data = buffer.slice(offset, end);
           return;
         }
         obj.ip.p = buffer[offset];
+        nxtPos = offset;
         offset += ((buffer[offset + 1] + 1) << 3);
         break;
+      case 44: // IPPROTO_FRAGMENT, see ip4 above
+        if (offset + 8 <= buffer.length) {
+          const offFlags = buffer.readUInt16BE(offset + 2);
+          obj.ip.frag = {
+            pcap: this,
+            v: 6,
+            depth: obj.ipDepth,
+            buffer,
+            pos,
+            hdrLen: offset,
+            nxtPos,
+            id: buffer.readUInt32BE(offset + 4),
+            p: buffer[offset],
+            off: offFlags & 0xfff8,
+            more: (offFlags & 1) !== 0,
+            payload: buffer.slice(offset + 8, end)
+          };
+        }
+        obj.ip.data = buffer.slice(offset, end);
+        return;
       case 1:
       case 58:
-        this.icmp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+        this.icmp(buffer.slice(offset, end), obj, pos + offset);
         return;
       case 4: // IPPROTO_IPV4
-        this.ip4(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+        this.ip4(buffer.slice(offset, end), obj, pos + offset);
         return;
       case 6:
-        this.tcp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+        this.tcp(buffer.slice(offset, end), obj, pos + offset);
         return;
       case 17:
-        this.udp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+        this.udp(buffer.slice(offset, end), obj, pos + offset);
+        return;
+      case 41: // IPPROTO_IPV6
+        this.ip6(buffer.slice(offset, end), obj, pos + offset);
         return;
       case 47:
-        this.gre(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+        this.gre(buffer.slice(offset, end), obj, pos + offset);
         return;
       case 50: // IPPROTO_ESP
-        this.esp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+        this.esp(buffer.slice(offset, end), obj, pos + offset);
         return;
       case 132:
-        this.sctp(buffer.slice(offset, offset + obj.ip.len), obj, pos + offset);
+        this.sctp(buffer.slice(offset, end), obj, pos + offset);
         return;
       default:
-        obj.ip.data = buffer.slice(offset, offset + obj.ip.len);
+        obj.ip.data = buffer.slice(offset, end);
         // console.log("v6 Unknown ip.p", obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
         return;
       }
@@ -883,8 +1293,15 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   pppoe (buffer, obj, pos) {
+    // Same checks as capture, a session packet with a length that fits
+    const plen = buffer.length >= 8 ? buffer.readUInt16BE(4) : 0;
+    if (buffer[0] !== 0x11 || buffer[1] !== 0 || plen < 2 || plen > buffer.length - 6) {
+      this.#undecoded(buffer, obj);
+      return;
+    }
+
     obj.pppoe = {
-      len: buffer.readUInt16BE(4) - 2,
+      len: plen - 2, // the length includes the protocol
       type: buffer.readUInt16BE(6)
     };
 
@@ -896,25 +1313,78 @@ class Pcap {
       this.ip6(buffer.slice(8, 8 + obj.pppoe.len), obj, pos + 8);
       return;
     default:
-      console.log('Unknown pppoe.type', obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
+      this.#undecoded(buffer.slice(8, 8 + obj.pppoe.len), obj);
+      Pcap.#logUnknown('pppoe.type', obj.pppoe.type);
     }
   }
 
   // --------------------------------------------------------------------------
   ppp (buffer, obj, pos) {
-    obj.ppp = {
-      type: buffer.readUInt16BE(2)
-    };
+    // Like capture the address and control bytes (0xff 0x03) can be left out (ACFC), and the
+    // protocol can be one byte when it is odd (PFC)
+    let offset = 0;
+    if (buffer[0] === 0xff) {
+      offset = 2;
+    }
+    let type;
+    if (offset < buffer.length && (buffer[offset] & 0x01)) {
+      type = buffer[offset];
+      offset += 1;
+    } else if (offset + 2 <= buffer.length) {
+      type = buffer.readUInt16BE(offset);
+      offset += 2;
+    } else {
+      this.#undecoded(buffer, obj);
+      return;
+    }
+
+    obj.ppp = { type };
 
     switch (obj.ppp.type) {
     case 0x21:
-      this.ip4(buffer.slice(4), obj, pos + 4);
+      this.ip4(buffer.slice(offset), obj, pos + offset);
       return;
     case 0x57:
-      this.ip6(buffer.slice(4), obj, pos + 4);
+      this.ip6(buffer.slice(offset), obj, pos + offset);
       return;
     default:
-      console.log('Unknown ppp.type', obj, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
+      this.#undecoded(buffer.slice(offset), obj);
+      Pcap.#logUnknown('ppp.type', obj.ppp.type);
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // Network Service Header (RFC 8300), what it carries is in its next protocol byte
+  nsh (buffer, obj, pos) {
+    let offset = 0;
+    while (true) {
+      // Same checks as capture, the length is in 4 byte words and is at least the 8 byte base
+      const hlen = (buffer.length >= offset + 4) ? (buffer[offset + 1] & 0x3f) * 4 : 0;
+      if (hlen < 8 || offset + hlen > buffer.length) {
+        this.#undecoded(buffer.slice(offset), obj);
+        return;
+      }
+      const next = buffer[offset + 3];
+      offset += hlen;
+      switch (next) {
+      case 1:
+        this.ip4(buffer.slice(offset), obj, pos + offset);
+        return;
+      case 2:
+        this.ip6(buffer.slice(offset), obj, pos + offset);
+        return;
+      case 3:
+        this.ether(buffer.slice(offset), obj, pos + offset);
+        return;
+      case 4: // another NSH
+        break;
+      case 5:
+        this.mpls(buffer.slice(offset), obj, pos + offset);
+        return;
+      default:
+        this.#undecoded(buffer.slice(offset), obj);
+        return;
+      }
     }
   }
 
@@ -933,7 +1403,8 @@ class Pcap {
           this.ip6(buffer.slice(offset), obj, pos + offset);
           return;
         default:
-          console.log('Unknown mpls.type', buffer[offset] >> 4, obj, offset);
+          this.#undecoded(buffer.slice(offset), obj);
+          Pcap.#logUnknown('mpls.type', buffer[offset] >> 4);
           return;
         }
       }
@@ -962,6 +1433,7 @@ class Pcap {
       this.ip4(buffer, obj, pos);
       break;
     case 0x0806: // arp
+      obj.ether ??= {}; // SLL2 has no ethernet header
       obj.ether.data ??= buffer;
       break;
     case 0x86dd:
@@ -983,6 +1455,9 @@ class Pcap {
     case 0x880b:
       this.ppp(buffer, obj, pos);
       break;
+    case 0x894f:
+      this.nsh(buffer, obj, pos);
+      break;
     default:
       return false;
     }
@@ -991,6 +1466,10 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   ethertype (buffer, obj, pos) {
+    if (buffer.length < 2) {
+      obj.ether.data = buffer;
+      return;
+    }
     obj.ether.type = buffer.readUInt16BE(0);
 
     if (this.ethertyperun(obj.ether.type, buffer.slice(2), obj, pos + 2)) { return; }
@@ -1055,6 +1534,7 @@ class Pcap {
   radiotap (buffer, obj, pos) {
     // it_len is a little-endian uint16 at bytes 2-3
     const l = (buffer[2] | (buffer[3] << 8)) + 24 + 6;
+    if (buffer.length < l + 2) { return; }
     const ethertype = buffer.readUInt16BE(l);
 
     if (this.ethertyperun(ethertype, buffer.slice(l + 2), obj, pos + l + 2)) { return; }
@@ -1113,7 +1593,9 @@ class Pcap {
       obj.pcap.ts_usec = Math.floor(obj.pcap.ts_usec / 1000);
     }
 
-    switch (this.linkType) {
+    const linkType = (buffer.ngLinkType !== undefined) ? buffer.ngLinkType : this.linkType;
+
+    switch (linkType) {
     case 0: // NULL
       if (buffer[16] === 30) {
         this.ip6(buffer.slice(20, obj.pcap.incl_len + 16), obj, 20);
@@ -1142,8 +1624,11 @@ class Pcap {
     case 127: // radiotap
       this.radiotap(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
       break;
-    case 228: // RAW
+    case 228: // IPV4
       this.ip4(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
+      break;
+    case 229: // IPV6
+      this.ip6(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
       break;
     case 239: // NFLOG
       this.nflog(buffer.slice(16, obj.pcap.incl_len + 16), obj, 16);
@@ -1153,12 +1638,13 @@ class Pcap {
       break;
     case 276: { // SLL2
       // dispatch on the SLL2 protocol field, payload starts 20 bytes into the SLL2 header
+      if (buffer.length < 36) { break; }
       const sll2Ethertype = buffer.readUInt16BE(16);
       this.ethertyperun(sll2Ethertype, buffer.slice(36, obj.pcap.incl_len + 16), obj, 36);
       break;
     }
     default:
-      console.log('Unsupported pcap file', this.filename, 'link type', this.linkType, 'Please open a new protocol issue with sample pcap - https://github.com/arkime/arkime/issues/new/choose');
+      Pcap.#logUnknown('link type', linkType, 'in', this.filename);
       break;
     }
   }
@@ -1186,13 +1672,231 @@ class Pcap {
 
     b.writeUInt32LE(0x00000001, 32); // Block Type
     b.writeUInt32LE(24, 36); // Block Len 1
-    b.writeUInt16LE(buffer.readUInt32LE(20), 40); // Link Type
+    b.writeUInt16LE(this.linkType, 40); // Link Type
     b.writeUInt16LE(0, 42); // Reserved
-    b.writeUInt32LE(buffer.readUInt32LE(16), 44); // SnapLen
+    b.writeUInt32LE(this.isPcapNG ? (this.ngInterfaces?.[0]?.snaplen ?? 0) : buffer.readUInt32LE(16), 44); // SnapLen
     b.writeUInt32LE(0, 48); // Options
     b.writeUInt32LE(24, 52); // Block Len 2
 
     return b;
+  }
+
+  // --------------------------------------------------------------------------
+  // Just the pcapng Section Header Block (no interface blocks). Used by the
+  // pcapng exporter which emits one Interface Description Block per distinct
+  // link type seen across the exported packets (see makeIdbNg).
+  static makeShbNg () {
+    const b = Buffer.alloc(32);
+    b.writeUInt32LE(0x0A0D0D0A, 0); // Block Type
+    b.writeUInt32LE(32, 4); // Block Len 1
+    b.writeUInt32LE(0x1A2B3C4D, 8); // Byte Order Magic
+    b.writeUInt16LE(1, 12); // Major
+    b.writeUInt16LE(0, 14); // Minor
+    b.writeUInt32LE(0xffffffff, 16); // Unknown Section Length 1
+    b.writeUInt32LE(0xffffffff, 20); // Unknown Section Length 2
+    b.writeUInt32LE(0, 24); // Options
+    b.writeUInt32LE(32, 28); // Block Len 2
+    return b;
+  }
+
+  // --------------------------------------------------------------------------
+  // A single pcapng Interface Description Block for the given link type.
+  static makeIdbNg (linkType, snaplen) {
+    const b = Buffer.alloc(24);
+    b.writeUInt32LE(0x00000001, 0); // Block Type
+    b.writeUInt32LE(24, 4); // Block Len 1
+    b.writeUInt16LE(linkType, 8); // Link Type
+    b.writeUInt16LE(0, 10); // Reserved
+    b.writeUInt32LE(snaplen ?? 0, 12); // SnapLen
+    b.writeUInt32LE(0, 16); // Options
+    b.writeUInt32LE(24, 20); // Block Len 2
+    return b;
+  }
+
+  // --------------------------------------------------------------------------
+  // Classic little-endian microsecond pcap file header used for exports, so
+  // the output never depends on the on-disk format of the source files.
+  static makeHeaderPcap (linkType) {
+    const b = Buffer.alloc(24);
+    b.writeUInt32LE(0xa1b2c3d4, 0); // Magic
+    b.writeUInt16LE(2, 4); // Major
+    b.writeUInt16LE(4, 6); // Minor
+    b.writeInt32LE(0, 8); // Thiszone
+    b.writeUInt32LE(0, 12); // Sigfigs
+    b.writeUInt32LE(65535, 16); // SnapLen
+    b.writeUInt32LE(linkType, 20); // LinkType
+    return b;
+  }
+
+  // --------------------------------------------------------------------------
+  // Link type of a record returned by readPacket: per packet for pcapng
+  // sources, per file otherwise.
+  static packetLinkType (pcap, packet) {
+    return (packet.ngLinkType !== undefined) ? packet.ngLinkType : pcap.linkType;
+  }
+
+  // --------------------------------------------------------------------------
+  // Timestamp of a readPacket record as { sec, usec }, honoring the source
+  // file's byte order and nanosecond magic.
+  static packetTime (pcap, packet) {
+    let sec, usec;
+    if (pcap.bigEndian) {
+      sec = packet.readUInt32BE(0);
+      usec = packet.readUInt32BE(4);
+    } else {
+      sec = packet.readUInt32LE(0);
+      usec = packet.readUInt32LE(4);
+    }
+    if (pcap.nanosecond) {
+      usec = Math.floor(usec / 1000);
+    }
+    return { sec, usec };
+  }
+
+  // --------------------------------------------------------------------------
+  // Rewrite a readPacket record so its 16 byte header matches makeHeaderPcap
+  // (little-endian, microseconds). Records from little-endian microsecond
+  // sources, which includes everything pcapng, are returned as is.
+  static exportRecord (pcap, packet) {
+    if (!pcap.bigEndian && !pcap.nanosecond) {
+      return packet;
+    }
+    const { sec, usec } = Pcap.packetTime(pcap, packet);
+    const out = Buffer.allocUnsafe(packet.length);
+    packet.copy(out, 16, 16);
+    out.writeUInt32LE(sec, 0);
+    out.writeUInt32LE(usec, 4);
+    out.writeUInt32LE(pcap.bigEndian ? packet.readUInt32BE(8) : packet.readUInt32LE(8), 8);
+    out.writeUInt32LE(pcap.bigEndian ? packet.readUInt32BE(12) : packet.readUInt32LE(12), 12);
+    out.ngLinkType = packet.ngLinkType;
+    return out;
+  }
+
+  // --------------------------------------------------------------------------
+  static #linkTypeNames = {
+    0: 'NULL',
+    1: 'EN10MB',
+    12: 'LOOP',
+    101: 'RAW',
+    107: 'FRELAY',
+    113: 'LINUX_SLL',
+    127: 'IEEE802_11_RADIO',
+    228: 'IPV4',
+    229: 'IPV6',
+    239: 'NFLOG',
+    274: 'MPACKET',
+    276: 'LINUX_SLL2'
+  };
+
+  static linkTypeName (linkType) {
+    const ltName = Pcap.#linkTypeNames[linkType];
+    return ltName ? `${ltName} (${linkType})` : `${linkType}`;
+  }
+
+  // --------------------------------------------------------------------------
+  // Parse a single pcapng Interface Description Block at pos in buf, returning
+  // { linkType, snaplen, tsresol } or undefined if pos isn't a valid IDB. This
+  // is the static twin of the instance #parseNgIdb, for callers (the scheme
+  // block reader) that build a Pcap without an open fd.
+  static parseNgIdbAt (buf, pos) {
+    if (pos < 0 || pos + 12 > buf.length) { return undefined; }
+    const blockType = buf.readUInt32LE(pos);
+    const blockLen = buf.readUInt32LE(pos + 4);
+    if (blockType !== 0x00000001 || blockLen < 20 || pos + blockLen > buf.length) {
+      return undefined;
+    }
+    const linkType = buf.readUInt16LE(pos + 8);
+    const snaplen = buf.readUInt32LE(pos + 12);
+    let tsresol = 1000000;
+    let o = pos + 16;
+    const optsEnd = pos + blockLen - 4;
+    while (o + 4 <= optsEnd) {
+      const otype = buf.readUInt16LE(o);
+      const olen = buf.readUInt16LE(o + 2);
+      o += 4;
+      if (otype === 0) { break; }
+      if (otype === 9 && olen >= 1) {
+        const v = buf.readUInt8(o);
+        tsresol = (v & 0x80) ? Math.pow(2, v & 0x7f) : Math.pow(10, v);
+      }
+      o += olen + ((4 - (olen & 3)) & 3);
+    }
+    return { linkType, snaplen, tsresol };
+  }
+
+  // --------------------------------------------------------------------------
+  // Build the interface table (indexed by pcapng interface_id) from a buffer
+  // holding the Section Header Block and its Interface Description Blocks. Uses
+  // the cached IDB offsets when present, else scans until the first packet.
+  static parseNgInterfaces (buf, interfaceOffsets) {
+    const ngInterfaces = [];
+    if (Array.isArray(interfaceOffsets) && interfaceOffsets.length > 0) {
+      for (const off of interfaceOffsets) {
+        ngInterfaces.push(Pcap.parseNgIdbAt(buf, off) ?? { linkType: 0, snaplen: 0, tsresol: 1000000 });
+      }
+      return ngInterfaces;
+    }
+    let pos = 0;
+    while (pos + 12 <= buf.length) {
+      const blockType = buf.readUInt32LE(pos);
+      const blockLen = buf.readUInt32LE(pos + 4);
+      if (blockLen < 12 || pos + blockLen > buf.length) { break; }
+      if (blockType === 0x00000001) { // Interface Description Block
+        ngInterfaces.push(Pcap.parseNgIdbAt(buf, pos) ?? { linkType: 0, snaplen: 0, tsresol: 1000000 });
+      } else if (blockType === 0x00000006 || blockType === 0x00000003) {
+        break; // reached the first packet block
+      }
+      pos += blockLen;
+    }
+    return ngInterfaces;
+  }
+
+  // --------------------------------------------------------------------------
+  // Decode one pcapng Enhanced/Simple Packet Block at the start of readBuffer
+  // into the classic "[16-byte pcap record header][frame]" shape (little-endian
+  // microseconds, ngLinkType attached), the same output as readPacketNg. When
+  // readBuffer is too short it returns { need } so a block reader can fetch more
+  // and call again; null for an unknown block; undefined for a bad length.
+  static decodeNgBlock (readBuffer, ngInterfaces, defaultLinkType) {
+    if (readBuffer.length < 32) { return { need: 32 }; }
+
+    const blockType = readBuffer.readUInt32LE(0);
+    const blockLen = readBuffer.readUInt32LE(4);
+
+    let interfaceId, tsHigh, tsLow, caplen, dataOffset;
+    if (blockType === 0x00000006) { // Enhanced Packet Block
+      interfaceId = readBuffer.readUInt32LE(8);
+      tsHigh = readBuffer.readUInt32LE(12);
+      tsLow = readBuffer.readUInt32LE(16);
+      caplen = readBuffer.readUInt32LE(20);
+      dataOffset = 28;
+    } else if (blockType === 0x00000003) { // Simple Packet Block
+      interfaceId = 0;
+      tsHigh = 0;
+      tsLow = 0;
+      caplen = blockLen - 16;
+      dataOffset = 12;
+    } else {
+      return null;
+    }
+
+    if (caplen < 0 || caplen > 0xffff) { return undefined; }
+    if (readBuffer.length < dataOffset + caplen) { return { need: dataOffset + caplen }; }
+
+    const iface = ngInterfaces?.[interfaceId];
+    const tsresol = iface?.tsresol ?? 1000000;
+    const ts = tsHigh * 0x100000000 + tsLow;
+    const sec = Math.floor(ts / tsresol);
+    const usec = Math.floor((ts % tsresol) * 1000000 / tsresol);
+
+    const newBuffer = Buffer.allocUnsafe(16 + caplen);
+    newBuffer.writeUInt32LE(sec >>> 0, 0);
+    newBuffer.writeUInt32LE(usec >>> 0, 4);
+    newBuffer.writeUInt32LE(caplen, 8);
+    newBuffer.writeUInt32LE(caplen, 12);
+    readBuffer.copy(newBuffer, 16, dataOffset, dataOffset + caplen);
+    newBuffer.ngLinkType = iface ? iface.linkType : defaultLinkType;
+    return newBuffer;
   }
 
   /// ///////////////////////////////////////////////////////////////////////////////
@@ -1200,103 +1904,236 @@ class Pcap {
   /// ///////////////////////////////////////////////////////////////////////////////
 
   // --------------------------------------------------------------------------
-  static reassemble_icmp (packets, numPackets) {
-    const results = [];
-    packets.length = Math.min(packets.length, numPackets);
-    for (const packet of packets) {
-      const key = packet.ip.addr1;
-      if (results.length === 0 || key !== results[results.length - 1].key) {
-        results.push({
-          key,
-          buffers: [packet.icmp.data],
-          ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
-        });
-      } else {
-        results[results.length - 1].buffers.push(packet.icmp.data);
+  // Build the datagram from the decoded fragments of it that have been seen so far.
+  // Returns undefined when there are still holes.
+  static #defragStitch (fragPackets, last) {
+    const frags = fragPackets.map(p => p.ip.frag).sort((a, b) => a.off - b.off);
+    if (frags[0].off !== 0 || !frags.some(f => !f.more)) { return undefined; }
+
+    // Same as capture, the datagram goes as far as any fragment does. Capture drops
+    // datagrams whose fragments disagree where they end, so this is the last fragment's end.
+    let total = 0;
+    for (const frag of frags) {
+      if (frag.off > total) { return undefined; } // a hole
+      total = Math.max(total, frag.off + frag.payload.length);
+    }
+
+    const first = frags[0];
+    const buffer = Buffer.alloc(first.hdrLen + total);
+    first.buffer.copy(buffer, 0, 0, first.hdrLen);
+    for (const frag of frags) {
+      // capture only reassembles when overlapping bytes are the same, so the order doesn't matter
+      frag.payload.copy(buffer, first.hdrLen + frag.off);
+    }
+
+    // Everything below ip is from the fragment that completed the datagram, same as capture
+    // The datagram's header is decoded again, at the same ip layer as the fragments
+    const obj = { ...last, ipDepth: last.ip.frag.depth - 1 };
+    if (first.v === 4) {
+      if (buffer.length > 0xffff) { return undefined; }
+      buffer.writeUInt16BE(buffer.length, 2);
+      buffer.writeUInt16BE(0, 6);
+      first.pcap.ip4(buffer, obj, last.ip.frag.pos);
+    } else {
+      if (buffer.length - 40 > 0xffff) { return undefined; }
+      buffer.writeUInt16BE(buffer.length - 40, 4);
+      buffer[first.nxtPos] = first.p;
+      first.pcap.ip6(buffer, obj, last.ip.frag.pos);
+    }
+    return obj;
+  }
+
+  // --------------------------------------------------------------------------
+  // Could frag be part of the same datagram as the fragments in group, by the rules capture
+  // uses to drop a datagram: overlaps must be the same bytes, ip6 ones exact duplicates, and
+  // the fragments must agree where the datagram ends. Capture never saves a datagram that
+  // breaks them, so a fragment that would is from another datagram with the same key.
+  static #defragFits (packets, group, frag) {
+    const start = frag.off;
+    const end = start + frag.payload.length;
+    for (const j of group) {
+      const g = packets[j].ip.frag;
+      const gend = g.off + g.payload.length;
+      if (!frag.more && (gend > end || (!g.more && gend !== end))) { return false; }
+      if (frag.more && !g.more && end > gend) { return false; }
+      if (start >= gend || g.off >= end) { continue; }
+      if (start === g.off && end === gend && frag.more === g.more && frag.payload.equals(g.payload)) { continue; }
+      if (frag.v === 6) { return false; }
+      const ostart = Math.max(start, g.off);
+      const oend = Math.min(end, gend);
+      if (!frag.payload.subarray(ostart - start, oend - start).equals(g.payload.subarray(ostart - g.off, oend - g.off))) {
+        return false;
       }
     }
-    for (const result of results) {
-      result.data = Buffer.concat(result.buffers);
-      delete result.buffers;
+    return true;
+  }
+
+  // --------------------------------------------------------------------------
+  /**
+   * Capture parses the reassembled datagram but saves the ip fragments that were on the
+   * wire, so before anything looks at the transport layer the fragments need to be put
+   * back together. The datagram replaces the fragment that completed it and the other
+   * fragments are removed. Fragments that can't be completed are left alone.
+   * cutOff is when packets isn't all of the session's packets, then the fragments at the
+   * end are a datagram whose other fragments weren't read, so they are removed too.
+   * Changes packets in place and returns it.
+   */
+  static defrag (packets, cutOff) {
+    if (!packets.some(p => p?.ip?.frag)) { return packets; }
+
+    const groups = new Map();
+    const remove = new Set();
+    let warned = false;
+    for (let i = 0; i < packets.length; i++) {
+      // A stitched datagram can be a fragment of a tunneled datagram, so keep going
+      while (packets[i]?.ip?.frag) {
+        const packet = packets[i];
+        const key = `${packet.ip.frag.v}-${packet.ip.frag.depth}-${packet.ip.addr1}-${packet.ip.addr2}-${packet.ip.frag.id}`;
+        let list = groups.get(key);
+        if (!list) {
+          list = [];
+          groups.set(key, list);
+        }
+        // Capture saves a datagram's fragments merged in time order with other datagrams it was
+        // in, so two datagrams with the same key can be mixed together, keep them apart
+        let group = list.findLast(g => Pcap.#defragFits(packets, g, packet.ip.frag));
+        if (!group) {
+          group = [];
+          if (list.length < 8) {
+            list.push(group);
+          } else {
+            group = list[list.length - 1];
+          }
+        }
+        group.push(i);
+        const done = () => {
+          list.splice(list.indexOf(group), 1);
+          if (list.length === 0) { groups.delete(key); }
+        };
+
+        // Capture keeps at most 128 fragments and 128 duplicates of a datagram, a bigger group
+        // isn't one datagram. Its fragments are left as they are, which also keeps a crafted
+        // session from making every later fragment try the whole group again.
+        if (group.length > 256) {
+          done();
+          break;
+        }
+
+        let stitched;
+        try {
+          stitched = Pcap.#defragStitch(group.map(j => packets[j]), packet);
+        } catch (e) {
+          // The datagram is all there but doesn't decode, leave its fragments as they are
+          if (!warned) {
+            console.log("WARNING - Couldn't put ip fragments back together", e.message);
+            warned = true;
+          }
+          done();
+          break;
+        }
+        if (!stitched) { break; }
+
+        done();
+        for (const j of group) { remove.add(j); }
+        remove.delete(i);
+        packets[i] = stitched;
+      }
     }
-    return { results };
+
+    // What is left wasn't completed, a first ip4 fragment still starts with the transport header
+    for (const group of [...groups.values()].flat()) {
+      for (const i of group) {
+        const frag = packets[i].ip.frag;
+        if (frag.v === 4 && frag.off === 0) {
+          try {
+            delete packets[i].ip.data;
+            packets[i].ip.p = frag.p;
+            frag.pcap.ip4payload(frag.buffer, packets[i], frag.pos);
+          } catch (e) {
+            packets[i].ip.p = 0;
+            packets[i].ip.data = frag.payload;
+          }
+        }
+      }
+    }
+
+    if (remove.size > 0) {
+      let n = 0;
+      for (let i = 0; i < packets.length; i++) {
+        if (!remove.has(i)) { packets[n++] = packets[i]; }
+      }
+      packets.length = n;
+    }
+
+    // Capture saves a datagram's fragments together, so the ones not read are for the last
+    // datagram. If it is all there is, showing part of it is better than nothing.
+    if (cutOff) {
+      let end = packets.length;
+      while (end > 0 && packets[end - 1]?.ip?.frag) { end--; }
+      if (end > 0) { packets.length = end; }
+    }
+    return packets;
+  }
+
+  // --------------------------------------------------------------------------
+  // Consecutive packets from the same side are joined into one result. layer is where the
+  // data is, withPort adds its sport to the key.
+  static #reassembleSimple (packets, numPackets, layer, withPort) {
+    const results = [];
+    try {
+      packets.length = Math.min(packets.length, numPackets);
+
+      // An ip fragment left over from a datagram that wasn't all saved has no transport
+      // layer, it goes with the other packets from its ip and shows its ip payload
+      const keyOf = (packet) => withPort ? `${packet.ip.addr1}:${packet[layer].sport}` : packet.ip.addr1;
+      const ipKeys = new Map();
+      for (const packet of packets) {
+        if (packet[layer] && !ipKeys.has(packet.ip.addr1)) {
+          ipKeys.set(packet.ip.addr1, keyOf(packet));
+        }
+      }
+
+      for (const packet of packets) {
+        const key = packet[layer] ? keyOf(packet) : (ipKeys.get(packet.ip?.addr1) ?? packet.ip?.addr1);
+        const data = packet[layer] ? packet[layer].data : (packet.ip?.data ?? EMPTY_BUFFER);
+        if (results.length === 0 || key !== results[results.length - 1].key) {
+          results.push({
+            key,
+            buffers: [data],
+            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
+          });
+        } else {
+          results[results.length - 1].buffers.push(data);
+        }
+      }
+      for (const result of results) {
+        result.data = Buffer.concat(result.buffers);
+        delete result.buffers;
+      }
+      return { results };
+    } catch (err) {
+      return { err, results };
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  static reassemble_icmp (packets, numPackets) {
+    return Pcap.#reassembleSimple(packets, numPackets, 'icmp', false);
   }
 
   // --------------------------------------------------------------------------
   static reassemble_udp (packets, numPackets) {
-    const results = [];
-    try {
-      packets.length = Math.min(packets.length, numPackets);
-      for (const packet of packets) {
-        const key = packet.ip.addr1 + ':' + packet.udp.sport;
-        if (results.length === 0 || key !== results[results.length - 1].key) {
-          results.push({
-            key,
-            buffers: [packet.udp.data],
-            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
-          });
-        } else {
-          results[results.length - 1].buffers.push(packet.udp.data);
-        }
-      }
-      for (const result of results) {
-        result.data = Buffer.concat(result.buffers);
-        delete result.buffers;
-      }
-      return { results };
-    } catch (err) {
-      return { err, results };
-    }
+    return Pcap.#reassembleSimple(packets, numPackets, 'udp', true);
   }
 
   // --------------------------------------------------------------------------
   static reassemble_sctp (packets, numPackets) {
-    const results = [];
-    try {
-      packets.length = Math.min(packets.length, numPackets);
-      for (const packet of packets) {
-        const key = packet.ip.addr1 + ':' + packet.sctp.sport;
-        if (results.length === 0 || key !== results[results.length - 1].key) {
-          results.push({
-            key,
-            buffers: [packet.sctp.data],
-            ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
-          });
-        } else {
-          results[results.length - 1].buffers.push(packet.sctp.data);
-        }
-      }
-      for (const result of results) {
-        result.data = Buffer.concat(result.buffers);
-        delete result.buffers;
-      }
-      return { results };
-    } catch (err) {
-      return { err, results };
-    }
+    return Pcap.#reassembleSimple(packets, numPackets, 'sctp', true);
   }
 
   // --------------------------------------------------------------------------
   static reassemble_esp (packets, numPackets) {
-    const results = [];
-    packets.length = Math.min(packets.length, numPackets);
-    for (const packet of packets) {
-      const key = packet.ip.addr1;
-      if (results.length === 0 || key !== results[results.length - 1].key) {
-        results.push({
-          key,
-          buffers: [packet.esp.data],
-          ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
-        });
-      } else {
-        results[results.length - 1].buffers.push(packet.esp.data);
-      }
-    }
-    for (const result of results) {
-      result.data = Buffer.concat(result.buffers);
-      delete result.buffers;
-    }
-    return { results };
+    return Pcap.#reassembleSimple(packets, numPackets, 'esp', false);
   }
 
   // --------------------------------------------------------------------------
@@ -1304,8 +2141,8 @@ class Pcap {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
     for (const packet of packets) {
-      const key = packet.ip.addr1;
-      const data = packet.tcp?.data ?? packet.udp?.data ?? packet.ip.data;
+      const key = packet.ip?.addr1;
+      const data = packet.tcp?.data ?? packet.udp?.data ?? packet.ip?.data ?? EMPTY_BUFFER;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         results.push({
           key,
@@ -1328,15 +2165,16 @@ class Pcap {
     const results = [];
     packets.length = Math.min(packets.length, numPackets);
     for (const packet of packets) {
-      const key = packet.ether.addr1;
+      const key = packet.ether?.addr1;
+      const data = packet.ether?.data ?? EMPTY_BUFFER;
       if (results.length === 0 || key !== results[results.length - 1].key) {
         results.push({
           key,
-          buffers: [packet.ether.data],
+          buffers: [data],
           ts: packet.pcap.ts_sec * 1000 + Math.round(packet.pcap.ts_usec / 1000)
         });
       } else {
-        results[results.length - 1].buffers.push(packet.ether.data);
+        results[results.length - 1].buffers.push(data);
       }
     }
     for (const result of results) {
@@ -1535,9 +2373,11 @@ class Pcap {
       result.src = match;
 
       if (!packet.ip) {
-        result.data = packet.ether.data;
+        result.data = packet.ether?.data ?? EMPTY_BUFFER;
       } else {
-        switch (packet.ip.p) {
+        // A fragment, or a packet too short for its transport header, only has ip data
+        const layer = { 1: 'icmp', 58: 'icmp', 6: 'tcp', 17: 'udp', 132: 'sctp', 50: 'esp' }[packet.ip.p];
+        switch (layer && packet[layer] ? packet.ip.p : -1) {
         case 1:
         case 58:
           result.data = packet.icmp.data;
@@ -1563,7 +2403,7 @@ class Pcap {
           result.data = packet.esp.data;
           break;
         default:
-          result.data = packet.ip.data;
+          result.data = packet.ip.data ?? EMPTY_BUFFER;
           break;
         }
       }
@@ -1576,19 +2416,12 @@ class Pcap {
 
   // --------------------------------------------------------------------------
   static key (packet) {
-    if (!packet.ip) { return packet.ether.addr1; }
+    if (!packet.ip) { return packet.ether?.addr1; }
     const sep = packet.ip.addr1.includes(':') ? '.' : ':';
     const addr1 = ipaddr.parse(packet.ip.addr1).toString();
-    switch (packet.ip.p) {
-    case 6: // tcp
-      return `${addr1}${sep}${packet.tcp.sport}`;
-    case 17: // udp
-      return `${addr1}${sep}${packet.udp.sport}`;
-    case 132: // sctp
-      return `${addr1}${sep}${packet.sctp.sport}`;
-    default:
-      return addr1;
-    }
+    // A fragment, or a packet too short for its transport header, has no port
+    const transport = { 6: packet.tcp, 17: packet.udp, 132: packet.sctp }[packet.ip.p];
+    return transport ? `${addr1}${sep}${transport.sport}` : addr1;
   }
 
   // --------------------------------------------------------------------------
