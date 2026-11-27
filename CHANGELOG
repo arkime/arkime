@@ -502,6 +502,8 @@ NOTICE: Create a parliament config file before upgrading (see https://arkime.com
 ## Viewer
   - #4478 Fix the remote node proxy sending some crafted requests to a different host
   - #4500 Fix a crafted IPv6 packet, saved by capture as a plain GTP udp packet, hanging viewer when its session was viewed
+  - #4506 Fix a packet viewer can't decode, like a GRE keepalive, leaving hunts and raw packet, body and bodyhash downloads waiting forever, the packet is skipped or searched as is
+  - #4506 Fix SPI View asking for every field at once, with the graph and map on each request; fields load one at a time again
 
 6.9.2 2026/11/12
 ## Breaking

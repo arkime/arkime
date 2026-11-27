@@ -1,4 +1,4 @@
-use Test::More tests => 101;
+use Test::More tests => 104;
 
 use Cwd;
 use URI::Escape;
@@ -387,3 +387,13 @@ sessionsDeleteByTag($noPcapIndex, $cvTag);
         is ($response->code, 500, "session id $sid not found");
         unlike ($response->content, qr/passStore|userId/, "session id $sid doesn't return a user");
     }
+
+# a packet that can't be decoded, like a GRE keepalive, doesn't leave the request waiting
+    $sdId = viewerGet("/sessions.json?date=-1&expression=" . uri_escape("file=$pwd/arkime_synthetic.pcap && ip == 10.9.53.1 && ip.protocol == gre"));
+    is (scalar @{$sdId->{data}}, 2, "gre keepalive sessions");
+    $ArkimeTest::userAgent->timeout(30);
+    foreach my $item (@{$sdId->{data}}) {
+        $response = $ArkimeTest::userAgent->get("http://$ArkimeTest::host:8123/api/session/raw/test/$item->{id}?type=src");
+        is ($response->code, 200, "raw packets of a gre keepalive session return");
+    }
+    $ArkimeTest::userAgent->timeout(120);

@@ -1,4 +1,4 @@
-use Test::More tests => 368;
+use Test::More tests => 372;
 use Cwd;
 use URI::Escape;
 use ArkimeTest;
@@ -455,6 +455,9 @@ my $hToken = getTokenCookie('sac-huntuser');
   # create a hunt for regex dos
   $HUNTS{"raw-regex-both-(.*a){25}x"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":67,"name":"' . "raw-regex-both-(.*a){25}x-$$" . '", "size":"50","search":"(.*a){25}x","searchType":"regex","type":"raw","src":true,"dst":true,"query":{"startTime":1430916462,"stopTime":1569170858,"expression":"tags != bdat* && tags != scheme*"}}', $hToken);
 
+  # create a src only hunt on gre keepalives, packets that can't be decoded are still searched
+  $HUNTS{"raw-hex-src-undecoded"} = viewerPostToken("/api/hunt?arkimeRegressionUser=sac-huntuser", '{"totalSessions":2,"name":"' . "raw-hex-src-undecoded-$$" . '", "size":"50","search":"0a093501","searchType":"hex","type":"raw","src":true,"dst":false,"query":{"startTime":1778362500,"stopTime":1778362700,"expression":"file == *arkime_synthetic.pcap && ip == 10.9.53.1 && ip.protocol == gre"}}', $hToken);
+
   # Actually process the hunts
   viewerGet("/regressionTests/processHuntJobs");
 
@@ -528,6 +531,12 @@ my $hToken = getTokenCookie('sac-huntuser');
   is ($result->{searchedSessions}, 81, "raw-regex-both-(.*a){25}x searchedSessions check");
   is ($result->{totalSessions}, 81, "raw-regex-both-(.*a){25}x totalSessions check");
   is ($result->{matchedSessions}, 0, "raw-regex-both-(.*a){25}x match check");
+
+  $result = $RESULTS{$HUNTS{"raw-hex-src-undecoded"}->{hunt}->{id}};
+  is ($result->{status}, 'finished', "raw-hex-src-undecoded finished check");
+  is ($result->{searchedSessions}, 2, "raw-hex-src-undecoded searchedSessions check");
+  is ($result->{totalSessions}, 2, "raw-hex-src-undecoded totalSessions check");
+  is ($result->{matchedSessions}, 2, "raw-hex-src-undecoded match check");
 
 # cleanup
   $json = viewerDeleteToken("/api/user/sac-huntuser", $token);
