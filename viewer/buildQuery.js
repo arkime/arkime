@@ -78,7 +78,11 @@ class BuildQuery {
           }
         }
         obj[field].unmapped_type = unmappedType;
-        obj[field].missing = (parts[1] === 'asc' ? '_last' : '_first');
+        // Every session has firstPacket and lastPacket so missing changes nothing for them,
+        // and a missing of _first stops the db from skipping shards that can't be in the top hits
+        if (field !== 'firstPacket' && field !== 'lastPacket') {
+          obj[field].missing = (parts[1] === 'asc' ? '_last' : '_first');
+        }
         query.sort.push(obj);
       }
 
